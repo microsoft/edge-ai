@@ -119,6 +119,12 @@ deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
 
+### Bicep
+
+Refer to [Bicep Components - Getting Started](../README.md#bicep-components---getting-started) for deployment instructions.
+
+Learn more about the required configuration by reading the [./bicep/README.md](./bicep/README.md)
+
 ---
 
 <!-- markdownlint-disable MD036 -->

@@ -1,0 +1,1466 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "18143520315934150186"
+    },
+    "name": "Cloud Notification",
+    "description": "Deploys Azure Logic Apps for leak detection notifications with state tracking. The primary workflow subscribes to Event Hub ALERT_DLQC events, deduplicates using Azure Table Storage, and posts new-leak alerts to Microsoft Teams. A secondary workflow provides an HTTP endpoint to close active leak sessions. The Teams connection requires user consent after deployment via the Azure Portal."
+  },
+  "definitions": {
+    "_1.EventHubNamespaceRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "metadata": {
+        "description": "Event Hub namespace reference.",
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_1.LogicAppRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "identityPrincipalId": {
+          "type": "string"
+        }
+      },
+      "metadata": {
+        "description": "Logic App workflow output shape returned by this module.",
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_1.ResourceGroupRef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        }
+      },
+      "metadata": {
+        "description": "Resource group reference containing name, id, and location.",
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_1.StorageAccountRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "metadata": {
+        "description": "Storage account reference used for leak-session tracking table.",
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.bicep"
+        }
+      }
+    },
+    "_2.Common": {
+      "type": "object",
+      "properties": {
+        "resourcePrefix": {
+          "type": "string",
+          "metadata": {
+            "description": "Prefix for all resources in this module"
+          }
+        },
+        "location": {
+          "type": "string",
+          "metadata": {
+            "description": "Location for all resources in this module"
+          }
+        },
+        "environment": {
+          "type": "string",
+          "metadata": {
+            "description": "Environment for all resources in this module: dev, test, or prod"
+          }
+        },
+        "instance": {
+          "type": "string",
+          "metadata": {
+            "description": "Instance identifier for naming resources: 001, 002, etc..."
+          }
+        }
+      },
+      "metadata": {
+        "description": "Common settings for the components.",
+        "__bicep_imported_from!": {
+          "sourceTemplate": "types.core.bicep"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "common": {
+      "$ref": "#/definitions/_2.Common",
+      "metadata": {
+        "description": "The common component configuration."
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Additional tags to add to the resources."
+      }
+    },
+    "resourceGroup": {
+      "$ref": "#/definitions/_1.ResourceGroupRef",
+      "metadata": {
+        "description": "Resource group reference (name, id, location)."
+      }
+    },
+    "eventhubNamespace": {
+      "$ref": "#/definitions/_1.EventHubNamespaceRef",
+      "metadata": {
+        "description": "Event Hub namespace reference (id, name) for Logic App trigger."
+      }
+    },
+    "eventhubName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Event Hub to subscribe to for leak events."
+      }
+    },
+    "storageAccount": {
+      "$ref": "#/definitions/_1.StorageAccountRef",
+      "metadata": {
+        "description": "Storage account reference (id, name) for leak-session Table Storage."
+      }
+    },
+    "shouldAssignRoles": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to create role assignments for the Logic App managed identities."
+      }
+    },
+    "teamsRecipientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Teams chat or channel thread ID for posting notifications."
+      }
+    },
+    "teamsPostLocation": {
+      "type": "string",
+      "defaultValue": "Group chat",
+      "metadata": {
+        "description": "Teams posting location type."
+      }
+    },
+    "telemetry_opt_out": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether to opt out of telemetry data collection."
+      }
+    }
+  },
+  "variables": {
+    "defaultTags": {
+      "Environment": "[parameters('common').environment]",
+      "Instance": "[parameters('common').instance]"
+    },
+    "tableName": "leaksessions",
+    "eventhubDataReceiverRoleId": "a638d3c7-ab3a-418d-83e6-5f17a39d4fde",
+    "storageTableDataContributorRoleId": "0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3"
+  },
+  "resources": {
+    "attribution": {
+      "condition": "[not(parameters('telemetry_opt_out'))]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-06-01",
+      "name": "pid-2eb2bc30-7a1e-4710-93fa-168d388da93c",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    "leakSessionsTable": {
+      "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/default/{1}', parameters('storageAccount').name, variables('tableName'))]"
+    },
+    "eventhubNamespaceRef": {
+      "existing": true,
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2024-05-01-preview",
+      "name": "[parameters('eventhubNamespace').name]"
+    },
+    "storageAccountRef": {
+      "existing": true,
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('storageAccount').name]"
+    },
+    "notifyEventhubReceiverRole": {
+      "condition": "[parameters('shouldAssignRoles')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.EventHub/namespaces', parameters('eventhubNamespace').name)]",
+      "name": "[guid(parameters('eventhubNamespace').id, format('{0}-notify-app', deployment().name), 'EventHubDataReceiver')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('eventhubDataReceiverRoleId'))]",
+        "principalId": "[reference('leakNotifyLogicApp').outputs.identityPrincipalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "leakNotifyLogicApp"
+      ]
+    },
+    "notifyStorageTableRole": {
+      "condition": "[parameters('shouldAssignRoles')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccount').name)]",
+      "name": "[guid(parameters('storageAccount').id, format('{0}-notify-app', deployment().name), 'StorageTableDataContributor')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageTableDataContributorRoleId'))]",
+        "principalId": "[reference('leakNotifyLogicApp').outputs.identityPrincipalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "leakNotifyLogicApp"
+      ]
+    },
+    "closeStorageTableRole": {
+      "condition": "[parameters('shouldAssignRoles')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccount').name)]",
+      "name": "[guid(parameters('storageAccount').id, format('{0}-close-app', deployment().name), 'StorageTableDataContributor')]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageTableDataContributorRoleId'))]",
+        "principalId": "[reference('leakCloseLogicApp').outputs.identityPrincipalId.value]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "leakCloseLogicApp"
+      ]
+    },
+    "eventhubConnection": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-evhub-conn', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "common": {
+            "value": "[parameters('common')]"
+          },
+          "tags": {
+            "value": "[union(variables('defaultTags'), parameters('tags'))]"
+          },
+          "eventhubNamespaceName": {
+            "value": "[parameters('eventhubNamespace').name]"
+          },
+          "location": {
+            "value": "[parameters('resourceGroup').location]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "17985352044538100578"
+            },
+            "name": "Event Hub API Connection",
+            "description": "API connection used by Logic Apps to subscribe to Event Hub via managed identity auth."
+          },
+          "definitions": {
+            "_1.Common": {
+              "type": "object",
+              "properties": {
+                "resourcePrefix": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Prefix for all resources in this module"
+                  }
+                },
+                "location": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Location for all resources in this module"
+                  }
+                },
+                "environment": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Environment for all resources in this module: dev, test, or prod"
+                  }
+                },
+                "instance": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Instance identifier for naming resources: 001, 002, etc..."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Common settings for the components.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "../types.core.bicep"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "common": {
+              "$ref": "#/definitions/_1.Common",
+              "metadata": {
+                "description": "Common settings."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional tags applied to the connection."
+              }
+            },
+            "eventhubNamespaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "Event Hub namespace name (used to derive the sb:// endpoint)."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource group location where the connection is deployed."
+              }
+            }
+          },
+          "variables": {
+            "connectionName": "[format('apicon-evhub-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]",
+            "eventhubManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'eventhubs')]"
+          },
+          "resources": {
+            "eventhubConnection": {
+              "type": "Microsoft.Web/connections",
+              "apiVersion": "2016-06-01",
+              "name": "[variables('connectionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "api": {
+                  "id": "[variables('eventhubManagedApiId')]"
+                },
+                "displayName": "Event Hub (Managed Identity)",
+                "parameterValueSet": {
+                  "name": "managedIdentityAuth",
+                  "values": {
+                    "namespaceEndpoint": {
+                      "value": "[format('sb://{0}.servicebus.windows.net/', parameters('eventhubNamespaceName'))]"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "outputs": {
+            "connectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection resource ID, passed into Logic App parameters."
+              },
+              "value": "[resourceId('Microsoft.Web/connections', variables('connectionName'))]"
+            },
+            "connectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection resource name."
+              },
+              "value": "[variables('connectionName')]"
+            },
+            "managedApiId": {
+              "type": "string",
+              "metadata": {
+                "description": "Managed API ID for the eventhubs connector, passed into Logic App parameters."
+              },
+              "value": "[variables('eventhubManagedApiId')]"
+            }
+          }
+        }
+      }
+    },
+    "teamsConnection": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-teams-conn', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "common": {
+            "value": "[parameters('common')]"
+          },
+          "tags": {
+            "value": "[union(variables('defaultTags'), parameters('tags'))]"
+          },
+          "location": {
+            "value": "[parameters('resourceGroup').location]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "5697712607579171167"
+            },
+            "name": "Teams API Connection",
+            "description": "API connection used by Logic Apps to post to Microsoft Teams. Requires user consent after deployment via Azure Portal."
+          },
+          "definitions": {
+            "_1.Common": {
+              "type": "object",
+              "properties": {
+                "resourcePrefix": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Prefix for all resources in this module"
+                  }
+                },
+                "location": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Location for all resources in this module"
+                  }
+                },
+                "environment": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Environment for all resources in this module: dev, test, or prod"
+                  }
+                },
+                "instance": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Instance identifier for naming resources: 001, 002, etc..."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Common settings for the components.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "../types.core.bicep"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "common": {
+              "$ref": "#/definitions/_1.Common",
+              "metadata": {
+                "description": "Common settings."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional tags applied to the connection."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource group location where the connection is deployed."
+              }
+            }
+          },
+          "variables": {
+            "connectionName": "[format('apicon-teams-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]",
+            "teamsManagedApiId": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('location'), 'teams')]"
+          },
+          "resources": {
+            "teamsConnection": {
+              "type": "Microsoft.Web/connections",
+              "apiVersion": "2016-06-01",
+              "name": "[variables('connectionName')]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "api": {
+                  "id": "[variables('teamsManagedApiId')]"
+                },
+                "displayName": "Teams"
+              }
+            }
+          },
+          "outputs": {
+            "connectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection resource ID, passed into Logic App parameters."
+              },
+              "value": "[resourceId('Microsoft.Web/connections', variables('connectionName'))]"
+            },
+            "connectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection resource name."
+              },
+              "value": "[variables('connectionName')]"
+            },
+            "managedApiId": {
+              "type": "string",
+              "metadata": {
+                "description": "Managed API ID for the teams connector, passed into Logic App parameters."
+              },
+              "value": "[variables('teamsManagedApiId')]"
+            }
+          }
+        }
+      }
+    },
+    "leakCloseLogicApp": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-close-app', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "common": {
+            "value": "[parameters('common')]"
+          },
+          "tags": {
+            "value": "[union(variables('defaultTags'), parameters('tags'))]"
+          },
+          "location": {
+            "value": "[parameters('resourceGroup').location]"
+          },
+          "teamsConnectionId": {
+            "value": "[reference('teamsConnection').outputs.connectionId.value]"
+          },
+          "teamsConnectionName": {
+            "value": "[reference('teamsConnection').outputs.connectionName.value]"
+          },
+          "teamsManagedApiId": {
+            "value": "[reference('teamsConnection').outputs.managedApiId.value]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('storageAccount').name]"
+          },
+          "tableName": {
+            "value": "[variables('tableName')]"
+          },
+          "teamsRecipientId": {
+            "value": "[parameters('teamsRecipientId')]"
+          },
+          "teamsPostLocation": {
+            "value": "[parameters('teamsPostLocation')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "11741985279628878749"
+            },
+            "name": "Leak Close Logic App",
+            "description": "HTTP-triggered workflow that closes an active leak session and notifies Teams."
+          },
+          "definitions": {
+            "_1.Common": {
+              "type": "object",
+              "properties": {
+                "resourcePrefix": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Prefix for all resources in this module"
+                  }
+                },
+                "location": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Location for all resources in this module"
+                  }
+                },
+                "environment": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Environment for all resources in this module: dev, test, or prod"
+                  }
+                },
+                "instance": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Instance identifier for naming resources: 001, 002, etc..."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Common settings for the components.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "../types.core.bicep"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "common": {
+              "$ref": "#/definitions/_1.Common",
+              "metadata": {
+                "description": "Common settings."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional tags applied to the workflow."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource group location where the Logic App is deployed."
+              }
+            },
+            "teamsConnectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams connection resource ID."
+              }
+            },
+            "teamsConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams connection resource name."
+              }
+            },
+            "teamsManagedApiId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams managed API resource ID."
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage account name hosting the leakSessions table."
+              }
+            },
+            "tableName": {
+              "type": "string",
+              "defaultValue": "leaksessions",
+              "metadata": {
+                "description": "Name of the table used for leak-session state tracking."
+              }
+            },
+            "teamsRecipientId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams chat or channel thread ID for posting closure summaries."
+              }
+            },
+            "teamsPostLocation": {
+              "type": "string",
+              "defaultValue": "Group chat",
+              "metadata": {
+                "description": "Teams posting location type."
+              }
+            }
+          },
+          "variables": {
+            "workflowName": "[format('la-{0}-leak-close-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]",
+            "tableEndpoint": "[format('https://{0}.table.{1}', parameters('storageAccountName'), environment().suffixes.storage)]",
+            "defaultTags": {
+              "Environment": "[parameters('common').environment]",
+              "Instance": "[parameters('common').instance]"
+            }
+          },
+          "resources": {
+            "workflow": {
+              "type": "Microsoft.Logic/workflows",
+              "apiVersion": "2019-05-01",
+              "name": "[variables('workflowName')]",
+              "location": "[parameters('location')]",
+              "tags": "[union(variables('defaultTags'), parameters('tags'))]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "state": "Enabled",
+                "definition": {
+                  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                  "contentVersion": "1.0.0.0",
+                  "parameters": {
+                    "$connections": {
+                      "defaultValue": {},
+                      "type": "Object"
+                    }
+                  },
+                  "triggers": {
+                    "Close_Leak_Request": {
+                      "type": "Request",
+                      "kind": "Http",
+                      "inputs": {
+                        "method": "GET",
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "actions": {
+                    "Get_Leak_Session": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "GET",
+                        "uri": "[format('{0}/{1}(PartitionKey=''@{{triggerOutputs()[''queries''][''device'']}}'',RowKey=''active'')', variables('tableEndpoint'), parameters('tableName'))]",
+                        "headers": {
+                          "Accept": "application/json;odata=nometadata",
+                          "x-ms-version": "2020-12-06"
+                        },
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://storage.azure.com/"
+                        }
+                      },
+                      "runAfter": {}
+                    },
+                    "Delete_Entity": {
+                      "type": "Http",
+                      "inputs": {
+                        "method": "DELETE",
+                        "uri": "[format('{0}/{1}(PartitionKey=''@{{triggerOutputs()[''queries''][''device'']}}'',RowKey=''active'')', variables('tableEndpoint'), parameters('tableName'))]",
+                        "headers": {
+                          "Accept": "application/json;odata=nometadata",
+                          "x-ms-version": "2020-12-06",
+                          "If-Match": "*"
+                        },
+                        "authentication": {
+                          "type": "ManagedServiceIdentity",
+                          "audience": "https://storage.azure.com/"
+                        }
+                      },
+                      "runAfter": {
+                        "Get_Leak_Session": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Post_Closure_Summary": {
+                      "type": "ApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connection": {
+                            "name": "@parameters('$connections')['teams']['connectionId']"
+                          }
+                        },
+                        "method": "post",
+                        "body": {
+                          "recipient": "[parameters('teamsRecipientId')]",
+                          "messageBody": "<p><strong>✅ Leak Resolved</strong></p><p><strong>Device:</strong> @{triggerOutputs()['queries']['device']}</p><p><strong>Active From:</strong> @{body('Get_Leak_Session')?['FirstDetectedAt']}</p><p><strong>Active Until:</strong> @{body('Get_Leak_Session')?['LastEventAt']}</p><p><strong>Total Events:</strong> @{body('Get_Leak_Session')?['EventCount']}</p>"
+                        },
+                        "path": "[format('/beta/teams/conversation/message/poster/Flow bot/location/@{{encodeURIComponent(''{0}'')}}', parameters('teamsPostLocation'))]"
+                      },
+                      "runAfter": {
+                        "Delete_Entity": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Response": {
+                      "type": "Response",
+                      "kind": "Http",
+                      "inputs": {
+                        "statusCode": "@{if(equals(actions('Delete_Entity')['status'], 'Succeeded'), 200, if(equals(actions('Get_Leak_Session')['status'], 'Failed'), 404, 500))}",
+                        "headers": {
+                          "Content-Type": "text/plain"
+                        },
+                        "body": "@{if(equals(actions('Delete_Entity')['status'], 'Succeeded'), 'Leak closed', if(equals(actions('Get_Leak_Session')['status'], 'Failed'), 'No active leak found for this device', 'Failed to close leak'))}"
+                      },
+                      "runAfter": {
+                        "Post_Closure_Summary": [
+                          "Succeeded",
+                          "Failed",
+                          "Skipped",
+                          "TimedOut"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "parameters": {
+                  "$connections": {
+                    "value": {
+                      "teams": {
+                        "connectionId": "[parameters('teamsConnectionId')]",
+                        "connectionName": "[parameters('teamsConnectionName')]",
+                        "id": "[parameters('teamsManagedApiId')]",
+                        "connectionProperties": {}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "outputs": {
+            "logicAppId": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App workflow resource ID."
+              },
+              "value": "[resourceId('Microsoft.Logic/workflows', variables('workflowName'))]"
+            },
+            "logicAppName": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App workflow name."
+              },
+              "value": "[variables('workflowName')]"
+            },
+            "identityPrincipalId": {
+              "type": "string",
+              "metadata": {
+                "description": "System-assigned managed identity principal ID."
+              },
+              "value": "[reference('workflow', '2019-05-01', 'full').identity.principalId]"
+            },
+            "callbackUrl": {
+              "type": "string",
+              "metadata": {
+                "description": "Callback URL for the HTTP trigger — passed into the notify workflow so the Teams message can include a close link."
+              },
+              "value": "[listCallbackUrl(format('{0}/triggers/Close_Leak_Request', resourceId('Microsoft.Logic/workflows', variables('workflowName'))), '2019-05-01').value]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "leakSessionsTable",
+        "teamsConnection"
+      ]
+    },
+    "leakNotifyLogicApp": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "[format('{0}-notify-app', deployment().name)]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "common": {
+            "value": "[parameters('common')]"
+          },
+          "tags": {
+            "value": "[union(variables('defaultTags'), parameters('tags'))]"
+          },
+          "location": {
+            "value": "[parameters('resourceGroup').location]"
+          },
+          "eventhubName": {
+            "value": "[parameters('eventhubName')]"
+          },
+          "eventhubConnectionId": {
+            "value": "[reference('eventhubConnection').outputs.connectionId.value]"
+          },
+          "eventhubConnectionName": {
+            "value": "[reference('eventhubConnection').outputs.connectionName.value]"
+          },
+          "eventhubManagedApiId": {
+            "value": "[reference('eventhubConnection').outputs.managedApiId.value]"
+          },
+          "teamsConnectionId": {
+            "value": "[reference('teamsConnection').outputs.connectionId.value]"
+          },
+          "teamsConnectionName": {
+            "value": "[reference('teamsConnection').outputs.connectionName.value]"
+          },
+          "teamsManagedApiId": {
+            "value": "[reference('teamsConnection').outputs.managedApiId.value]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('storageAccount').name]"
+          },
+          "tableName": {
+            "value": "[variables('tableName')]"
+          },
+          "teamsRecipientId": {
+            "value": "[parameters('teamsRecipientId')]"
+          },
+          "teamsPostLocation": {
+            "value": "[parameters('teamsPostLocation')]"
+          },
+          "closeLeakCallbackUrl": {
+            "value": "[reference('leakCloseLogicApp').outputs.callbackUrl.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.42.1.51946",
+              "templateHash": "2643186086801852130"
+            },
+            "name": "Leak Notification Logic App",
+            "description": "Subscribes to ALERT_DLQC events on Event Hub, deduplicates via Azure Table Storage, posts new-leak alerts to Teams."
+          },
+          "definitions": {
+            "_1.Common": {
+              "type": "object",
+              "properties": {
+                "resourcePrefix": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Prefix for all resources in this module"
+                  }
+                },
+                "location": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Location for all resources in this module"
+                  }
+                },
+                "environment": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Environment for all resources in this module: dev, test, or prod"
+                  }
+                },
+                "instance": {
+                  "type": "string",
+                  "metadata": {
+                    "description": "Instance identifier for naming resources: 001, 002, etc..."
+                  }
+                }
+              },
+              "metadata": {
+                "description": "Common settings for the components.",
+                "__bicep_imported_from!": {
+                  "sourceTemplate": "../types.core.bicep"
+                }
+              }
+            }
+          },
+          "parameters": {
+            "common": {
+              "$ref": "#/definitions/_1.Common",
+              "metadata": {
+                "description": "Common settings."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Additional tags applied to the workflow."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource group location where the Logic App is deployed."
+              }
+            },
+            "eventhubName": {
+              "type": "string",
+              "metadata": {
+                "description": "Event Hub name to subscribe to for leak events."
+              }
+            },
+            "eventhubConnectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Event Hub connection resource ID (from eventhub-connection module)."
+              }
+            },
+            "eventhubConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Event Hub connection resource name (from eventhub-connection module)."
+              }
+            },
+            "eventhubManagedApiId": {
+              "type": "string",
+              "metadata": {
+                "description": "Event Hub managed API resource ID."
+              }
+            },
+            "teamsConnectionId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams connection resource ID (from teams-connection module)."
+              }
+            },
+            "teamsConnectionName": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams connection resource name (from teams-connection module)."
+              }
+            },
+            "teamsManagedApiId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams managed API resource ID."
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "Storage account name hosting the leakSessions table."
+              }
+            },
+            "tableName": {
+              "type": "string",
+              "defaultValue": "leaksessions",
+              "metadata": {
+                "description": "Name of the table used for leak-session state tracking."
+              }
+            },
+            "teamsRecipientId": {
+              "type": "string",
+              "metadata": {
+                "description": "Teams chat or channel thread ID for posting notifications."
+              }
+            },
+            "teamsPostLocation": {
+              "type": "string",
+              "defaultValue": "Group chat",
+              "metadata": {
+                "description": "Teams posting location type for the message."
+              }
+            },
+            "closeLeakCallbackUrl": {
+              "type": "string",
+              "metadata": {
+                "description": "Callback URL for the close-leak HTTP trigger, embedded in the Teams message."
+              }
+            }
+          },
+          "variables": {
+            "workflowName": "[format('la-{0}-leak-notify-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]",
+            "tableEndpoint": "[format('https://{0}.table.{1}', parameters('storageAccountName'), environment().suffixes.storage)]",
+            "defaultTags": {
+              "Environment": "[parameters('common').environment]",
+              "Instance": "[parameters('common').instance]"
+            }
+          },
+          "resources": {
+            "workflow": {
+              "type": "Microsoft.Logic/workflows",
+              "apiVersion": "2019-05-01",
+              "name": "[variables('workflowName')]",
+              "location": "[parameters('location')]",
+              "tags": "[union(variables('defaultTags'), parameters('tags'))]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "state": "Enabled",
+                "definition": {
+                  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                  "contentVersion": "1.0.0.0",
+                  "parameters": {
+                    "$connections": {
+                      "defaultValue": {},
+                      "type": "Object"
+                    }
+                  },
+                  "triggers": {
+                    "When_events_are_available_in_Event_Hub": {
+                      "type": "ApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connection": {
+                            "name": "@parameters('$connections')['eventhubs']['connectionId']"
+                          }
+                        },
+                        "method": "get",
+                        "path": "[format('/@{{encodeURIComponent(''{0}'')}}/events/batch/head', parameters('eventhubName'))]",
+                        "queries": {
+                          "contentType": "application/octet-stream",
+                          "consumerGroupName": "$Default",
+                          "maximumEventsCount": 50
+                        }
+                      },
+                      "recurrence": {
+                        "frequency": "Second",
+                        "interval": 5
+                      }
+                    }
+                  },
+                  "actions": {
+                    "For_Each_Event": {
+                      "type": "Foreach",
+                      "foreach": "@triggerBody()",
+                      "operationOptions": "Sequential",
+                      "actions": {
+                        "Parse_Leak_Event": {
+                          "type": "ParseJson",
+                          "inputs": {
+                            "content": "@base64ToString(items('For_Each_Event')?['ContentData'])",
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "message_type": {
+                                  "type": "string"
+                                },
+                                "timestamp": {
+                                  "type": "number"
+                                },
+                                "source_device": {
+                                  "type": "string"
+                                },
+                                "inference_result": {
+                                  "type": "object",
+                                  "properties": {
+                                    "model_name": {
+                                      "type": "string"
+                                    },
+                                    "model_type": {
+                                      "type": "string"
+                                    },
+                                    "confidence": {
+                                      "type": "number"
+                                    },
+                                    "inference_time_ms": {
+                                      "type": "number"
+                                    },
+                                    "metadata": {
+                                      "type": "object",
+                                      "properties": {
+                                        "backend": {
+                                          "type": "string"
+                                        },
+                                        "inference_type": {
+                                          "type": "string"
+                                        },
+                                        "model_path": {
+                                          "type": "string"
+                                        },
+                                        "request_id": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "predictions": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "class": {
+                                            "type": "string"
+                                          },
+                                          "confidence": {
+                                            "type": "number"
+                                          },
+                                          "bbox": {},
+                                          "severity": {
+                                            "type": "string"
+                                          },
+                                          "metadata": {
+                                            "type": "object",
+                                            "properties": {
+                                              "backend": {
+                                                "type": "string"
+                                              },
+                                              "class_index": {
+                                                "type": "integer"
+                                              },
+                                              "inference_type": {
+                                                "type": "string"
+                                              },
+                                              "model_name": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "enrichment": {
+                                  "type": "object",
+                                  "properties": {
+                                    "site": {
+                                      "type": "string"
+                                    },
+                                    "facility": {
+                                      "type": "string"
+                                    },
+                                    "business_unit": {
+                                      "type": "string"
+                                    },
+                                    "alert_level": {
+                                      "type": "string"
+                                    },
+                                    "region": {
+                                      "type": "string"
+                                    },
+                                    "recommended_actions": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {}
+                        },
+                        "Get_Active_Leak": {
+                          "type": "Http",
+                          "inputs": {
+                            "method": "GET",
+                            "uri": "[format('{0}/{1}(PartitionKey=''@{{body(''Parse_Leak_Event'')?[''source_device'']}}'',RowKey=''active'')', variables('tableEndpoint'), parameters('tableName'))]",
+                            "headers": {
+                              "Accept": "application/json;odata=nometadata",
+                              "x-ms-version": "2020-12-06"
+                            },
+                            "authentication": {
+                              "type": "ManagedServiceIdentity",
+                              "audience": "https://storage.azure.com/"
+                            }
+                          },
+                          "runAfter": {
+                            "Parse_Leak_Event": [
+                              "Succeeded"
+                            ]
+                          }
+                        },
+                        "Check_New_Leak": {
+                          "type": "If",
+                          "expression": {
+                            "and": [
+                              {
+                                "equals": [
+                                  "@outputs('Get_Active_Leak')['statusCode']",
+                                  404
+                                ]
+                              }
+                            ]
+                          },
+                          "actions": {
+                            "Insert_Entity": {
+                              "type": "Http",
+                              "inputs": {
+                                "method": "POST",
+                                "uri": "[format('{0}/{1}', variables('tableEndpoint'), parameters('tableName'))]",
+                                "headers": {
+                                  "Content-Type": "application/json",
+                                  "Accept": "application/json;odata=nometadata",
+                                  "x-ms-version": "2020-12-06"
+                                },
+                                "body": {
+                                  "PartitionKey": "@{body('Parse_Leak_Event')?['source_device']}",
+                                  "RowKey": "active",
+                                  "FirstDetectedAt": "@{utcNow()}",
+                                  "LastEventAt": "@{utcNow()}",
+                                  "EventCount": 1,
+                                  "Confidence": "@{body('Parse_Leak_Event')?['inference_result']?['confidence']}",
+                                  "AlertLevel": "@{coalesce(body('Parse_Leak_Event')?['enrichment']?['alert_level'], 'Unknown')}"
+                                },
+                                "authentication": {
+                                  "type": "ManagedServiceIdentity",
+                                  "audience": "https://storage.azure.com/"
+                                }
+                              },
+                              "runAfter": {}
+                            },
+                            "Post_Teams_Notification": {
+                              "type": "ApiConnection",
+                              "inputs": {
+                                "host": {
+                                  "connection": {
+                                    "name": "@parameters('$connections')['teams']['connectionId']"
+                                  }
+                                },
+                                "method": "post",
+                                "body": {
+                                  "recipient": "[parameters('teamsRecipientId')]",
+                                  "messageBody": "[format('<p><strong>🚨 Leak Detection Alert</strong></p><p><strong>Device:</strong> @{{body(''Parse_Leak_Event'')?[''source_device'']}}</p><p><strong>Detected At:</strong> @{{utcNow()}}</p><p><strong>Confidence:</strong> @{{body(''Parse_Leak_Event'')?[''inference_result'']?[''confidence'']}}</p><p><strong>Model:</strong> @{{body(''Parse_Leak_Event'')?[''inference_result'']?[''model_name'']}}</p><p><strong>Alert Level:</strong> @{{coalesce(body(''Parse_Leak_Event'')?[''enrichment'']?[''alert_level''], ''Unknown'')}}</p><p><strong>Site:</strong> @{{coalesce(body(''Parse_Leak_Event'')?[''enrichment'']?[''site''], ''Unknown'')}} / @{{coalesce(body(''Parse_Leak_Event'')?[''enrichment'']?[''facility''], ''Unknown'')}}</p><p><a href=\"{0}&device=@{{encodeUriComponent(body(''Parse_Leak_Event'')?[''source_device''])}}\">✅ Close Leak</a></p>', parameters('closeLeakCallbackUrl'))]"
+                                },
+                                "path": "[format('/beta/teams/conversation/message/poster/Flow bot/location/@{{encodeURIComponent(''{0}'')}}', parameters('teamsPostLocation'))]"
+                              },
+                              "runAfter": {
+                                "Insert_Entity": [
+                                  "Succeeded"
+                                ]
+                              }
+                            }
+                          },
+                          "else": {
+                            "actions": {
+                              "Update_Entity": {
+                                "type": "Http",
+                                "inputs": {
+                                  "method": "PATCH",
+                                  "uri": "[format('{0}/{1}(PartitionKey=''@{{body(''Parse_Leak_Event'')?[''source_device'']}}'',RowKey=''active'')', variables('tableEndpoint'), parameters('tableName'))]",
+                                  "headers": {
+                                    "Content-Type": "application/json",
+                                    "Accept": "application/json;odata=nometadata",
+                                    "x-ms-version": "2020-12-06",
+                                    "If-Match": "*"
+                                  },
+                                  "body": {
+                                    "LastEventAt": "@{utcNow()}",
+                                    "EventCount": "@{add(int(body('Get_Active_Leak')?['EventCount']), 1)}",
+                                    "Confidence": "@{if(greater(float(body('Parse_Leak_Event')?['inference_result']?['confidence']), float(body('Get_Active_Leak')?['Confidence'])), body('Parse_Leak_Event')?['inference_result']?['confidence'], body('Get_Active_Leak')?['Confidence'])}"
+                                  },
+                                  "authentication": {
+                                    "type": "ManagedServiceIdentity",
+                                    "audience": "https://storage.azure.com/"
+                                  }
+                                },
+                                "runAfter": {}
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Get_Active_Leak": [
+                              "Succeeded",
+                              "Failed"
+                            ]
+                          }
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  }
+                },
+                "parameters": {
+                  "$connections": {
+                    "value": {
+                      "eventhubs": {
+                        "connectionId": "[parameters('eventhubConnectionId')]",
+                        "connectionName": "[parameters('eventhubConnectionName')]",
+                        "id": "[parameters('eventhubManagedApiId')]",
+                        "connectionProperties": {
+                          "authentication": {
+                            "type": "ManagedServiceIdentity"
+                          }
+                        }
+                      },
+                      "teams": {
+                        "connectionId": "[parameters('teamsConnectionId')]",
+                        "connectionName": "[parameters('teamsConnectionName')]",
+                        "id": "[parameters('teamsManagedApiId')]",
+                        "connectionProperties": {}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "outputs": {
+            "logicAppId": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App workflow resource ID."
+              },
+              "value": "[resourceId('Microsoft.Logic/workflows', variables('workflowName'))]"
+            },
+            "logicAppName": {
+              "type": "string",
+              "metadata": {
+                "description": "Logic App workflow name."
+              },
+              "value": "[variables('workflowName')]"
+            },
+            "identityPrincipalId": {
+              "type": "string",
+              "metadata": {
+                "description": "System-assigned managed identity principal ID — used for role assignments."
+              },
+              "value": "[reference('workflow', '2019-05-01', 'full').identity.principalId]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "eventhubConnection",
+        "leakCloseLogicApp",
+        "leakSessionsTable",
+        "teamsConnection"
+      ]
+    }
+  },
+  "outputs": {
+    "closeLeakEndpoint": {
+      "type": "string",
+      "metadata": {
+        "description": "HTTP endpoint URL for closing active leak sessions."
+      },
+      "value": "[reference('leakCloseLogicApp').outputs.callbackUrl.value]"
+    },
+    "logicApp": {
+      "$ref": "#/definitions/_1.LogicAppRef",
+      "metadata": {
+        "description": "Logic App workflow resource details for the primary notification workflow."
+      },
+      "value": {
+        "id": "[reference('leakNotifyLogicApp').outputs.logicAppId.value]",
+        "name": "[reference('leakNotifyLogicApp').outputs.logicAppName.value]",
+        "identityPrincipalId": "[reference('leakNotifyLogicApp').outputs.identityPrincipalId.value]"
+      }
+    }
+  }
+}
