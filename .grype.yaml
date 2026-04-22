@@ -22,3 +22,9 @@ ignore:
   # for PR #411 (Issue #362 PowerShell security-gate naming fix).
   # Reference: GHSA-cq8v-f236-94qc
   - vulnerability: GHSA-cq8v-f236-94qc
+
+  # lxml 5.3.0 - HIGH severity (transitive Python dependency)
+  # Justification: Pulled in transitively by checkov infrastructure scanner.
+  # Fix requires lxml>=6.1.0 which needs upstream checkov release.
+  # Reference: GHSA-vfmq-68hx-4jfw
+  - vulnerability: GHSA-vfmq-68hx-4jfw
