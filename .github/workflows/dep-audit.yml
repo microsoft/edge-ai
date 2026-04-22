@@ -73,7 +73,7 @@ jobs:
         shell: bash
         run: |
           export PATH="$HOME/.cargo/bin:$PATH"
-          cargo install cargo-audit --locked --version ^0.22
+          cargo install cargo-audit --locked --version 0.22.1
 
       - name: Run cargo audit on every Rust crate
         shell: bash
