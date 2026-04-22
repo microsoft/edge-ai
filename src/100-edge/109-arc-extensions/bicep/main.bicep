@@ -110,3 +110,6 @@ output containerStorageExtensionId string = containerStorageConfig.enabled ? con
 
 @description('The name of the Azure Container Storage extension.')
 output containerStorageExtensionName string = containerStorageConfig.enabled ? containerStorage.name : ''
+
+@description('The principal ID of the Azure Container Storage extension system-assigned managed identity — used for role assignments targeting storage accounts.')
+output containerStorageExtensionPrincipalId string = containerStorageConfig.enabled ? containerStorage!.identity!.principalId : ''
