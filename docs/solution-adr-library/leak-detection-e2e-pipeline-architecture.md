@@ -474,14 +474,11 @@ The leak detection pipeline architecture uses a **layered, MQTT-brokered design*
 
 ## References
 
-- [BDR-001: Leak Detection Business Case](../../context/BDR-001-leak-detection-business-case%201.md)
-- [PDR-001: Leak Detection Product Design Requirements](../../context/PDR-001-leak-detection-product-design.md)
 - [Leak Detection Blueprint](../../blueprints/full-single-node-cluster/README.md)
 
 ## Related ADRs
 
 - [SSE Connector for Real-Time Event Streaming](./sse-connector-real-time-event-streaming.md)
-- [Real-Time Vision Inference Architecture](./real-time-vision-inference-architecture.md)
 - [Edge Video Streaming and Image Capture](./edge-video-streaming-and-image-capture.md)
 - [ONVIF Connector for IP Camera Integration](./onvif-connector-camera-integration.md)
 - [AI Edge Inference Dual Backend Architecture](./ai-edge-inference-dual-backend-architecture.md)
