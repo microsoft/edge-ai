@@ -2,14 +2,22 @@
 set -euo pipefail
 
 ###########################################################################
-# Build and Push App Images to ACR
+# Build and Push Leak Detection Images to ACR
 ###########################################################################
 #
-# Builds Docker images for leak-detection blueprint application
-# components and pushes them to Azure Container Registry.
+# Builds and pushes the complete set of container images required by the
+# leak-detection vision pipeline scenario. Each image corresponds to one
+# application component deployed at the edge:
+#
+#   - ai-edge-inference    ONNX-based vision inference service
+#   - sse-server            Server-Sent Events connector
+#   - media-capture-service Video capture and storage service
+#
+# All three images are built in a single invocation to ensure version
+# consistency across the pipeline components.
 #
 # Usage:
-#   ./build-app-images.sh --acr-name <acr> --resource-group <rg> \
+#   ./build-leak-detection-images.sh --acr-name <acr> --resource-group <rg> \
 #     [--tag <version>]
 #
 ###########################################################################
@@ -23,7 +31,8 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Build and push application container images to ACR.
+Build and push the leak-detection pipeline container images to ACR.
+Builds all three component images as a versioned set.
 
 Required:
   --acr-name NAME        Azure Container Registry name
@@ -71,7 +80,8 @@ fi
 
 readonly ACR_LOGIN="${ACR_NAME}.azurecr.io"
 
-# Component image definitions: name|dockerfile|context
+# Leak-detection pipeline component images: name|dockerfile|context
+# All components are built together to maintain version consistency.
 readonly -a COMPONENTS=(
   "ai-edge-inference|\
 src/500-application/507-ai-inference/\

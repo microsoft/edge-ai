@@ -2,14 +2,20 @@
 set -euo pipefail
 
 ###########################################################################
-# Deploy Edge Applications to Kubernetes
+# Deploy Leak Detection Applications to Kubernetes
 ###########################################################################
 #
-# Deploys leak-detection application workloads to a Kubernetes cluster
-# after Terraform infrastructure provisioning completes.
+# Deploys the leak-detection vision pipeline workloads to a Kubernetes
+# cluster after Terraform infrastructure provisioning completes. This
+# script handles the full set of edge application deployments for the
+# leak-detection scenario:
+#
+#   - ai-edge-inference    ONNX inference deployment + service
+#   - sse-server            SSE connector deployment + service
+#   - media-capture-service Video capture deployment + service
 #
 # Usage:
-#   ./deploy-edge-apps.sh --kubeconfig <path> \
+#   ./deploy-leak-detection-apps.sh --kubeconfig <path> \
 #     --acr-login-server <server> [--namespace <ns>] [--dry-run]
 #
 ###########################################################################
@@ -23,7 +29,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Deploy edge application workloads to a Kubernetes cluster.
+Deploy the leak-detection pipeline workloads to a Kubernetes cluster.
 
 Required:
   --kubeconfig PATH       Path to kubeconfig file

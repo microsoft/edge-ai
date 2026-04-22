@@ -142,7 +142,7 @@ Application container images must be built and pushed to the Azure Container Reg
 ```bash
 cd blueprints/full-single-node-cluster
 
-../../src/501-ci-cd/scripts/build-app-images.sh \
+../../src/501-ci-cd/scripts/build-leak-detection-images.sh \
   --acr-name "$(cd terraform && terraform output -raw container_registry | jq -r .name)" \
   --resource-group "$(cd terraform && terraform output -raw deployment_summary | jq -r .resource_group)"
 ```
@@ -179,7 +179,7 @@ az acr repository list --name "$ACR_NAME" --output table
 ```bash
 cd blueprints/full-single-node-cluster
 
-../../src/501-ci-cd/scripts/deploy-edge-apps.sh
+../../src/501-ci-cd/scripts/deploy-leak-detection-apps.sh
 ```
 
 #### Option B: Manual Deployment
