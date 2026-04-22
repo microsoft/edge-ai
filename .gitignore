@@ -469,4 +469,3 @@ crates/
 # Docusaurus build artifacts
 docs/docusaurus/.docusaurus/
 docs/docusaurus/build/
-.k3s-kubeconfig.yaml
