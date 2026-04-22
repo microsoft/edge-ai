@@ -70,6 +70,11 @@ variable "tags" {
 
 variable "teams_post_location" {
   type        = string
-  description = "Teams posting location type for the notification message. Otherwise, 'Group chat'"
-  default     = "Group chat"
+  description = "Teams posting location type for the notification message: 'Channel' for a Teams channel or 'Group chat' for a group chat"
+  default     = "Channel"
+
+  validation {
+    condition     = contains(["Channel", "Group chat"], var.teams_post_location)
+    error_message = "teams_post_location must be 'Channel' or 'Group chat'"
+  }
 }

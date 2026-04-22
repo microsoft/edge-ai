@@ -64,6 +64,12 @@ variable "storage_account" {
   description = "Storage account for event session state tracking via Table Storage"
 }
 
+variable "teams_group_id" {
+  type        = string
+  description = "Microsoft 365 Group ID (Team ID) for posting to a Teams channel. Required when teams_post_location is 'Channel'"
+  default     = null
+}
+
 variable "teams_recipient_id" {
   type        = string
   description = "Teams chat or channel thread ID for posting event notifications"

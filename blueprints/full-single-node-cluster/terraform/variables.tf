@@ -388,7 +388,24 @@ variable "teams_recipient_id" {
   type        = string
   description = "Teams chat or channel thread ID for posting event notifications"
   sensitive   = true
-  default     = ""
+  default     = null
+}
+
+variable "teams_group_id" {
+  type        = string
+  description = "Microsoft 365 Group ID (Team ID) for posting to a Teams channel. Required when teams_post_location is 'Channel'"
+  default     = null
+}
+
+variable "teams_post_location" {
+  type        = string
+  description = "Teams posting location type for the notification message: 'Channel' for a Teams channel or 'Group chat' for a group chat"
+  default     = "Channel"
+
+  validation {
+    condition     = contains(["Channel", "Group chat"], var.teams_post_location)
+    error_message = "teams_post_location must be 'Channel' or 'Group chat'"
+  }
 }
 
 /*

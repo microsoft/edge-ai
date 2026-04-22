@@ -273,6 +273,8 @@ module "cloud_notification" {
   closure_message_template      = var.closure_message_template
   partition_key_field           = var.notification_partition_key_field
   teams_recipient_id            = var.teams_recipient_id
+  teams_group_id                = var.teams_group_id
+  teams_post_location           = var.teams_post_location
 }
 
 module "cloud_vm_host" {
