@@ -61,7 +61,7 @@ parameters:
   # Whether to break the build on security scan failures
   - name: breakBuild
     type: boolean
-    default: false
+    default: true
 
   # Agent pool configuration
   - name: agentPool
@@ -335,7 +335,7 @@ jobs:
             -ConfigFile "./.security-gate.yml"
             -Environment "$(Build.Reason)"
             -OutputFormat "junit"
-            -ExitOnFailure $${{ parameters.breakBuild }}
+            ${{ if eq(parameters.breakBuild, true) }}-ExitOnFailure $true${{ else }}-ExitOnFailure $false${{ endif }}
           workingDirectory: '$(System.DefaultWorkingDirectory)'
           pwsh: true
 

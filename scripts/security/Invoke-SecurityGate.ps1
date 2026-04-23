@@ -316,8 +316,10 @@ function Get-CheckovScanResult {
     # than fail closed (issue #362; Grype is the always-expected scanner).
     $checkovScanResult = @()
     $checkovFiles = @()
-    $checkovFiles += Get-ChildItem -Path $ResultsPath -Recurse -Filter 'checkov-*.json' -ErrorAction SilentlyContinue
-    $checkovFiles += Get-ChildItem -Path $ResultsPath -Recurse -Filter 'code-analysis.xml' -ErrorAction SilentlyContinue
+    $foundJson = Get-ChildItem -Path $ResultsPath -Recurse -Filter 'checkov-*.json' -ErrorAction SilentlyContinue
+    if ($foundJson) { $checkovFiles += $foundJson }
+    $foundXml = Get-ChildItem -Path $ResultsPath -Recurse -Filter 'code-analysis.xml' -ErrorAction SilentlyContinue
+    if ($foundXml) { $checkovFiles += $foundXml }
 
     if (-not $checkovFiles -or $checkovFiles.Count -eq 0) {
         Write-SecurityWarn "No Checkov reports found under $ResultsPath -- continuing without IaC findings."
@@ -325,48 +327,48 @@ function Get-CheckovScanResult {
     }
 
     foreach ($file in $checkovFiles) {
-            try {
-                Write-SecurityDebug "Processing Checkov file: $($file.FullName)"
+        try {
+            Write-SecurityDebug "Processing Checkov file: $($file.FullName)"
 
-                if ($file.Extension -eq ".xml") {
-                    # Parse JUnit XML format
-                    [xml]$checkovXml = Get-Content $file.FullName
-                    foreach ($testCase in $checkovXml.testsuites.testsuite.testcase) {
-                        if ($testCase.failure) {
-                            $checkovScanResult += [PSCustomObject]@{
-                                Type        = "IaC Security"
-                                Source      = "Checkov"
-                                Severity    = "High"  # Default severity for Checkov findings
-                                Rule        = $testCase.name
-                                File        = $testCase.classname
-                                Description = $testCase.failure.message
-                                Target      = "Infrastructure"
-                            }
-                        }
-                    }
-                }
-                else {
-                    # Parse JSON format
-                    $checkovData = Get-Content $file.FullName | ConvertFrom-Json
-
-                    if ($checkovData.results) {
-                        foreach ($result in $checkovData.results.failed_checks) {
-                            $checkovScanResult += [PSCustomObject]@{
-                                Type        = "IaC Security"
-                                Source      = "Checkov"
-                                Severity    = if ($result.severity) { $result.severity } else { "Medium" }
-                                Rule        = $result.check_name
-                                File        = $result.file_path
-                                Description = $result.guideline
-                                Target      = "Infrastructure"
-                            }
+            if ($file.Extension -eq ".xml") {
+                # Parse JUnit XML format
+                [xml]$checkovXml = Get-Content $file.FullName
+                foreach ($testCase in $checkovXml.testsuites.testsuite.testcase) {
+                    if ($testCase.failure) {
+                        $checkovScanResult += [PSCustomObject]@{
+                            Type        = "IaC Security"
+                            Source      = "Checkov"
+                            Severity    = "High"  # Default severity for Checkov findings
+                            Rule        = $testCase.name
+                            File        = $testCase.classname
+                            Description = $testCase.failure.message
+                            Target      = "Infrastructure"
                         }
                     }
                 }
             }
-            catch {
-                Write-SecurityWarn "Failed to parse Checkov file $($file.FullName): $_"
+            else {
+                # Parse JSON format
+                $checkovData = Get-Content $file.FullName | ConvertFrom-Json
+
+                if ($checkovData.results) {
+                    foreach ($result in $checkovData.results.failed_checks) {
+                        $checkovScanResult += [PSCustomObject]@{
+                            Type        = "IaC Security"
+                            Source      = "Checkov"
+                            Severity    = if ($result.severity) { $result.severity } else { "Medium" }
+                            Rule        = $result.check_name
+                            File        = $result.file_path
+                            Description = $result.guideline
+                            Target      = "Infrastructure"
+                        }
+                    }
+                }
             }
+        }
+        catch {
+            Write-SecurityWarn "Failed to parse Checkov file $($file.FullName): $_"
+        }
     }
 
     Write-SecurityDebug "Found $($checkovScanResult.Count) Checkov IaC security findings"
