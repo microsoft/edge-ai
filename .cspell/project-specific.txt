@@ -9,7 +9,9 @@ Hikvision
 Keycloak
 Linfa
 Multimodal
+Obtenez
 Ollama
+Ouvrir
 SARIF
 Standardised
 TMDL
@@ -41,6 +43,7 @@ commitish
 conseils
 corax
 curlimages
+denoising
 dimproducts
 dimstore
 dlqc
@@ -48,6 +51,7 @@ docsmcp
 docstool
 docstrings
 dorny
+easyops
 edgeai
 edgeserver
 efrecon
@@ -70,6 +74,7 @@ jointable
 jspx
 kalypso
 leakdet
+libonnxruntime
 libopencv
 logissue
 managedidentity
@@ -77,6 +82,7 @@ mcpservers
 mediamtx
 minioadmin
 mobilenet
+mobilenetv
 mqttui
 myuniqueeventhub
 namespacing
@@ -129,6 +135,7 @@ testpassword
 tfstate
 tftest
 timescaledb
+tinyyolov
 toolkits
 traceidratio
 ullaakut
@@ -140,16 +147,5 @@ workstreams
 wowza
 xychart
 yolov
-acsalocalsharedtestfile
-asyncua
-conseils
-denoising
-émojis
-interactifs
-libonnxruntime
-mobilenetv
-Obtenez
-Ouvrir
-tinyyolov
-ullaakut
 youracr
+émojis
