@@ -29,11 +29,6 @@ name: Main Branch CI/CD
 
 permissions:
   contents: read
-  actions: read
-  checks: write
-  pull-requests: write
-  statuses: write
-  security-events: write
 
 on: # yamllint disable-line rule:truthy
   push:
@@ -157,6 +152,16 @@ jobs:
     uses: ./.github/workflows/rust-clippy.yml
     with:
       break-build: true
+    secrets: inherit
+
+  # Dependency advisory audit (cargo-audit + govulncheck) for main branch
+  dep-audit-main:
+    name: Dependency Audit
+    permissions:
+      contents: read
+    uses: ./.github/workflows/dep-audit.yml
+    with:
+      break-build: false
     secrets: inherit
 
   # Call docs-check-terraform workflow
