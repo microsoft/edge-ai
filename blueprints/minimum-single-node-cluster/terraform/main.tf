@@ -9,9 +9,7 @@
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
-    blueprint = "minimum-single-cluster"
-  }
+  tags            = var.tags
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix

@@ -19,6 +19,7 @@
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
+  tags            = var.tags
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance

@@ -268,3 +268,14 @@ variable "should_enable_opc_ua_simulator" {
 
 
 
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}

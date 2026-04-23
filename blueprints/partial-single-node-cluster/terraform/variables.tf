@@ -74,3 +74,14 @@ variable "should_enable_private_endpoints" {
   description = "Whether to enable private endpoints for Key Vault and Storage Account"
   default     = false
 }
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}
