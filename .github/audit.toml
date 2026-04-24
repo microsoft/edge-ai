@@ -13,6 +13,4 @@ ignore = [
 ]
 
 [yanked]
-# core2 yanked release pulled transitively by avro-to-json operator stack;
-# remove once upstream republishes a non-yanked version.
 enabled = false

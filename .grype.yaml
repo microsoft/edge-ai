@@ -14,3 +14,11 @@ ignore:
   # updated without an upstream AIO SDK release.
   # Reference: GHSA-pwjx-qhcg-rvj4
   - vulnerability: GHSA-pwjx-qhcg-rvj4
+
+  # rand 0.8.5 / 0.9.2 - LOW severity, no fix available
+  # Justification: Advisory published after PR #411 opened. Affects transitive `rand`
+  # pulled via multiple upstream SDKs (azure_iot_operations_mqtt, candle, etc.).
+  # Cannot be remediated without upstream releases. Pre-existing on main; out of scope
+  # for PR #411 (Issue #362 PowerShell security-gate naming fix).
+  # Reference: GHSA-cq8v-f236-94qc
+  - vulnerability: GHSA-cq8v-f236-94qc
