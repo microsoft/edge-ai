@@ -6,4 +6,8 @@
 ignore = [
   "RUSTSEC-2024-0384",
   "RUSTSEC-2026-0097",
+  # rustls-webpki 0.103.12 panic on malformed CRL; transitive via azure_iot_operations_mqtt
+  # SDK -> rustls 0.23 -> rustls-webpki. Fixed in >=0.103.13; awaiting upstream SDK bump.
+  # Pre-existing on main; out of scope for PR #411 (Issue #362 PowerShell-only).
+  "RUSTSEC-2026-0104",
 ]
