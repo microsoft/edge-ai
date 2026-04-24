@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@b4b15b8c7c6e1ff4146713666d5ba77140d5c8da # v7.0.1
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@b4b15b8c7c6e1ff4146713666d5ba77140d5c8da # v7.0.1
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -180,12 +180,12 @@ jobs:
         run: |
           python scripts/aio-version-checker.py \
             --iac-type ${{ inputs.iac-types }} \
-            --break-build ${{ inputs.break-build }} \
-            --output-format json
+            --error-on-mismatch \
+            --verbose
 
       - name: Upload AIO version results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@b4b15b8c7c6e1ff4146713666d5ba77140d5c8da # v7.0.1
         with:
           name: aio-version-check-results
           path: aio-version-check-results.json
@@ -234,7 +234,7 @@ jobs:
 
       - name: Upload security summary
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@b4b15b8c7c6e1ff4146713666d5ba77140d5c8da # v7.0.1
         with:
           name: security-deployment-summary
           path: security-summary.md
