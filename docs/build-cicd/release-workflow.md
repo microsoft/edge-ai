@@ -59,13 +59,13 @@ The project uses a dual-branch architecture to separate development work from pr
 │                                                             │
 │  ┌────────────────────────────────────────────────┐        │
 │  │  main branch (Read-Only GitHub Mirror)         │        │
-│  │  • Synced from GitHub main (every 3 hours)     │        │
+│  │  • Synced from GitHub main (manual pipeline)   │        │
 │  │  • Protected - no direct commits               │        │
 │  │  • Merged back to dev after sync               │        │
 │  └────────────────────────────────────────────────┘        │
 │                         ▲                                   │
 └─────────────────────────┼───────────────────────────────────┘
-                          │ Automated sync (every 3 hours)
+                          │ Manual sync (github-pull pipeline)
                           │
 ┌─────────────────────────┼───────────────────────────────────┐
 │                    GitHub Repository                        │
@@ -96,7 +96,7 @@ The project uses a dual-branch architecture to separate development work from pr
 - **Development happens on AzDO dev branch**: All feature work, bug fixes, and improvements target the `dev` branch
 - **GitHub main is source of truth**: Production-ready code lives on GitHub `main`, synced to AzDO `main`
 - **Release branches bridge the gap**: Release branches move code from AzDO dev → GitHub main with review
-- **Automated synchronization**: GitHub main automatically syncs to AzDO main every 3 hours
+- **Manual synchronization**: GitHub main is synced to AzDO main on demand via the `github-pull` pipeline; AzDO dev is pushed to GitHub via the `github-push` pipeline
 - **One active release**: Only one release branch can be active at a time to prevent conflicts
 
 ## Branch structure
@@ -133,9 +133,9 @@ git checkout -b feature/my-feature
 
 **Characteristics**:
 
-- Synced from GitHub main every 3 hours automatically
+- Synced from GitHub main on demand via the `github-pull` Azure DevOps pipeline (manual trigger)
 - Protected - no direct commits allowed
-- Build Service has bypass permissions for automated sync
+- Build Service has bypass permissions for the sync pipeline
 - Merged back to dev after successful sync
 
 **Access pattern**:
@@ -177,8 +177,8 @@ git pull origin main
 - Protected with branch policies (2+ approvals required)
 - Accepts release PRs from `release/x.y.z` branches
 - Accepts community contributions from forked repositories
-- Creates GitHub releases with tags and changelogs
-- Synced to AzDO main every 3 hours
+- Creates GitHub releases with tags and changelogs via release-please
+- Synced to AzDO main on demand via the `github-pull` pipeline
 
 ## Development workflow
 
@@ -278,41 +278,26 @@ git push origin fix/issue-description
 
 ### Creating a release
 
-**Automated release branch creation process**:
+Releases are managed by [release-please](https://github.com/googleapis/release-please) on GitHub. There is no manual release-branch-create pipeline.
 
-1. **Trigger release pipeline**:
-   - Navigate to Azure DevOps → Pipelines → release-branch-create
-   - Click "Run pipeline"
-   - Pipeline validates prerequisites automatically (see validation steps below)
-   - Pipeline creates new release branch from dev
-   - Pipeline pushes release branch to GitHub
+1. **Land changes on GitHub `main`**:
+   - Conventional commits (`feat:`, `fix:`, `feat!:`, etc.) reach GitHub `main` via the `github-push` pipeline (ADO `dev` → GitHub `main` PR), which is itself triggered manually.
+   - The `release-please.yml` workflow is **manual-only** (`workflow_dispatch`); it does not auto-run on pushes to `main`. This decouples release cuts from ADO→GitHub mirror activity.
 
-2. **Automated prerequisite validations**:
-   - **Gap 1**: Checks for active release PRs on GitHub (fails if one exists)
-   - **Gap 2**: Validates GitHub and AzDO synchronization state:
-     - Verifies GitHub main SHA matches AzDO main SHA (ensures sync complete)
-     - Verifies AzDO main has been merged into dev branch (ensures dev is up-to-date)
-     - Displays unreleased commits count (informational only)
-   - **Gap 3**: Validates no duplicate version branches exist in either repository
-   - If any validation fails, pipeline stops with clear remediation guidance
+2. **Open or refresh the release PR**:
+   - From GitHub Actions → **Release Please** → **Run workflow** (against `main`), invoke release-please when ready to propose the next release.
+   - release-please opens (or refreshes) a single release PR against `main` containing the next version, updated `CHANGELOG.md`, and bumped manifest entries computed from conventional commits since the last tag.
+   - Re-run the workflow any time you want the release PR refreshed with newly landed commits.
 
-3. **Automatic GitHub processes**:
-   - GitHub workflow detects new release branch
-   - Creates GitHub Release with version tag
-   - Generates changelog from commits
-   - Opens PR from release branch to main
-   - Requires 2+ approvals for merge
+3. **Release review**:
+   - Reviewers examine the release PR diff and changelog on GitHub.
+   - Run any final validation needed before approval.
+   - Requires the standard GitHub branch-protection approvals.
 
-4. **Release review**:
-   - Reviewers examine changes in GitHub PR
-   - Run final validation tests
-   - Approve when ready for production
-
-5. **Release publication**:
-   - Merge PR to GitHub main (requires 2+ approvals)
-   - GitHub Release becomes published
-   - Changes sync to AzDO main within 3 hours
-   - AzDO dev updated with changes from main
+4. **Release publication**:
+   - Merge the release PR into GitHub `main`.
+   - Re-run the **Release Please** workflow once more so release-please tags the release commit and publishes the GitHub Release with the generated changelog.
+   - Bring the release commit and tags back into AzDO by running the `github-pull` pipeline (see [Synchronization process](#synchronization-process)).
 
 ### Release versioning
 
@@ -324,9 +309,9 @@ git push origin fix/issue-description
 
 **Version determination**:
 
-- GitVersion analyzes commit history
-- Conventional commit messages influence version bumps
-- Pipeline calculates next version automatically
+- release-please analyzes conventional commits on `main`.
+- Commit types drive the version bump (`feat:` → minor, `fix:` → patch, `!`/`BREAKING CHANGE:` → major).
+- The next version, tag, and changelog entry are computed automatically and proposed in the release PR.
 
 ### Release checklist
 
@@ -336,13 +321,6 @@ git push origin fix/issue-description
 - [ ] Build validation passes on dev
 - [ ] Documentation updated
 - [ ] Team notified of upcoming release
-
-**Note**: The following checks are now **automated by the pipeline** and do not require manual verification:
-
-- ✅ No active release PRs exist on GitHub (Gap 1 validation)
-- ✅ GitHub main synchronized to AzDO main (Gap 2 validation)
-- ✅ AzDO main merged into dev (Gap 2 validation)
-- ✅ No duplicate version branches exist (Gap 3 validation)
 
 **During release review**:
 
@@ -361,43 +339,40 @@ git push origin fix/issue-description
 
 ## Synchronization process
 
-### GitHub to AzDO main (Automated)
+GitHub ↔ AzDO synchronization is **manual**. Both pipelines (`github-push.yml` and `github-pull.yml`) declare `trigger: none` and only run via `workflow_dispatch`.
 
-**Scheduled synchronization every 3 hours**:
+### AzDO main → GitHub main (push)
 
-1. **Pipeline trigger**:
-   - Runs every 3 hours automatically
-   - Can be triggered manually if needed
+Use the `github-push` pipeline to publish AzDO `main` changes out to GitHub.
+
+1. **Trigger the pipeline manually**:
+   - Navigate to Azure DevOps → Pipelines → github-push.
+   - Click "Run pipeline" and select the `main` branch.
 
 2. **Sync process**:
 
    ```bash
-   # Pipeline performs force-push from GitHub main to AzDO main
-   git fetch github main
-   git checkout main
-   git reset --hard github/main
-   git push azdo main --force
+   # Pipeline force-pushes AzDO main to GitHub main
+   git fetch azdo main
+   git push github azdo/main:refs/heads/main --force
    ```
 
-3. **Post-sync merge**:
-   - AzDO main updated to match GitHub main
-   - Create PR from main to dev
-   - Merge changes back to dev branch
+3. **Post-sync follow-up**:
+   - Confirm GitHub `main` now matches AzDO `main`.
+   - The scheduled `main-to-dev-sync` AzDO pipeline merges AzDO `main` into AzDO `dev` daily at 03:00 UTC; the `github-pull` pipeline also chains this sync after a force-update of AzDO `main`.
+   - Note: this push step does **not** trigger a GitHub release — release-please is manual-only on the GitHub side.
 
-### Manual sync (Emergency)
+### GitHub main → AzDO main (pull)
 
-**If immediate sync needed before scheduled run**:
+Use the `github-pull` pipeline to bring release-please tags and merges from GitHub back into AzDO `main`.
 
-1. **Trigger sync pipeline manually**:
-   - Navigate to Azure DevOps → Pipelines → github-pull
-   - Click "Run pipeline"
-   - Select "main" branch
-   - Run pipeline
+1. **Trigger the pipeline manually**:
+   - Navigate to Azure DevOps → Pipelines → github-pull.
+   - Click "Run pipeline" and select the `main` branch.
 
 2. **Verify sync success**:
-   - Sync status is automatically validated by the release pipeline (Gap 2 check)
-   - No manual verification needed; the release pipeline will fail with clear guidance if sync is incomplete
-   - If you need to manually verify: check that AzDO main matches GitHub main commit SHA
+   - Confirm AzDO `main` matches the GitHub `main` commit SHA after the run.
+   - If the SHAs disagree, re-run the pipeline or investigate divergent history before continuing release work.
 
 ## Team guidelines
 
@@ -539,11 +514,10 @@ git push origin --delete release/v1.2.3
 **Re-run Workflow**:
 
 ```bash
-gh workflow run create-release.yml \
-  --ref dev \
-  -f version=1.2.3 \
-  -f prerelease=false
+gh workflow run release-please.yml --ref main
 ```
+
+release-please auto-detects the next version from conventional commits since the last tag — no version input is required.
 
 ---
 
@@ -580,9 +554,10 @@ If commits exist:
 
 **Manual Sync (if commits resolved)**:
 
+Trigger the `main-to-dev-sync.yml` workflow (scheduled daily at 03:00 UTC, also runnable on demand):
+
 ```bash
-git fetch origin main
-git push origin main:dev --force
+gh workflow run main-to-dev-sync.yml --ref main
 ```
 
 **Verify Automation Permissions**:
@@ -600,173 +575,13 @@ git push origin main:dev --force
 **Check Workflow Logs**:
 
 ```bash
-gh run list --workflow=sync-dev-from-main.yml
+gh run list --workflow=main-to-dev-sync.yml
 gh run view <run-id> --log
 ```
 
 ---
 
-#### Issue 3: Release Pipeline Fails at Synchronization Validation (Gap 2)
-
-**Symptoms**:
-
-- Release pipeline fails during ValidatePrerequisites job
-- Error: "Gap 2 Violation: GitHub and AzDO main branches are not synchronized"
-- Error: "Gap 2 Violation: AzDO main not merged into dev"
-- Pipeline output shows SHA mismatch or merge-base failure
-
-**Possible Causes**:
-
-1. Scheduled sync hasn't completed yet (syncs run every 3 hours)
-2. Recent commits to GitHub main not yet synced to AzDO
-3. AzDO main not merged into dev branch after previous release
-4. Sync pipeline failed in previous run
-5. Manual commits made directly to AzDO main
-
-**Solutions**:
-
-**Check Sync Status**:
-
-```bash
-# Check if AzDO main matches GitHub main
-az repos show --repository edge-ai --query "defaultBranch" -o tsv
-git ls-remote https://github.com/microsoft/edge-ai refs/heads/main
-
-# Check if main is merged into dev
-git fetch origin main dev
-git merge-base --is-ancestor origin/main origin/dev && echo "✅ Main merged into dev" || echo "❌ Main NOT merged into dev"
-
-# View unreleased commits (if any)
-git log origin/main..origin/dev --oneline --graph
-```
-
-**Wait for Scheduled Sync** (recommended):
-
-- Sync runs automatically every 3 hours
-- Check `.azuredevops/pipelines/github-pull.yml` schedule
-- Monitor sync pipeline runs in Azure DevOps
-
-**Trigger Manual Sync**:
-
-```bash
-# Trigger github-pull pipeline in Azure DevOps
-az pipelines run --name "GitHub Pull Sync" --organization <org> --project edge-ai
-
-# Or use Azure DevOps UI:
-# Pipelines → github-pull → Run pipeline
-```
-
-**Create Merge PR for Main to Dev** (if main not in dev):
-
-```bash
-# Create branch and PR to merge main into dev
-git checkout -b sync/main-to-dev origin/main
-git push origin sync/main-to-dev
-
-# Create PR via Azure DevOps:
-az repos pr create \
-  --source-branch sync/main-to-dev \
-  --target-branch dev \
-  --title "Sync: Merge main into dev" \
-  --description "Automated sync of main branch into dev after release"
-```
-
-**Verify and Retry**:
-
-```bash
-# After sync completes, verify status
-git fetch origin
-git log origin/main --oneline -1  # GitHub main SHA
-git log origin/main --oneline -1  # AzDO main SHA (should match)
-
-# Re-run release pipeline
-az pipelines run --name "Release Branch Create" --branch main
-```
-
----
-
-#### Issue 4: Release PR Merge Does Not Trigger Auto-Merge Workflow
-
-**Symptoms**:
-
-- Release PR merged successfully
-- Release published
-- Dev branch not synchronized
-- Auto-merge workflow not triggered
-
-**Possible Causes**:
-
-1. Workflow trigger configuration incorrect
-2. Pre-release published (workflow skips pre-releases)
-3. Release type not recognized
-4. Workflow disabled
-
-**Solutions**:
-
-**Verify Workflow Enabled**:
-
-```bash
-# GitHub
-gh workflow view release-merge-to-main.yml
-
-# If disabled
-gh workflow enable release-merge-to-main.yml
-```
-
-**Check Release Type**:
-
-```bash
-gh release view v1.2.3 --json isPrerelease
-# If true, workflow skipped (expected behavior)
-```
-
-**Manually Trigger Workflow**:
-
-```bash
-# GitHub
-gh workflow run release-merge-to-main.yml \
-  --ref main \
-  -f release_tag=v1.2.3
-
-# Azure DevOps
-az pipelines run --name release-merge-to-main-pipeline \
-  --branch main \
-  --variables release_tag=v1.2.3
-```
-
-**Verify Trigger Configuration**:
-
-GitHub `.github/workflows/release-merge-to-main.yml`:
-
-```yaml
-on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        required: true
-```
-
-Azure DevOps `azure-pipelines-release-merge.yml`:
-
-```yaml
-trigger: none
-pr: none
-
-resources:
-  pipelines:
-    - pipeline: release
-      source: create-release-pipeline
-      trigger:
-        branches:
-          include:
-            - main
-```
-
----
-
-#### Issue 4: Release Notes Generation Fails or Incomplete
+#### Issue 3: Release Notes Generation Fails or Incomplete
 
 **Symptoms**:
 
@@ -830,7 +645,7 @@ gh api rate_limit
 
 ---
 
-#### Issue 5: Breaking Change Detection Not Working
+#### Issue 4: Breaking Change Detection Not Working
 
 **Symptoms**:
 
@@ -888,7 +703,7 @@ gh workflow run create-release.yml \
 
 ---
 
-#### Issue 6: Release Branch Not Deleted After Merge
+#### Issue 5: Release Branch Not Deleted After Merge
 
 **Symptoms**:
 
@@ -941,7 +756,7 @@ git push origin --delete release/v1.0.0 release/v1.1.0
 
 ---
 
-#### Issue 7: Merge Conflicts in Release PR
+#### Issue 6: Merge Conflicts in Release PR
 
 **Symptoms**:
 
@@ -994,7 +809,7 @@ git push origin release/v1.2.3
 
 ---
 
-#### Issue 8: Workflow Timeout or Performance Issues
+#### Issue 7: Workflow Timeout or Performance Issues
 
 **Symptoms**:
 
@@ -1060,7 +875,7 @@ gh run view <run-id> --log
 
 ---
 
-#### Issue 9: Version Tag Already Exists
+#### Issue 8: Version Tag Already Exists
 
 **Symptoms**:
 
@@ -1112,7 +927,7 @@ git push origin v1.2.3 --force
 
 ---
 
-#### Issue 10: Permissions Errors in Workflows
+#### Issue 9: Permissions Errors in Workflows
 
 **Symptoms**:
 

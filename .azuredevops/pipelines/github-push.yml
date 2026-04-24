@@ -3,12 +3,12 @@
 #
 # Purpose:
 # This pipeline synchronizes code from Azure DevOps to GitHub repositories, creating
-# pull requests for changes and managing version tagging based on GitVersion. It ensures
-# the internal Azure DevOps repository changes are reflected in the public GitHub repository.
+# pull requests for changes. It ensures the internal Azure DevOps repository changes
+# are reflected in the public GitHub repository. Versioning and tagging on the GitHub
+# side are handled by the release-please workflow (.github/workflows/release-please.yml).
 #
 # When to use:
-# - Automatically triggered when main or pre-release branches are updated in Azure DevOps
-# - When you need to publish internal changes to the public GitHub repository
+# - Manually triggered (trigger: none) when publishing internal Azure DevOps changes to GitHub
 # - After merging PRs in Azure DevOps that should be reflected in GitHub
 # - When implementing bidirectional sync between Azure DevOps and GitHub
 #
@@ -16,8 +16,6 @@
 # - Authenticates with GitHub using GitHub App installation tokens
 # - Pushes changes from Azure DevOps branch to corresponding GitHub branch
 # - Creates pull requests in GitHub for review and integration
-# - Calculates semantic versions using GitVersion (main branch only)
-# - Creates and pushes Git tags based on calculated versions
 # - Supports both main and pre-release branch workflows
 #
 # Prerequisites:
@@ -26,7 +24,6 @@
 #   - github-edge-ai-app-private-key: GitHub App private key (PEM format)
 #   - github-edge-ai-repo-url: GitHub repository URL with __token__ placeholder
 # - Managed agent pool: ai-on-edge-managed-pool
-# - GitVersion configuration file (GitVersion.yml) in repository root
 # - System.AccessToken for Azure DevOps git operations
 #
 # Parameters:
@@ -37,7 +34,6 @@
 # - gitPush.pushedBranchName: Name of branch pushed to GitHub
 # - githubPR.number: Pull request number created in GitHub
 # - githubPR.url: URL of created pull request
-# - GitVersion.MajorMinorPatch: Calculated semantic version (main branch only)
 #
 # Template Dependencies:
 # - ../templates/github-auth.yml: GitHub App authentication
@@ -49,8 +45,6 @@
 # - git-sync-operations.yml requires workingDirectory and targetBranch parameters
 # - pr-creation.yml requires installationToken (not githubToken)
 # - PR creation uses head, base, repository parameters (not headBranch, baseBranch, repositoryName)
-# - GitVersion task runs only on main branch (dependsOn: GitHubPush)
-# - Git tag push uses System.AccessToken for Azure DevOps authentication
 
 # GitHub sync pipeline
 ---
@@ -108,41 +102,3 @@ stages:
               maintainerCanModify: true
             displayName: "Create GitHub PR"
             name: githubPR
-
-      - job: "Versioning"
-        displayName: "Updating Version based on Git Tag"
-        dependsOn: GitHubPush
-        condition: and(succeeded(), eq(variables.isMain, true))
-        steps:
-          # Checkout repo
-          - checkout: self
-            fetchDepth: "0"
-            clean: true
-
-          # Install GitVersion
-          - task: gitversion/setup@3
-            name: installGitVersion
-            displayName: Install GitVersion
-            inputs:
-              versionSpec: '5.x'
-
-          # Determine Version
-          - task: gitversion/execute@3
-            name: executeGitVersion
-            displayName: Determine Version
-            inputs:
-              useConfigFile: true
-              configFilePath: ./GitVersion.yml
-
-          # Create Git Tag
-          - pwsh: |
-              git tag "$(GitVersion_MajorMinorPatch)"
-            displayName: Create git tag
-            name: createGitTag
-
-          # Push Git Tag
-          - pwsh: |
-              $accessToken = "$(System.AccessToken)"
-              git -c http.extraheader="AUTHORIZATION: bearer $accessToken" push origin "$(GitVersion_MajorMinorPatch)"
-            displayName: Push git tag
-            name: pushGitTag
