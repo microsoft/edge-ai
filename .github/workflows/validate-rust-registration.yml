@@ -1,0 +1,62 @@
+---
+name: validate-rust-registration
+
+on:
+  pull_request:
+    paths:
+      - 'src/500-application/**'
+      - '.github/workflows/rust-tests.yml'
+      - '.github/workflows/validate-rust-registration.yml'
+      - 'codecov.yml'
+      - 'scripts/Validate-RustCrateRegistration.ps1'
+      - 'scripts/tests/Validate-RustCrateRegistration.Tests.ps1'
+      - '.github/instructions/rust-crate-registration.instructions.md'
+  push:
+    branches: [main, dev]
+    paths:
+      - 'src/500-application/**'
+      - '.github/workflows/rust-tests.yml'
+      - '.github/workflows/validate-rust-registration.yml'
+      - 'codecov.yml'
+      - 'scripts/Validate-RustCrateRegistration.ps1'
+      - 'scripts/tests/Validate-RustCrateRegistration.Tests.ps1'
+      - '.github/instructions/rust-crate-registration.instructions.md'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Rust crate registration
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install powershell-yaml
+        run: |
+          Install-Module -Name powershell-yaml -Scope CurrentUser -Force -AllowClobber
+
+      - name: Run Pester tests for validator
+        run: |
+          ./scripts/Invoke-Pester.ps1 -CI -Path './scripts/tests/Validate-RustCrateRegistration.Tests.ps1'
+
+      - name: Validate Rust crate registration
+        run: |
+          ./scripts/Validate-RustCrateRegistration.ps1
+
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-crate-registration-results
+          path: |
+            test-results/
+            rust-crate-registration-report.json
+          if-no-files-found: ignore
+          retention-days: 14

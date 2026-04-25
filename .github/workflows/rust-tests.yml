@@ -7,6 +7,7 @@ on:
       - "src/500-application/503-media-capture-service/**"
       - "src/500-application/507-ai-inference/**"
       - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/rust-tests.yml"
       - "codecov.yml"
   push:
@@ -15,6 +16,7 @@ on:
       - "src/500-application/503-media-capture-service/**"
       - "src/500-application/507-ai-inference/**"
       - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/rust-tests.yml"
       - "codecov.yml"
 
