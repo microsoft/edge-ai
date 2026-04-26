@@ -154,6 +154,15 @@ jobs:
       break-build: true
     secrets: inherit
 
+  # Rust unit/integration tests with coverage for main branch
+  rust-tests-main:
+    name: Rust Tests
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/rust-tests.yml
+    secrets: inherit
+
   # Dependency advisory audit (cargo-audit + govulncheck) for main branch
   dep-audit-main:
     name: Dependency Audit

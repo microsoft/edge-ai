@@ -2,23 +2,7 @@
 name: rust-tests
 
 on:
-  pull_request:
-    paths:
-      - "src/500-application/503-media-capture-service/**"
-      - "src/500-application/507-ai-inference/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - ".github/workflows/rust-tests.yml"
-      - "codecov.yml"
-  push:
-    branches: [main, dev]
-    paths:
-      - "src/500-application/503-media-capture-service/**"
-      - "src/500-application/507-ai-inference/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - ".github/workflows/rust-tests.yml"
-      - "codecov.yml"
+  workflow_call:
 
 permissions:
   contents: read
@@ -36,7 +20,7 @@ jobs:
           - src/500-application/507-ai-inference/ai-edge-inference-crate
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e75e6dadd2cb44f1a7a1cf3e95a1c4f0d # v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -47,7 +31,7 @@ jobs:
         uses: taiki-e/install-action@d17fa930f29d14b5a8f7361cdbdf7bf1b722e982 # cargo-llvm-cov
 
       - name: Cache cargo build
-        uses: Swatinem/rust-cache@899b013517f9e7774591216672bf75a46bb9a481 # v2.9.4
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
           workspaces: ${{ matrix.crate }}
 
@@ -57,7 +41,7 @@ jobs:
 
       - name: Upload to Codecov
         if: success()
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@3f20e214133d0983f9a10f3d63b0faf9241a3daa # v6.0.0
         with:
           files: ${{ matrix.crate }}/coverage.xml
           use_oidc: true
