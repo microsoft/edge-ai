@@ -3,17 +3,6 @@ name: rust-tests
 
 on:
   workflow_call:
-  pull_request:
-    paths:
-      - 'src/500-application/503-media-capture-service/**'
-      - 'src/500-application/507-ai-inference/**'
-      - '.github/workflows/rust-tests.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'src/500-application/503-media-capture-service/**'
-      - 'src/500-application/507-ai-inference/**'
-      - '.github/workflows/rust-tests.yml'
 
 permissions:
   contents: read
