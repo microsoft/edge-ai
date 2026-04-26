@@ -56,7 +56,6 @@ jobs:
         with:
           name: rust-crate-registration-results
           path: |
-            test-results/
-            rust-crate-registration-report.json
+            logs/rust-crate-registration-report.json
           if-no-files-found: ignore
           retention-days: 14

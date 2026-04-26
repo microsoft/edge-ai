@@ -143,15 +143,28 @@ Describe 'Test-CrateRegistration' -Tag 'Unit' {
         $result.Missing.Count | Should -Be 0
     }
 
-    It 'returns unregistered with all four missing entries when nothing covers the crate' {
+    It 'returns unregistered with matrix and codecov entries when path filters are absent (reusable workflow)' {
         $rust = [pscustomobject]@{ PullRequestPaths = @(); PushPaths = @(); MatrixCrates = @() }
         $codecov = [pscustomobject]@{ RustFlagPaths = @(); Ignore = @() }
         $result = Test-CrateRegistration -Crate 'src/500-application/999' -RustTests $rust -Codecov $codecov
         $result.Status | Should -Be 'unregistered'
         $result.Missing | Should -Contain 'rust-tests.yml jobs.coverage.strategy.matrix.crate'
+        $result.Missing | Should -Contain 'codecov.yml flags.rust.paths'
+        $result.Missing | Should -Not -Contain 'rust-tests.yml on.pull_request.paths'
+        $result.Missing | Should -Not -Contain 'rust-tests.yml on.push.paths'
+    }
+
+    It 'returns unregistered with path entries when path filters exist but do not cover the crate' {
+        $rust = [pscustomobject]@{
+            PullRequestPaths = @('src/500-application/503/**')
+            PushPaths        = @('src/500-application/503/**')
+            MatrixCrates     = @()
+        }
+        $codecov = [pscustomobject]@{ RustFlagPaths = @(); Ignore = @() }
+        $result = Test-CrateRegistration -Crate 'src/500-application/999' -RustTests $rust -Codecov $codecov
+        $result.Status | Should -Be 'unregistered'
         $result.Missing | Should -Contain 'rust-tests.yml on.pull_request.paths'
         $result.Missing | Should -Contain 'rust-tests.yml on.push.paths'
-        $result.Missing | Should -Contain 'codecov.yml flags.rust.paths'
     }
 
     It 'returns unregistered listing only the missing piece when matrix is the gap' {

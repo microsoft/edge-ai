@@ -19,7 +19,7 @@
     Repository root. Defaults to the parent of this script's directory.
 
 .PARAMETER OutputPath
-    Directory to write the JSON report. Defaults to "$RepoRoot/test-results".
+    Directory to write the JSON report. Defaults to "$RepoRoot/logs".
 
 .EXAMPLE
     ./scripts/Validate-RustCrateRegistration.ps1
@@ -212,10 +212,12 @@ function Test-CrateRegistration {
     if (-not (Test-MatrixCover -Crate $Crate -MatrixEntries $RustTests.MatrixCrates)) {
         $missing += 'rust-tests.yml jobs.coverage.strategy.matrix.crate'
     }
-    if (-not (Test-PathCoveredByGlob -Path $Crate -Globs $RustTests.PullRequestPaths)) {
+    # Path filters are optional. When rust-tests.yml is workflow_call-only (reusable workflow),
+    # pull_request/push paths are not declared; matrix-crate coverage + codecov flags are authoritative.
+    if ($RustTests.PullRequestPaths.Count -gt 0 -and -not (Test-PathCoveredByGlob -Path $Crate -Globs $RustTests.PullRequestPaths)) {
         $missing += 'rust-tests.yml on.pull_request.paths'
     }
-    if (-not (Test-PathCoveredByGlob -Path $Crate -Globs $RustTests.PushPaths)) {
+    if ($RustTests.PushPaths.Count -gt 0 -and -not (Test-PathCoveredByGlob -Path $Crate -Globs $RustTests.PushPaths)) {
         $missing += 'rust-tests.yml on.push.paths'
     }
     if (-not (Test-PathCoveredByGlob -Path $Crate -Globs $Codecov.RustFlagPaths)) {
@@ -287,7 +289,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
     }
     if (-not $OutputPath) {
-        $OutputPath = Join-Path -Path $RepoRoot -ChildPath 'test-results'
+        $OutputPath = Join-Path -Path $RepoRoot -ChildPath 'logs'
     }
     $exitCode = Invoke-Validation -RepoRootPath $RepoRoot -ReportPath $OutputPath
     exit $exitCode
