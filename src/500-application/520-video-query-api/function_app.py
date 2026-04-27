@@ -48,9 +48,9 @@ EVENT_GRID_MQTT_SCOPE = "https://eventgrid.azure.net/.default"
 
 def _publish_mqtt_trigger(hostname: str, topic: str, payload: str) -> None:
     """Publish a message to Event Grid namespace via MQTT with managed identity auth."""
-    credential = ManagedIdentityCredential()
-    token = credential.get_token(EVENT_GRID_MQTT_SCOPE).token
     client_id = os.environ.get("AZURE_CLIENT_ID", "video-query-trigger")
+    credential = ManagedIdentityCredential(client_id=client_id)
+    token = credential.get_token(EVENT_GRID_MQTT_SCOPE).token
 
     client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
@@ -86,7 +86,8 @@ def health_check(req: func.HttpRequest) -> func.HttpResponse:
                 connection_string)
         else:
             # Fall back to managed identity
-            credential = ManagedIdentityCredential()
+            client_id = os.environ.get("AZURE_CLIENT_ID", "video-query-trigger")
+            credential = ManagedIdentityCredential(client_id=client_id)
             account_url = f"https://{storage_account_name}.blob.core.windows.net"
             blob_service_client = BlobServiceClient(
                 account_url=account_url,
@@ -742,13 +743,13 @@ def generate_sas_url(
             blob_name=blob_name,
             account_key=account_key,
             permission=BlobSasPermissions(read=True),
-            start=datetime.utcnow() - timedelta(minutes=5),
-            expiry=datetime.utcnow() + timedelta(hours=expiry_hours)
+            start=datetime.now(UTC) - timedelta(minutes=5),
+            expiry=datetime.now(UTC) + timedelta(hours=expiry_hours)
         )
     else:
         # Use user delegation key (requires managed identity)
-        key_start_time = datetime.utcnow() - timedelta(minutes=5)
-        key_expiry_time = datetime.utcnow() + timedelta(hours=expiry_hours + 1)
+        key_start_time = datetime.now(UTC) - timedelta(minutes=5)
+        key_expiry_time = datetime.now(UTC) + timedelta(hours=expiry_hours + 1)
         user_delegation_key = blob_service_client.get_user_delegation_key(
             key_start_time=key_start_time,
             key_expiry_time=key_expiry_time
@@ -759,8 +760,8 @@ def generate_sas_url(
             blob_name=blob_name,
             user_delegation_key=user_delegation_key,
             permission=BlobSasPermissions(read=True),
-            start=datetime.utcnow() - timedelta(minutes=5),
-            expiry=datetime.utcnow() + timedelta(hours=expiry_hours)
+            start=datetime.now(UTC) - timedelta(minutes=5),
+            expiry=datetime.now(UTC) + timedelta(hours=expiry_hours)
         )
 
     sas_url = f"{blob_client.url}?{sas_token}"
@@ -869,12 +870,8 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
                     account_key = part.split('=', 1)[1]
                     break
         else:
-            managed_identity_client_id = os.getenv("AZURE_CLIENT_ID")
-            credential = (
-                ManagedIdentityCredential(client_id=managed_identity_client_id)
-                if managed_identity_client_id
-                else ManagedIdentityCredential()
-            )
+            client_id = os.environ.get("AZURE_CLIENT_ID", "video-query-trigger")
+            credential = ManagedIdentityCredential(client_id=client_id)
             account_url = f"https://{storage_account_name}.blob.core.windows.net"
             blob_service_client = BlobServiceClient(
                 account_url=account_url,
@@ -1017,7 +1014,7 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
                     "start_time": start_str,
                     "end_time": end_str,
                     "event_type_filter": event_type_filter,
-                    "expires_at": (datetime.utcnow() + timedelta(hours=sas_expiry_hours)).isoformat(),
+                    "expires_at": (datetime.now(UTC) + timedelta(hours=sas_expiry_hours)).isoformat(),
                     "stitched": True
                 }
 
@@ -1103,7 +1100,7 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
                 "end_time": end_str,
                 "event_type_filter": event_type_filter,
                 "expires_at": (
-                    datetime.utcnow() + timedelta(hours=sas_expiry_hours)
+                    datetime.now(UTC) + timedelta(hours=sas_expiry_hours)
                 ).isoformat(),
                 "stitched": False
             }
