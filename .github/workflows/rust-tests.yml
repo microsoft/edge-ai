@@ -23,17 +23,25 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal --component llvm-tools-preview
+          rustup default stable
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          components: llvm-tools-preview
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ matrix.crate }}/target
+          key: ${{ runner.os }}-cargo-${{ matrix.crate }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.crate), format('{0}/Cargo.toml', matrix.crate)) }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.crate }}-
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@d17fa930f29d14b5a8f7361cdbdf7bf1b722e982 # cargo-llvm-cov
-
-      - name: Cache cargo build
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
-        with:
-          workspaces: ${{ matrix.crate }}
+        shell: bash
+        run: cargo install cargo-llvm-cov --locked
 
       - name: Generate Cobertura coverage
         working-directory: ${{ matrix.crate }}
