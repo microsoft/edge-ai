@@ -10,7 +10,12 @@ permissions:
 
 jobs:
   coverage:
-    runs-on: ubuntu-latest
+    # Pinned Ubuntu image to keep apt package set stable and reproducible across runs.
+    # Tracked via SBOM + Grype scan below; revisit when bumping to next LTS.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +42,72 @@ jobs:
             libavutil-dev \
             libswscale-dev \
             libswresample-dev
+
+      # SBOM + vulnerability scan for apt-installed system packages (and repo sources).
+      # Tracking-only mitigation; replace with a pinned, scanned base container (Option B)
+      # to fully close the supply-chain gap.
+      - name: Install Syft (SBOM generator)
+        shell: bash
+        run: |
+          SYFT_VERSION="v1.17.0"
+          SYFT_VER="${SYFT_VERSION#v}"
+          SYFT_TMP="$(mktemp -d)"
+          echo "Installing Syft ${SYFT_VERSION}..."
+          curl -sSfL -o "${SYFT_TMP}/syft.tar.gz" \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${SYFT_TMP}/syft_checksums.txt" \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_checksums.txt"
+          (cd "${SYFT_TMP}" && grep " syft_${SYFT_VER}_linux_amd64.tar.gz$" syft_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${SYFT_TMP}/syft.tar.gz" -C /usr/local/bin syft
+          rm -rf "${SYFT_TMP}"
+          syft version
+
+      - name: Install Grype (vulnerability scanner)
+        shell: bash
+        run: |
+          GRYPE_VERSION="v0.86.1"
+          GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TMP="$(mktemp -d)"
+          echo "Installing Grype ${GRYPE_VERSION}..."
+          curl -sSfL -o "${GRYPE_TMP}/grype.tar.gz" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
+          (cd "${GRYPE_TMP}" && grep " grype_${GRYPE_VER}_linux_amd64.tar.gz$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/grype.tar.gz" -C /usr/local/bin grype
+          rm -rf "${GRYPE_TMP}"
+          grype version
+
+      - name: Generate runner SBOM (dpkg + repo)
+        shell: bash
+        run: |
+          # Scan the runner filesystem to capture dpkg-installed packages from the
+          # apt step above. Excludes large/irrelevant trees to keep scan time bounded.
+          syft scan dir:/ \
+            --exclude '/proc/**' \
+            --exclude '/sys/**' \
+            --exclude '/dev/**' \
+            --exclude '/run/**' \
+            --exclude '/var/cache/**' \
+            --exclude '/var/log/**' \
+            --exclude '/tmp/**' \
+            --exclude '/home/runner/work/**/target/**' \
+            -o cyclonedx-json=sbom.cdx.json
+          echo "SBOM components: $(jq '.components | length' sbom.cdx.json)"
+
+      - name: Scan SBOM with Grype
+        shell: bash
+        run: |
+          grype sbom:./sbom.cdx.json --fail-on high
+
+      - name: Upload SBOM artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-tests-runner-sbom-${{ strategy.job-index }}
+          path: sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Install Rust toolchain
         shell: bash

@@ -22,7 +22,7 @@ All binary tool downloads in workflow steps must include SHA256 checksum verific
 * Verify with `sha256sum --check --strict`
 * Extract only after verification passes
 
-Currently verified binaries: Gitleaks, Grype, TFLint.
+Currently verified binaries: Gitleaks, Grype, Syft, TFLint.
 
 ## Permission Scoping
 
