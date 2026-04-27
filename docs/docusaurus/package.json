@@ -49,7 +49,9 @@
   },
   "overrides": {
     "webpack": "5.105.0",
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "postcss": "^8.5.10",
+    "uuid": "^14.0.0"
   },
   "browserslist": {
     "production": [
