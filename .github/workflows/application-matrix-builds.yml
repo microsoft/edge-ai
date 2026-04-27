@@ -130,11 +130,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
 permissions:
-  contents: read          # Read repository contents for checkout
-  packages: write         # Push container images to registry
-  id-token: write         # Generate OIDC tokens for secure registry auth
-  actions: read           # Read workflow run information
-  security-events: write  # Write SLSA security bundles and attestations
+  contents: read
 
 env:
   REGISTRY: ${{ inputs.registryName || 'local' }}
@@ -149,6 +145,8 @@ jobs:
   # configuration as JSON objects and outputting individual values for downstream jobs.
   parse-configuration:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       registryName: ${{ steps.parse.outputs.registryName }}
       buildEnvironment: ${{ steps.parse.outputs.buildEnvironment }}
@@ -256,6 +254,8 @@ jobs:
   prepare-builds:
     needs: parse-configuration
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.parse-matrix.outputs.matrix }}
       buildId: ${{ steps.generate-id.outputs.buildId }}
@@ -310,6 +310,11 @@ jobs:
   build-applications:
     needs: [parse-configuration, prepare-builds]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
     strategy:
       matrix: ${{ fromJson(needs.prepare-builds.outputs.matrix) }}
       fail-fast: false
@@ -582,7 +587,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/upload-sarif@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports
@@ -593,6 +598,8 @@ jobs:
   summarize-builds:
     needs: [parse-configuration, prepare-builds, build-applications]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: always()
     outputs:
       buildResults: ${{ steps.summarize.outputs.buildResults }}

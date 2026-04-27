@@ -29,11 +29,6 @@ name: Main Branch CI/CD
 
 permissions:
   contents: read
-  actions: read
-  checks: write
-  pull-requests: write
-  statuses: write
-  security-events: write
 
 on: # yamllint disable-line rule:truthy
   push:
@@ -64,7 +59,7 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/init@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -75,10 +70,10 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/autobuild@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
         with:
           category: "/language:${{matrix.language}}"
 
@@ -157,6 +152,16 @@ jobs:
     uses: ./.github/workflows/rust-clippy.yml
     with:
       break-build: true
+    secrets: inherit
+
+  # Dependency advisory audit (cargo-audit + govulncheck) for main branch
+  dep-audit-main:
+    name: Dependency Audit
+    permissions:
+      contents: read
+    uses: ./.github/workflows/dep-audit.yml
+    with:
+      break-build: false
     secrets: inherit
 
   # Call docs-check-terraform workflow
