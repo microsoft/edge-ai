@@ -105,6 +105,8 @@ $ActionSHAMap = @{
     "actions/configure-pages@v4"           = "actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b" # v4.0.0
     "azure/powershell@v1"                  = "azure/powershell@1c589a2e445c71fe2cea92c69f7b80b572760c3b" # v1.5.0
     "azure/get-keyvault-secrets@v1"        = "azure/get-keyvault-secrets@b5c723b9ac7870c022b8c35befe620b7009b336f" # v1.2
+    "google/clusterfuzzlite/actions/build_fuzzers@v1" = "google/clusterfuzzlite/actions/build_fuzzers@82652fb49e77bc29c35da1167bb286e93c6bcc05" # v1
+    "google/clusterfuzzlite/actions/run_fuzzers@v1"   = "google/clusterfuzzlite/actions/run_fuzzers@82652fb49e77bc29c35da1167bb286e93c6bcc05" # v1
 }
 
 function Write-SecurityLog {

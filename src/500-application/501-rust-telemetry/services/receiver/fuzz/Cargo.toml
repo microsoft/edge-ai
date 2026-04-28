@@ -1,0 +1,20 @@
+[package]
+name = "receiver-fuzz"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+serde_json = "1"
+
+[[bin]]
+name = "parse_telemetry"
+path = "fuzz_targets/parse_telemetry.rs"
+test = false
+doc = false
+
+[workspace]
