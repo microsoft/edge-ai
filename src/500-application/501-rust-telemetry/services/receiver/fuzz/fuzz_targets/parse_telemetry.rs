@@ -1,3 +1,4 @@
+//! Fuzz target: exercises serde_json parsing of telemetry payloads.
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
