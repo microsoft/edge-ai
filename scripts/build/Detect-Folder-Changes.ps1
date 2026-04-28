@@ -331,11 +331,11 @@ $terraformFolders = @{}
 $bicepHasChanges = $false
 $bicepFolders = @{}
 $fuzzRustHasChanges = $false
-$fuzzRustFolders = @{}
+$fuzzRustFolders = [PSCustomObject]@{ folderName = @() }
 $fuzzPythonHasChanges = $false
-$fuzzPythonFolders = @{}
+$fuzzPythonFolders = [PSCustomObject]@{ folderName = @() }
 $fuzzJsHasChanges = $false
-$fuzzJsFolders = @{}
+$fuzzJsFolders = [PSCustomObject]@{ folderName = @() }
 
 # Use native PowerShell commands where possible and minimize redundant operations
 
@@ -704,7 +704,7 @@ if ($IncludeFuzzTargets) {
         $fuzzRustPaths = Get-FilePathData -Paths $fuzzRustFiles
         if ($fuzzRustPaths.Count -gt 0) {
             $fuzzRustHasChanges = $true
-            $fuzzRustFolders = Convert-PathsToJson -Paths $fuzzRustPaths
+            $fuzzRustFolders = [PSCustomObject]@{ folderName = @($fuzzRustPaths) }
         }
     }
 
@@ -712,7 +712,7 @@ if ($IncludeFuzzTargets) {
         $fuzzPythonPaths = Get-FilePathData -Paths $fuzzPythonFiles
         if ($fuzzPythonPaths.Count -gt 0) {
             $fuzzPythonHasChanges = $true
-            $fuzzPythonFolders = Convert-PathsToJson -Paths $fuzzPythonPaths
+            $fuzzPythonFolders = [PSCustomObject]@{ folderName = @($fuzzPythonPaths) }
         }
     }
 
@@ -720,7 +720,7 @@ if ($IncludeFuzzTargets) {
         $fuzzJsPaths = Get-FilePathData -Paths $fuzzJsFiles
         if ($fuzzJsPaths.Count -gt 0) {
             $fuzzJsHasChanges = $true
-            $fuzzJsFolders = Convert-PathsToJson -Paths $fuzzJsPaths
+            $fuzzJsFolders = [PSCustomObject]@{ folderName = @($fuzzJsPaths) }
         }
     }
 }
