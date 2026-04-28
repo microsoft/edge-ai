@@ -4,7 +4,7 @@ param(
     [switch]$ChangedOnly,
     [switch]$CodeCoverage,
     [string]$ConfigPath = (Join-Path $PSScriptRoot 'tests/pester.config.ps1'),
-    [string]$OutputPath = './logs/pester',
+    [string]$OutputPath = './test-results',
     [string[]]$Path
 )
 
