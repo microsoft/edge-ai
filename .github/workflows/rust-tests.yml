@@ -66,12 +66,13 @@ jobs:
           SYFT_VER="${SYFT_VERSION#v}"
           SYFT_TMP="$(mktemp -d)"
           echo "Installing Syft ${SYFT_VERSION}..."
-          curl -sSfL -o "${SYFT_TMP}/syft.tar.gz" \
-            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_linux_amd64.tar.gz"
+          SYFT_TARBALL="syft_${SYFT_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${SYFT_TMP}/${SYFT_TARBALL}" \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/${SYFT_TARBALL}"
           curl -sSfL -o "${SYFT_TMP}/syft_checksums.txt" \
             "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_checksums.txt"
-          (cd "${SYFT_TMP}" && grep " syft_${SYFT_VER}_linux_amd64.tar.gz$" syft_checksums.txt | sha256sum -c -)
-          sudo tar -xzf "${SYFT_TMP}/syft.tar.gz" -C /usr/local/bin syft
+          (cd "${SYFT_TMP}" && grep " ${SYFT_TARBALL}$" syft_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${SYFT_TMP}/${SYFT_TARBALL}" -C /usr/local/bin syft
           rm -rf "${SYFT_TMP}"
           syft version
 
@@ -158,14 +159,15 @@ jobs:
         run: |
           GRYPE_VERSION="v0.86.1"
           GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TARBALL="grype_${GRYPE_VER}_linux_amd64.tar.gz"
           GRYPE_TMP="$(mktemp -d)"
           echo "Installing Grype ${GRYPE_VERSION}..."
-          curl -sSfL -o "${GRYPE_TMP}/grype.tar.gz" \
-            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${GRYPE_TMP}/${GRYPE_TARBALL}" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/${GRYPE_TARBALL}"
           curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
             "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
-          (cd "${GRYPE_TMP}" && grep " grype_${GRYPE_VER}_linux_amd64.tar.gz$" grype_checksums.txt | sha256sum -c -)
-          sudo tar -xzf "${GRYPE_TMP}/grype.tar.gz" -C /usr/local/bin grype
+          (cd "${GRYPE_TMP}" && grep " ${GRYPE_TARBALL}$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/${GRYPE_TARBALL}" -C /usr/local/bin grype
           rm -rf "${GRYPE_TMP}"
           grype version
 

@@ -359,14 +359,15 @@ jobs:
           # Install Grype vulnerability scanner pinned to a release tag with checksum verification
           GRYPE_VERSION="v0.86.1"
           GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TARBALL="grype_${GRYPE_VER}_linux_amd64.tar.gz"
           GRYPE_TMP="$(mktemp -d)"
           echo "Installing Grype ${GRYPE_VERSION}..."
-          curl -sSfL -o "${GRYPE_TMP}/grype.tar.gz" \
-            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${GRYPE_TMP}/${GRYPE_TARBALL}" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/${GRYPE_TARBALL}"
           curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
             "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
-          (cd "${GRYPE_TMP}" && grep " grype_${GRYPE_VER}_linux_amd64.tar.gz$" grype_checksums.txt | sha256sum -c -)
-          sudo tar -xzf "${GRYPE_TMP}/grype.tar.gz" -C /usr/local/bin grype
+          (cd "${GRYPE_TMP}" && grep " ${GRYPE_TARBALL}$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/${GRYPE_TARBALL}" -C /usr/local/bin grype
           rm -rf "${GRYPE_TMP}"
 
           echo "Verifying Grype installation..."
