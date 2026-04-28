@@ -238,6 +238,17 @@ jobs:
       break-build: true
     secrets: inherit
 
+  # ClusterFuzzLite fuzzing for changed Rust/Python/JS fuzz targets
+  fuzz:
+    name: Fuzz
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+      actions: read
+    uses: ./.github/workflows/fuzz-pr.yml
+    secrets: inherit
+
   # Use reusable workflow to detect detailed changes and create folder matrix
   matrix-changes:
     name: Detect Matrix Changes

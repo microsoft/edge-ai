@@ -164,6 +164,17 @@ jobs:
       break-build: false
     secrets: inherit
 
+  # ClusterFuzzLite fuzzing for changed Rust/Python/JS fuzz targets (main)
+  fuzz-main:
+    name: Fuzz
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+      actions: read
+    uses: ./.github/workflows/fuzz-pr.yml
+    secrets: inherit
+
   # Call docs-check-terraform workflow
   docs-check-terraform-main:
     name: Terraform Documentation Check
