@@ -76,24 +76,24 @@ Describe 'Test-IsRustChangeFile' -Tag 'Unit' {
     }
 }
 
-Describe 'Get-RustHasChanges' -Tag 'Unit' {
+Describe 'Test-RustHasChange' -Tag 'Unit' {
     It 'returns false for $null input' {
-        Get-RustHasChanges -ChangedFiles $null | Should -BeFalse
+        Test-RustHasChange -ChangedFiles $null | Should -BeFalse
     }
 
     It 'returns false for an empty array' {
-        Get-RustHasChanges -ChangedFiles @() | Should -BeFalse
+        Test-RustHasChange -ChangedFiles @() | Should -BeFalse
     }
 
     It 'returns true when any file matches' {
-        Get-RustHasChanges -ChangedFiles @('docs/readme.md', 'Cargo.toml') | Should -BeTrue
+        Test-RustHasChange -ChangedFiles @('docs/readme.md', 'Cargo.toml') | Should -BeTrue
     }
 
     It 'returns true when a src/500-application file is present' {
-        Get-RustHasChanges -ChangedFiles @('src/500-application/503/foo/src/lib.rs') | Should -BeTrue
+        Test-RustHasChange -ChangedFiles @('src/500-application/503/foo/src/lib.rs') | Should -BeTrue
     }
 
     It 'returns false when no file matches' {
-        Get-RustHasChanges -ChangedFiles @('docs/readme.md', 'src/020-iac/main.tf') | Should -BeFalse
+        Test-RustHasChange -ChangedFiles @('docs/readme.md', 'src/020-iac/main.tf') | Should -BeFalse
     }
 }

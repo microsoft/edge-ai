@@ -353,7 +353,7 @@ function Test-IsRustChangeFile {
     return $Path -match '(\.rs$|(^|/)Cargo\.(toml|lock)$|^\.github/workflows/(rust-tests|pr-validation)\.yml$|^codecov\.yml$)'
 }
 
-function Get-RustHasChanges {
+function Test-RustHasChange {
     <#
     .SYNOPSIS
         Returns $true when any path in $ChangedFiles matches the rust gating ruleset.
@@ -759,7 +759,7 @@ $jsonOutput | Add-Member -MemberType NoteProperty -Name "applications" -Value ([
 # Mirrors the regex previously enforced by the standalone detect-rust-changes job
 # in pr-validation.yml: any crate under src/500-application, root Cargo manifests,
 # or workflow/codecov files that influence the rust-tests pipeline.
-$rustHasChanges = Get-RustHasChanges -ChangedFiles $changedFiles
+$rustHasChanges = Test-RustHasChange -ChangedFiles $changedFiles
 
 $jsonOutput | Add-Member -MemberType NoteProperty -Name "rust" -Value ([PSCustomObject]@{
         has_changes = [bool]$rustHasChanges
