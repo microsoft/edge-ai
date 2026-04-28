@@ -26,7 +26,7 @@ WITH_SEED_DATA="false"
 PASSTHROUGH_ARGS=()
 
 usage() {
-  cat <<EOF
+    cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
 Deploy the IEEE 1872 CORA/CORAX robotics ontology to Microsoft Fabric.
@@ -68,40 +68,40 @@ EOF
 }
 
 while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --workspace-id)
-      WORKSPACE_ID="$2"
-      shift 2
-      ;;
-    --lakehouse-id)
-      LAKEHOUSE_ID="$2"
-      shift 2
-      ;;
-    --with-seed-data)
-      WITH_SEED_DATA="true"
-      shift
-      ;;
-    --dry-run)
-      PASSTHROUGH_ARGS+=("$1")
-      shift
-      ;;
-    -h | --help)
-      usage
-      exit 0
-      ;;
-    *)
-      PASSTHROUGH_ARGS+=("$1")
-      shift
-      ;;
-  esac
+    case "$1" in
+        --workspace-id)
+            WORKSPACE_ID="$2"
+            shift 2
+            ;;
+        --lakehouse-id)
+            LAKEHOUSE_ID="$2"
+            shift 2
+            ;;
+        --with-seed-data)
+            WITH_SEED_DATA="true"
+            shift
+            ;;
+        --dry-run)
+            PASSTHROUGH_ARGS+=("$1")
+            shift
+            ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            PASSTHROUGH_ARGS+=("$1")
+            shift
+            ;;
+    esac
 done
 
 if [[ -z "${WORKSPACE_ID}" ]]; then
-  err "--workspace-id is required"
+    err "--workspace-id is required"
 fi
 
 if [[ ! -f "${DEFINITION_FILE}" ]]; then
-  err "Definition file not found: ${DEFINITION_FILE}"
+    err "Definition file not found: ${DEFINITION_FILE}"
 fi
 
 log "Deploying CORA/CORAX Dimensional Ontology"
@@ -110,29 +110,29 @@ info "Workspace: ${WORKSPACE_ID}"
 info "With Seed Data: ${WITH_SEED_DATA}"
 
 if [[ "${WITH_SEED_DATA}" == "true" ]]; then
-  if [[ ! -d "${SEED_DIR}" ]]; then
-    err "Seed directory not found: ${SEED_DIR}"
-  fi
+    if [[ ! -d "${SEED_DIR}" ]]; then
+        err "Seed directory not found: ${SEED_DIR}"
+    fi
 
-  info "Seed Directory: ${SEED_DIR}"
+    info "Seed Directory: ${SEED_DIR}"
 
-  "${SCRIPT_DIR}/deploy.sh" \
-    --definition "${DEFINITION_FILE}" \
-    --workspace-id "${WORKSPACE_ID}" \
-    --data-dir "${SEED_DIR}" \
-    ${LAKEHOUSE_ID:+--lakehouse-id "${LAKEHOUSE_ID}"} \
-    "${PASSTHROUGH_ARGS[@]}"
+    "${SCRIPT_DIR}/deploy.sh" \
+        --definition "${DEFINITION_FILE}" \
+        --workspace-id "${WORKSPACE_ID}" \
+        --data-dir "${SEED_DIR}" \
+        ${LAKEHOUSE_ID:+--lakehouse-id "${LAKEHOUSE_ID}"} \
+        "${PASSTHROUGH_ARGS[@]}"
 else
-  if [[ -z "${LAKEHOUSE_ID}" ]]; then
-    err "--lakehouse-id is required when not using --with-seed-data"
-  fi
+    if [[ -z "${LAKEHOUSE_ID}" ]]; then
+        err "--lakehouse-id is required when not using --with-seed-data"
+    fi
 
-  "${SCRIPT_DIR}/deploy.sh" \
-    --definition "${DEFINITION_FILE}" \
-    --workspace-id "${WORKSPACE_ID}" \
-    --lakehouse-id "${LAKEHOUSE_ID}" \
-    --skip-data-sources \
-    "${PASSTHROUGH_ARGS[@]}"
+    "${SCRIPT_DIR}/deploy.sh" \
+        --definition "${DEFINITION_FILE}" \
+        --workspace-id "${WORKSPACE_ID}" \
+        --lakehouse-id "${LAKEHOUSE_ID}" \
+        --skip-data-sources \
+        "${PASSTHROUGH_ARGS[@]}"
 fi
 
 ok "CORA/CORAX deployment complete"
