@@ -42,10 +42,10 @@ EOF
 # Early help handling
 for arg in "$@"; do
     case "$arg" in
-        -h | --help)
-            usage
-            exit 0
-            ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
     esac
 done
 
@@ -77,10 +77,10 @@ detect_local_platform() {
     local arch
     arch=$(uname -m)
     case "${arch}" in
-        x86_64) echo "linux/amd64" ;;
-        aarch64) echo "linux/arm64" ;;
-        armv7l) echo "linux/arm/v7" ;;
-        *) echo "linux/${arch}" ;;
+    x86_64) echo "linux/amd64" ;;
+    aarch64) echo "linux/arm64" ;;
+    armv7l) echo "linux/arm/v7" ;;
+    *) echo "linux/${arch}" ;;
     esac
 }
 
@@ -167,16 +167,16 @@ check_cross_compile_needed() {
 
     # Normalize current architecture
     case "${current_arch}" in
-        x86_64) current_arch="amd64" ;;
-        aarch64) current_arch="arm64" ;;
+    x86_64) current_arch="amd64" ;;
+    aarch64) current_arch="arm64" ;;
     esac
 
     # Extract target architecture from platform string
     local target_arch
     case "${target_platform}" in
-        linux/amd64) target_arch="amd64" ;;
-        linux/arm64) target_arch="arm64" ;;
-        *) target_arch="unknown" ;;
+    linux/amd64) target_arch="amd64" ;;
+    linux/arm64) target_arch="arm64" ;;
+    *) target_arch="unknown" ;;
     esac
 
     # Return true if cross-compilation is needed

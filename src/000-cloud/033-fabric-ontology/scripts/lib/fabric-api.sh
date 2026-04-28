@@ -91,44 +91,44 @@ fabric_api_call_file() {
 
     # Handle different response codes
     case "$http_code" in
-        200 | 201)
-            rm -f "$headers_file"
+    200 | 201)
+        rm -f "$headers_file"
+        echo "$response_body"
+        return 0
+        ;;
+    204)
+        rm -f "$headers_file"
+        echo "{}"
+        return 0
+        ;;
+    202)
+        # Long-running operation - check for Location header and poll
+        local location operation_id
+        location=$(grep -i "^Location:" "$headers_file" | sed 's/^[Ll]ocation: *//' | tr -d '\r')
+        operation_id=$(grep -i "^x-ms-operation-id:" "$headers_file" | sed 's/^x-ms-operation-id: *//' | tr -d '\r')
+        rm -f "$headers_file"
+
+        if [[ -n "$location" ]]; then
+            echo "[ INFO ]: Long-running operation, polling for completion..." >&2
+            poll_operation "$location" "$token" 300
+            return $?
+        elif [[ -n "$operation_id" ]]; then
+            echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
+            poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
+            return $?
+        else
+            # No location header, return body if any
             echo "$response_body"
             return 0
-            ;;
-        204)
-            rm -f "$headers_file"
-            echo "{}"
-            return 0
-            ;;
-        202)
-            # Long-running operation - check for Location header and poll
-            local location operation_id
-            location=$(grep -i "^Location:" "$headers_file" | sed 's/^[Ll]ocation: *//' | tr -d '\r')
-            operation_id=$(grep -i "^x-ms-operation-id:" "$headers_file" | sed 's/^x-ms-operation-id: *//' | tr -d '\r')
-            rm -f "$headers_file"
-
-            if [[ -n "$location" ]]; then
-                echo "[ INFO ]: Long-running operation, polling for completion..." >&2
-                poll_operation "$location" "$token" 300
-                return $?
-            elif [[ -n "$operation_id" ]]; then
-                echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
-                poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
-                return $?
-            else
-                # No location header, return body if any
-                echo "$response_body"
-                return 0
-            fi
-            ;;
-        *)
-            rm -f "$headers_file"
-            echo "[ ERROR ]: API call failed with HTTP $http_code" >&2
-            echo "[ ERROR ]: Endpoint: $method $url" >&2
-            echo "[ ERROR ]: Response: $response_body" >&2
-            return 1
-            ;;
+        fi
+        ;;
+    *)
+        rm -f "$headers_file"
+        echo "[ ERROR ]: API call failed with HTTP $http_code" >&2
+        echo "[ ERROR ]: Endpoint: $method $url" >&2
+        echo "[ ERROR ]: Response: $response_body" >&2
+        return 1
+        ;;
     esac
 }
 
@@ -175,44 +175,44 @@ fabric_api_call() {
 
     # Handle different response codes
     case "$http_code" in
-        200 | 201)
-            rm -f "$headers_file"
+    200 | 201)
+        rm -f "$headers_file"
+        echo "$response_body"
+        return 0
+        ;;
+    204)
+        rm -f "$headers_file"
+        echo "{}"
+        return 0
+        ;;
+    202)
+        # Long-running operation - check for Location header and poll
+        local location operation_id
+        location=$(grep -i "^Location:" "$headers_file" | sed 's/^[Ll]ocation: *//' | tr -d '\r')
+        operation_id=$(grep -i "^x-ms-operation-id:" "$headers_file" | sed 's/^x-ms-operation-id: *//' | tr -d '\r')
+        rm -f "$headers_file"
+
+        if [[ -n "$location" ]]; then
+            echo "[ INFO ]: Long-running operation, polling for completion..." >&2
+            poll_operation "$location" "$token" 300
+            return $?
+        elif [[ -n "$operation_id" ]]; then
+            echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
+            poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
+            return $?
+        else
+            # No location header, return body if any
             echo "$response_body"
             return 0
-            ;;
-        204)
-            rm -f "$headers_file"
-            echo "{}"
-            return 0
-            ;;
-        202)
-            # Long-running operation - check for Location header and poll
-            local location operation_id
-            location=$(grep -i "^Location:" "$headers_file" | sed 's/^[Ll]ocation: *//' | tr -d '\r')
-            operation_id=$(grep -i "^x-ms-operation-id:" "$headers_file" | sed 's/^x-ms-operation-id: *//' | tr -d '\r')
-            rm -f "$headers_file"
-
-            if [[ -n "$location" ]]; then
-                echo "[ INFO ]: Long-running operation, polling for completion..." >&2
-                poll_operation "$location" "$token" 300
-                return $?
-            elif [[ -n "$operation_id" ]]; then
-                echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
-                poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
-                return $?
-            else
-                # No location header, return body if any
-                echo "$response_body"
-                return 0
-            fi
-            ;;
-        *)
-            rm -f "$headers_file"
-            echo "[ ERROR ]: API call failed with HTTP $http_code" >&2
-            echo "[ ERROR ]: Endpoint: $method $url" >&2
-            echo "[ ERROR ]: Response: $response_body" >&2
-            return 1
-            ;;
+        fi
+        ;;
+    *)
+        rm -f "$headers_file"
+        echo "[ ERROR ]: API call failed with HTTP $http_code" >&2
+        echo "[ ERROR ]: Endpoint: $method $url" >&2
+        echo "[ ERROR ]: Response: $response_body" >&2
+        return 1
+        ;;
     esac
 }
 
@@ -243,48 +243,48 @@ poll_operation() {
         status=$(echo "$response" | jq -r '.status // .Status // "Unknown"')
 
         case "$status" in
-            "Succeeded" | "succeeded")
-                # Fetch the result endpoint to get the created item
-                local result_url="${operation_url}/result"
-                local result_response
-                result_response=$(curl -s -X GET "$result_url" \
-                    -H "Authorization: Bearer $token")
+        "Succeeded" | "succeeded")
+            # Fetch the result endpoint to get the created item
+            local result_url="${operation_url}/result"
+            local result_response
+            result_response=$(curl -s -X GET "$result_url" \
+                -H "Authorization: Bearer $token")
 
-                # Return result if valid, otherwise check for createdItem in status response
-                if [[ -n "$result_response" && "$result_response" != "null" ]]; then
-                    local result_id
-                    result_id=$(echo "$result_response" | jq -r '.id // empty')
-                    if [[ -n "$result_id" ]]; then
-                        echo "$result_response"
-                        return 0
-                    fi
+            # Return result if valid, otherwise check for createdItem in status response
+            if [[ -n "$result_response" && "$result_response" != "null" ]]; then
+                local result_id
+                result_id=$(echo "$result_response" | jq -r '.id // empty')
+                if [[ -n "$result_id" ]]; then
+                    echo "$result_response"
+                    return 0
                 fi
+            fi
 
-                # Fallback: check createdItem in status response
-                local created_item
-                created_item=$(echo "$response" | jq -r '.createdItem // empty')
-                if [[ -n "$created_item" && "$created_item" != "null" ]]; then
-                    echo "$created_item"
-                else
-                    echo "$response"
-                fi
-                return 0
-                ;;
-            "Failed" | "failed")
-                echo "[ ERROR ]: Operation failed" >&2
-                echo "$response" >&2
-                return 1
-                ;;
-            "Running" | "running" | "InProgress" | "inProgress" | "NotStarted" | "notStarted")
-                echo "[ INFO ]: Operation status: $status (${elapsed}s/${max_wait}s)" >&2
-                sleep "$sleep_interval"
-                ((elapsed += sleep_interval))
-                ;;
-            *)
-                echo "[ WARN ]: Unknown operation status: $status" >&2
-                sleep "$sleep_interval"
-                ((elapsed += sleep_interval))
-                ;;
+            # Fallback: check createdItem in status response
+            local created_item
+            created_item=$(echo "$response" | jq -r '.createdItem // empty')
+            if [[ -n "$created_item" && "$created_item" != "null" ]]; then
+                echo "$created_item"
+            else
+                echo "$response"
+            fi
+            return 0
+            ;;
+        "Failed" | "failed")
+            echo "[ ERROR ]: Operation failed" >&2
+            echo "$response" >&2
+            return 1
+            ;;
+        "Running" | "running" | "InProgress" | "inProgress" | "NotStarted" | "notStarted")
+            echo "[ INFO ]: Operation status: $status (${elapsed}s/${max_wait}s)" >&2
+            sleep "$sleep_interval"
+            ((elapsed += sleep_interval))
+            ;;
+        *)
+            echo "[ WARN ]: Unknown operation status: $status" >&2
+            sleep "$sleep_interval"
+            ((elapsed += sleep_interval))
+            ;;
         esac
     done
 

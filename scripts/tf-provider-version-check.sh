@@ -196,16 +196,16 @@ specific_folder=""
 
 while getopts "af:" opt; do
     case $opt in
-        a) # Run Terraform provider version check in all folders
-            run_all=true
-            ;;
-        f) # Run Terraform provider version check on a specific folder, e.g. `./src/030-iot-ops-cloud-reqs/terraform`
-            specific_folder=$OPTARG
-            ;;
-        *)
-            echo "Usage: $0 [-a] [-f folder]"
-            exit 1
-            ;;
+    a) # Run Terraform provider version check in all folders
+        run_all=true
+        ;;
+    f) # Run Terraform provider version check on a specific folder, e.g. `./src/030-iot-ops-cloud-reqs/terraform`
+        specific_folder=$OPTARG
+        ;;
+    *)
+        echo "Usage: $0 [-a] [-f folder]"
+        exit 1
+        ;;
     esac
 done
 

@@ -69,30 +69,30 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --workspace-id)
-            WORKSPACE_ID="$2"
-            shift 2
-            ;;
-        --lakehouse-id)
-            LAKEHOUSE_ID="$2"
-            shift 2
-            ;;
-        --with-seed-data)
-            WITH_SEED_DATA="true"
-            shift
-            ;;
-        --dry-run)
-            PASSTHROUGH_ARGS+=("$1")
-            shift
-            ;;
-        -h | --help)
-            usage
-            exit 0
-            ;;
-        *)
-            PASSTHROUGH_ARGS+=("$1")
-            shift
-            ;;
+    --workspace-id)
+        WORKSPACE_ID="$2"
+        shift 2
+        ;;
+    --lakehouse-id)
+        LAKEHOUSE_ID="$2"
+        shift 2
+        ;;
+    --with-seed-data)
+        WITH_SEED_DATA="true"
+        shift
+        ;;
+    --dry-run)
+        PASSTHROUGH_ARGS+=("$1")
+        shift
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        PASSTHROUGH_ARGS+=("$1")
+        shift
+        ;;
     esac
 done
 

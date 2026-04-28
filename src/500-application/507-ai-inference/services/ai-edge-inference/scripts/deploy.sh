@@ -268,27 +268,27 @@ main() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --build-only)
-                build_only=true
-                shift
-                ;;
-            --deploy-only)
-                deploy_only=true
-                shift
-                ;;
-            --skip-restart)
-                skip_restart=true
-                shift
-                ;;
-            --help)
-                show_usage
-                exit 0
-                ;;
-            *)
-                log_error "Unknown option: $1"
-                show_usage
-                exit 1
-                ;;
+        --build-only)
+            build_only=true
+            shift
+            ;;
+        --deploy-only)
+            deploy_only=true
+            shift
+            ;;
+        --skip-restart)
+            skip_restart=true
+            shift
+            ;;
+        --help)
+            show_usage
+            exit 0
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            show_usage
+            exit 1
+            ;;
         esac
     done
 

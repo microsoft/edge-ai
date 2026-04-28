@@ -59,29 +59,29 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --definition)
-            DEFINITION_FILE="$2"
-            shift 2
-            ;;
-        --workspace-id)
-            WORKSPACE_ID="$2"
-            shift 2
-            ;;
-        --lakehouse-id)
-            LAKEHOUSE_ID="$2"
-            shift 2
-            ;;
-        --dry-run)
-            DRY_RUN="true"
-            shift
-            ;;
-        -h | --help)
-            usage
-            exit 0
-            ;;
-        *)
-            err "Unknown argument: $1"
-            ;;
+    --definition)
+        DEFINITION_FILE="$2"
+        shift 2
+        ;;
+    --workspace-id)
+        WORKSPACE_ID="$2"
+        shift 2
+        ;;
+    --lakehouse-id)
+        LAKEHOUSE_ID="$2"
+        shift 2
+        ;;
+    --dry-run)
+        DRY_RUN="true"
+        shift
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        err "Unknown argument: $1"
+        ;;
     esac
 done
 
@@ -156,12 +156,12 @@ info "Workspace: $workspace_name ($WORKSPACE_ID)"
 map_tmdl_type() {
     local def_type="$1"
     case "$def_type" in
-        string) echo "string" ;;
-        int | integer) echo "int64" ;;
-        double | float | decimal) echo "double" ;;
-        datetime) echo "dateTime" ;;
-        boolean | bool) echo "boolean" ;;
-        *) echo "string" ;;
+    string) echo "string" ;;
+    int | integer) echo "int64" ;;
+    double | float | decimal) echo "double" ;;
+    datetime) echo "dateTime" ;;
+    boolean | bool) echo "boolean" ;;
+    *) echo "string" ;;
     esac
 }
 
@@ -271,16 +271,16 @@ generate_table_tmdl() {
 
         # Determine summarizeBy based on type and key status
         case "$tmdl_type" in
-            int64 | double)
-                if [[ "$is_key" == "true" ]]; then
-                    summarize_by="none"
-                else
-                    summarize_by="sum"
-                fi
-                ;;
-            *)
+        int64 | double)
+            if [[ "$is_key" == "true" ]]; then
                 summarize_by="none"
-                ;;
+            else
+                summarize_by="sum"
+            fi
+            ;;
+        *)
+            summarize_by="none"
+            ;;
         esac
 
         # Write column directly to file

@@ -8,8 +8,8 @@ ACR_NAME="${1:?ACR name required}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="${2:-${SCRIPT_DIR}/..}"
 OPERATOR_DIR="${APP_DIR}/operators/msg-to-dss-key"
-VERSION="$(grep '^version' "${OPERATOR_DIR}/Cargo.toml" |
-    head -1 | sed 's/.*= *"\(.*\)"/\1/')"
+VERSION="$(grep '^version' "${OPERATOR_DIR}/Cargo.toml" \
+    | head -1 | sed 's/.*= *"\(.*\)"/\1/')"
 
 echo "Logging in to ACR: ${ACR_NAME}"
 az acr login --name "${ACR_NAME}"

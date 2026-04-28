@@ -20,13 +20,13 @@ push=false
 
 while getopts ":nfp" opt; do
     case ${opt} in
-        n) dry_run=true ;;
-        f) force=true ;;
-        p) push=true ;;
-        *)
-            echo "Usage: $0 [-n] [-f] [-p] [components_dir]" >&2
-            exit 2
-            ;;
+    n) dry_run=true ;;
+    f) force=true ;;
+    p) push=true ;;
+    *)
+        echo "Usage: $0 [-n] [-f] [-p] [components_dir]" >&2
+        exit 2
+        ;;
     esac
 done
 

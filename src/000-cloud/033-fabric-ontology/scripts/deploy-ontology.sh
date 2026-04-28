@@ -78,41 +78,41 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --definition)
-            DEFINITION_FILE="$2"
-            shift 2
-            ;;
-        --workspace-id)
-            WORKSPACE_ID="$2"
-            shift 2
-            ;;
-        --lakehouse-id)
-            LAKEHOUSE_ID="$2"
-            shift 2
-            ;;
-        --eventhouse-id)
-            EVENTHOUSE_ID="$2"
-            shift 2
-            ;;
-        --kql-database-id)
-            KQL_DATABASE_ID="$2"
-            shift 2
-            ;;
-        --cluster-uri)
-            CLUSTER_URI="$2"
-            shift 2
-            ;;
-        --dry-run)
-            DRY_RUN="true"
-            shift
-            ;;
-        -h | --help)
-            usage
-            exit 0
-            ;;
-        *)
-            err "Unknown argument: $1"
-            ;;
+    --definition)
+        DEFINITION_FILE="$2"
+        shift 2
+        ;;
+    --workspace-id)
+        WORKSPACE_ID="$2"
+        shift 2
+        ;;
+    --lakehouse-id)
+        LAKEHOUSE_ID="$2"
+        shift 2
+        ;;
+    --eventhouse-id)
+        EVENTHOUSE_ID="$2"
+        shift 2
+        ;;
+    --kql-database-id)
+        KQL_DATABASE_ID="$2"
+        shift 2
+        ;;
+    --cluster-uri)
+        CLUSTER_URI="$2"
+        shift 2
+        ;;
+    --dry-run)
+        DRY_RUN="true"
+        shift
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        err "Unknown argument: $1"
+        ;;
     esac
 done
 

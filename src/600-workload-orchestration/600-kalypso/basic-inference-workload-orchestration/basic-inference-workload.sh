@@ -111,49 +111,49 @@ EOF
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -o | --org)
-                GITHUB_ORG="$2"
-                shift 2
-                ;;
-            -p | --project)
-                PROJECT_NAME="$2"
-                shift 2
-                ;;
-            # Azure Arc cluster parameters
-            -c | --arc-cluster)
-                ARC_CLUSTER_NAME="$2"
-                shift 2
-                ;;
-            -r | --arc-rg)
-                ARC_RESOURCE_GROUP="$2"
-                shift 2
-                ;;
-            # Kalypso AKS cluster parameters
-            -k | --kalypso-cluster)
-                KALYPSO_CLUSTER_NAME="$2"
-                shift 2
-                ;;
-            -g | --kalypso-rg)
-                KALYPSO_RESOURCE_GROUP="$2"
-                shift 2
-                ;;
-            -l | --kalypso-location)
-                KALYPSO_LOCATION="$2"
-                shift 2
-                ;;
-            --cleanup)
-                CLEANUP_MODE=true
-                shift
-                ;;
-            -h | --help)
-                print_usage
-                exit 0
-                ;;
-            *)
-                print_error "Unknown option: $1"
-                print_usage
-                exit 1
-                ;;
+        -o | --org)
+            GITHUB_ORG="$2"
+            shift 2
+            ;;
+        -p | --project)
+            PROJECT_NAME="$2"
+            shift 2
+            ;;
+        # Azure Arc cluster parameters
+        -c | --arc-cluster)
+            ARC_CLUSTER_NAME="$2"
+            shift 2
+            ;;
+        -r | --arc-rg)
+            ARC_RESOURCE_GROUP="$2"
+            shift 2
+            ;;
+        # Kalypso AKS cluster parameters
+        -k | --kalypso-cluster)
+            KALYPSO_CLUSTER_NAME="$2"
+            shift 2
+            ;;
+        -g | --kalypso-rg)
+            KALYPSO_RESOURCE_GROUP="$2"
+            shift 2
+            ;;
+        -l | --kalypso-location)
+            KALYPSO_LOCATION="$2"
+            shift 2
+            ;;
+        --cleanup)
+            CLEANUP_MODE=true
+            shift
+            ;;
+        -h | --help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            print_error "Unknown option: $1"
+            print_usage
+            exit 1
+            ;;
         esac
     done
 

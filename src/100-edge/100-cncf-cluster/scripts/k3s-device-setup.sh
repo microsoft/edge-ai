@@ -86,12 +86,12 @@ enable_debug() {
 
 if [[ $# -gt 0 ]]; then
     case "$1" in
-        -d | --debug)
-            enable_debug
-            ;;
-        *)
-            usage
-            ;;
+    -d | --debug)
+        enable_debug
+        ;;
+    *)
+        usage
+        ;;
     esac
 fi
 

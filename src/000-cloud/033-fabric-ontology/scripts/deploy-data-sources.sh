@@ -97,41 +97,41 @@ enable_debug() {
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --definition)
-            DEFINITION_FILE="$2"
-            shift 2
-            ;;
-        --workspace-id)
-            WORKSPACE_ID="$2"
-            shift 2
-            ;;
-        --skip-lakehouse)
-            SKIP_LAKEHOUSE="true"
-            shift
-            ;;
-        --skip-eventhouse)
-            SKIP_EVENTHOUSE="true"
-            shift
-            ;;
-        --skip-validation)
-            SKIP_VALIDATION="true"
-            shift
-            ;;
-        --dry-run)
-            DRY_RUN="true"
-            shift
-            ;;
-        -d | --debug)
-            DEBUG="true"
-            enable_debug
-            shift
-            ;;
-        -h | --help)
-            usage
-            ;;
-        *)
-            err "Unknown argument: $1"
-            ;;
+    --definition)
+        DEFINITION_FILE="$2"
+        shift 2
+        ;;
+    --workspace-id)
+        WORKSPACE_ID="$2"
+        shift 2
+        ;;
+    --skip-lakehouse)
+        SKIP_LAKEHOUSE="true"
+        shift
+        ;;
+    --skip-eventhouse)
+        SKIP_EVENTHOUSE="true"
+        shift
+        ;;
+    --skip-validation)
+        SKIP_VALIDATION="true"
+        shift
+        ;;
+    --dry-run)
+        DRY_RUN="true"
+        shift
+        ;;
+    -d | --debug)
+        DEBUG="true"
+        enable_debug
+        shift
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *)
+        err "Unknown argument: $1"
+        ;;
     esac
 done
 

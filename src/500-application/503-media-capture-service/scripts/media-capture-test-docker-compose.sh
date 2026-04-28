@@ -86,27 +86,27 @@ check_mosquitto_container() {
 # Function to run quick test scenarios
 run_quick_test() {
     case "$1" in
-        "alert" | "a")
-            echo "Testing ALERT trigger with current timestamp..."
-            run_advanced_test -u -l -f alert-true.json
-            ;;
-        "alert-past" | "ap")
-            echo "Testing ALERT trigger with timestamp 5 seconds ago..."
-            run_advanced_test -u -5 -l -f alert-true.json
-            ;;
-        "analytics" | "an")
-            echo "Testing ANALYTICS DISABLED trigger..."
-            run_advanced_test -u -l -f analytics-disabled.json -m analytics_disabled
-            ;;
-        "manual" | "m")
-            echo "Testing MANUAL trigger..."
-            run_advanced_test -u -l -f manual-trigger.json
-            ;;
-        *)
-            echo "Unknown quick test scenario: $1"
-            echo "Available scenarios: alert, alert-past, analytics, manual"
-            exit 1
-            ;;
+    "alert" | "a")
+        echo "Testing ALERT trigger with current timestamp..."
+        run_advanced_test -u -l -f alert-true.json
+        ;;
+    "alert-past" | "ap")
+        echo "Testing ALERT trigger with timestamp 5 seconds ago..."
+        run_advanced_test -u -5 -l -f alert-true.json
+        ;;
+    "analytics" | "an")
+        echo "Testing ANALYTICS DISABLED trigger..."
+        run_advanced_test -u -l -f analytics-disabled.json -m analytics_disabled
+        ;;
+    "manual" | "m")
+        echo "Testing MANUAL trigger..."
+        run_advanced_test -u -l -f manual-trigger.json
+        ;;
+    *)
+        echo "Unknown quick test scenario: $1"
+        echo "Available scenarios: alert, alert-past, analytics, manual"
+        exit 1
+        ;;
     esac
 }
 
@@ -122,35 +122,35 @@ run_advanced_test() {
     # Parse option flags
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -u)
-                UPDATE_TIME=true
-                if [[ "$2" =~ ^-?[0-9]+$ ]]; then
-                    OFFSET_SECS="$2"
-                    shift
-                fi
-                ;;
-            -t)
-                TOPIC="$2"
+        -u)
+            UPDATE_TIME=true
+            if [[ "$2" =~ ^-?[0-9]+$ ]]; then
+                OFFSET_SECS="$2"
                 shift
-                ;;
-            -f)
-                FILENAME="$2"
-                shift
-                ;;
-            -l)
-                SHOW_LOCAL_TIME=true
-                ;;
-            -m)
-                MESSAGE_TYPE="$2"
-                shift
-                ;;
-            -c)
-                MOSQUITTO_CONTAINER="$2"
-                shift
-                ;;
-            *)
-                break
-                ;;
+            fi
+            ;;
+        -t)
+            TOPIC="$2"
+            shift
+            ;;
+        -f)
+            FILENAME="$2"
+            shift
+            ;;
+        -l)
+            SHOW_LOCAL_TIME=true
+            ;;
+        -m)
+            MESSAGE_TYPE="$2"
+            shift
+            ;;
+        -c)
+            MOSQUITTO_CONTAINER="$2"
+            shift
+            ;;
+        *)
+            break
+            ;;
         esac
         shift
     done
@@ -279,26 +279,26 @@ run_advanced_test() {
 
 # Main script logic
 case "${1:-help}" in
-    "alert" | "a" | "alert-past" | "ap" | "analytics" | "an" | "manual" | "m")
-        echo "Media Capture Service Local Test Script"
-        echo "======================================="
+"alert" | "a" | "alert-past" | "ap" | "analytics" | "an" | "manual" | "m")
+    echo "Media Capture Service Local Test Script"
+    echo "======================================="
+    echo ""
+    run_quick_test "$1"
+    ;;
+"help" | "h" | "-h" | "--help")
+    help
+    ;;
+*)
+    # If first argument doesn't match quick scenarios, treat as advanced usage
+    if [[ "$1" =~ ^- ]]; then
+        # Starts with dash, advanced usage
+        run_advanced_test "$@"
+    else
+        # Unknown command, show help
+        echo "Unknown command: $1"
         echo ""
-        run_quick_test "$1"
-        ;;
-    "help" | "h" | "-h" | "--help")
         help
-        ;;
-    *)
-        # If first argument doesn't match quick scenarios, treat as advanced usage
-        if [[ "$1" =~ ^- ]]; then
-            # Starts with dash, advanced usage
-            run_advanced_test "$@"
-        else
-            # Unknown command, show help
-            echo "Unknown command: $1"
-            echo ""
-            help
-            exit 1
-        fi
-        ;;
+        exit 1
+    fi
+    ;;
 esac

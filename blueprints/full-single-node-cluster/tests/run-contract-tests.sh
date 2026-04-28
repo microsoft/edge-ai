@@ -54,23 +54,23 @@ VERBOSE_FLAG=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        terraform | bicep | both)
-            TEST_TYPE="$1"
-            shift
-            ;;
-        -v | --verbose)
-            VERBOSE_FLAG="-v"
-            shift
-            ;;
-        -h | --help)
-            print_usage
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Unknown option: $1${NC}"
-            print_usage
-            exit 1
-            ;;
+    terraform | bicep | both)
+        TEST_TYPE="$1"
+        shift
+        ;;
+    -v | --verbose)
+        VERBOSE_FLAG="-v"
+        shift
+        ;;
+    -h | --help)
+        print_usage
+        exit 0
+        ;;
+    *)
+        echo -e "${RED}Unknown option: $1${NC}"
+        print_usage
+        exit 1
+        ;;
     esac
 done
 
@@ -141,16 +141,16 @@ run_test() {
 }
 
 case $TEST_TYPE in
-    terraform)
-        run_test "Terraform Contract Test" "TestTerraformOutputsContract"
-        ;;
-    bicep)
-        run_test "Bicep Contract Test" "TestBicepOutputsContract"
-        ;;
-    both)
-        run_test "Terraform Contract Test" "TestTerraformOutputsContract"
-        run_test "Bicep Contract Test" "TestBicepOutputsContract"
-        ;;
+terraform)
+    run_test "Terraform Contract Test" "TestTerraformOutputsContract"
+    ;;
+bicep)
+    run_test "Bicep Contract Test" "TestBicepOutputsContract"
+    ;;
+both)
+    run_test "Terraform Contract Test" "TestTerraformOutputsContract"
+    run_test "Bicep Contract Test" "TestBicepOutputsContract"
+    ;;
 esac
 
 # Summary

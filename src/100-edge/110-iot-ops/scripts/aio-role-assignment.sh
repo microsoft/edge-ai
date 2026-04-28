@@ -141,21 +141,21 @@ detect_target_resource_type() {
     log "Detected resource type: $target_resource_type"
 
     case "$target_resource_type" in
-        "Microsoft.EventHub/namespaces")
-            service_name="Event Hub Namespace"
-            resource_type="Microsoft.EventHub/namespaces"
-            publishing_role="Azure Event Hubs Data Sender"
-            subscribing_role="Azure Event Hubs Data Receiver"
-            ;;
-        "Microsoft.EventGrid/namespaces")
-            service_name="Event Grid Namespace"
-            resource_type="Microsoft.EventGrid/namespaces"
-            publishing_role="EventGrid TopicSpaces Publisher"
-            subscribing_role="EventGrid TopicSpaces Subscriber"
-            ;;
-        *)
-            err "Unsupported resource type '$target_resource_type'. Supported types: Microsoft.EventHub/namespaces, Microsoft.EventGrid/namespaces"
-            ;;
+    "Microsoft.EventHub/namespaces")
+        service_name="Event Hub Namespace"
+        resource_type="Microsoft.EventHub/namespaces"
+        publishing_role="Azure Event Hubs Data Sender"
+        subscribing_role="Azure Event Hubs Data Receiver"
+        ;;
+    "Microsoft.EventGrid/namespaces")
+        service_name="Event Grid Namespace"
+        resource_type="Microsoft.EventGrid/namespaces"
+        publishing_role="EventGrid TopicSpaces Publisher"
+        subscribing_role="EventGrid TopicSpaces Subscriber"
+        ;;
+    *)
+        err "Unsupported resource type '$target_resource_type'. Supported types: Microsoft.EventHub/namespaces, Microsoft.EventGrid/namespaces"
+        ;;
     esac
 
     log "Configured for $service_name with publishing role '$publishing_role' and subscribing role '$subscribing_role'"
@@ -167,15 +167,15 @@ detect_target_resource_type() {
 
 if [[ $# -gt 0 ]]; then
     case "$1" in
-        -d | --debug)
-            enable_debug
-            ;;
-        -h | --help)
-            usage
-            ;;
-        *)
-            usage
-            ;;
+    -d | --debug)
+        enable_debug
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *)
+        usage
+        ;;
     esac
 fi
 

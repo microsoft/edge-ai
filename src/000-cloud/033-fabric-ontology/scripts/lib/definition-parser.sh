@@ -260,13 +260,13 @@ get_semantic_model_mode() {
 map_property_type() {
     local def_type="$1"
     case "$def_type" in
-        "string") echo "String" ;;
-        "int") echo "BigInt" ;;
-        "double") echo "Double" ;;
-        "datetime") echo "DateTime" ;;
-        "boolean") echo "Boolean" ;;
-        "object") echo "Object" ;;
-        *) echo "String" ;;
+    "string") echo "String" ;;
+    "int") echo "BigInt" ;;
+    "double") echo "Double" ;;
+    "datetime") echo "DateTime" ;;
+    "boolean") echo "Boolean" ;;
+    "object") echo "Object" ;;
+    *) echo "String" ;;
     esac
 }
 
@@ -274,13 +274,13 @@ map_property_type() {
 map_kql_type() {
     local def_type="$1"
     case "$def_type" in
-        "string") echo "string" ;;
-        "int") echo "int" ;;
-        "double") echo "real" ;;
-        "datetime") echo "datetime" ;;
-        "boolean") echo "bool" ;;
-        "object") echo "dynamic" ;;
-        *) echo "string" ;;
+    "string") echo "string" ;;
+    "int") echo "int" ;;
+    "double") echo "real" ;;
+    "datetime") echo "datetime" ;;
+    "boolean") echo "bool" ;;
+    "object") echo "dynamic" ;;
+    *) echo "string" ;;
     esac
 }
 
@@ -288,13 +288,13 @@ map_kql_type() {
 map_tmdl_type() {
     local def_type="$1"
     case "$def_type" in
-        "string") echo "string" ;;
-        "int") echo "int64" ;;
-        "double") echo "double" ;;
-        "datetime") echo "dateTime" ;;
-        "boolean") echo "boolean" ;;
-        "object") echo "string" ;;
-        *) echo "string" ;;
+    "string") echo "string" ;;
+    "int") echo "int64" ;;
+    "double") echo "double" ;;
+    "datetime") echo "dateTime" ;;
+    "boolean") echo "boolean" ;;
+    "object") echo "string" ;;
+    *) echo "string" ;;
     esac
 }
 

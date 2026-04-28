@@ -117,9 +117,9 @@ is_newer_version() {
 # Parse command line options
 while getopts "v:h" opt; do
     case $opt in
-        v) VERSION="$OPTARG" ;;
-        h) usage ;;
-        *) usage ;;
+    v) VERSION="$OPTARG" ;;
+    h) usage ;;
+    *) usage ;;
     esac
 done
 
@@ -157,16 +157,16 @@ if command -v terraform-docs &>/dev/null; then
         # Detect architecture for update
         ARCH=$(uname -m)
         case $ARCH in
-            x86_64 | amd64)
-                TERRAFORM_DOCS_ARCH="amd64"
-                ;;
-            aarch64 | arm64)
-                TERRAFORM_DOCS_ARCH="arm64"
-                ;;
-            *)
-                echo "Unsupported architecture: $ARCH"
-                exit 1
-                ;;
+        x86_64 | amd64)
+            TERRAFORM_DOCS_ARCH="amd64"
+            ;;
+        aarch64 | arm64)
+            TERRAFORM_DOCS_ARCH="arm64"
+            ;;
+        *)
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+            ;;
         esac
 
         # Download and install the specified version
@@ -184,16 +184,16 @@ else
     # Detect architecture
     ARCH=$(uname -m)
     case $ARCH in
-        x86_64 | amd64)
-            TERRAFORM_DOCS_ARCH="amd64"
-            ;;
-        aarch64 | arm64)
-            TERRAFORM_DOCS_ARCH="arm64"
-            ;;
-        *)
-            echo "Unsupported architecture: $ARCH"
-            exit 1
-            ;;
+    x86_64 | amd64)
+        TERRAFORM_DOCS_ARCH="amd64"
+        ;;
+    aarch64 | arm64)
+        TERRAFORM_DOCS_ARCH="arm64"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
     esac
 
     # Install terraform-docs (using the specified version)

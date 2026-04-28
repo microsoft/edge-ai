@@ -122,23 +122,23 @@ DEFINITION_FILE=""
 parse_args() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -d | --definition)
-                DEFINITION_FILE="$2"
-                shift 2
-                ;;
-            -v | --verbose)
-                VERBOSE=true
-                shift
-                ;;
-            -h | --help)
-                usage
-                exit 0
-                ;;
-            *)
-                err "Unknown argument: $1"
-                usage
-                exit 2
-                ;;
+        -d | --definition)
+            DEFINITION_FILE="$2"
+            shift 2
+            ;;
+        -v | --verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            err "Unknown argument: $1"
+            usage
+            exit 2
+            ;;
         esac
     done
 

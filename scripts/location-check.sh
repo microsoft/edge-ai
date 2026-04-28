@@ -83,23 +83,23 @@ method=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        -h | --help)
-            show_usage
-            ;;
-        -b | --blueprint)
-            shift
-            blueprint=$1
-            shift
-            ;;
-        -m | --method)
-            shift
-            method=$1
-            shift
-            ;;
-        *)
-            echo "Unknown option: $1"
-            show_usage
-            ;;
+    -h | --help)
+        show_usage
+        ;;
+    -b | --blueprint)
+        shift
+        blueprint=$1
+        shift
+        ;;
+    -m | --method)
+        shift
+        method=$1
+        shift
+        ;;
+    *)
+        echo "Unknown option: $1"
+        show_usage
+        ;;
     esac
 done
 
@@ -146,12 +146,12 @@ cd "$blueprint/$method"
 declare -a resources=()
 
 case "$method" in
-    "bicep" | "bicep/")
-        mapfile -t resources < <(bicep_get_resources "main.bicep" | sort -u)
-        ;;
-    "terraform" | "terraform/")
-        mapfile -t resources < <(terraform_get_resources "." | sort -u)
-        ;;
+"bicep" | "bicep/")
+    mapfile -t resources < <(bicep_get_resources "main.bicep" | sort -u)
+    ;;
+"terraform" | "terraform/")
+    mapfile -t resources < <(terraform_get_resources "." | sort -u)
+    ;;
 esac
 
 # return value of 1 indicates failure

@@ -41,23 +41,23 @@ VERBOSE_FLAG=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        terraform | bicep | both)
-            DEPLOYMENT_TYPE="$1"
-            shift
-            ;;
-        -v | --verbose)
-            VERBOSE_FLAG="-v"
-            shift
-            ;;
-        -h | --help)
-            print_usage
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Unknown option: $1${NC}"
-            print_usage
-            exit 1
-            ;;
+    terraform | bicep | both)
+        DEPLOYMENT_TYPE="$1"
+        shift
+        ;;
+    -v | --verbose)
+        VERBOSE_FLAG="-v"
+        shift
+        ;;
+    -h | --help)
+        print_usage
+        exit 0
+        ;;
+    *)
+        echo -e "${RED}Unknown option: $1${NC}"
+        print_usage
+        exit 1
+        ;;
     esac
 done
 
@@ -140,17 +140,17 @@ run_bicep_tests() {
 EXIT_CODE=0
 
 case $DEPLOYMENT_TYPE in
-    terraform)
-        run_terraform_tests || EXIT_CODE=$?
-        ;;
-    bicep)
-        run_bicep_tests || EXIT_CODE=$?
-        ;;
-    both)
-        run_terraform_tests || EXIT_CODE=$?
-        echo ""
-        run_bicep_tests || EXIT_CODE=$?
-        ;;
+terraform)
+    run_terraform_tests || EXIT_CODE=$?
+    ;;
+bicep)
+    run_bicep_tests || EXIT_CODE=$?
+    ;;
+both)
+    run_terraform_tests || EXIT_CODE=$?
+    echo ""
+    run_bicep_tests || EXIT_CODE=$?
+    ;;
 esac
 
 echo ""

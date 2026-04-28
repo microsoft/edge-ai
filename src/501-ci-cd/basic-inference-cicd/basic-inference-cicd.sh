@@ -30,39 +30,39 @@ parse_arguments() {
 
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -o | --org)
-                GITHUB_ORG="$2"
-                shift 2
-                ;;
-            -p | --project)
-                PROJECT_NAME="$2"
-                shift 2
-                ;;
-            -c | --cluster)
-                CLUSTER_NAME="$2"
-                shift 2
-                ;;
-            -r | --rg)
-                RESOURCE_GROUP="$2"
-                shift 2
-                ;;
-            --skip-flux | --no-flux)
-                CONFIGURE_FLUX=false
-                shift
-                ;;
-            --cleanup | --delete)
-                CLEANUP_MODE=true
-                shift
-                ;;
-            -h | --help)
-                usage
-                exit 0
-                ;;
-            *)
-                print_error "Unknown option: $1"
-                usage
-                exit 1
-                ;;
+        -o | --org)
+            GITHUB_ORG="$2"
+            shift 2
+            ;;
+        -p | --project)
+            PROJECT_NAME="$2"
+            shift 2
+            ;;
+        -c | --cluster)
+            CLUSTER_NAME="$2"
+            shift 2
+            ;;
+        -r | --rg)
+            RESOURCE_GROUP="$2"
+            shift 2
+            ;;
+        --skip-flux | --no-flux)
+            CONFIGURE_FLUX=false
+            shift
+            ;;
+        --cleanup | --delete)
+            CLEANUP_MODE=true
+            shift
+            ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            print_error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
         esac
     done
 

@@ -111,45 +111,45 @@ EOF
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --definition)
-            DEFINITION_FILE="$2"
-            shift 2
-            ;;
-        --workspace-id)
-            WORKSPACE_ID="$2"
-            shift 2
-            ;;
-        --data-dir)
-            DATA_DIR="$2"
-            shift 2
-            ;;
-        --lakehouse-id)
-            LAKEHOUSE_ID="$2"
-            shift 2
-            ;;
-        --skip-data-sources)
-            SKIP_DATA_SOURCES="true"
-            shift
-            ;;
-        --skip-semantic-model)
-            SKIP_SEMANTIC_MODEL="true"
-            shift
-            ;;
-        --skip-ontology)
-            SKIP_ONTOLOGY="true"
-            shift
-            ;;
-        --dry-run)
-            DRY_RUN="true"
-            shift
-            ;;
-        -h | --help)
-            usage
-            exit 0
-            ;;
-        *)
-            err "Unknown option: $1"
-            ;;
+    --definition)
+        DEFINITION_FILE="$2"
+        shift 2
+        ;;
+    --workspace-id)
+        WORKSPACE_ID="$2"
+        shift 2
+        ;;
+    --data-dir)
+        DATA_DIR="$2"
+        shift 2
+        ;;
+    --lakehouse-id)
+        LAKEHOUSE_ID="$2"
+        shift 2
+        ;;
+    --skip-data-sources)
+        SKIP_DATA_SOURCES="true"
+        shift
+        ;;
+    --skip-semantic-model)
+        SKIP_SEMANTIC_MODEL="true"
+        shift
+        ;;
+    --skip-ontology)
+        SKIP_ONTOLOGY="true"
+        shift
+        ;;
+    --dry-run)
+        DRY_RUN="true"
+        shift
+        ;;
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
+        err "Unknown option: $1"
+        ;;
     esac
 done
 
