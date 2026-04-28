@@ -19,22 +19,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        crate:
-          - src/500-application/503-media-capture-service/services/media-capture-service
-          - src/500-application/507-ai-inference/services/ai-edge-inference
-          - src/500-application/507-ai-inference/services/ai-edge-inference-crate
+        include:
+          - crate: src/500-application/501-rust-telemetry/services/receiver
+          - crate: src/500-application/501-rust-telemetry/services/sender
+          - crate: src/500-application/502-rust-http-connector/services/broker
+          - crate: src/500-application/502-rust-http-connector/services/subscriber
+          - crate: src/500-application/503-media-capture-service/services/media-capture-service
+            system_deps: ffmpeg
+          - crate: src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
+          - crate: src/500-application/507-ai-inference/services/ai-edge-inference
+          - crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install system build dependencies
+      - name: Install base system build dependencies
         shell: bash
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             protobuf-compiler \
             pkg-config \
-            clang \
+            clang
+
+      - name: Install ffmpeg system libraries
+        if: matrix.system_deps == 'ffmpeg'
+        shell: bash
+        run: |
+          sudo apt-get install -y --no-install-recommends \
             libavcodec-dev \
             libavformat-dev \
             libavfilter-dev \
@@ -62,22 +75,6 @@ jobs:
           rm -rf "${SYFT_TMP}"
           syft version
 
-      - name: Install Grype (vulnerability scanner)
-        shell: bash
-        run: |
-          GRYPE_VERSION="v0.86.1"
-          GRYPE_VER="${GRYPE_VERSION#v}"
-          GRYPE_TMP="$(mktemp -d)"
-          echo "Installing Grype ${GRYPE_VERSION}..."
-          curl -sSfL -o "${GRYPE_TMP}/grype.tar.gz" \
-            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_linux_amd64.tar.gz"
-          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
-            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
-          (cd "${GRYPE_TMP}" && grep " grype_${GRYPE_VER}_linux_amd64.tar.gz$" grype_checksums.txt | sha256sum -c -)
-          sudo tar -xzf "${GRYPE_TMP}/grype.tar.gz" -C /usr/local/bin grype
-          rm -rf "${GRYPE_TMP}"
-          grype version
-
       - name: Generate runner SBOM (dpkg + repo)
         shell: bash
         run: |
@@ -94,11 +91,6 @@ jobs:
             --exclude '/home/runner/work/**/target/**' \
             -o cyclonedx-json=sbom.cdx.json
           echo "SBOM components: $(jq '.components | length' sbom.cdx.json)"
-
-      - name: Scan SBOM with Grype
-        shell: bash
-        run: |
-          grype sbom:./sbom.cdx.json --fail-on high
 
       - name: Upload SBOM artifact
         if: always()
@@ -144,3 +136,39 @@ jobs:
           verbose: true
           flags: rust
           name: rust-coverage-${{ matrix.crate }}
+
+  vuln-scan:
+    needs: [coverage]
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        index: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: rust-tests-runner-sbom-${{ matrix.index }}
+
+      - name: Install Grype
+        shell: bash
+        run: |
+          GRYPE_VERSION="v0.86.1"
+          GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TMP="$(mktemp -d)"
+          echo "Installing Grype ${GRYPE_VERSION}..."
+          curl -sSfL -o "${GRYPE_TMP}/grype.tar.gz" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
+          (cd "${GRYPE_TMP}" && grep " grype_${GRYPE_VER}_linux_amd64.tar.gz$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/grype.tar.gz" -C /usr/local/bin grype
+          rm -rf "${GRYPE_TMP}"
+          grype version
+
+      - name: Scan SBOM with Grype
+        shell: bash
+        run: grype sbom:./sbom.cdx.json --fail-on critical

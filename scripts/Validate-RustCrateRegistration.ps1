@@ -161,10 +161,22 @@ function Get-RustTestsConfig {
         }
     }
     $matrix = @()
+    $matrixSection = $null
     if ($doc['jobs'] -and $doc['jobs']['coverage'] -and $doc['jobs']['coverage']['strategy'] `
-            -and $doc['jobs']['coverage']['strategy']['matrix'] `
-            -and $doc['jobs']['coverage']['strategy']['matrix']['crate']) {
-        $matrix = @($doc['jobs']['coverage']['strategy']['matrix']['crate'])
+            -and $doc['jobs']['coverage']['strategy']['matrix']) {
+        $matrixSection = $doc['jobs']['coverage']['strategy']['matrix']
+    }
+    if ($matrixSection) {
+        if ($matrixSection['crate']) {
+            $matrix += @($matrixSection['crate'])
+        }
+        if ($matrixSection['include']) {
+            foreach ($item in @($matrixSection['include'])) {
+                if ($item -is [System.Collections.IDictionary] -and $item['crate']) {
+                    $matrix += $item['crate']
+                }
+            }
+        }
     }
     return [pscustomobject]@{
         PullRequestPaths = $pullPaths
