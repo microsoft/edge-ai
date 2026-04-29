@@ -54,7 +54,9 @@ jobs:
             libavdevice-dev \
             libavutil-dev \
             libswscale-dev \
-            libswresample-dev
+            libswresample-dev \
+            libopencv-dev \
+            libclang-dev
 
       # SBOM + vulnerability scan for apt-installed system packages (and repo sources).
       # Tracking-only mitigation; replace with a pinned, scanned base container (Option B)
