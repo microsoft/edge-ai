@@ -5,7 +5,7 @@
 //! This module provides a unified postprocessing system that can automatically
 //! handle different model output formats and convert them to standardized results.
 
-use ndarray::{Array2, Array3, Array4};
+use ndarray::{Array2, Array3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use thiserror::Error;
@@ -676,7 +676,7 @@ pub mod presets {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::Array3;
+    use ndarray::{Array3, Array4};
 
     #[test]
     fn test_yolov8_postprocessing() {
