@@ -1,6 +1,7 @@
 // Jazzer.js fuzz harness for tiered-notification-service processAlerts module.
 // Targets pure functions exported from processAlerts.js (parseAlertPayload,
 // extractSeverity, buildDedupKey, validateWebhookUrl).
+// trigger fuzz CI
 import { parseAlertPayload, extractSeverity, buildDedupKey, validateWebhookUrl }
   from '../../src/functions/processAlerts.js';
 

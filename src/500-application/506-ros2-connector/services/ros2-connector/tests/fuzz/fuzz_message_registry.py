@@ -1,4 +1,5 @@
 """Atheris fuzz harness for ros2-connector MessageTypeRegistry.get_handler."""
+# trigger fuzz CI
 import sys
 from pathlib import Path
 

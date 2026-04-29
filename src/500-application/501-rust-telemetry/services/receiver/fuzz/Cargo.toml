@@ -1,3 +1,4 @@
+# trigger fuzz CI
 [package]
 name = "receiver-fuzz"
 version = "0.0.0"
