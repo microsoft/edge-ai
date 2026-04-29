@@ -212,19 +212,19 @@ jobs:
           "changesInApplications=$($jsonData.applications.has_changes)" >> $env:GITHUB_OUTPUT
           "changedApplicationFolders=$($jsonData.applications.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
           if ($jsonData.PSObject.Properties.Name -contains 'fuzz') {
-            "changesInFuzzRust=$($jsonData.fuzz.rust.has_changes)" >> $env:GITHUB_OUTPUT
+            "changesInFuzzRust=$($jsonData.fuzz.rust.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
             "changedFuzzRustFolders=$($jsonData.fuzz.rust.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
-            "changesInFuzzPython=$($jsonData.fuzz.python.has_changes)" >> $env:GITHUB_OUTPUT
+            "changesInFuzzPython=$($jsonData.fuzz.python.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
             "changedFuzzPythonFolders=$($jsonData.fuzz.python.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
-            "changesInFuzzJs=$($jsonData.fuzz.js.has_changes)" >> $env:GITHUB_OUTPUT
+            "changesInFuzzJs=$($jsonData.fuzz.js.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
             "changedFuzzJsFolders=$($jsonData.fuzz.js.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
           } else {
-            "changesInFuzzRust=False" >> $env:GITHUB_OUTPUT
-            "changedFuzzRustFolders={}" >> $env:GITHUB_OUTPUT
-            "changesInFuzzPython=False" >> $env:GITHUB_OUTPUT
-            "changedFuzzPythonFolders={}" >> $env:GITHUB_OUTPUT
-            "changesInFuzzJs=False" >> $env:GITHUB_OUTPUT
-            "changedFuzzJsFolders={}" >> $env:GITHUB_OUTPUT
+            "changesInFuzzRust=false" >> $env:GITHUB_OUTPUT
+            'changedFuzzRustFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
+            "changesInFuzzPython=false" >> $env:GITHUB_OUTPUT
+            'changedFuzzPythonFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
+            "changesInFuzzJs=false" >> $env:GITHUB_OUTPUT
+            'changedFuzzJsFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
           }
 
           # Display results for debugging

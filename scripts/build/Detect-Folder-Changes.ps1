@@ -698,7 +698,7 @@ if ($bicepFiles) {
 if ($IncludeFuzzTargets) {
     $fuzzRustFiles = $changedFiles | Where-Object { $_ -match '/fuzz/(Cargo\.toml|fuzz_targets/.+\.rs)$' }
     $fuzzPythonFiles = $changedFiles | Where-Object { $_ -match '/tests/fuzz/.+\.py$' }
-    $fuzzJsFiles = $changedFiles | Where-Object { $_ -match '/fuzz/(package\.json|.+\.js)$' }
+    $fuzzJsFiles = $changedFiles | Where-Object { $_ -match '/(tests/)?fuzz/(package\.json|.+\.(mjs|cjs|js))$' }
 
     if ($fuzzRustFiles) {
         $fuzzRustPaths = Get-FilePathData -Paths $fuzzRustFiles
