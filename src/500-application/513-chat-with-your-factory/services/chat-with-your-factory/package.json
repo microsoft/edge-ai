@@ -1,0 +1,56 @@
+{
+  "name": "chat-with-your-factory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=21.0.0"
+  },
+  "description": "Chat With Factory - Voice-enabled AI agent web application for industrial environments",
+  "author": "Microsoft",
+  "license": "MIT",
+  "main": "./dist/server/index.js",
+  "scripts": {
+    "build:server": "tsc --build tsconfig.server.json",
+    "build:client": "npm run build:client:azure",
+    "build:client:azure": "esbuild src/client/index.tsx --bundle --platform=browser --target=esnext --outdir=public/dist --jsx=automatic --minify --define:__SPEECH_PROVIDER__=\\\"azure\\\"",
+    "build:client:webspeech": "esbuild src/client/index.tsx --bundle --platform=browser --target=esnext --outdir=public/dist --jsx=automatic --minify --define:__SPEECH_PROVIDER__=\\\"webspeech\\\"",
+    "build:client:voicelive": "esbuild src/client/index.tsx --bundle --platform=browser --target=esnext --outdir=public/dist --jsx=automatic --minify --define:__SPEECH_PROVIDER__=\\\"voicelive\\\"",
+    "build": "npm run build:server && npm run build:client",
+    "build:voicelive": "npm run build:server && npm run build:client:voicelive",
+    "build:webspeech": "npm run build:server && npm run build:client:webspeech",
+    "prestart": "npm run build",
+    "start": "node --env-file ../../.env ./dist/server/index.js",
+    "start:voicelive": "npm run build:voicelive && node --env-file ../../.env ./dist/server/index.js",
+    "start:webspeech": "npm run build:webspeech && node --env-file ../../.env ./dist/server/index.js",
+    "dev:client": "npm run build:client:azure -- --watch",
+    "dev:client:webspeech": "npm run build:client:webspeech -- --watch",
+    "dev:client:voicelive": "npm run build:client:voicelive -- --watch",
+    "dev:server": "npm run build:server && node --env-file ../../.env --watch ./dist/server/index.js"
+  },
+  "dependencies": {
+    "@azure/ai-agents": "^1.0.0-beta.3",
+    "@azure/identity": "^4.9.1",
+    "@azure/msal-node": "^3.5.0",
+    "@fluentui/react-components": "^9.73.2",
+    "@fluentui/react-icons": "^2.0.320",
+    "@microsoft/agents-activity": "^1.0.0",
+    "@microsoft/agents-copilotstudio-client": "^1.4.2",
+    "@microsoft/teams-js": "^2.35.0",
+    "express": "^5.1.0",
+    "jose": "^6.2.1",
+    "microsoft-cognitiveservices-speech-sdk": "^1.48.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.18",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@types/ws": "^8.5.14",
+    "esbuild": "^0.25.9",
+    "typescript": "^5.8.3"
+  }
+}

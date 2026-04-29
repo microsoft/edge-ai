@@ -1,0 +1,45 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.22/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.22",
+  "version": "1.0.0",
+  "id": "<APP_ID>",
+  "developer": {
+    "name": "Microsoft, Inc.",
+    "websiteUrl": "https://<APP_HOSTNAME>",
+    "privacyUrl": "https://<APP_HOSTNAME>/privacy",
+    "termsOfUseUrl": "https://<APP_HOSTNAME>/termsofuse"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "MIKEBOT Voice Agent",
+    "full": "MIKEBOT Voice-First Agent Tab"
+  },
+  "description": {
+    "short": "Voice-to-text agent in a Teams tab",
+    "full": "A minimal voice-first agent that captures speech, converts it to text, and responds via Azure AI Foundry."
+  },
+  "accentColor": "#5B5FC7",
+  "defaultInstallScope": "personal",
+  "defaultGroupCapability": {
+    "groupchat": "tab"
+  },
+  "staticTabs": [
+    {
+      "entityId": "voiceAgent",
+      "name": "Voice Agent",
+      "contentUrl": "https://<DEV_TUNNEL_HOSTNAME>",
+      "scopes": ["personal", "groupChat", "team"],
+      "context": ["personalTab", "channelTab", "privateChatTab", "meetingSidePanel", "meetingChatTab", "meetingDetailsTab"]
+    }
+  ],
+  "permissions": ["identity"],
+  "devicePermissions": ["media"],
+  "validDomains": ["<DEV_TUNNEL_HOSTNAME>"],
+  "webApplicationInfo": {
+    "id": "<ENTRA_CLIENT_ID>",
+    "resource": "api://<DEV_TUNNEL_HOSTNAME>/<ENTRA_CLIENT_ID>"
+  }
+}
