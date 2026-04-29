@@ -69,10 +69,25 @@ jobs:
           SYFT_TMP="$(mktemp -d)"
           echo "Installing Syft ${SYFT_VERSION}..."
           SYFT_TARBALL="syft_${SYFT_VER}_linux_amd64.tar.gz"
-          curl -sSfL -o "${SYFT_TMP}/${SYFT_TARBALL}" \
-            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/${SYFT_TARBALL}"
-          curl -sSfL -o "${SYFT_TMP}/syft_checksums.txt" \
-            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_checksums.txt"
+          # Retry downloads to tolerate transient GitHub Releases 5xx (e.g., 502).
+          fetch_with_retry() {
+            local url="$1" out="$2" attempt
+            for attempt in 1 2 3 4 5; do
+              if curl -sSfL --retry 3 --retry-delay 2 --retry-all-errors -o "${out}" "${url}"; then
+                return 0
+              fi
+              echo "Attempt ${attempt} failed for ${url}; sleeping $((attempt * 5))s" >&2
+              sleep $((attempt * 5))
+            done
+            echo "All retries failed for ${url}" >&2
+            return 22
+          }
+          fetch_with_retry \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/${SYFT_TARBALL}" \
+            "${SYFT_TMP}/${SYFT_TARBALL}"
+          fetch_with_retry \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_checksums.txt" \
+            "${SYFT_TMP}/syft_checksums.txt"
           (cd "${SYFT_TMP}" && grep " ${SYFT_TARBALL}$" syft_checksums.txt | sha256sum -c -)
           sudo tar -xzf "${SYFT_TMP}/${SYFT_TARBALL}" -C /usr/local/bin syft
           rm -rf "${SYFT_TMP}"
