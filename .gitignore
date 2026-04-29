@@ -469,3 +469,5 @@ crates/
 # Docusaurus build artifacts
 docs/docusaurus/.docusaurus/
 docs/docusaurus/build/
+
+docs/merge-override-diagnosis.md
