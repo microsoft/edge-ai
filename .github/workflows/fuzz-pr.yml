@@ -16,6 +16,9 @@ permissions:
 jobs:
   detect-changes:
     name: Detect fuzz target changes
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/matrix-folder-check.yml
     with:
       includeFuzzTargets: true
