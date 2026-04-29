@@ -61,7 +61,15 @@ jobs:
       # SBOM + vulnerability scan for apt-installed system packages (and repo sources).
       # Tracking-only mitigation; replace with a pinned, scanned base container (Option B)
       # to fully close the supply-chain gap.
+      - name: Cache Syft binary
+        id: cache-syft
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: /usr/local/bin/syft
+          key: syft-bin-v1.17.0-linux-amd64
+
       - name: Install Syft (SBOM generator)
+        if: steps.cache-syft.outputs.cache-hit != 'true'
         shell: bash
         run: |
           SYFT_VERSION="v1.17.0"
