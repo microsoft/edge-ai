@@ -324,6 +324,10 @@ jobs:
           workingDirectory: '$(System.DefaultWorkingDirectory)'
 
       # Security Gate Enforcement
+      # AllowMissingReports lets jobs with no scannable container images
+      # (e.g. WASM-only crates) skip the fail-closed behavior from issue #362.
+      # Jobs that do produce images still get evaluated against the configured
+      # thresholds; only the empty-results case is downgraded from throw to warn.
       - task: PowerShell@2
         displayName: 'Security Gate Enforcement'
         condition: always()
@@ -336,6 +340,7 @@ jobs:
             -Environment "$(Build.Reason)"
             -OutputFormat "junit"
             -ExitOnFailure $true
+            -AllowMissingReports
           workingDirectory: '$(System.DefaultWorkingDirectory)'
           pwsh: true
 
@@ -432,6 +437,7 @@ jobs:
         inputs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '**/security-gate-results.xml'
+          searchFolder: '$(System.DefaultWorkingDirectory)'
           testRunTitle: 'Security Gate Enforcement - Application Matrix Build'
           failTaskOnFailedTests: true
           publishRunAttachments: true

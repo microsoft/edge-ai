@@ -39,7 +39,7 @@ RUN set -euo pipefail \
         ros-jazzy-rosidl-default-generators \
         ros-jazzy-ament-cmake \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --break-system-packages --ignore-installed --no-cache-dir colcon-common-extensions==0.3.0
+    && pip3 install --break-system-packages --ignore-installed --no-cache-dir 'empy<4' colcon-common-extensions==0.3.0
 
 WORKDIR /workspace
 COPY resources/ros-interfaces/edge-ros-interface/ /workspace/edge-ros-interface/
@@ -83,7 +83,7 @@ COPY --from=builder /workspace/install/edge_ros_interface/lib/ /opt/ros/jazzy/li
 COPY --from=builder /workspace/install/edge_ros_interface/lib/python3.12/site-packages/ /opt/ros/jazzy/lib/python3.12/site-packages/
 
 # Python deps
-COPY services/requirements.txt requirements.base.txt
+COPY services/requirements.base.txt requirements.base.txt
 RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.base.txt
 COPY services/ros2-connector/requirements.txt requirements.connector.txt
 RUN if [ -s requirements.connector.txt ]; then pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.connector.txt; fi

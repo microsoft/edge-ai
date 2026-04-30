@@ -139,10 +139,14 @@ acsalocalsharedtestfile
 asyncua
 conseils
 denoising
+easyops
 émojis
+inferencepipeline
 interactifs
 libonnxruntime
+Macross
 mobilenetv
+Newtonsoft
 Obtenez
 Ouvrir
 tinyyolov

@@ -41,7 +41,7 @@ RUN apt-get update \
 WORKDIR /workspace
 COPY resources/ros-interfaces/edge-ros-interface/ /workspace/edge-ros-interface/
 # hadolint ignore=SC1091 (ROS setup script provided by base image)
-RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir colcon-common-extensions==0.3.0 \
+RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir 'empy<4' colcon-common-extensions==0.3.0 \
   && source /opt/ros/jazzy/setup.bash && colcon build --packages-select edge_ros_interface
 
 # Stage 2: Runtime (minimal + bag storage plugin + interfaces)
@@ -83,7 +83,7 @@ COPY --from=builder /workspace/install/edge_ros_interface/lib/ /opt/ros/jazzy/li
 COPY --from=builder /workspace/install/edge_ros_interface/lib/python3.12/site-packages/edge_ros_interface /opt/ros/jazzy/lib/python3.12/site-packages/edge_ros_interface
 
 # Shared base Python requirements
-COPY services/requirements.txt requirements.base.txt
+COPY services/requirements.base.txt requirements.base.txt
 RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.base.txt
 
 # Simulator-specific requirements

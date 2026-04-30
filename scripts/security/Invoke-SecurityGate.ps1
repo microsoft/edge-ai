@@ -116,6 +116,9 @@ param(
     [string]$Environment = "",
 
     [Parameter(Mandatory = $false)]
+    [switch]$AllowMissingReports,
+
+    [Parameter(Mandatory = $false)]
     [switch]$EnableVerboseLogging
 )
 
@@ -262,17 +265,26 @@ function Write-SecurityDebug {
 ####
 
 function Get-GrypeScanResult {
-    param([string]$ResultsPath)
+    param(
+        [string]$ResultsPath,
+        [switch]$AllowMissing
+    )
 
     Write-SecurityDebug "Parsing Grype vulnerability scan results"
 
     # Recursive Filter-based discovery (PowerShell glob '**' is not recursive).
-    # Fail closed when no reports are present so the gate cannot silently pass
-    # when the scanner step misnames or skips its outputs (issue #362).
+    # Default behavior fails closed when no reports are present so the gate
+    # cannot silently pass when the scanner step misnames or skips its outputs
+    # (issue #362). Callers that legitimately produce no scannable artifacts
+    # (e.g. wasm-only matrix jobs) opt in via -AllowMissing.
     $grypeScanResult = @()
     $grypeFiles = Get-ChildItem -Path $ResultsPath -Recurse -Filter 'grype-*.json' -ErrorAction SilentlyContinue
 
     if (-not $grypeFiles -or $grypeFiles.Count -eq 0) {
+        if ($AllowMissing) {
+            Write-SecurityWarn "No Grype reports found under $ResultsPath -- AllowMissingReports set, treating as no findings."
+            return $grypeScanResult
+        }
         Write-SecurityWarn "No Grype reports found under $ResultsPath -- failing closed."
         throw "SecurityGate: no grype-*.json reports discovered under '$ResultsPath'. Refusing to pass."
     }
@@ -503,7 +515,7 @@ function Invoke-SecurityGateEvaluation {
     $allFindings = @()
 
     # Parse Grype vulnerability results
-    $grypeFindings = Get-GrypeScanResult -ResultsPath $SecurityResultsPath
+    $grypeFindings = Get-GrypeScanResult -ResultsPath $SecurityResultsPath -AllowMissing:$AllowMissingReports
     $allFindings += $grypeFindings
     $script:SecurityGateResults.ContainerFindings = $grypeFindings.Count
 
@@ -769,6 +781,28 @@ function Main {
     catch {
         Write-SecurityError "Security gate evaluation failed: $($_.Exception.Message)"
         Write-SecurityError "Stack trace: $($_.ScriptStackTrace)"
+
+        # Emit a minimal JUnit failure report so PublishTestResults always finds a file
+        try {
+            if (-not (Test-Path $SecurityResultsPath)) {
+                New-Item -Path $SecurityResultsPath -ItemType Directory -Force | Out-Null
+            }
+            $failResults = [PSCustomObject]@{
+                Passed                = $false
+                FailureReasons        = @("Security gate execution error: $($_.Exception.Message)")
+                TotalFindings         = 0
+                CriticalFindings      = 0
+                HighFindings          = 0
+                MediumFindings        = 0
+                IaCFindings           = 0
+                DependencyFindings    = 0
+                ContainerFindings     = 0
+            }
+            New-JUnitSecurityReport -GateResults $failResults -SecurityResultsPath $SecurityResultsPath | Out-Null
+        }
+        catch {
+            Write-SecurityError "Failed to emit JUnit failure report: $($_.Exception.Message)"
+        }
 
         if ($ExitOnFailure) {
             exit 1

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809
+FROM mcr.microsoft.com/azurelinux/base/python:3.12
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -6,10 +6,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install runtime dependencies and create application user
-# Security: Run as non-root user to minimize attack surface
-RUN tdnf install -y \
-        ca-certificates-3.0.0-13.azl3 \
-        shadow-utils-4.14.3-2.azl3 \
+# Security: Upgrade base packages to pick up latest CVE fixes; run as non-root user
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY \
+    && tdnf upgrade -y \
+    && tdnf install -y ca-certificates shadow-utils \
     && tdnf clean all \
     && groupadd -r appuser \
     && useradd -r -g appuser appuser
