@@ -67,7 +67,11 @@ jobs:
   fuzz-python:
     name: Fuzz Python
     needs: [detect-changes]
-    if: needs.detect-changes.outputs.changesInFuzzPython == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders).folderName[0] != null
+    # Disabled: deferred until a per-language Python (Atheris) builder container
+    # lands. Tracked in a follow-up issue split from #150.
+    # Original gate:
+    # if: needs.detect-changes.outputs.changesInFuzzPython == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders).folderName[0] != null
+    if: false
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
@@ -107,7 +111,11 @@ jobs:
   fuzz-js:
     name: Fuzz JavaScript
     needs: [detect-changes]
-    if: needs.detect-changes.outputs.changesInFuzzJs == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzJsFolders).folderName[0] != null
+    # Disabled: deferred until a per-language JavaScript (Jazzer.js) builder
+    # container lands. Tracked in a follow-up issue split from #150.
+    # Original gate:
+    # if: needs.detect-changes.outputs.changesInFuzzJs == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzJsFolders).folderName[0] != null
+    if: false
     runs-on: ubuntu-latest
     continue-on-error: true
     permissions:
