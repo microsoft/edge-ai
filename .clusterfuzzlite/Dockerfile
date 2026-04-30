@@ -10,17 +10,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 # hadolint ignore=DL3008,DL3013
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates=\* \
-        curl=\* \
-        gnupg=\* \
-        software-properties-common=\* \
+        ca-certificates \
+        curl \
+        gnupg \
+        software-properties-common \
     && add-apt-repository -y ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        python3.12=\* \
-        python3.12-dev=\* \
-        python3.12-venv=\* \
-        python3-pip=\* \
+        python3.12 \
+        python3.12-dev \
+        python3.12-venv \
+        python3-pip \
     && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.12 \
     && python3.12 -m pip install --no-cache-dir \
         atheris==3.0.0 \
@@ -31,7 +31,7 @@ RUN apt-get update \
 # Node.js 20 + Jazzer.js for JS harnesses.
 # hadolint ignore=DL3008,DL4006
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs=\* \
+    && apt-get install -y --no-install-recommends nodejs \
     && npm install -g --no-audit --no-fund \
         @jazzer.js/core@2.1.0 \
         c8@10.1.2 \
