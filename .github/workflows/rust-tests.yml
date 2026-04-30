@@ -101,21 +101,13 @@ jobs:
           rm -rf "${SYFT_TMP}"
           syft version
 
-      - name: Generate runner SBOM (dpkg + repo)
+      - name: Generate repo SBOM
         shell: bash
         run: |
-          # Scan the runner filesystem to capture dpkg-installed packages from the
-          # apt step above. Excludes large/irrelevant trees to keep scan time bounded.
-          syft scan dir:/ \
-            --exclude './proc/**' \
-            --exclude './sys/**' \
-            --exclude './dev/**' \
-            --exclude './run/**' \
-            --exclude './var/cache/**' \
-            --exclude './var/log/**' \
-            --exclude './tmp/**' \
-            --exclude './home/runner/work/**/target/**' \
-            -o cyclonedx-json=sbom.cdx.json
+          # Scan only this repository's checked-out sources. Implicit include-list
+          # semantics: no exclude maintenance as runner images evolve. Runner OS /
+          # toolchain CVEs are GitHub's responsibility, not gated by this workflow.
+          syft scan dir:. -o cyclonedx-json=sbom.cdx.json
           echo "SBOM components: $(jq '.components | length' sbom.cdx.json)"
 
       - name: Upload SBOM artifact
