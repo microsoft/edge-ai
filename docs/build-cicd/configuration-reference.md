@@ -130,7 +130,6 @@ Code quality validation is handled through individual Azure DevOps lint template
 | File                                      | Purpose                                  | Documentation                        |
 |-------------------------------------------|------------------------------------------|--------------------------------------|
 | [`docsify-url-config.js`][docsify-config] | Docsify documentation site configuration | [Build Scripts Guide][build-scripts] |
-| [`GitVersion.yml`][gitversion-config]     | Semantic versioning configuration        | [Build Scripts Guide][build-scripts] |
 
 ### Build automation
 
@@ -203,7 +202,6 @@ Configuration files are automatically used by:
 [requirements]: /requirements.txt
 [cargo-config]: /src/500-application/**/**/**/Cargo.toml
 [docsify-config]: /docsify-url-config.js
-[gitversion-config]: /GitVersion.yml
 [build-scripts]: build-scripts.md
 [best-practices]: ci-cd-best-practices.md
 [security-guide]: security-scanning.md
