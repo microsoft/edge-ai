@@ -293,7 +293,6 @@ See [Authentication Guide](../docs/authentication.md) for setup instructions.
 - [Authentication Guide](../docs/authentication.md) - GitHub App setup and configuration
 - [Template Integration Guide](../docs/template-integration.md) - Advanced orchestration patterns
 - [Pipeline Documentation](../pipelines/README.md) - Pipeline inventory and architecture
-- [Release Branch Creation](../docs/release-branch-create.md) - Example pipeline using templates
 
 ## Template Development Guidelines
 
