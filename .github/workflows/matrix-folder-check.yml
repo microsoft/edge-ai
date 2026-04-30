@@ -179,23 +179,23 @@ jobs:
         id: detect
         shell: pwsh
         run: |
-          # Build parameters for the PowerShell script
+          # Build parameters for the PowerShell script (hashtable splat for named-parameter binding)
           $baseRef = if ($env:GITHUB_BASE_REF) { $env:GITHUB_BASE_REF } else { 'main' }
-          $scriptArgs = @('-BaseBranch', "origin/$baseRef")
+          $scriptArgs = @{ BaseBranch = "origin/$baseRef" }
 
           if ("${{ inputs.includeIaCFolders }}" -eq 'true') {
-            $scriptArgs += '-IncludeAllIaC'
+            $scriptArgs['IncludeAllIaC'] = $true
           }
 
           if ("${{ inputs.includeApplications }}" -eq 'true') {
-            $scriptArgs += '-IncludeAllApplications'
+            $scriptArgs['IncludeAllApplications'] = $true
           }
 
           if ("${{ inputs.includeFuzzTargets }}" -eq 'true') {
-            $scriptArgs += '-IncludeFuzzTargets'
+            $scriptArgs['IncludeFuzzTargets'] = $true
           }
 
-          Write-Host "Running folder change detection with parameters: $($scriptArgs -join ' ')"
+          Write-Host "Running folder change detection with parameters: $($scriptArgs | ConvertTo-Json -Compress)"
 
           # Execute the PowerShell script with appropriate parameters
           $result = & ./scripts/build/Detect-Folder-Changes.ps1 @scriptArgs
