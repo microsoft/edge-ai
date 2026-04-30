@@ -10,7 +10,17 @@ RUST_TOOLCHAIN="nightly-2026-04-01"
 
 shopt -s nullglob globstar
 
-mapfile -t fuzz_dirs < <(find "${REPO_ROOT}/src" -type d -name fuzz -not -path '*/target/*' | sort)
+mapfile -t candidate_dirs < <(find "${REPO_ROOT}/src" -type d -name fuzz -not -path '*/target/*' | sort)
+
+fuzz_dirs=()
+for candidate in "${candidate_dirs[@]}"; do
+  parent_dir="$(dirname "${candidate}")"
+  if [[ -f "${candidate}/Cargo.toml" && -f "${parent_dir}/Cargo.toml" ]]; then
+    fuzz_dirs+=("${candidate}")
+  else
+    echo "build_rust.sh: skipping ${candidate} (not a cargo-fuzz harness layout)"
+  fi
+done
 
 if [[ ${#fuzz_dirs[@]} -eq 0 ]]; then
   echo "build_rust.sh: no Rust fuzz harnesses discovered"
