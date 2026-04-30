@@ -122,7 +122,7 @@ The workflow consists of two main jobs with comprehensive Docsify build process:
 
 1. **Environment Setup**:
    - Checks out the repository from specified source branch
-   - Sets up Node.js 18 with NPM caching
+   - Sets up Node.js 24 with NPM caching
    - Configures GitHub Pages environment
 
 2. **Dependency Management**:
@@ -259,7 +259,7 @@ jobs:
    **Solution**:
    - Ensure `docsify-cli` is listed in `package.json` devDependencies
    - Verify `package-lock.json` is committed to repository
-   - Check Node.js version compatibility (workflow uses Node.js 18)
+   - Check Node.js version compatibility (workflow uses Node.js 24)
 
 2. **URL Token Replacement Not Working**
 
