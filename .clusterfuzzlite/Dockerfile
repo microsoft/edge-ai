@@ -1,13 +1,13 @@
 # ClusterFuzzLite builder image for edge-ai fuzz harnesses.
 # Provides toolchains for Rust (cargo-fuzz/libFuzzer), Python (Atheris), and JS (Jazzer.js).
-FROM gcr.io/oss-fuzz-base/base-builder-rust:v1
+FROM gcr.io/oss-fuzz-base/base-builder-rust:ubuntu-24-04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Python 3.11 + Atheris for Python harnesses.
-# Base image is Ubuntu 20.04 (focal); python3.11 is unavailable from default apt
-# repositories, so install via the deadsnakes PPA. python3.12 dev/venv subpackages
-# are not published for focal in deadsnakes; tracked for upgrade in issue #454.
+# Base image is Ubuntu 24.04 (noble); system python is 3.12 but atheris 3.0.0
+# only supports up to 3.11, so install python3.11 from the deadsnakes PPA.
+# Tracking move to atheris 3.12+ in issue #454.
 # hadolint ignore=DL3008,DL3013
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
