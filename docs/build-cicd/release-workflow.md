@@ -2,7 +2,7 @@
 title: Release Workflow - Dual-Branch Architecture
 description: Comprehensive guide for the dual-branch release workflow between Azure DevOps and GitHub, including branch architecture, release process, and team guidelines
 author: Edge AI Team
-ms.date: 2025-11-11
+ms.date: 2025-11-12
 ms.topic: concept
 keywords:
   - release
@@ -72,10 +72,10 @@ The project uses a dual-branch architecture to separate development work from pr
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌────────────────────────────────────────────────┐        │
-│  │  release/x.y.z (Release Review Branch)         │        │
-│  │  • Pushed from AzDO                            │        │
-│  │  • Creates GitHub Release automatically        │        │
-│  │  • Opens PR to main automatically              │        │
+│  │  release-please--branches--main (PR Branch)    │        │
+│  │  • Maintained by release-please action         │        │
+│  │  • Aggregates conventional commits from main   │        │
+│  │  • Opens/updates Release PR targeting main     │        │
 │  └────────────────────────────────────────────────┘        │
 │                         │                                   │
 │                         │ PR with 2+ approvals              │
@@ -83,9 +83,9 @@ The project uses a dual-branch architecture to separate development work from pr
 │  ┌────────────────────────────────────────────────┐        │
 │  │  main branch (Source of Truth)                 │        │
 │  │  • Protected - requires 2+ approvals           │        │
-│  │  • Accepts release PRs from release/x.y.z      │        │
+│  │  • Accepts release PRs from release-please     │        │
 │  │  • Accepts community PRs from forks            │        │
-│  │  • Synced to AzDO main automatically           │        │
+│  │  • Synced to AzDO main manually (github-pull)  │        │
 │  └────────────────────────────────────────────────┘        │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -687,12 +687,11 @@ BREAKING CHANGE: API endpoint structure changed"
 
 **Manual Version Override**:
 
+Release-please derives the next version from Conventional Commit footers. To force a specific version, add a `Release-As: <version>` footer to a commit on `main` (or amend the release-please manifest), then re-run the workflow:
+
 ```bash
-# If automation misses breaking change, manually specify major version
-gh workflow run create-release.yml \
-  --ref dev \
-  -f version=2.0.0 \
-  -f prerelease=false
+# Re-run release-please after pushing a Release-As: 2.0.0 commit footer to main
+gh workflow run release-please.yml --ref main
 ```
 
 **Enforce Conventional Commits**:
@@ -867,7 +866,7 @@ jobs:
 
 ```bash
 # GitHub
-gh run list --workflow=create-release.yml --limit 10
+gh run list --workflow=release-please.yml --limit 10
 
 # Check individual job times
 gh run view <run-id> --log
@@ -911,11 +910,8 @@ git push origin :refs/tags/v1.2.3
 **Increment Version**:
 
 ```bash
-# Use next version instead
-gh workflow run create-release.yml \
-  --ref dev \
-  -f version=1.2.4 \
-  -f prerelease=false
+# Land a new conventional commit on main (e.g. fix:) and re-run release-please
+gh workflow run release-please.yml --ref main
 ```
 
 **Force Tag Update** (use with caution):
@@ -1041,7 +1037,7 @@ echo "Latest tag: $LATEST_TAG"
 
 # Check workflow status
 echo "⚙️  Checking workflow status..."
-RECENT_RUNS=$(gh run list --workflow=create-release.yml --limit 5 --json conclusion,status)
+RECENT_RUNS=$(gh run list --workflow=release-please.yml --limit 5 --json conclusion,status)
 echo "$RECENT_RUNS" | jq -r '.[] | "  \(.status): \(.conclusion // "running")"'
 
 # Check permissions
