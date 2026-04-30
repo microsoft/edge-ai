@@ -158,7 +158,6 @@ jobs:
   vuln-scan:
     needs: [coverage]
     runs-on: ubuntu-24.04
-    continue-on-error: true
     permissions:
       contents: read
     strategy:
