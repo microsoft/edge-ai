@@ -5,16 +5,24 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust:v1
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Python 3.12 + Atheris for Python harnesses.
+# Base image is Ubuntu 20.04 (focal); python3.12 is unavailable from default apt
+# repositories, so install via the deadsnakes PPA.
 # hadolint ignore=DL3008,DL3013
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates=\* \
         curl=\* \
         gnupg=\* \
+        software-properties-common=\* \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
         python3.12=\* \
         python3.12-dev=\* \
+        python3.12-venv=\* \
         python3-pip=\* \
-    && python3.12 -m pip install --no-cache-dir --break-system-packages \
+    && curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.12 \
+    && python3.12 -m pip install --no-cache-dir \
         atheris==3.0.0 \
         coverage==7.6.1 \
     && apt-get clean \
