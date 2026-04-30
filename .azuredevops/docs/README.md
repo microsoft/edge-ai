@@ -38,14 +38,7 @@ Intelligent synchronization of main branch to dev after releases.
 * **Duration**: ~5-10 minutes per execution
 * **Key Features**: Conflict detection, intelligent merge strategy, automatic retry logic
 
-### [Release Branch Create](./release-branch-create.md)
-
-Creation of release branches from main with validation.
-
-* **Purpose**: Create versioned release branches for controlled release workflows
-* **Triggers**: Manual execution by release managers
-* **Duration**: ~3-5 minutes per execution
-* **Key Features**: Version tag creation, branch protection, validation checks
+> **Note**: Release branch creation and Release PR creation are handled by the [release-please GitHub Action](../../docs/build-cicd/release-workflow.md) on the GitHub side, not by Azure DevOps pipelines.
 
 ## Template Documentation
 
@@ -71,25 +64,10 @@ Advanced orchestration patterns for multi-template workflows.
 
 ## Process Documentation
 
-End-to-end workflow documentation for release processes:
+End-to-end release workflow documentation lives with the developer-facing build and CI/CD docs:
 
-### [Release Workflows Overview](./release-workflows.md)
-
-Complete documentation of release workflow patterns and sequencing.
-
-* Release branch creation workflow
-* Pull request creation and review workflow
-* Main-to-dev synchronization workflow
-* Workflow dependencies and chaining
-
-### [Intelligent Sync Gaps Analysis](./intelligent-sync-gaps.md)
-
-Gap analysis and implementation details for intelligent sync capabilities.
-
-* Identified gaps in release automation
-* Implementation specifications for each gap
-* Testing and validation procedures
-* Troubleshooting common issues
+* [Release Workflow](../../docs/build-cicd/release-workflow.md) - release-please-driven release workflow on GitHub
+* [Main-to-Dev Sync](./main-to-dev-sync.md) - Azure DevOps sync pipeline (this directory)
 
 ## Common Pipeline Operator Tasks
 
@@ -99,9 +77,8 @@ Gap analysis and implementation details for intelligent sync capabilities.
 2. Locate the release automation pipeline in the list
 3. Click **Run pipeline**
 4. Configure required parameters:
-   * **Release Branch Create**: Version number (e.g., `v1.2.3`)
    * **Main to Dev Sync**: Branch name (usually automatic)
-   * **GitHub Create Release PR**: Release branch name (usually automatic)
+   * **GitHub Push / GitHub Pull**: Source/target branch (usually automatic)
 5. Click **Run** to start execution
 
 ### Monitor Pipeline Execution
@@ -121,8 +98,6 @@ Common failure scenarios and resolutions:
 | **Merge Conflicts**   | Merge operation fails       | Manually resolve conflicts, retry pipeline             |
 | **Branch Protection** | Cannot push to branch       | Check Azure DevOps branch policies, verify permissions |
 | **Network Timeout**   | Pipeline hangs or times out | Retry pipeline, check Azure DevOps service status      |
-
-For detailed troubleshooting steps, see [Intelligent Sync Gaps - Troubleshooting](./intelligent-sync-gaps.md#troubleshooting)
 
 ## Authentication and Configuration
 
@@ -159,21 +134,7 @@ All release automation pipelines use GitHub App authentication for secure API ac
 * **Linked Key Vault**: `ai-on-edge-kv` (or environment-specific vault)
 * **Accessible By**: All pipelines in the Edge AI project
 
-## Output Variables and Chaining
-
-Release automation pipelines use output variables to chain workflows:
-
-### Release Branch Create → GitHub Create Release PR
-
-* **Output Variable**: `ReleaseBranchName`
-* **Usage**: Passed to GitHub PR creation pipeline to identify source branch
-* **Format**: `release/v1.2.3`
-
-### GitHub Create Release PR → Main to Dev Sync
-
-* **Output Variable**: `PullRequestMerged`
-* **Usage**: Triggers sync pipeline after PR is merged to main
-* **Format**: `true` or `false`
+## Output Variables
 
 ### Main to Dev Sync → Notification (Future)
 
@@ -181,13 +142,13 @@ Release automation pipelines use output variables to chain workflows:
 * **Usage**: Could trigger notification pipelines on sync completion/failure
 * **Format**: `success`, `conflict`, `failure`
 
+> **Note**: Release branch creation and release PR creation are now handled by the [release-please GitHub Action](../../docs/build-cicd/release-workflow.md). Azure DevOps no longer chains release pipelines via output variables.
+
 ## Related Documentation
 
 ### Operator Documentation (This Directory)
 
 * [main-to-dev-sync.md](./main-to-dev-sync.md) - Intelligent sync pipeline
-* [release-branch-create.md](./release-branch-create.md) - Release branch creation pipeline
-* [release-workflows.md](./release-workflows.md) - End-to-end workflow documentation
 
 ### Developer Documentation
 

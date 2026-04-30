@@ -347,7 +347,6 @@ edge-ai/
 ├── .terrascan.toml                            # Infrastructure security scanning configuration
 ├── bicepconfig.json                           # Bicep configuration for Azure Resource Manager templates
 ├── Cargo.toml                                 # Rust workspace configuration
-├── GitVersion.yml                             # Versioning configuration
 ├── package.json                               # NPM scripts for lint fixing, README.md (docs) generation, file formatting, validation
 ├── package-lock.json                          # NPM dependency lock file
 ├── PSScriptAnalyzerSettings.psd1              # PowerShell script analysis configuration
