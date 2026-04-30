@@ -26,7 +26,7 @@ for entry in "${HARNESSES[@]}"; do
 #!/usr/bin/env bash
 this_dir=$(dirname "$0")
 ASAN_OPTIONS="$ASAN_OPTIONS:symbolize=1:external_symbolizer_path=$this_dir/llvm-symbolizer:detect_leaks=0" \
-    python3.12 "$this_dir/HARNESS_FILE" "$@"
+    python3.11 "$this_dir/HARNESS_FILE" "$@"
 WRAPPER
   sed -i "s|HARNESS_FILE|$(basename "${harness_path}")|" "${out_path}"
   chmod +x "${out_path}"
