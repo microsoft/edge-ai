@@ -30,9 +30,21 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js 20 + Jazzer.js for JS harnesses.
+# @jazzer.js/fuzzer@2.1.0 ships no napi prebuilts matching this base
+# (target=4 runtime=napi arch=x64 platform=linux), so install the source-build
+# toolchain (prebuild/cmake-js/node-gyp + build-essential/cmake/python3) first
+# so the `npm run prebuild` fallback can compile the native addon.
 # hadolint ignore=DL3008,DL4006
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get install -y --no-install-recommends \
+        nodejs \
+        build-essential \
+        cmake \
+        python3 \
+    && npm install -g --no-audit --no-fund \
+        prebuild \
+        cmake-js \
+        node-gyp \
     && npm install -g --no-audit --no-fund \
         @jazzer.js/core@2.1.0 \
         c8@10.1.2 \
