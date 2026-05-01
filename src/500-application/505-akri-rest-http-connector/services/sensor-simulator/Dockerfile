@@ -33,7 +33,8 @@ RUN tdnf install -y \
 # Install Python dependencies from pre-built wheels
 COPY --from=builder /tmp/wheels /wheels
 COPY --from=builder /build/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir --no-index --find-links=/wheels -r /tmp/requirements.txt \
+RUN pip install --no-cache-dir --no-index --require-hashes \
+      --find-links=/wheels -r /tmp/requirements.txt \
     && rm -rf /wheels /tmp/requirements.txt
 
 # Copy application source and default configuration
