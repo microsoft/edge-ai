@@ -51,15 +51,22 @@ on the runner.
    repro and editor IntelliSense (CFLite preinstalls it globally in the base
    image, but the manifest entry keeps repos buildable outside CFLite).
 
+## Lint waivers
+
+* `Dockerfile` carries a `# hadolint ignore=DL3006` directive on the
+  `FROM gcr.io/oss-fuzz-base/base-builder-${LANGUAGE}` line. The base image
+  tag is intentionally unpinned (see Architecture above); pinning to a
+  specific Ubuntu release breaks `bad_build_check` on the CFLite runner.
+
 ## Known limitations
 
-* Harness `506-ros2` is excluded from the Python harness list because `rclpy`
-  (ROS 2 Python bindings) is not installable from PyPI. Re-enabling it
-  requires a derived base image; tracked as follow-on work for issue [#459][i459].
+* The `506-ros2-connector` harness fuzzes the in-process message registry
+  only (paho-mqtt + pure-Python typed accessors). Fuzzing the full ROS 2
+  bridge is out of scope because `rclpy` is not installable from PyPI; that
+  work would require a derived base image.
 * Atheris 3.0.0 pins Python 3.11. Upgrading the CFLite base image to Ubuntu
   24.04 (issue [#454][i454]) cannot proceed without an Atheris 3.12 wheel or
   a replacement Python fuzzing engine.
 
 [cflite]: https://google.github.io/clusterfuzzlite/
 [i454]: https://github.com/microsoft/edge-ai/issues/454
-[i459]: https://github.com/microsoft/edge-ai/issues/459

@@ -12,6 +12,7 @@
 # bad_build_check on the runner ("GLIBC_2.32 not found"). The default tag
 # tracks the runner's glibc.
 ARG LANGUAGE=rust
+# hadolint ignore=DL3006
 FROM gcr.io/oss-fuzz-base/base-builder-${LANGUAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive

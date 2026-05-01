@@ -2,10 +2,6 @@
 # Build Python Atheris fuzz harnesses using the CFLite-canonical PyInstaller
 # `--onefile` convention: one self-contained executable per harness, plus a
 # small wrapper that sets ASAN options expected by the fuzzing engine.
-#
-# Harness 506-ros2 is intentionally excluded: `rclpy` (ROS 2 Python bindings)
-# is not installable from PyPI and would require a derived base image. Tracked
-# as follow-on work for issue #459.
 set -euo pipefail
 
 : "${OUT:?OUT must be set by ClusterFuzzLite}"
@@ -14,8 +10,12 @@ set -euo pipefail
 # Format: "<harness_name>:<service dir relative to repo root>:<harness path relative to service dir>"
 HARNESSES=(
   "fuzz_models_505:src/500-application/505-akri-rest-http-connector/services/sensor-simulator:tests/fuzz/fuzz_models.py"
+  "fuzz_message_registry_506:src/500-application/506-ros2-connector/services/ros2-connector:tests/fuzz/fuzz_message_registry.py"
   "fuzz_process_event_509:src/500-application/509-sse-connector/services/connector-test-client:tests/fuzz/fuzz_process_event.py"
   "fuzz_soap_parser_510:src/500-application/510-onvif-connector/services/onvif-camera-simulator:tests/fuzz/fuzz_soap_parser.py"
+  "fuzz_smoke_505:src/500-application/505-akri-rest-http-connector/services/sensor-simulator:tests/fuzz/fuzz_smoke.py"
+  "fuzz_smoke_509:src/500-application/509-sse-connector/services/connector-test-client:tests/fuzz/fuzz_smoke.py"
+  "fuzz_smoke_510:src/500-application/510-onvif-connector/services/onvif-camera-simulator:tests/fuzz/fuzz_smoke.py"
 )
 
 if [[ ${#HARNESSES[@]} -eq 0 ]]; then
@@ -41,6 +41,8 @@ for entry in "${HARNESSES[@]}"; do
     --distpath "${OUT}" \
     --onefile \
     --name "${harness_name}.pkg" \
+    --paths "${svc_path}" \
+    --collect-submodules src.message_types \
     "${svc_path}/${harness_rel}"
   popd >/dev/null
 

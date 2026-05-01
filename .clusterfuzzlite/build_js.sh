@@ -10,6 +10,7 @@ set -euo pipefail
 # Format: "<harness_name>:<absolute path to harness .mjs>"
 HARNESSES=(
   "fuzz_processAlerts_513:$SRC/edge-ai/src/500-application/513-tiered-notification-service/tests/fuzz/fuzz_processAlerts.mjs"
+  "fuzz_smoke_513:$SRC/edge-ai/src/500-application/513-tiered-notification-service/tests/fuzz/fuzz_smoke.mjs"
 )
 
 if [[ ${#HARNESSES[@]} -eq 0 ]]; then
@@ -31,13 +32,14 @@ for entry in "${HARNESSES[@]}"; do
   harness_name="${entry%%:*}"
   harness_path="${entry#*:}"
   out_path="${OUT}/${harness_name}"
+  svc_dir="$(dirname "$(dirname "$(dirname "${harness_path}")")")"
 
-  cat >"${out_path}" <<'WRAPPER'
+  # Run the harness in place so its relative imports (e.g. ../../src/...)
+  # resolve against the original service tree instead of a flattened OUT dir.
+  cat >"${out_path}" <<WRAPPER
 #!/usr/bin/env bash
-this_dir=$(dirname "$0")
-npx jazzer "$this_dir/HARNESS_FILE" "$@"
+cd "${svc_dir}"
+exec npx jazzer "${harness_path}" "\$@"
 WRAPPER
-  sed -i "s|HARNESS_FILE|$(basename "${harness_path}")|" "${out_path}"
   chmod +x "${out_path}"
-  cp "${harness_path}" "${OUT}/$(basename "${harness_path}")"
 done

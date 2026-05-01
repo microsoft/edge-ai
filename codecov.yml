@@ -53,6 +53,10 @@ flag_management:
       paths:
         - src/500-application/505-*/**
       carryforward: true
+    - name: fuzz-py-506
+      paths:
+        - src/500-application/506-*/**
+      carryforward: true
     - name: fuzz-py-509
       paths:
         - src/500-application/509-*/**
