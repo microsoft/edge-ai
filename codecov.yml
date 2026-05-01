@@ -53,10 +53,6 @@ flag_management:
       paths:
         - src/500-application/505-*/**
       carryforward: true
-    - name: fuzz-py-506
-      paths:
-        - src/500-application/506-*/**
-      carryforward: true
     - name: fuzz-py-509
       paths:
         - src/500-application/509-*/**
@@ -65,9 +61,8 @@ flag_management:
       paths:
         - src/500-application/510-*/**
       carryforward: true
-      # JavaScript harnesses (Jazzer.js) - reserved; uncomment when first JS
-      # fuzz target lands (no JS sources currently exist under src/500-application).
-      # - name: fuzz-js-<NNN>
-      #   paths:
-      #     - src/500-application/<NNN>-*/**
-      #   carryforward: true
+    # JavaScript harnesses (Jazzer.js)
+    - name: fuzz-js-513
+      paths:
+        - src/500-application/513-*/**
+      carryforward: true
