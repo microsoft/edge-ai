@@ -87,14 +87,14 @@ jobs:
         uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           language: python
-          sanitizer: address
+          sanitizer: none
       - name: Run fuzzers
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           fuzz-seconds: 300
           mode: code-change
-          sanitizer: address
+          sanitizer: none
           output-sarif: true
       - name: Upload coverage to Codecov
         if: always()
@@ -127,14 +127,14 @@ jobs:
         uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           language: javascript
-          sanitizer: address
+          sanitizer: none
       - name: Run fuzzers
         id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           fuzz-seconds: 300
           mode: code-change
-          sanitizer: address
+          sanitizer: none
           output-sarif: true
       - name: Upload coverage to Codecov
         if: always()

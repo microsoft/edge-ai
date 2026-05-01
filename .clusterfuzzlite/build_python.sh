@@ -29,6 +29,10 @@ if ! command -v pyinstaller >/dev/null 2>&1; then
   pip3 install --no-cache-dir pyinstaller
 fi
 
+if ! python3 -c "import atheris" >/dev/null 2>&1; then
+  pip3 install --no-cache-dir atheris
+fi
+
 for entry in "${HARNESSES[@]}"; do
   IFS=':' read -r harness_name svc_dir harness_rel <<<"${entry}"
   svc_path="${SRC}/edge-ai/${svc_dir}"

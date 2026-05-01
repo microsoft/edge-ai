@@ -8,9 +8,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 case "${LANGUAGE:-rust}" in
-  rust)       bash "${SCRIPT_DIR}/build_rust.sh"   ;;
-  python)     bash "${SCRIPT_DIR}/build_python.sh" ;;
-  javascript) bash "${SCRIPT_DIR}/build_js.sh"     ;;
+  rust) bash "${SCRIPT_DIR}/build_rust.sh" ;;
+  python) bash "${SCRIPT_DIR}/build_python.sh" ;;
+  javascript) bash "${SCRIPT_DIR}/build_js.sh" ;;
   *)
     echo "build.sh: unsupported LANGUAGE='${LANGUAGE}' (expected rust|python|javascript)" >&2
     exit 1
