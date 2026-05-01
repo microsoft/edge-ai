@@ -25,11 +25,11 @@ on the runner.
 
 ## Language toolchains
 
-| Language     | Engine     | Build pattern                                         |
-|--------------|------------|-------------------------------------------------------|
-| `rust`       | cargo-fuzz | `cargo +nightly fuzz build` per harness, copy to OUT  |
-| `python`     | Atheris    | `pyinstaller --onefile` + ASAN-aware bash wrapper     |
-| `javascript` | Jazzer.js  | `npm ci` in the harness service + `npx jazzer` shim   |
+| Language     | Engine     | Build pattern                                        |
+|--------------|------------|------------------------------------------------------|
+| `rust`       | cargo-fuzz | `cargo +nightly fuzz build` per harness, copy to OUT |
+| `python`     | Atheris    | `pyinstaller --onefile` + ASAN-aware bash wrapper    |
+| `javascript` | Jazzer.js  | `npm ci` in the harness service + `npx jazzer` shim  |
 
 ## Adding a Python harness
 
