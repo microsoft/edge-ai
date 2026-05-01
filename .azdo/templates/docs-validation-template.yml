@@ -288,8 +288,8 @@ jobs:
       # Set up Node.js for link validation
       - task: NodeTool@0
         inputs:
-          versionSpec: '20.x'
-        displayName: "Setup Node.js"
+          versionSpec: '24.x'
+        displayName: "Setup Node.js 24.x"
         condition: and( not(failed()), not(canceled()), eq(variables.DocsValidationShouldRun, 'true') )
 
       # Install markdown-link-check
