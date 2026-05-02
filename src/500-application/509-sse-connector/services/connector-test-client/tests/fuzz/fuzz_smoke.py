@@ -1,4 +1,5 @@
 """Smoke fuzz harness — minimal Atheris stub to exercise CI plumbing."""
+
 import sys
 
 import atheris

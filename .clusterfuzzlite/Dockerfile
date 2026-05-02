@@ -17,6 +17,16 @@ FROM gcr.io/oss-fuzz-base/base-builder-${LANGUAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Re-declare LANGUAGE after FROM so it is available in subsequent RUN instructions.
+# atheris must be present in the image before the OSS-Fuzz `compile` step runs
+# (compile imports the Python fuzz targets to wrap them, which fails if atheris
+# is not yet installed). Pre-install for the python language path only.
+ARG LANGUAGE
+# hadolint ignore=DL3013
+RUN if [ "${LANGUAGE}" = "python" ]; then \
+      pip3 install --no-cache-dir atheris pyinstaller; \
+    fi
+
 COPY . $SRC/edge-ai
 COPY .clusterfuzzlite/build.sh        $SRC/build.sh
 COPY .clusterfuzzlite/build_rust.sh   $SRC/build_rust.sh

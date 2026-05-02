@@ -23,8 +23,10 @@ if [[ ${#HARNESSES[@]} -eq 0 ]]; then
   exit 0
 fi
 
-# PyInstaller is preinstalled in current base-builder-python images; install
-# on demand for older snapshots or local repro.
+# atheris and pyinstaller are pre-installed in the Dockerfile for the python
+# language path so they are available before the OSS-Fuzz `compile` wrapper
+# runs. Local-repro fallbacks below cover environments using a stock
+# base-builder-python image.
 if ! command -v pyinstaller >/dev/null 2>&1; then
   pip3 install --no-cache-dir pyinstaller
 fi
