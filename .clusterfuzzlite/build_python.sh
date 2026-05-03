@@ -28,11 +28,11 @@ fi
 # runs. Local-repro fallbacks below cover environments using a stock
 # base-builder-python image.
 if ! command -v pyinstaller >/dev/null 2>&1; then
-  pip3 install --no-cache-dir pyinstaller
+  python3 -m pip install --no-cache-dir pyinstaller
 fi
 
 if ! python3 -c "import atheris" >/dev/null 2>&1; then
-  pip3 install --no-cache-dir atheris
+  python3 -m pip install --no-cache-dir atheris
 fi
 
 for entry in "${HARNESSES[@]}"; do
