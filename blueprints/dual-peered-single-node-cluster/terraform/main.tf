@@ -187,6 +187,7 @@ module "cluster_a_edge_cncf_cluster" {
   should_deploy_arc_machines      = false
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
+  cluster_admin_group_oid         = var.cluster_admin_group_oid
 
   // Key Vault for script retrieval
   key_vault = module.cluster_a_cloud_security_identity.key_vault
@@ -440,6 +441,7 @@ module "cluster_b_edge_cncf_cluster" {
   should_deploy_arc_machines      = false
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
+  cluster_admin_group_oid         = var.cluster_admin_group_oid
 
   // Key Vault for script retrieval
   key_vault = module.cluster_b_cloud_security_identity.key_vault

@@ -117,9 +117,25 @@ variable "cluster_admin_oid" {
   default     = null
 }
 
+variable "cluster_admin_oid_type" {
+  type        = string
+  description = "The principal type of cluster_admin_oid for Azure RBAC assignments. Ignored when using current user (defaults to 'User')"
+  default     = "User"
+  validation {
+    condition     = contains(["User", "Group", "ServicePrincipal"], var.cluster_admin_oid_type)
+    error_message = "Must be one of: User, Group, ServicePrincipal"
+  }
+}
+
 variable "cluster_admin_upn" {
   type        = string
   description = "The User Principal Name that will be given cluster-admin permissions with the new cluster. (Otherwise, current logged in user UPN if 'should_add_current_user_cluster_admin=true')"
+  default     = null
+}
+
+variable "cluster_admin_group_oid" {
+  type        = string
+  description = "The Entra ID group Object ID that will be given cluster-admin permissions and Azure Arc RBAC access for 'az connectedk8s proxy'"
   default     = null
 }
 

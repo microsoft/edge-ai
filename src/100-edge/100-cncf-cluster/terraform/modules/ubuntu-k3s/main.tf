@@ -41,20 +41,22 @@ locals {
 
   # Server specific environment variables for the k3s node setup.
   server_env_var = {
-    CLUSTER_ADMIN_OID = coalesce(var.cluster_admin_oid, "$${CLUSTER_ADMIN_OID}")
-    CLUSTER_ADMIN_UPN = coalesce(var.cluster_admin_upn, "$${CLUSTER_ADMIN_UPN}")
-    CLIENT_ID         = "$${CLIENT_ID}"
-    K3S_NODE_TYPE     = "server"
-    SKIP_ARC_CONNECT  = "$${SKIP_ARC_CONNECT}"
+    CLUSTER_ADMIN_OID       = coalesce(var.cluster_admin_oid, "$${CLUSTER_ADMIN_OID}")
+    CLUSTER_ADMIN_UPN       = coalesce(var.cluster_admin_upn, "$${CLUSTER_ADMIN_UPN}")
+    CLUSTER_ADMIN_GROUP_OID = coalesce(var.cluster_admin_group_oid, "$${CLUSTER_ADMIN_GROUP_OID}")
+    CLIENT_ID               = "$${CLIENT_ID}"
+    K3S_NODE_TYPE           = "server"
+    SKIP_ARC_CONNECT        = "$${SKIP_ARC_CONNECT}"
   }
 
   # Agent specific environment variables for the k3s node setup.
   node_env_var = {
-    CLUSTER_ADMIN_OID = "$${CLUSTER_ADMIN_OID}"
-    CLUSTER_ADMIN_UPN = "$${CLUSTER_ADMIN_UPN}"
-    CLIENT_ID         = "$${CLIENT_ID}"
-    K3S_NODE_TYPE     = "agent"
-    SKIP_ARC_CONNECT  = "true"
+    CLUSTER_ADMIN_OID       = "$${CLUSTER_ADMIN_OID}"
+    CLUSTER_ADMIN_UPN       = "$${CLUSTER_ADMIN_UPN}"
+    CLUSTER_ADMIN_GROUP_OID = "$${CLUSTER_ADMIN_GROUP_OID}"
+    CLIENT_ID               = "$${CLIENT_ID}"
+    K3S_NODE_TYPE           = "agent"
+    SKIP_ARC_CONNECT        = "true"
   }
 
   # Read in script file and remove any carriage returns then split on separator in file '###\n' for parameters.

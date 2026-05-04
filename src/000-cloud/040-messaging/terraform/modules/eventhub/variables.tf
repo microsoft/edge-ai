@@ -37,6 +37,16 @@ variable "capacity" {
   }
 }
 
+variable "log_analytics_workspace_id" {
+  type        = string
+  description = "The ID of the Log Analytics workspace for diagnostic settings"
+}
+
+variable "should_enable_diagnostic_settings" {
+  type        = bool
+  description = "Whether to enable diagnostic settings for the Event Hubs namespace"
+}
+
 variable "eventhubs" {
   description = <<-EOF
     Per-Event Hub configuration. Keys are Event Hub names.

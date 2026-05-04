@@ -37,7 +37,7 @@ mediaCapture:
 
   # Media storage configuration
   storage:
-    cloudSyncDir: "/cloud-sync/media"
+    cloudSyncDir: "/cloud-sync/video-recordings"
     pvcName: "pvc-acsa-cloud-backed"
 
   # Video configuration
@@ -48,7 +48,21 @@ mediaCapture:
     frameHeight: "512"
     bufferSeconds: "60"
     captureDurationSeconds: "10"
+    outputFormat: "mp4"
+
+  # Continuous recording configuration
+  continuousRecording:
+    enabled: true
+    segmentDurationSeconds: "300"  # 5 minutes
+    cameraId: "camera-01"
+    cameraLocation: "default"
     feedDelaySeconds: "5"
+    # Local file retention (cleanup old files after upload)
+    localRetentionHours: "24"  # 1 day
+    cleanupIntervalMinutes: "60"  # Check every hour
+    azureStorage:
+      containerName: "video-recordings"
+      connectionString: ""
 
 # Logging configuration
 logging:

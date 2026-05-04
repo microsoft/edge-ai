@@ -1,0 +1,169 @@
+<mxfile host="app.diagrams.net" modified="2026-01-08T00:00:00.000Z" agent="Draw.io" version="22.1.0" etag="blob-storage-organization" type="device">
+  <diagram name="Blob Storage Organization" id="blob-storage">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Main Container -->
+        <mxCell id="container-main" value="📦 Blob Container: video-recordings" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=16;startSize=40;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="1000" height="640" as="geometry"/>
+        </mxCell>
+
+        <!-- Hash Prefix 342 -->
+        <mxCell id="hash-342" value="342/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="container-main">
+          <mxGeometry x="40" y="60" width="440" height="400" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cam-01" value="camera-01/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="hash-342">
+          <mxGeometry x="20" y="40" width="400" height="340" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="year-2026" value="2026/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="cam-01">
+          <mxGeometry x="20" y="40" width="360" height="280" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="month-01" value="01/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="year-2026">
+          <mxGeometry x="20" y="40" width="320" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="day-20" value="20/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="month-01">
+          <mxGeometry x="20" y="40" width="280" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="hour-10" value="10/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;" vertex="1" parent="day-20">
+          <mxGeometry x="20" y="30" width="240" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="segments-10" value="segment_2026-01-20T10:00:00Z_camera-01.mp4&#xa;segment_2026-01-20T10:05:00Z_camera-01.mp4&#xa;segment_2026-01-20T10:10:00Z_camera-01.mp4" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="hour-10">
+          <mxGeometry x="5" y="5" width="230" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="hour-11" value="11/&#xa;&#xa;segment_2026-01-20T11:00:00Z_camera-01.mp4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=9;" vertex="1" parent="day-20">
+          <mxGeometry x="20" y="100" width="240" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Hash Prefix 789 -->
+        <mxCell id="hash-789" value="789/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#ba68c8;fontStyle=1;" vertex="1" parent="container-main">
+          <mxGeometry x="520" y="60" width="440" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cam-02" value="camera-02/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="hash-789">
+          <mxGeometry x="20" y="40" width="400" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="year-2026-2" value="2026/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="cam-02">
+          <mxGeometry x="20" y="40" width="360" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="month-01-2" value="01/" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="year-2026-2">
+          <mxGeometry x="20" y="40" width="320" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="day-20-2" value="20/  (contains 10/, 11/, ...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;" vertex="1" parent="month-01-2">
+          <mxGeometry x="20" y="5" width="280" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Blob Index Tags Section -->
+        <mxCell id="tags-section" value="🏷️ Blob Index Tags" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e1;strokeColor=#d6b656;fontStyle=1;fontSize=14;startSize=40;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="60" width="420" height="300" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tag-1" value="Tag Set 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="tags-section">
+          <mxGeometry x="20" y="60" width="380" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="tag-1-details" value="camera_id: camera-01&#xa;start_time: 2026-01-20T10:00:00Z&#xa;end_time: 2026-01-20T10:05:00Z" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="tag-1">
+          <mxGeometry x="10" y="20" width="360" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tag-2" value="Tag Set 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="tags-section">
+          <mxGeometry x="20" y="160" width="380" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="tag-2-details" value="camera_id: camera-01&#xa;start_time: 2026-01-20T10:05:00Z&#xa;end_time: 2026-01-20T10:10:00Z" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="tag-2">
+          <mxGeometry x="10" y="20" width="360" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Tag arrows -->
+        <mxCell id="arrow-tag-1" value="Tagged" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#d6b656;dashed=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="hour-10" target="tag-1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arrow-tag-2" value="Tagged" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=1;strokeColor=#d6b656;dashed=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="hour-10" target="tag-2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Lifecycle Policy Section -->
+        <mxCell id="lifecycle-section" value="♻️ Lifecycle Policy" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;startSize=40;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="400" width="420" height="500" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tier-hot" value="🔥 Hot (7 days)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e57373;fontStyle=1;" vertex="1" parent="lifecycle-section">
+          <mxGeometry x="40" y="60" width="340" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tier-hot-details" value="$0.018/GB/month&#xa;Fast access" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="tier-hot">
+          <mxGeometry y="20" width="340" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tier-cool" value="❄️ Cool (30 days)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#64b5f6;fontStyle=1;" vertex="1" parent="lifecycle-section">
+          <mxGeometry x="40" y="160" width="340" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tier-cool-details" value="$0.01/GB/month&#xa;Slower access" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="tier-cool">
+          <mxGeometry y="20" width="340" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tier-archive" value="📦 Archive (90 days)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#ba68c8;fontStyle=1;" vertex="1" parent="lifecycle-section">
+          <mxGeometry x="40" y="260" width="340" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tier-archive-details" value="$0.0015/GB/month&#xa;Rare access (rehydration required)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="tier-archive">
+          <mxGeometry y="20" width="340" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="tier-delete" value="🗑️ Delete (365 days)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#999999;fontStyle=1;" vertex="1" parent="lifecycle-section">
+          <mxGeometry x="40" y="360" width="340" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tier-delete-details" value="Auto-cleanup&#xa;Permanent deletion" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="tier-delete">
+          <mxGeometry y="20" width="340" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Lifecycle arrows -->
+        <mxCell id="arrow-hot-cool" value="Age: 7-30d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#64b5f6;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="lifecycle-section" source="tier-hot" target="tier-cool">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-cool-archive" value="Age: 30-90d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#ba68c8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="lifecycle-section" source="tier-cool" target="tier-archive">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-archive-delete" value="Age: &gt;365d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#999999;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="lifecycle-section" source="tier-archive" target="tier-delete">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Segment to Hot tier arrow -->
+        <mxCell id="arrow-segment-hot" value="Age: 0-7d" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#e57373;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="hour-10" target="tier-hot">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1080" y="185"/>
+              <mxPoint x="1080" y="490"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Storage Naming Pattern Info -->
+        <mxCell id="naming-info" value="📋 Storage Naming Pattern&#xa;&#xa;{hash}/{camera_id}/{YYYY}/{MM}/{DD}/{HH}/segment_{timestamp}_{camera_id}.mp4&#xa;&#xa;Hash: 000-999 (djb2 hash of camera_id)&#xa;Timestamp: ISO8601 format (YYYY-MM-DDTHH:MM:SSZ)&#xa;Segment Duration: 5 minutes (configurable)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;align=left;verticalAlign=top;fontStyle=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="1000" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Storage Query Optimization Info -->
+        <mxCell id="query-info" value="⚡ Query Optimization&#xa;&#xa;• Prefix-based list queries: &lt; 500ms for timeframes &lt; 1 hour&#xa;• Blob index tag queries: 1-3s for timeframes 1-24 hours&#xa;• Hash prefix distribution: Optimal for parallel operations and high throughput&#xa;• Hierarchical structure: Efficient time-range queries without scanning entire container" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#0288d1;align=left;verticalAlign=top;fontStyle=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="900" width="1000" height="120" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

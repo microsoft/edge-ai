@@ -1,0 +1,20 @@
+# Example Terraform variables configuration for video-capture-query blueprint
+
+# Core parameters - REQUIRED
+environment     = "dev"
+location        = "eastus"
+resource_prefix = "video-demo"
+
+# Core parameters - Optional
+instance = "001"
+
+tags = {
+  project     = "video-capture-query"
+  environment = "dev"
+  managed_by  = "terraform"
+}
+
+# Video recording parameters - Optional (defaults provided)
+# recording_mode           = "continuous"
+# segment_duration_seconds = 300
+# video_retention_days     = 365

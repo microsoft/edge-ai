@@ -15,7 +15,7 @@ services:
     image: ullaakut/rtspatt
     container_name: rtsp-camera-pattern
     ports:
-      - "8554:8554"
+      - "8553:8554"
     command: ["-s", "1920x1080", "-f", "30", "-i", "pattern:smpte", "-r", "/pattern", "-u", "admin", "-p", "password"]
     restart: unless-stopped
     networks:
@@ -72,7 +72,7 @@ services:
     image: nginx:alpine
     container_name: media-http-server
     ports:
-      - "8080:80"
+      - "18080:80"
     volumes:
       - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
       - media-files:/usr/share/nginx/html
@@ -84,8 +84,8 @@ services:
     image: bluenviron/mediamtx:latest
     container_name: media-server-mtx
     ports:
-      - "8557:8554"
-      - "8888:8888"
+      - "18557:8554"
+      - "18888:8888"
     volumes:
       - media-files:/media
     restart: unless-stopped
@@ -96,7 +96,7 @@ services:
     image: prom/prometheus:latest
     container_name: media-prometheus
     ports:
-      - "9090:9090"
+      - "19090:9090"
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -115,7 +115,7 @@ services:
     image: grafana/grafana:latest
     container_name: media-grafana
     ports:
-      - "3000:3000"
+      - "13000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123

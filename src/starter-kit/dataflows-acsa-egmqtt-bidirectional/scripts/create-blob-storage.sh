@@ -57,11 +57,11 @@ az role assignment create \
   --scope /subscriptions/"$subscriptionId"/resourceGroups/"$RESOURCE_GROUP"/providers/Microsoft.Storage/storageAccounts/"$STORAGE_ACCOUNT_NAME"
 
 # Create a container in the storage account to store total counter metric
-totalCouterContainerName=$METRIC2_TOPIC_PATH_NAME
-echo "Creating container $totalCouterContainerName in storage account $STORAGE_ACCOUNT_NAME"
+totalCounterContainerName=$METRIC2_TOPIC_PATH_NAME
+echo "Creating container $totalCounterContainerName in storage account $STORAGE_ACCOUNT_NAME"
 az storage container create \
   --account-name "$STORAGE_ACCOUNT_NAME" \
-  --name "$totalCouterContainerName" \
+  --name "$totalCounterContainerName" \
   --auth-mode login
 
 # Create a container in the storage account to store mashine status metric
@@ -77,14 +77,14 @@ edgeVolumeAioName=$ACSA_CLOUD_BACKED_AIO_PVC_NAME
 wait_for_edge_volume "$edgeVolumeAioName"
 
 # Update the edge volume with the new subvolumes to connect to the storage account
-totalCouterPath=$METRIC2_TOPIC_PATH_NAME
-echo "Adding subvolume $totalCouterPath to edge volume $edgeVolumeAioName to sync with storage account $STORAGE_ACCOUNT_NAME"
+totalCounterPath=$METRIC2_TOPIC_PATH_NAME
+echo "Adding subvolume $totalCounterPath to edge volume $edgeVolumeAioName to sync with storage account $STORAGE_ACCOUNT_NAME"
 
-export SUBVOLUME_NAME=$totalCouterPath
+export SUBVOLUME_NAME=$totalCounterPath
 export EDGE_VOLUME_NAME=$edgeVolumeAioName
-export PATH_VALUE=$totalCouterPath # Using PATH_VALUE instead of PATH to avoid conflicts with system PATH
+export PATH_VALUE=$totalCounterPath # Using PATH_VALUE instead of PATH to avoid conflicts with system PATH
 export STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME
-export CONTAINER_NAME=$totalCouterContainerName
+export CONTAINER_NAME=$totalCounterContainerName
 
 apply_template_with_envsubst "../yaml/acsa/edgeSubvolume.yaml" | kubectl apply -f -
 

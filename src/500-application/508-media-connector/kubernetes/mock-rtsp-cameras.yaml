@@ -1,0 +1,135 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mock-rtsp-pattern
+  namespace: azure-iot-operations
+  labels:
+    app: mock-rtsp-camera
+    camera: pattern
+spec:
+  containers:
+    - name: rtsp-camera
+      image: ullaakut/rtspatt
+      args:
+        - "-s"
+        - "1920x1080"
+        - "-f"
+        - "30"
+        - "-i"
+        - "pattern:smpte"
+        - "-r"
+        - "/pattern"
+        - "-u"
+        - "admin"
+        - "-p"
+        - "password"
+      ports:
+        - containerPort: 8554
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-rtsp-pattern
+  namespace: azure-iot-operations
+  labels:
+    app: mock-rtsp-camera
+    camera: pattern
+spec:
+  selector:
+    camera: pattern
+  ports:
+    - port: 554
+      targetPort: 8554
+      protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mock-rtsp-colorbars
+  namespace: azure-iot-operations
+  labels:
+    app: mock-rtsp-camera
+    camera: colorbars
+spec:
+  containers:
+    - name: rtsp-camera
+      image: ullaakut/rtspatt
+      args:
+        - "-s"
+        - "1280x720"
+        - "-f"
+        - "15"
+        - "-i"
+        - "pattern:colorbar"
+        - "-r"
+        - "/colorbars"
+        - "-u"
+        - "admin"
+        - "-p"
+        - "password"
+      ports:
+        - containerPort: 8554
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-rtsp-colorbars
+  namespace: azure-iot-operations
+  labels:
+    app: mock-rtsp-camera
+    camera: colorbars
+spec:
+  selector:
+    camera: colorbars
+  ports:
+    - port: 554
+      targetPort: 8554
+      protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mock-rtsp-ball
+  namespace: azure-iot-operations
+  labels:
+    app: mock-rtsp-camera
+    camera: ball
+spec:
+  containers:
+    - name: rtsp-camera
+      image: ullaakut/rtspatt
+      args:
+        - "-s"
+        - "640x480"
+        - "-f"
+        - "25"
+        - "-i"
+        - "pattern:ball"
+        - "-r"
+        - "/ball"
+        - "-u"
+        - "admin"
+        - "-p"
+        - "password"
+      ports:
+        - containerPort: 8554
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mock-rtsp-ball
+  namespace: azure-iot-operations
+  labels:
+    app: mock-rtsp-camera
+    camera: ball
+spec:
+  selector:
+    camera: ball
+  ports:
+    - port: 554
+      targetPort: 8554
+      protocol: TCP

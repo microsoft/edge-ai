@@ -1,0 +1,174 @@
+<mxfile host="app.diagrams.net" modified="2026-01-08T00:00:00.000Z" agent="Draw.io" version="22.1.0" etag="network-topology" type="device">
+  <diagram name="Network Topology" id="network-topology">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Internet -->
+        <mxCell id="internet" value="🌐 Internet" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="750" y="60" width="240" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Azure Cloud Network -->
+        <mxCell id="azure-vnet" value="Azure Virtual Network (vnet-video-capture)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=14;startSize=50;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="1680" height="520" as="geometry"/>
+        </mxCell>
+
+        <!-- Subnet: Storage -->
+        <mxCell id="subnet-storage" value="Subnet: Storage (10.0.1.0/24)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="azure-vnet">
+          <mxGeometry x="40" y="80" width="500" height="400" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="storage-account" value="📦 Storage Account" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="subnet-storage">
+          <mxGeometry x="40" y="60" width="420" height="300" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="storage-details" value="Name: stvideocaptureXXXXX&#xa;Account Kind: StorageV2&#xa;Replication: LRS&#xa;&#xa;Private Endpoint:&#xa;  • IP: 10.0.1.10&#xa;  • DNS: stvideocaptureXXXXX.blob.core.windows.net&#xa;  • Allowed IPs: Function subnet, Edge IPs&#xa;&#xa;Containers:&#xa;  • video-recordings (Hot/Cool/Archive lifecycle)&#xa;  • temp-stitched (24-hour retention)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="storage-account">
+          <mxGeometry x="10" y="30" width="400" height="260" as="geometry"/>
+        </mxCell>
+
+        <!-- Subnet: Functions -->
+        <mxCell id="subnet-functions" value="Subnet: Functions (10.0.2.0/24)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#ba68c8;fontStyle=1;" vertex="1" parent="azure-vnet">
+          <mxGeometry x="580" y="80" width="520" height="400" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="function-app" value="⚡ Function App" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ce93d8;strokeColor=#7b1fa2;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="subnet-functions">
+          <mxGeometry x="40" y="60" width="440" height="300" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="function-details" value="Name: func-video-query-XXXXX&#xa;Plan: Consumption (Y1) or Premium (EP1)&#xa;Runtime: Python 3.11&#xa;&#xa;VNet Integration:&#xa;  • Subnet: 10.0.2.0/24&#xa;  • Outbound to: Storage private endpoint&#xa;  • Inbound: Public (with IP restrictions) or Private Endpoint&#xa;&#xa;Endpoints:&#xa;  • GET /api/video?camera={id}&start={iso}&end={iso}&#xa;  • Public URL: https://func-video-query-XXXXX.azurewebsites.net&#xa;&#xa;Environment Variables:&#xa;  • STORAGE_ACCOUNT_NAME&#xa;  • STORAGE_CONTAINER_NAME&#xa;  • AZURE_CLIENT_ID (Managed Identity)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="function-app">
+          <mxGeometry x="10" y="30" width="420" height="260" as="geometry"/>
+        </mxCell>
+
+        <!-- Subnet: Management -->
+        <mxCell id="subnet-mgmt" value="Subnet: Management (10.0.3.0/24)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e1;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="azure-vnet">
+          <mxGeometry x="1140" y="80" width="500" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="key-vault" value="🔐 Key Vault&#xa;&#xa;kv-video-capture-XXXXX&#xa;&#xa;Secrets:&#xa;  • storage-connection-string&#xa;  • function-app-key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="subnet-mgmt">
+          <mxGeometry x="40" y="60" width="200" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="log-analytics" value="📊 Log Analytics&#xa;&#xa;log-video-capture-XXXXX&#xa;&#xa;Logs:&#xa;  • Function execution&#xa;  • Storage metrics&#xa;  • Network flows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="subnet-mgmt">
+          <mxGeometry x="260" y="60" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- Azure Arc Connection -->
+        <mxCell id="azure-arc" value="🔗 Azure Arc for Kubernetes&#xa;&#xa;Connected Cluster: k3s-edge-cluster&#xa;Resource Group: rg-video-capture&#xa;Location: eastus&#xa;&#xa;Extensions:&#xa;  • Azure IoT Operations&#xa;  • Azure Monitor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#0288d1;fontStyle=1;" vertex="1" parent="subnet-mgmt">
+          <mxGeometry x="40" y="220" width="440" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Edge Network -->
+        <mxCell id="edge-network" value="Edge Factory Network (192.168.1.0/24)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=14;startSize=50;" vertex="1" parent="1">
+          <mxGeometry x="60" y="820" width="1680" height="520" as="geometry"/>
+        </mxCell>
+
+        <!-- Camera VLAN -->
+        <mxCell id="vlan-cameras" value="VLAN 10: Cameras (192.168.1.0/26)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="edge-network">
+          <mxGeometry x="40" y="80" width="500" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cameras-group" value="📹 ONVIF Cameras" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="vlan-cameras">
+          <mxGeometry x="40" y="60" width="420" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cameras-list" value="• camera-01: 192.168.1.11 (RTSP: rtsp://192.168.1.11:554/stream)&#xa;• camera-02: 192.168.1.12 (RTSP: rtsp://192.168.1.12:554/stream)&#xa;• camera-03: 192.168.1.13 (RTSP: rtsp://192.168.1.13:554/stream)&#xa;...&#xa;• camera-N: 192.168.1.X" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="cameras-group">
+          <mxGeometry x="10" y="30" width="400" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Kubernetes VLAN -->
+        <mxCell id="vlan-k8s" value="VLAN 20: Kubernetes (192.168.1.64/26)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff4e1;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="edge-network">
+          <mxGeometry x="580" y="80" width="1060" height="400" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="k8s-cluster" value="☸️ K3s Cluster" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="vlan-k8s">
+          <mxGeometry x="40" y="60" width="980" height="320" as="geometry"/>
+        </mxCell>
+
+        <!-- K8s Nodes -->
+        <mxCell id="k8s-master" value="🖥️ Master Node&#xa;192.168.1.65" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="k8s-cluster">
+          <mxGeometry x="20" y="40" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="k8s-worker1" value="🖥️ Worker Node 1&#xa;192.168.1.66" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="k8s-cluster">
+          <mxGeometry x="20" y="120" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="k8s-worker2" value="🖥️ Worker Node 2&#xa;192.168.1.67" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="k8s-cluster">
+          <mxGeometry x="20" y="200" width="140" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- K8s Services -->
+        <mxCell id="k8s-services" value="Kubernetes Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontStyle=1;" vertex="1" parent="k8s-cluster">
+          <mxGeometry x="200" y="40" width="760" height="260" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="aio-service" value="📨 Azure IoT Operations&#xa;&#xa;Namespace: azure-iot-operations&#xa;Services:&#xa;  • MQTT Broker (NodePort: 31883)&#xa;  • Device Registry&#xa;  • ACSA (edge-to-cloud sync)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#a5d6a7;strokeColor=#2e7d32;" vertex="1" parent="k8s-services">
+          <mxGeometry x="20" y="40" width="340" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="media-capture-service" value="🎬 Media Capture Service&#xa;&#xa;Namespace: media-capture&#xa;Services:&#xa;  • continuous-recorder (ClusterIP)&#xa;  • blob-uploader (ClusterIP)&#xa;Volumes:&#xa;  • video-segments (PVC: 100Gi)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="k8s-services">
+          <mxGeometry x="20" y="160" width="340" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ingress-controller" value="🌐 Ingress Controller&#xa;&#xa;Type: LoadBalancer (MetalLB)&#xa;External IP: 192.168.1.100&#xa;Ports:&#xa;  • HTTP: 80&#xa;  • HTTPS: 443" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5ff;strokeColor=#0288d1;" vertex="1" parent="k8s-services">
+          <mxGeometry x="390" y="40" width="350" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="monitoring" value="📊 Monitoring Stack&#xa;&#xa;Prometheus: scraping metrics&#xa;Grafana: dashboards&#xa;Fluent Bit: log forwarding" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e57373;" vertex="1" parent="k8s-services">
+          <mxGeometry x="390" y="160" width="350" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- Network Arrows -->
+
+        <!-- Internet to Azure -->
+        <mxCell id="arrow-internet-azure" value="HTTPS (443)&#xa;Managed Identity / AAD" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#0288d1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="internet" target="azure-vnet">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Function to Storage -->
+        <mxCell id="arrow-func-storage" value="Private Endpoint&#xa;(10.0.1.10:443)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388e3c;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="function-app" target="storage-account">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset"/>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Edge to Azure Arc -->
+        <mxCell id="arrow-edge-arc" value="Azure Arc Connection&#xa;(HTTPS: 443)&#xa;Outbound only" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#7b1fa2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="edge-network" target="azure-arc">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Edge ACSA to Storage -->
+        <mxCell id="arrow-acsa-storage" value="ACSA Sync&#xa;(HTTPS: 443)&#xa;Blob Upload" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#388e3c;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="edge-network" target="azure-vnet">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="800"/>
+              <mxPoint x="480" y="780"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Cameras to Media Capture -->
+        <mxCell id="arrow-cam-media" value="RTSP (554)&#xa;Video Stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#0288d1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="cameras-group" target="k8s-cluster">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Data Scientist Connection -->
+        <mxCell id="ds-laptop" value="👨‍🔬 Data Scientist Laptop" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#d6b656;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1560" y="60" width="180" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="arrow-ds-internet" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#f57c00;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="ds-laptop" target="internet">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Firewall/Security Legend -->
+        <mxCell id="security-info" value="🔒 Security & Network Configuration&#xa;&#xa;Firewall Rules:&#xa;  • Azure VNet: NSG allows HTTPS (443) from Function to Storage&#xa;  • Edge Network: Firewall allows outbound HTTPS to Azure (443)&#xa;  • Camera VLAN: Isolated, only RTSP (554) to K8s VLAN&#xa;&#xa;Authentication:&#xa;  • Azure: Managed Identity (System-assigned)&#xa;  • Edge: Service Principal or Arc-enabled authentication&#xa;  • Data Scientist: Azure AD (DefaultAzureCredential)&#xa;&#xa;Encryption:&#xa;  • In-transit: TLS 1.2+ for all Azure connections&#xa;  • At-rest: Azure Storage encryption (Microsoft-managed keys)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#e57373;align=left;verticalAlign=top;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1380" width="1680" height="160" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
