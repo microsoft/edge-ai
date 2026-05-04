@@ -478,9 +478,10 @@ resource "azapi_resource" "asset_endpoint_profile" {
 resource "azapi_resource" "asset" {
   for_each = local.processed_assets
 
-  type      = "Microsoft.DeviceRegistry/assets@2026-04-01"
-  name      = each.value.name
-  parent_id = var.resource_group.id
+  type                      = "Microsoft.DeviceRegistry/assets@2026-04-01"
+  name                      = each.value.name
+  parent_id                 = var.resource_group.id
+  schema_validation_enabled = false
 
   body = {
     location = var.location

@@ -47,6 +47,12 @@ Welcome to the AI on Edge Flagship Accelerator! This guide helps you choose the 
 
 **Perfect for:** Platform engineers, open source contributors, and teams extending platform capabilities
 
+## Scenario Deployment Guides
+
+End-to-end deployment walkthroughs for specific use cases combining multiple components:
+
+- **[Leak Detection Scenario on full-single-node-cluster](leak-detection-scenario.md)** — Deploy a vision-based leak detection scenario built on top of the full-single-node-cluster blueprint with edge AI inference, video capture, and cloud alerting (~2 hours)
+
 ## 🎓 Accelerate Your Learning
 
 **New to edge AI development?** Our [Learning Platform](../../learning/) provides hands-on training:

@@ -58,6 +58,8 @@ module "cloud_security_identity" {
   should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
   should_create_aks_identity               = false
   should_create_ml_workload_identity       = false
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
 }
 
 module "cloud_observability" {
@@ -102,7 +104,9 @@ module "cloud_messaging" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  should_create_azure_functions = var.should_create_azure_functions
+  should_create_azure_functions     = var.should_create_azure_functions
+  log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings = true
 }
 
 module "azure_local_host" {

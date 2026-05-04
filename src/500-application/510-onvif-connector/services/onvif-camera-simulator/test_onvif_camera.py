@@ -1,10 +1,8 @@
 """Unit tests for ONVIFCameraSimulator pure methods."""
 
-import os
 
 import pytest
 from lxml import etree
-
 from onvif_camera import ONVIFCameraSimulator
 
 

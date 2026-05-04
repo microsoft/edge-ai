@@ -6,6 +6,7 @@ select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4"]
 
 [lint.per-file-ignores]
 "**/tests/**" = ["S101", "S108", "S603", "S607"]
+"**/test_*.py" = ["S101"]
 "**/*simulator*/**" = ["S311", "S104"]
 "**/*simulator*.py" = ["S311", "S104"]
 "**/services/**/app.py" = ["S311", "S104"]

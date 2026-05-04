@@ -71,8 +71,8 @@ variable "node_pool_count" {
 
 variable "node_pool_vm_size" {
   type        = string
-  description = "VM size for worker nodes (Otherwise, 'Standard_D8s_v3')."
-  default     = "Standard_D8s_v3"
+  description = "VM size for worker nodes (Otherwise, 'Standard_D8s_v6')."
+  default     = "Standard_D8s_v6"
 }
 
 variable "kubernetes_version" {

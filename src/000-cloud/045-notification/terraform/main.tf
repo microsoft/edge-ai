@@ -34,6 +34,11 @@ locals {
 
   insert_entity_body = coalesce(var.insert_entity_body, local.default_insert_entity_body)
   update_entity_body = coalesce(var.update_entity_body, local.default_update_entity_body)
+
+  teams_notification_recipient = var.teams_post_location == "Channel" ? jsonencode({
+    groupId   = var.teams_group_id
+    channelId = var.teams_recipient_id
+  }) : jsonencode(var.teams_recipient_id)
 }
 
 // ── Managed API Lookups ──────────────────────────────────────
@@ -306,7 +311,7 @@ resource "azurerm_logic_app_action_custom" "for_each_event" {
               }
               method = "post"
               body = {
-                recipient = var.teams_recipient_id
+                recipient = jsondecode(local.teams_notification_recipient)
                 messageBody = templatestring(var.notification_message_template, {
                   close_session_url = azapi_resource_action.close_session_callback_url.output.value
                 })
@@ -415,7 +420,7 @@ resource "azurerm_logic_app_action_custom" "post_closure_summary" {
       }
       method = "post"
       body = {
-        recipient   = var.teams_recipient_id
+        recipient   = jsondecode(local.teams_notification_recipient)
         messageBody = var.closure_message_template
       }
       path = "/beta/teams/conversation/message/poster/Flow bot/location/@{encodeURIComponent('${var.teams_post_location}')}"

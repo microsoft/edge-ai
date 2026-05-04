@@ -37,3 +37,13 @@ variable "should_enable_purge_protection" {
   type        = bool
   description = "Whether to enable purge protection for the Key Vault"
 }
+
+variable "log_analytics_workspace_id" {
+  type        = string
+  description = "The ID of the Log Analytics workspace for diagnostic settings"
+}
+
+variable "should_enable_diagnostic_settings" {
+  type        = bool
+  description = "Whether to enable diagnostic settings for the Key Vault"
+}

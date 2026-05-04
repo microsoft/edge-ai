@@ -77,8 +77,7 @@ resource "azurerm_linux_function_app" "function_app" {
   app_settings = merge(
     var.app_settings,
     {
-      AZURE_CLIENT_ID              = azurerm_user_assigned_identity.function_identity.client_id
-      EventHubConnection__clientId = azurerm_user_assigned_identity.function_identity.client_id
+      AZURE_CLIENT_ID = azurerm_user_assigned_identity.function_identity.client_id
     }
   )
 
@@ -124,8 +123,7 @@ resource "azurerm_windows_function_app" "function_app" {
   app_settings = merge(
     var.app_settings,
     {
-      AZURE_CLIENT_ID              = azurerm_user_assigned_identity.function_identity.client_id
-      EventHubConnection__clientId = azurerm_user_assigned_identity.function_identity.client_id
+      AZURE_CLIENT_ID = azurerm_user_assigned_identity.function_identity.client_id
     }
   )
 

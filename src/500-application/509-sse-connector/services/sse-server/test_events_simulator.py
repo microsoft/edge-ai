@@ -1,7 +1,6 @@
 """Unit tests for AnalyticsEventSimulator event generation methods."""
 
 import pytest
-
 from events_simulator import AnalyticsEventSimulator
 
 

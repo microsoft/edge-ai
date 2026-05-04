@@ -141,6 +141,8 @@ module "cloud_security_identity" {
   key_vault_virtual_network_id             = try(module.cloud_networking[0].virtual_network.id, data.azurerm_virtual_network.existing[0].id, null)
   should_enable_public_network_access      = var.should_enable_public_network_access
   should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
+  log_analytics_workspace_id               = try(module.cloud_observability[0].log_analytics_workspace.id, null)
+  should_enable_diagnostic_settings        = true
 }
 
 module "cloud_vpn_gateway" {
@@ -337,11 +339,13 @@ module "cloud_acr" {
   should_enable_nat_gateway          = var.should_enable_managed_outbound_access
   nat_gateway                        = try(module.cloud_networking[0].nat_gateway, null)
 
-  allow_trusted_services        = var.acr_allow_trusted_services
-  allowed_public_ip_ranges      = var.acr_allowed_public_ip_ranges
-  public_network_access_enabled = var.acr_public_network_access_enabled
-  should_enable_data_endpoints  = var.acr_data_endpoint_enabled
-  should_enable_export_policy   = var.acr_export_policy_enabled
+  allow_trusted_services            = var.acr_allow_trusted_services
+  allowed_public_ip_ranges          = var.acr_allowed_public_ip_ranges
+  public_network_access_enabled     = var.acr_public_network_access_enabled
+  should_enable_data_endpoints      = var.acr_data_endpoint_enabled
+  should_enable_export_policy       = var.acr_export_policy_enabled
+  log_analytics_workspace_id        = try(module.cloud_observability[0].log_analytics_workspace.id, null)
+  should_enable_diagnostic_settings = true
 }
 
 module "cloud_kubernetes" {
@@ -437,6 +441,8 @@ module "cloud_azureml" {
   compute_cluster_min_nodes     = var.compute_cluster_min_nodes
   compute_cluster_vm_priority   = var.compute_cluster_vm_priority
   compute_cluster_vm_size       = var.compute_cluster_vm_size
+
+  compute_cluster_node_public_ip_enabled = !var.should_enable_private_endpoints
 
   key_vault            = try(module.cloud_security_identity[0].key_vault, data.azurerm_key_vault.existing[0], null)
   application_insights = try(module.cloud_observability[0].application_insights, data.azurerm_application_insights.existing[0], null)
