@@ -1,0 +1,199 @@
+---
+name: rust-tests
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  coverage:
+    # Pinned Ubuntu image to keep apt package set stable and reproducible across runs.
+    # Tracked via SBOM + Grype scan below; revisit when bumping to next LTS.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - crate: src/500-application/501-rust-telemetry/services/receiver
+          - crate: src/500-application/501-rust-telemetry/services/sender
+          - crate: src/500-application/502-rust-http-connector/services/broker
+          - crate: src/500-application/502-rust-http-connector/services/subscriber
+          - crate: src/500-application/503-media-capture-service/services/media-capture-service
+            system_deps: ffmpeg
+          - crate: src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
+          - crate: src/500-application/507-ai-inference/services/ai-edge-inference
+          - crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install base system build dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            protobuf-compiler \
+            pkg-config \
+            clang
+
+      - name: Install ffmpeg system libraries
+        if: matrix.system_deps == 'ffmpeg'
+        shell: bash
+        run: |
+          sudo apt-get install -y --no-install-recommends \
+            libavcodec-dev \
+            libavformat-dev \
+            libavfilter-dev \
+            libavdevice-dev \
+            libavutil-dev \
+            libswscale-dev \
+            libswresample-dev \
+            libopencv-dev \
+            libclang-dev
+
+      # SBOM + vulnerability scan for apt-installed system packages (and repo sources).
+      # Tracking-only mitigation; replace with a pinned, scanned base container (Option B)
+      # to fully close the supply-chain gap.
+      - name: Cache Syft binary
+        id: cache-syft
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: /usr/local/bin/syft
+          key: syft-bin-v1.17.0-linux-amd64
+
+      - name: Install Syft (SBOM generator)
+        if: steps.cache-syft.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          SYFT_VERSION="v1.17.0"
+          SYFT_VER="${SYFT_VERSION#v}"
+          SYFT_TMP="$(mktemp -d)"
+          echo "Installing Syft ${SYFT_VERSION}..."
+          SYFT_TARBALL="syft_${SYFT_VER}_linux_amd64.tar.gz"
+          # Retry downloads to tolerate transient GitHub Releases 5xx (e.g., 502).
+          fetch_with_retry() {
+            local url="$1" out="$2" attempt
+            for attempt in 1 2 3 4 5; do
+              if curl -sSfL --retry 3 --retry-delay 2 --retry-all-errors -o "${out}" "${url}"; then
+                return 0
+              fi
+              echo "Attempt ${attempt} failed for ${url}; sleeping $((attempt * 5))s" >&2
+              sleep $((attempt * 5))
+            done
+            echo "All retries failed for ${url}" >&2
+            return 22
+          }
+          fetch_with_retry \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/${SYFT_TARBALL}" \
+            "${SYFT_TMP}/${SYFT_TARBALL}"
+          fetch_with_retry \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}/syft_${SYFT_VER}_checksums.txt" \
+            "${SYFT_TMP}/syft_checksums.txt"
+          (cd "${SYFT_TMP}" && grep " ${SYFT_TARBALL}$" syft_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${SYFT_TMP}/${SYFT_TARBALL}" -C /usr/local/bin syft
+          rm -rf "${SYFT_TMP}"
+          syft version
+
+      - name: Generate repo SBOM
+        shell: bash
+        run: |
+          # Scan only this repository's checked-out sources. Implicit include-list
+          # semantics: no exclude maintenance as runner images evolve. Runner OS /
+          # toolchain CVEs are GitHub's responsibility, not gated by this workflow.
+          syft scan dir:. -o cyclonedx-json=sbom.cdx.json
+          echo "SBOM components: $(jq '.components | length' sbom.cdx.json)"
+
+      - name: Upload SBOM artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-tests-runner-sbom-${{ strategy.job-index }}
+          path: sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Install Rust toolchain
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal --component llvm-tools-preview
+          rustup default stable
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ matrix.crate }}/target
+          key: ${{ runner.os }}-cargo-${{ matrix.crate }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.crate), format('{0}/Cargo.toml', matrix.crate)) }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.crate }}-
+
+      - name: Install cargo-llvm-cov
+        shell: bash
+        run: cargo install cargo-llvm-cov --locked
+
+      - name: Generate Cobertura coverage
+        working-directory: ${{ matrix.crate }}
+        run: cargo llvm-cov --cobertura --output-path coverage.xml
+
+      - name: Upload to Codecov
+        if: success()
+        uses: codecov/codecov-action@3f20e214133d0983f9a10f3d63b0faf9241a3daa # v6.0.0
+        with:
+          files: ${{ matrix.crate }}/coverage.xml
+          use_oidc: true
+          fail_ci_if_error: false
+          verbose: true
+          flags: rust
+          name: rust-coverage-${{ matrix.crate }}
+
+  vuln-scan:
+    needs: [coverage]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        index: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - name: Checkout (sparse, for .grype.yaml)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: |
+            .grype.yaml
+          sparse-checkout-cone-mode: false
+
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: rust-tests-runner-sbom-${{ matrix.index }}
+
+      - name: Install Grype
+        shell: bash
+        run: |
+          GRYPE_VERSION="v0.86.1"
+          GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TARBALL="grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          GRYPE_TMP="$(mktemp -d)"
+          echo "Installing Grype ${GRYPE_VERSION}..."
+          curl -sSfL -o "${GRYPE_TMP}/${GRYPE_TARBALL}" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/${GRYPE_TARBALL}"
+          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
+          (cd "${GRYPE_TMP}" && grep " ${GRYPE_TARBALL}$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/${GRYPE_TARBALL}" -C /usr/local/bin grype
+          rm -rf "${GRYPE_TMP}"
+          grype version
+
+      - name: Scan SBOM with Grype
+        shell: bash
+        run: grype sbom:./sbom.cdx.json --config .grype.yaml --fail-on critical

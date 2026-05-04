@@ -676,7 +676,7 @@ pub mod presets {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ndarray::Array3;
+    use ndarray::{Array3, Array4};
 
     #[test]
     fn test_yolov8_postprocessing() {
