@@ -15,25 +15,25 @@ az acr login --name "${ACR_NAME}"
 
 COMPOSED_MAP="${OPERATORS_DIR}/map/target/wasm32-wasip2/release/composed_map_custom.wasm"
 if [[ ! -f "${COMPOSED_MAP}" ]]; then
-    echo "Composed module not found. Run build-wasm.sh first."
-    exit 1
+  echo "Composed module not found. Run build-wasm.sh first."
+  exit 1
 fi
 
 echo "Pushing composed module: map-custom"
 oras push "${ACR_NAME}.azurecr.io/map-custom:${VERSION}" \
-    --artifact-type application/vnd.module.wasm.content.layer.v1+wasm \
-    "${COMPOSED_MAP}:application/wasm" \
-    --disable-path-validation
+  --artifact-type application/vnd.module.wasm.content.layer.v1+wasm \
+  "${COMPOSED_MAP}:application/wasm" \
+  --disable-path-validation
 
 GRAPH_FILE="${APP_DIR}/resources/graphs/graph-simple-map-custom.yaml"
 GRAPH_VERSIONED="${APP_DIR}/resources/graphs/graph-simple-map-custom-${VERSION}.yaml"
 if [[ -f "${GRAPH_FILE}" ]]; then
-    sed "s|map-custom:[0-9][0-9.]*|map-custom:${VERSION}|g" "${GRAPH_FILE}" >"${GRAPH_VERSIONED}"
-    echo "Pushing graph definition: graph-simple-map-custom"
-    oras push "${ACR_NAME}.azurecr.io/graph-simple-map-custom:${VERSION}" \
-        --config /dev/null:application/vnd.microsoft.aio.graph.v1+yaml \
-        "${GRAPH_VERSIONED}:application/yaml" \
-        --disable-path-validation
+  sed "s|map-custom:[0-9][0-9.]*|map-custom:${VERSION}|g" "${GRAPH_FILE}" >"${GRAPH_VERSIONED}"
+  echo "Pushing graph definition: graph-simple-map-custom"
+  oras push "${ACR_NAME}.azurecr.io/graph-simple-map-custom:${VERSION}" \
+    --config /dev/null:application/vnd.microsoft.aio.graph.v1+yaml \
+    "${GRAPH_VERSIONED}:application/yaml" \
+    --disable-path-validation
 fi
 
 echo "ACR push complete"
