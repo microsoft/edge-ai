@@ -37,26 +37,44 @@ jobs:
       - name: Install base system build dependencies
         shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            protobuf-compiler \
-            pkg-config \
-            clang
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if sudo apt-get update && \
+               sudo apt-get install -y --no-install-recommends \
+                 protobuf-compiler \
+                 pkg-config \
+                 clang; then
+              exit 0
+            fi
+            echo "apt attempt ${attempt} failed; sleeping $((attempt * 10))s" >&2
+            sleep $((attempt * 10))
+          done
+          echo "apt failed after 5 attempts" >&2
+          exit 1
 
       - name: Install ffmpeg system libraries
         if: matrix.system_deps == 'ffmpeg'
         shell: bash
         run: |
-          sudo apt-get install -y --no-install-recommends \
-            libavcodec-dev \
-            libavformat-dev \
-            libavfilter-dev \
-            libavdevice-dev \
-            libavutil-dev \
-            libswscale-dev \
-            libswresample-dev \
-            libopencv-dev \
-            libclang-dev
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if sudo apt-get install -y --no-install-recommends \
+                 libavcodec-dev \
+                 libavformat-dev \
+                 libavfilter-dev \
+                 libavdevice-dev \
+                 libavutil-dev \
+                 libswscale-dev \
+                 libswresample-dev \
+                 libopencv-dev \
+                 libclang-dev; then
+              exit 0
+            fi
+            echo "ffmpeg apt attempt ${attempt} failed; sleeping $((attempt * 10))s" >&2
+            sleep $((attempt * 10))
+          done
+          echo "ffmpeg apt install failed after 5 attempts" >&2
+          exit 1
 
       # SBOM + vulnerability scan for apt-installed system packages (and repo sources).
       # Tracking-only mitigation; replace with a pinned, scanned base container (Option B)
