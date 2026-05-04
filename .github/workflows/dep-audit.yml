@@ -120,7 +120,8 @@ jobs:
       - name: Install govulncheck
         shell: bash
         run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
+          # Bump tag when a new govulncheck release ships (Scorecard accepts semver tags for `go install`).
+          go install golang.org/x/vuln/cmd/govulncheck@v1.3.0
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Run govulncheck on every Go module

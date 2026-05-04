@@ -27,8 +27,10 @@ WORKDIR /app
 
 # Install Python dependencies from pre-built wheels
 COPY --from=builder /wheels /wheels
-RUN pip install --no-cache-dir --no-index --find-links=/wheels/ Flask \
-    && rm -rf /wheels
+COPY --from=builder /app/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --no-index --require-hashes \
+      --find-links=/wheels/ -r /tmp/requirements.txt \
+    && rm -rf /wheels /tmp/requirements.txt
 
 # Copy application source code
 COPY src/ .
