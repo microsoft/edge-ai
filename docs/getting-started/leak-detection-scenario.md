@@ -1,6 +1,6 @@
 ---
-title: Deploy a Leak Detection Pipeline
-description: End-to-end deployment of a vision-based leak detection system using edge AI inference, video capture, and cloud alerting
+title: Deploy a Leak Detection Scenario on full-single-node-cluster
+description: End-to-end deployment of a vision-based leak detection scenario built on the full-single-node-cluster blueprint, using edge AI inference, video capture, and cloud alerting
 author: Edge AI Team
 ms.date: 2026-03-12
 ms.topic: getting-started
@@ -14,9 +14,11 @@ keywords:
   - scenario deployment
 ---
 
-## Deploy a Leak Detection Pipeline
+## Deploy a Leak Detection Scenario on full-single-node-cluster
 
-This guide walks through deploying a complete vision-based leak detection system on Azure IoT Operations. The pipeline captures camera frames at the edge, runs AI inference for leak detection, routes alerts to Microsoft Teams, and stores video clips for review.
+This guide walks through a vision-based leak detection scenario built on top of the [`full-single-node-cluster`](../../blueprints/full-single-node-cluster/README.md) blueprint. There is no dedicated `leak-detection` blueprint; the scenario is enabled by applying the `full-single-node-cluster` Terraform with the provided `leak-detection.tfvars.example` and supporting CI/CD scripts.
+
+The pipeline captures camera frames at the edge, runs AI inference for leak detection, routes alerts to Microsoft Teams, and stores video clips for review.
 
 **Total time:** ~2 hours (including infrastructure provisioning)
 

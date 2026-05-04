@@ -694,7 +694,13 @@ output messaging object = {
     ? cloudMessaging.outputs.eventHubNamespaceName
     : 'Not deployed'
 }
-
+@description('Alert notification pipeline resources. Bicep deployment does not currently wire the 045-notification component; output is stubbed for parity with Terraform.')
+output notification object = {
+  logicApp: 'Not deployed'
+  closeLogicApp: 'Not deployed'
+  closeSessionEndpoint: 'Not deployed'
+  storageAccount: 'Not deployed'
+}
 @description('Map of dataflow graph resources by name.')
 output dataflowGraphs string[] = edgeMessaging.outputs.dataflowGraphNames
 

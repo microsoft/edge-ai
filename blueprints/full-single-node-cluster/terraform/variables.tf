@@ -380,8 +380,8 @@ variable "notification_message_template" {
 
 variable "notification_partition_key_field" {
   type        = string
-  description = "Event schema field name used as the Table Storage partition key for session state deduplication lookups"
-  default     = "camera_id"
+  description = "Caller's event schema field name to use as the Table Storage partition key for session-state deduplication lookups (e.g. \"event_id\", \"asset_id\"). Must be set by the scenario tfvars."
+  default     = "event_id"
 }
 
 variable "teams_recipient_id" {

@@ -149,7 +149,7 @@ Implement the leak detection pipeline as a five-layer architecture deployed on a
 
 ### Reference Implementation
 
-The `blueprints/full-single-node-cluster` blueprint (with `leak-detection.tfvars.example`) implements this architecture using:
+The `blueprints/full-single-node-cluster` blueprint (applied with `leak-detection.tfvars.example`) implements this architecture using:
 
 | Layer             | Reference Implementation                                                 | Component                                         |
 |-------------------|--------------------------------------------------------------------------|---------------------------------------------------|
@@ -244,13 +244,13 @@ The ONVIF Connector discovers ONVIF-compliant cameras, subscribes to camera even
 
 #### Selected Approach: Option A (RTSP + Media Connector) as Primary Detection Path
 
-The leak detection blueprint uses a **simulated RTSP camera** (ONVIF Camera Simulator) with the **Media Connector for snapshotting** as the primary detection path.
+The leak detection scenario uses a **simulated RTSP camera** (ONVIF Camera Simulator) with the **Media Connector for snapshotting** as the primary detection path.
 The Media Connector extracts JPEG snapshots from the RTSP stream and publishes them to MQTT, where the AI Edge Inference service performs server-side leak detection.
 The SSE Connector is deployed alongside as an alternative ingestion path for analytics cameras with onboard detection, but the current end-to-end pipeline exercises the RTSP → snapshot → server-side inference flow.
 
 FDEs should select the ingestion path based on customer camera capabilities:
 
-- **Commodity RTSP cameras** (most common): Use Option A for detection and evidence capture — this is the path the reference blueprint demonstrates
+- **Commodity RTSP cameras** (most common): Use Option A for detection and evidence capture — this is the path the reference scenario demonstrates
 - **Analytics cameras with SSE**: Use Option B for detection events, Option A for post-event evidence capture
 - **ONVIF cameras**: Use Option C for discovery and PTZ, combined with Option A for frame extraction
 
@@ -318,7 +318,7 @@ Multiple inference instances subscribe to the same MQTT snapshot stream, each ru
 
 #### Selected Approach: Option A (ONNX/YOLOv8) as Reference
 
-The blueprint provides a YOLOv8n ONNX model as the reference implementation. The model interface contract — input image format, output schema (detection flag, type, bounding box, confidence), and ONNX packaging — enables customers to substitute their own models (EXT-01). FDEs deploy the sample model for initial demonstration and guide customers through model replacement.
+The reference scenario provides a YOLOv8n ONNX model as the default implementation. The model interface contract — input image format, output schema (detection flag, type, bounding box, confidence), and ONNX packaging — enables customers to substitute their own models (EXT-01). FDEs deploy the sample model for initial demonstration and guide customers through model replacement.
 
 ### Layer 3: On-Site Messaging
 
@@ -361,7 +361,7 @@ AIO Dataflow Engine routes detection results to Azure Event Grid for event-drive
 
 #### Selected Approach: Option A (EventHub Dataflows)
 
-EventHub Dataflows are the reference implementation. The blueprint explicitly disables EventGrid dataflows. FDEs may enable EventGrid for customers who need event-driven fan-out to multiple Azure services or prefer pay-per-event pricing.
+EventHub Dataflows are the reference implementation. The reference scenario explicitly disables EventGrid dataflows. FDEs may enable EventGrid for customers who need event-driven fan-out to multiple Azure services or prefer pay-per-event pricing.
 
 ### Layer 5: Notification
 
@@ -426,11 +426,11 @@ Detection events routed from EventHub (or directly from MQTT via edge gateway) i
 
 #### Selected Approach: Option A (Logic App → Teams) as Reference
 
-The blueprint provides Teams notification with stateful deduplication. FDEs guide customers to extend or replace the notification target (EXT-02) based on their operational tools and collaboration platform.
+The reference scenario provides Teams notification with stateful deduplication. FDEs guide customers to extend or replace the notification target (EXT-02) based on their operational tools and collaboration platform.
 
 ## Decision Conclusion
 
-The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation in `blueprints/full-single-node-cluster` (using `leak-detection.tfvars.example`) provides an opinionated starting point:
+The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation is realized as a *scenario* on top of `blueprints/full-single-node-cluster` (using `leak-detection.tfvars.example`) and provides an opinionated starting point:
 
 | Layer            | Reference Choice                                       | Substitution Guidance                                                                     |
 |------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------|
@@ -469,12 +469,12 @@ The leak detection pipeline architecture uses a **layered, MQTT-brokered design*
 
 ### Neutral
 
-- **Multi-model pipelines** are supported architecturally (multiple inference instances subscribing to the same MQTT topics) but not implemented in the reference blueprint
+- **Multi-model pipelines** are supported architecturally (multiple inference instances subscribing to the same MQTT topics) but not implemented in the reference scenario
 - **Edge-local event storage** is an open question (PDR OQ-04) — currently detection events are persisted only when they reach cloud; fully disconnected audit review requires additional implementation
 
 ## References
 
-- [Leak Detection Blueprint](../../blueprints/full-single-node-cluster/README.md)
+- [full-single-node-cluster blueprint (host of the leak detection scenario)](../../blueprints/full-single-node-cluster/README.md)
 
 ## Related ADRs
 
