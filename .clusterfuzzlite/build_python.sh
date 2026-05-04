@@ -43,12 +43,19 @@ for entry in "${HARNESSES[@]}"; do
   if [[ -f requirements.txt ]]; then
     pip3 install --no-cache-dir -r requirements.txt
   fi
+  # Only collect src.message_types submodules for services that actually ship
+  # that package (currently 506-ros2-connector). PyInstaller aborts when asked
+  # to collect a non-existent package.
+  extra_args=()
+  if [[ -d "${svc_path}/src/message_types" ]]; then
+    extra_args+=(--collect-submodules src.message_types)
+  fi
   pyinstaller \
     --distpath "${OUT}" \
     --onefile \
     --name "${harness_name}.pkg" \
     --paths "${svc_path}" \
-    --collect-submodules src.message_types \
+    "${extra_args[@]}" \
     "${svc_path}/${harness_rel}"
   popd >/dev/null
 

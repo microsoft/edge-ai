@@ -18,6 +18,17 @@ FROM gcr.io/oss-fuzz-base/base-builder-rust
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Node.js (and npm) are required by build_js.sh to run `npm ci` and `npx jazzer`
+# for JavaScript fuzz harnesses. The base-builder-rust image does not include
+# Node, so install Node 20.x from NodeSource. Pinned via apt to the NodeSource
+# repository's current 20.x line; CFLite runs on Ubuntu 20.04.
+# hadolint ignore=DL3008,DL3009,DL4006
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+  && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+  && apt-get install -y --no-install-recommends nodejs \
+  && rm -rf /var/lib/apt/lists/*
+
 # atheris must be present in the image before the OSS-Fuzz `compile` step runs
 # (compile imports the Python fuzz targets to wrap them, which fails if atheris
 # is not yet installed). Install unconditionally: the ClusterFuzzLite GitHub
