@@ -1,0 +1,22 @@
+# OSV-Scanner configuration consumed by OpenSSF Scorecard's Vulnerabilities check
+# and direct osv-scanner runs. Mirrors .github/audit.toml suppressions.
+#
+# Each entry below is an unmaintained or unsound transitive that cannot be
+# dropped without an upstream release of a direct dependency. Re-evaluate
+# whenever direct dependencies are bumped.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0384"
+reason = "instant: unmaintained; transitive via notify-types <- notify <- notify-debouncer-full <- azure_iot_operations_mqtt 0.9.0. Resolves when the AIO MQTT SDK upgrades to notify v8+."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0436"
+reason = "paste: unmaintained; transitive via gemm/pulp <- candle-core 0.9.2 (ONNX inference stack). Resolves when the candle stack drops paste."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0134"
+reason = "rustls-pemfile 1.x: unmaintained; transitive via hyper-rustls. Resolves when upstream pulls rustls-pemfile 2.x."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0097"
+reason = "rand: unsoundness with custom logger; awaiting upstream release."
