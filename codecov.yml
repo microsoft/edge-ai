@@ -1,0 +1,72 @@
+---
+# Codecov coverage configuration.
+#
+# Per-component flags scope coverage uploads from the fuzzing matrix so partial
+# matrix runs only refresh the flags they cover. carryforward retains the prior
+# report for unchanged components, keeping the project total stable across PRs
+# that touch only a subset of fuzz targets.
+#
+# Flag naming convention:
+#   fuzz-<NNN>     -> Rust crates fuzzed with cargo-fuzz
+#   fuzz-py-<NNN>  -> Python connectors fuzzed with Atheris
+#   fuzz-js-<NNN>  -> reserved for future Jazzer.js harnesses (not yet allocated)
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 5%
+        informational: true
+  individual_flags:
+    # Rust crates (cargo-fuzz)
+    - name: fuzz-501
+      paths:
+        - src/500-application/501-*/**
+      carryforward: true
+    - name: fuzz-502
+      paths:
+        - src/500-application/502-*/**
+      carryforward: true
+    - name: fuzz-504
+      paths:
+        - src/500-application/504-*/**
+      carryforward: true
+    - name: fuzz-507
+      paths:
+        - src/500-application/507-*/**
+      carryforward: true
+    - name: fuzz-511
+      paths:
+        - src/500-application/511-*/**
+      carryforward: true
+    - name: fuzz-512
+      paths:
+        - src/500-application/512-*/**
+      carryforward: true
+    - name: fuzz-514
+      paths:
+        - src/500-application/514-*/**
+      carryforward: true
+    # Python connectors (Atheris)
+    - name: fuzz-py-505
+      paths:
+        - src/500-application/505-*/**
+      carryforward: true
+    - name: fuzz-py-506
+      paths:
+        - src/500-application/506-*/**
+      carryforward: true
+    - name: fuzz-py-509
+      paths:
+        - src/500-application/509-*/**
+      carryforward: true
+    - name: fuzz-py-510
+      paths:
+        - src/500-application/510-*/**
+      carryforward: true
+    # JavaScript harnesses (Jazzer.js)
+    - name: fuzz-js-513
+      paths:
+        - src/500-application/513-*/**
+      carryforward: true

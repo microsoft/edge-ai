@@ -97,6 +97,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
+      includeFuzzTargets:
+        description: 'Whether to detect changes in fuzz targets (Rust/Python/JS)'
+        required: false
+        default: false
+        type: boolean
     outputs:
       # Backward compatibility outputs with legacy names
       changesInRpEnablementShell:
@@ -123,6 +128,24 @@ on:  # yamllint disable-line rule:truthy
       changedApplicationFolders:
         description: 'JSON matrix of Application folders that have changed'
         value: ${{ jobs.map-outputs.outputs.changedApplicationFolders }}
+      changesInFuzzRust:
+        description: 'Whether any Rust fuzz target sources have changed'
+        value: ${{ jobs.map-outputs.outputs.changesInFuzzRust }}
+      changedFuzzRustFolders:
+        description: 'JSON matrix of Rust fuzz folders that have changed'
+        value: ${{ jobs.map-outputs.outputs.changedFuzzRustFolders }}
+      changesInFuzzPython:
+        description: 'Whether any Python fuzz target sources have changed'
+        value: ${{ jobs.map-outputs.outputs.changesInFuzzPython }}
+      changedFuzzPythonFolders:
+        description: 'JSON matrix of Python fuzz folders that have changed'
+        value: ${{ jobs.map-outputs.outputs.changedFuzzPythonFolders }}
+      changesInFuzzJs:
+        description: 'Whether any JavaScript fuzz target sources have changed'
+        value: ${{ jobs.map-outputs.outputs.changesInFuzzJs }}
+      changedFuzzJsFolders:
+        description: 'JSON matrix of JavaScript fuzz folders that have changed'
+        value: ${{ jobs.map-outputs.outputs.changedFuzzJsFolders }}
 
 permissions:
   contents: read          # Read repository contents and git history for change detection
@@ -140,6 +163,12 @@ jobs:
       changedBicepFolders: ${{ steps.detect.outputs.changedBicepFolders }}
       changesInApplications: ${{ steps.detect.outputs.changesInApplications }}
       changedApplicationFolders: ${{ steps.detect.outputs.changedApplicationFolders }}
+      changesInFuzzRust: ${{ steps.detect.outputs.changesInFuzzRust }}
+      changedFuzzRustFolders: ${{ steps.detect.outputs.changedFuzzRustFolders }}
+      changesInFuzzPython: ${{ steps.detect.outputs.changesInFuzzPython }}
+      changedFuzzPythonFolders: ${{ steps.detect.outputs.changedFuzzPythonFolders }}
+      changesInFuzzJs: ${{ steps.detect.outputs.changesInFuzzJs }}
+      changedFuzzJsFolders: ${{ steps.detect.outputs.changedFuzzJsFolders }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -150,18 +179,23 @@ jobs:
         id: detect
         shell: pwsh
         run: |
-          # Build parameters for the PowerShell script
-          $scriptArgs = @()
+          # Build parameters for the PowerShell script (hashtable splat for named-parameter binding)
+          $baseRef = if ($env:GITHUB_BASE_REF) { $env:GITHUB_BASE_REF } else { 'main' }
+          $scriptArgs = @{ BaseBranch = "origin/$baseRef" }
 
           if ("${{ inputs.includeIaCFolders }}" -eq 'true') {
-            $scriptArgs += '-IncludeIaCFolders'
+            $scriptArgs['IncludeAllIaC'] = $true
           }
 
           if ("${{ inputs.includeApplications }}" -eq 'true') {
-            $scriptArgs += '-IncludeApplications'
+            $scriptArgs['IncludeAllApplications'] = $true
           }
 
-          Write-Host "Running folder change detection with parameters: $($scriptArgs -join ' ')"
+          if ("${{ inputs.includeFuzzTargets }}" -eq 'true') {
+            $scriptArgs['IncludeFuzzTargets'] = $true
+          }
+
+          Write-Host "Running folder change detection with parameters: $($scriptArgs | ConvertTo-Json -Compress)"
 
           # Execute the PowerShell script with appropriate parameters
           $result = & ./scripts/build/Detect-Folder-Changes.ps1 @scriptArgs
@@ -178,6 +212,21 @@ jobs:
           "changedBicepFolders=$($jsonData.bicep.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
           "changesInApplications=$($jsonData.applications.has_changes)" >> $env:GITHUB_OUTPUT
           "changedApplicationFolders=$($jsonData.applications.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+          if ($jsonData.PSObject.Properties.Name -contains 'fuzz') {
+            "changesInFuzzRust=$($jsonData.fuzz.rust.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+            "changedFuzzRustFolders=$($jsonData.fuzz.rust.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+            "changesInFuzzPython=$($jsonData.fuzz.python.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+            "changedFuzzPythonFolders=$($jsonData.fuzz.python.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+            "changesInFuzzJs=$($jsonData.fuzz.js.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+            "changedFuzzJsFolders=$($jsonData.fuzz.js.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+          } else {
+            "changesInFuzzRust=false" >> $env:GITHUB_OUTPUT
+            'changedFuzzRustFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
+            "changesInFuzzPython=false" >> $env:GITHUB_OUTPUT
+            'changedFuzzPythonFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
+            "changesInFuzzJs=false" >> $env:GITHUB_OUTPUT
+            'changedFuzzJsFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
+          }
 
           # Display results for debugging
           Write-Host "Detection results:"
@@ -189,6 +238,11 @@ jobs:
           Write-Host "Bicep folders: $($jsonData.bicep.folders | ConvertTo-Json)"
           Write-Host "Application changes: $($jsonData.applications.has_changes)"
           Write-Host "Application folders: $($jsonData.applications.folders | ConvertTo-Json)"
+          if ($jsonData.PSObject.Properties.Name -contains 'fuzz') {
+            Write-Host "Fuzz Rust changes: $($jsonData.fuzz.rust.has_changes)"
+            Write-Host "Fuzz Python changes: $($jsonData.fuzz.python.has_changes)"
+            Write-Host "Fuzz JS changes: $($jsonData.fuzz.js.has_changes)"
+          }
 
   # Map outputs from the detection job to maintain backward compatibility
   map-outputs:
@@ -203,6 +257,12 @@ jobs:
       changedBicepFolders: ${{ needs.detect-changes.outputs.changedBicepFolders }}
       changesInApplications: ${{ needs.detect-changes.outputs.changesInApplications }}
       changedApplicationFolders: ${{ needs.detect-changes.outputs.changedApplicationFolders }}
+      changesInFuzzRust: ${{ needs.detect-changes.outputs.changesInFuzzRust }}
+      changedFuzzRustFolders: ${{ needs.detect-changes.outputs.changedFuzzRustFolders }}
+      changesInFuzzPython: ${{ needs.detect-changes.outputs.changesInFuzzPython }}
+      changedFuzzPythonFolders: ${{ needs.detect-changes.outputs.changedFuzzPythonFolders }}
+      changesInFuzzJs: ${{ needs.detect-changes.outputs.changesInFuzzJs }}
+      changedFuzzJsFolders: ${{ needs.detect-changes.outputs.changedFuzzJsFolders }}
     steps:
       - name: Map outputs for backward compatibility
         run: echo "Mapping outputs from detection job for backward compatibility"

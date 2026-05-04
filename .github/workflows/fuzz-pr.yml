@@ -1,0 +1,145 @@
+# Fuzz Workflow (Reusable)
+# Purpose:
+#   Runs ClusterFuzzLite fuzzers on changed Rust/Python/JS targets.
+#   Invoked from pr-validation.yml and main.yml as a reusable workflow.
+#   Wave 2 soft-fail: continue-on-error keeps checks green while fuzzing is bedded in.
+#   Uploads SARIF to GHAS and per-component coverage to Codecov.
+---
+name: Fuzz
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  detect-changes:
+    name: Detect fuzz target changes
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/matrix-folder-check.yml
+    with:
+      includeFuzzTargets: true
+      displayName: 'Check for fuzz target changes'
+
+  fuzz-rust:
+    name: Fuzz Rust
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.changesInFuzzRust == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzRustFolders).folderName[0] != null
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzRustFolders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Build fuzzers
+        id: build
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          language: rust
+          sanitizer: address
+      - name: Run fuzzers
+        id: run
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: address
+          output-sarif: true
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673  # v4.5.0
+        with:
+          use_oidc: true
+          flags: fuzz-${{ matrix.folderName }}
+          fail_ci_if_error: false
+
+  fuzz-python:
+    name: Fuzz Python
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.changesInFuzzPython == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders).folderName[0] != null
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Build fuzzers
+        id: build
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          language: python
+          sanitizer: address
+      - name: Run fuzzers
+        id: run
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: address
+          output-sarif: true
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673  # v4.5.0
+        with:
+          use_oidc: true
+          flags: fuzz-py-${{ matrix.folderName }}
+          fail_ci_if_error: false
+
+  fuzz-js:
+    name: Fuzz JavaScript
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.changesInFuzzJs == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzJsFolders).folderName[0] != null
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzJsFolders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Build fuzzers
+        id: build
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          language: javascript
+          sanitizer: coverage
+      - name: Run fuzzers
+        id: run
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: coverage
+          output-sarif: true
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673  # v4.5.0
+        with:
+          use_oidc: true
+          flags: fuzz-js-${{ matrix.folderName }}
+          fail_ci_if_error: false

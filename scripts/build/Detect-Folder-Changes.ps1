@@ -114,6 +114,7 @@ else {
 param(
     [switch]$IncludeAllIaC,
     [switch]$IncludeAllApplications,
+    [switch]$IncludeFuzzTargets,
     [string]$BaseBranch = "origin/main",
     [string]$OutputFile = "",
     [switch]$OutputJson,
@@ -329,6 +330,12 @@ $terraformHasChanges = $false
 $terraformFolders = @{}
 $bicepHasChanges = $false
 $bicepFolders = @{}
+$fuzzRustHasChanges = $false
+$fuzzRustFolders = [PSCustomObject]@{ folderName = @() }
+$fuzzPythonHasChanges = $false
+$fuzzPythonFolders = [PSCustomObject]@{ folderName = @() }
+$fuzzJsHasChanges = $false
+$fuzzJsFolders = [PSCustomObject]@{ folderName = @() }
 
 # Use native PowerShell commands where possible and minimize redundant operations
 
@@ -687,6 +694,37 @@ if ($bicepFiles) {
     }
 }
 
+# Process fuzz target changes when requested
+if ($IncludeFuzzTargets) {
+    $fuzzRustFiles = $changedFiles | Where-Object { $_ -match '/fuzz/(Cargo\.toml|fuzz_targets/.+\.rs)$' }
+    $fuzzPythonFiles = $changedFiles | Where-Object { $_ -match '/tests/fuzz/.+\.py$' }
+    $fuzzJsFiles = $changedFiles | Where-Object { $_ -match '/(tests/)?fuzz/(package\.json|.+\.(mjs|cjs|js))$' }
+
+    if ($fuzzRustFiles) {
+        $fuzzRustPaths = Get-FilePathData -Paths $fuzzRustFiles
+        if ($fuzzRustPaths.Count -gt 0) {
+            $fuzzRustHasChanges = $true
+            $fuzzRustFolders = [PSCustomObject]@{ folderName = @($fuzzRustPaths) }
+        }
+    }
+
+    if ($fuzzPythonFiles) {
+        $fuzzPythonPaths = Get-FilePathData -Paths $fuzzPythonFiles
+        if ($fuzzPythonPaths.Count -gt 0) {
+            $fuzzPythonHasChanges = $true
+            $fuzzPythonFolders = [PSCustomObject]@{ folderName = @($fuzzPythonPaths) }
+        }
+    }
+
+    if ($fuzzJsFiles) {
+        $fuzzJsPaths = Get-FilePathData -Paths $fuzzJsFiles
+        if ($fuzzJsPaths.Count -gt 0) {
+            $fuzzJsHasChanges = $true
+            $fuzzJsFolders = [PSCustomObject]@{ folderName = @($fuzzJsPaths) }
+        }
+    }
+}
+
 # Create the final JSON output with subscription (always included)
 $jsonOutput = [PSCustomObject]@{
     subscription = [PSCustomObject]@{
@@ -708,6 +746,12 @@ $jsonOutput | Add-Member -MemberType NoteProperty -Name "bicep" -Value ([PSCusto
 $jsonOutput | Add-Member -MemberType NoteProperty -Name "applications" -Value ([PSCustomObject]@{
         has_changes = ($applicationChanges.Count -gt 0)
         folders     = $applicationChanges
+    })
+
+$jsonOutput | Add-Member -MemberType NoteProperty -Name "fuzz" -Value ([PSCustomObject]@{
+        rust   = [PSCustomObject]@{ has_changes = [bool]$fuzzRustHasChanges; folders = $fuzzRustFolders }
+        python = [PSCustomObject]@{ has_changes = [bool]$fuzzPythonHasChanges; folders = $fuzzPythonFolders }
+        js     = [PSCustomObject]@{ has_changes = [bool]$fuzzJsHasChanges; folders = $fuzzJsFolders }
     })
 
 # Convert to JSON

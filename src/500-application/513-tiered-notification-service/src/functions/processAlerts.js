@@ -558,3 +558,6 @@ app.eventHub("processAlerts", {
     );
   },
 });
+
+// Exports for fuzz/unit testing of pure helper functions (no side effects).
+export { parseAlertPayload, extractSeverity, buildDedupKey, validateWebhookUrl };
