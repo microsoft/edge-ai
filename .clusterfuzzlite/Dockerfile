@@ -20,14 +20,19 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Node.js (and npm) are required by build_js.sh to run `npm ci` and `npx jazzer`
 # for JavaScript fuzz harnesses. The base-builder-rust image does not include
-# Node, so install Node 20.x from NodeSource. Pinned via apt to the NodeSource
-# repository's current 20.x line; CFLite runs on Ubuntu 20.04.
-# hadolint ignore=DL3008,DL3009,DL4006
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
-  && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-  && apt-get install -y --no-install-recommends nodejs \
-  && rm -rf /var/lib/apt/lists/*
+# Node. Install Node 20.x from the official prebuilt linux-x64 tarball on
+# nodejs.org instead of apt: the CFLite build container cannot reliably reach
+# Ubuntu's archive/security mirrors (port 80 to archive.ubuntu.com and
+# security.ubuntu.com regularly times out from the runner), but HTTPS to
+# nodejs.org works. curl + ca-certificates are already present in the base
+# image.
+ARG NODE_VERSION=20.18.1
+# hadolint ignore=DL3003
+RUN curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+  && tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
+  && rm "node-v${NODE_VERSION}-linux-x64.tar.xz" \
+  && node --version \
+  && npm --version
 
 # atheris must be present in the image before the OSS-Fuzz `compile` step runs
 # (compile imports the Python fuzz targets to wrap them, which fails if atheris
