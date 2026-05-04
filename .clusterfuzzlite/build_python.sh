@@ -59,8 +59,13 @@ for entry in "${HARNESSES[@]}"; do
     "${svc_path}/${harness_rel}"
   popd >/dev/null
 
+  # The `LLVMFuzzerTestOneInput` marker below is required: OSS-Fuzz's
+  # bad_build_check greps each target file for that string to recognize it as
+  # a libFuzzer-compatible fuzz target. Without it, the build is rejected with
+  # "No fuzz targets found in out dir."
   cat >"${OUT}/${harness_name}" <<WRAPPER
 #!/usr/bin/env bash
+# LLVMFuzzerTestOneInput
 this_dir=\$(dirname "\$0")
 export ASAN_OPTIONS="\${ASAN_OPTIONS:-}:detect_leaks=0:symbolize=1:external_symbolizer_path=\$this_dir/llvm-symbolizer"
 exec "\$this_dir/${harness_name}.pkg" "\$@"

@@ -21,11 +21,7 @@ fi
 # Install npm dependencies for harness service(s) so local module resolution
 # works inside the wrapper at fuzz time.
 pushd "${SRC}/edge-ai/src/500-application/513-tiered-notification-service" >/dev/null
-if [[ -f package-lock.json ]]; then
-  npm ci
-else
-  npm install
-fi
+npm install --no-audit --no-fund
 popd >/dev/null
 
 for entry in "${HARNESSES[@]}"; do
