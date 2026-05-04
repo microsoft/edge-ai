@@ -3,7 +3,7 @@ title: Deploy a Leak Detection Scenario on full-single-node-cluster
 description: End-to-end deployment of a vision-based leak detection scenario built on the full-single-node-cluster blueprint, using edge AI inference, video capture, and cloud alerting
 author: Edge AI Team
 ms.date: 2026-03-12
-ms.topic: getting-started
+ms.topic: tutorial
 estimated_reading_time: 60
 keywords:
   - leak detection

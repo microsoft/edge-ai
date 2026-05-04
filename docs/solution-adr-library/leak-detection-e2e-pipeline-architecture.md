@@ -3,7 +3,7 @@ title: End-to-End Leak Detection Pipeline Architecture for Edge AI
 description: Architecture Decision Record for implementing a visual leak detection pipeline using Azure IoT Operations on the edge. Covers the end-to-end architecture from camera ingestion through on-site AI inference to cloud notification, with analysis of substitutable components including inference models, camera connectors, and notification channels.
 author: Edge AI Team
 ms.date: 2026-03-09
-ms.topic: architecture-decision-record
+ms.topic: architecture
 estimated_reading_time: 15
 keywords:
   - leak-detection
