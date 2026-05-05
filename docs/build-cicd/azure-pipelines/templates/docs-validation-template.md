@@ -66,7 +66,7 @@ This template depends on the following:
 
 - **Required Tools**:
   - PowerShell Core
-  - Node.js 18+
+  - Node.js 24+
   - markdown-link-check npm package
 - **Required Scripts**:
   - `./scripts/Generate-DocsSidebar.ps1`: For sidebar generation and validation

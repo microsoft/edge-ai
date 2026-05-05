@@ -45,7 +45,7 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/"
-      - "/docs/assets/js"
+      - "/docs/docusaurus"
     schedule:
       interval: "weekly"
       day: "monday"

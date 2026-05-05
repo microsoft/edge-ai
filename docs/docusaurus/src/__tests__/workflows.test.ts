@@ -30,14 +30,14 @@ describe('CI/CD workflow files', () => {
     expect(jobText).toContain('documentation-build-');
   });
 
-  it('docusaurus-tests.yml uses Node.js 20', () => {
+  it('docusaurus-tests.yml uses Node.js 24', () => {
     const content = fs.readFileSync(
       path.join(repoRoot, '.github', 'workflows', 'docusaurus-tests.yml'),
       'utf8',
     );
     const parsed = yaml.load(content);
     const text = JSON.stringify(parsed);
-    expect(text).toMatch(/node-version.*20/);
+    expect(text).toMatch(/node-version.*24/);
   });
 
   it('workflow files are valid YAML', () => {
