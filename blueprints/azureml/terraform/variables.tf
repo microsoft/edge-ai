@@ -1011,8 +1011,15 @@ variable "should_install_charts" {
   default     = false
 }
 
+/*
+ * Tags
+ */
 
-
-
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}
 
 
