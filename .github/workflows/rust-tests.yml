@@ -20,16 +20,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - crate: src/500-application/501-rust-telemetry/services/receiver
-          - crate: src/500-application/501-rust-telemetry/services/sender
-          - crate: src/500-application/502-rust-http-connector/services/broker
-          - crate: src/500-application/502-rust-http-connector/services/subscriber
-          - crate: src/500-application/503-media-capture-service/services/media-capture-service
+          - name: 501-telemetry-receiver
+            crate: src/500-application/501-rust-telemetry/services/receiver
+          - name: 501-telemetry-sender
+            crate: src/500-application/501-rust-telemetry/services/sender
+          - name: 502-http-connector-broker
+            crate: src/500-application/502-rust-http-connector/services/broker
+          - name: 502-http-connector-subscriber
+            crate: src/500-application/502-rust-http-connector/services/subscriber
+          - name: 503-media-capture-service
+            crate: src/500-application/503-media-capture-service/services/media-capture-service
             system_deps: ffmpeg
-          - crate: src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
-          - crate: src/500-application/507-ai-inference/services/ai-edge-inference
-          - crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
-          - crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
+          - name: 504-mqtt-otel-trace-exporter
+            crate: src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
+          - name: 507-ai-edge-inference
+            crate: src/500-application/507-ai-inference/services/ai-edge-inference
+          - name: 507-ai-edge-inference-crate
+            crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - name: 901-video-to-gif
+            crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -132,7 +141,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: rust-tests-runner-sbom-${{ strategy.job-index }}
+          name: rust-tests-runner-sbom-${{ matrix.name }}
           path: sbom.cdx.json
           if-no-files-found: error
           retention-days: 30
@@ -181,7 +190,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        index: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        include:
+          - name: 501-telemetry-receiver
+          - name: 501-telemetry-sender
+          - name: 502-http-connector-broker
+          - name: 502-http-connector-subscriber
+          - name: 503-media-capture-service
+          - name: 504-mqtt-otel-trace-exporter
+          - name: 507-ai-edge-inference
+          - name: 507-ai-edge-inference-crate
+          - name: 901-video-to-gif
     steps:
       - name: Checkout (sparse, for .grype.yaml)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -193,7 +211,7 @@ jobs:
       - name: Download SBOM artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: rust-tests-runner-sbom-${{ matrix.index }}
+          name: rust-tests-runner-sbom-${{ matrix.name }}
 
       - name: Install Grype
         shell: bash
