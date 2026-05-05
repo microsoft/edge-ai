@@ -14,7 +14,7 @@ keywords:
   - secret store
 ---
 
-# Upgrade Azure IoT Operations
+## Upgrade Azure IoT Operations
 
 This guide describes how to upgrade an Azure IoT Operations (AIO) instance deployed by edge-ai and how to reconcile the upgrade with your Infrastructure as Code (IaC) of choice.
 
