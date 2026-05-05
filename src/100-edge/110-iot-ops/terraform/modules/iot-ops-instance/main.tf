@@ -42,6 +42,7 @@ locals {
     "AgentOperationTimeoutInMinutes"                                                  = tostring(var.operations_config.agentOperationTimeoutInMinutes)
     "connectors.values.mqttBroker.address"                                            = local.mqtt_broker_address
     "connectors.values.mqttBroker.serviceAccountTokenAudience"                        = var.mqtt_broker_config.serviceAccountAudience
+    "connectors.values.securityPki.applicationUri"                                    = "urn:microsoft.com:aio:opc:ua:broker:${substr(sha256(var.arc_connected_cluster_id), 0, 5)}"
     "dataFlows.values.tinyKube.mqttBroker.hostName"                                   = local.mqtt_broker_hostname
     "dataFlows.values.tinyKube.mqttBroker.port"                                       = tostring(var.mqtt_broker_config.brokerListenerPort)
     "dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience" = var.mqtt_broker_config.serviceAccountAudience

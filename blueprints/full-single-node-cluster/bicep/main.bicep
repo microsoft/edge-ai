@@ -7,6 +7,7 @@ import * as assetTypes from '../../../src/100-edge/111-assets/bicep/types.bicep'
 import * as messagingTypes from '../../../src/100-edge/130-messaging/bicep/types.bicep'
 import * as aiFoundryTypes from '../../../src/000-cloud/085-ai-foundry/bicep/types.bicep'
 import * as vpnGatewayTypes from '../../../src/000-cloud/055-vpn-gateway/bicep/types.bicep'
+import * as iotOpsTypes from '../../../src/100-edge/110-iot-ops/bicep/types.bicep'
 
 targetScope = 'subscription'
 
@@ -154,9 +155,8 @@ param customLocationsOid string
 */
 
 // Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
-// param trustIssuerSettings iotOpsTypes.TrustIssuerConfig = { trustSource: 'SelfSigned' }
-var trustIssuerSettings = { trustSource: 'SelfSigned' }
+@description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
+param trustIssuerSettings iotOpsTypes.TrustIssuerConfig = { trustSource: 'SelfSigned' }
 
 @description('Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)')
 param shouldCreateAnonymousBrokerListener bool = false
@@ -168,21 +168,18 @@ param shouldInitAio bool = true
 param shouldDeployAio bool = true
 
 // Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether to deploy DeploymentScripts for Azure IoT Operations.')
-// param shouldDeployAioDeploymentScripts bool = false
-var shouldDeployAioDeploymentScripts = false
+@description('Whether to deploy DeploymentScripts for Azure IoT Operations.')
+param shouldDeployAioDeploymentScripts bool = false
 
 // No additional resource group parameters needed
 
 // Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
-// param shouldEnableOtelCollector bool = true
-var shouldEnableOtelCollector = false
+@description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
+param shouldEnableOtelCollector bool = true
 
 // Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
-// param shouldEnableOpcUaSimulator bool = true
-var shouldEnableOpcUaSimulator = false
+@description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
+param shouldEnableOpcUaSimulator bool = false
 
 /*
   Device Configuration Parameters
