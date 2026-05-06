@@ -154,7 +154,6 @@ param customLocationsOid string
   IoT Operations Parameters
 */
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
 @description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
 param trustIssuerSettings iotOpsTypes.TrustIssuerConfig = { trustSource: 'SelfSigned' }
 
@@ -167,17 +166,14 @@ param shouldInitAio bool = true
 @description('Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.')
 param shouldDeployAio bool = true
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
 @description('Whether to deploy DeploymentScripts for Azure IoT Operations.')
 param shouldDeployAioDeploymentScripts bool = false
 
 // No additional resource group parameters needed
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
 @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
 param shouldEnableOtelCollector bool = true
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
 @description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
 param shouldEnableOpcUaSimulator bool = false
 

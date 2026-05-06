@@ -26,6 +26,16 @@ The `az iot ops upgrade` command updates three cluster components when newer sta
 
 The reconciliation steps differ between Terraform (stateful) and Bicep (stateless).
 
+## Version matrix
+
+This repository currently targets the **AIO 2604** release. The table below maps `az iot ops` CLI versions to the component versions pinned in edge-ai:
+
+| CLI extension (`azure-iot-ops`) | AIO release | cert-manager | secret-sync-controller | iotOperations |
+|---------------------------------|-------------|--------------|------------------------|---------------|
+| 2.5.0                           | 2604        | 0.11.0       | 1.4.0                  | 1.3.70        |
+
+For the full upstream compatibility matrix, see [Supported versions — Azure IoT Operations](https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions).
+
 ## Prerequisites
 
 - Azure CLI logged in to the target subscription.
@@ -80,6 +90,8 @@ Terraform is stateful. The state file holds the previous extension versions; aft
 
    If the upstream pins are now newer than what `az iot ops upgrade` installed, Terraform will move the cluster to the newer pins. If they match, the apply is a no-op for the AIO extensions.
 
+> **Pinned releases**: If your team pins to a specific edge-ai release tag rather than `main`, the version defaults in that release may be older than what `az iot ops upgrade` installed. In that case, after `-refresh-only`, `terraform plan` will show no diff for the AIO extensions (state matches Azure). However, if you later move to a newer edge-ai release with higher version pins, the next `apply` will attempt to upgrade again. To stay aligned, either upgrade edge-ai to the release that matches the AIO versions you upgraded to, or override the version variables in your `terraform.tfvars`.
+
 > If you skip step 1, the next `terraform apply` will detect "drift" on the three extensions and roll Azure back to the versions pinned in code. Always run `-refresh-only` first when you upgraded out-of-band.
 
 ## Reconcile with Bicep
@@ -95,6 +107,8 @@ Bicep is stateless — there is no per-deployment record of previously applied v
 
    If the parameter values are equal to or newer than what `az iot ops upgrade` installed, ARM applies the new versions. Otherwise the deployment is a no-op for the AIO extensions.
 
+> **Pinned releases**: If your team pins to a specific edge-ai release tag, ensure the version parameters passed to the blueprint match or exceed what `az iot ops upgrade` installed. If they are lower, the next deployment will attempt to downgrade the extensions. Override the version parameters explicitly or upgrade to an edge-ai release that includes the newer defaults.
+
 > Because Bicep / ARM compares declared properties to live resource state, you do not need a refresh, import, or state-edit step. The next deployment is the reconciliation.
 
 ## Troubleshooting
@@ -102,3 +116,8 @@ Bicep is stateless — there is no per-deployment record of previously applied v
 - **Terraform plan still shows version diffs after `-refresh-only`**: confirm that the `azurerm_arc_kubernetes_cluster_extension` resources for `cert_manager`, `secret_store`, and `iot_operations` in state now show the upgraded `version`. If they do, the diff is being driven by code defaults newer than what `az iot ops upgrade` installed — running `terraform apply` will move Azure to those defaults.
 - **`az iot ops upgrade` reports no updates**: the cluster is already on the latest stable channel for all three components; nothing to reconcile.
 - **Permission errors during refresh**: ensure your principal has read access on the connected cluster, the cluster extensions, and the AIO instance resource group.
+
+## References
+
+- [Supported versions — Azure IoT Operations](https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions)
+- [Upgrade Azure IoT Operations — Official guide](https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-upgrade)
