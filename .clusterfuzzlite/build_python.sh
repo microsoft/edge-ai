@@ -48,7 +48,7 @@ for entry in "${HARNESSES[@]}"; do
   # to collect a non-existent package.
   extra_args=()
   if [[ -d "${svc_path}/src/message_types" ]]; then
-    extra_args+=(--collect-submodules src.message_types)
+    extra_args+=(--collect-all src.message_types --add-data "${svc_path}/src/message_types:src/message_types")
   fi
   pyinstaller \
     --distpath "${OUT}" \

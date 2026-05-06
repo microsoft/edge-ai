@@ -10,10 +10,10 @@ if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
 with atheris.instrument_imports():
-    from connector_client import ConnectorClient
+    from connector_client import SSEConnectorTestClient
 
 
-_CLIENT = ConnectorClient()
+_CLIENT = SSEConnectorTestClient()
 
 
 def TestOneInput(data: bytes) -> None:  # noqa: N802
