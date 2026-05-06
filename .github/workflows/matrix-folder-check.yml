@@ -28,6 +28,7 @@
 # - changedBicepFolders: JSON object with all identified Bicep folder names for matrix strategy
 # - changesInApplications: true/false indicating if any Application folders have changed (when includeApplications=true)
 # - changedApplicationFolders: JSON object with Application folder details for matrix strategy (when includeApplications=true)
+# - changesInRust: true/false indicating if any Rust-related files have changed (gates the rust-tests workflow)
 #
 # Usage Examples:
 # ```yaml
@@ -123,6 +124,9 @@ on:  # yamllint disable-line rule:truthy
       changedApplicationFolders:
         description: 'JSON matrix of Application folders that have changed'
         value: ${{ jobs.map-outputs.outputs.changedApplicationFolders }}
+      changesInRust:
+        description: 'Whether any Rust-relevant files have changed (gates rust-tests)'
+        value: ${{ jobs.map-outputs.outputs.changesInRust }}
 
 permissions:
   contents: read          # Read repository contents and git history for change detection
@@ -140,6 +144,7 @@ jobs:
       changedBicepFolders: ${{ steps.detect.outputs.changedBicepFolders }}
       changesInApplications: ${{ steps.detect.outputs.changesInApplications }}
       changedApplicationFolders: ${{ steps.detect.outputs.changedApplicationFolders }}
+      changesInRust: ${{ steps.detect.outputs.changesInRust }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -178,6 +183,7 @@ jobs:
           "changedBicepFolders=$($jsonData.bicep.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
           "changesInApplications=$($jsonData.applications.has_changes)" >> $env:GITHUB_OUTPUT
           "changedApplicationFolders=$($jsonData.applications.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+          "changesInRust=$($jsonData.rust.has_changes)" >> $env:GITHUB_OUTPUT
 
           # Display results for debugging
           Write-Host "Detection results:"
@@ -189,6 +195,7 @@ jobs:
           Write-Host "Bicep folders: $($jsonData.bicep.folders | ConvertTo-Json)"
           Write-Host "Application changes: $($jsonData.applications.has_changes)"
           Write-Host "Application folders: $($jsonData.applications.folders | ConvertTo-Json)"
+          Write-Host "Rust changes: $($jsonData.rust.has_changes)"
 
   # Map outputs from the detection job to maintain backward compatibility
   map-outputs:
@@ -203,6 +210,7 @@ jobs:
       changedBicepFolders: ${{ needs.detect-changes.outputs.changedBicepFolders }}
       changesInApplications: ${{ needs.detect-changes.outputs.changesInApplications }}
       changedApplicationFolders: ${{ needs.detect-changes.outputs.changedApplicationFolders }}
+      changesInRust: ${{ needs.detect-changes.outputs.changesInRust }}
     steps:
       - name: Map outputs for backward compatibility
         run: echo "Mapping outputs from detection job for backward compatibility"

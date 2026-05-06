@@ -228,6 +228,20 @@ jobs:
       break-build: true
     secrets: inherit
 
+  # Rust unit/integration tests with coverage for PRs
+  # Gated on Rust-relevant changes via the shared matrix-changes detection job
+  # (changesInRust output) to avoid running the expensive coverage matrix on
+  # PRs that touch no Rust crates, manifests, or rust-tests workflow files.
+  rust-tests:
+    name: Rust Tests
+    needs: [matrix-changes]
+    if: github.event_name != 'pull_request' || needs.matrix-changes.outputs.changesInRust == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/rust-tests.yml
+    secrets: inherit
+
   # Dependency advisory audit (cargo-audit + govulncheck) for PRs
   dep-audit:
     name: Dependency Audit
@@ -339,7 +353,7 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pester-test-results
           path: test-results/

@@ -422,8 +422,11 @@ mod tests {
     fn test_backend_factory_available_backends() {
         let backends = BackendFactory::available_backends();
 
-        // At least one backend should be available
+        #[cfg(any(feature = "onnx-runtime", feature = "candle"))]
         assert!(!backends.is_empty(), "No backends compiled in");
+
+        #[cfg(not(any(feature = "onnx-runtime", feature = "candle")))]
+        assert!(backends.is_empty(), "Expected no backends without features");
 
         #[cfg(feature = "onnx-runtime")]
         assert!(backends.contains(&BackendType::OnnxRuntime));
