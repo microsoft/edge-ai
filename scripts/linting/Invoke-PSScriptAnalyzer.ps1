@@ -31,9 +31,15 @@ if ($ChangedOnly) {
 Write-Host "Scanning $($files.Count) file(s)..."
 
 $allResults = @()
+$crashedFiles = @()
 foreach ($file in $files) {
-    $results = Invoke-ScriptAnalyzer -Path $file -Settings $SettingsPath -ReportSummary
-    $allResults += $results
+    try {
+        $results = Invoke-ScriptAnalyzer -Path $file -Settings $SettingsPath -ReportSummary -ErrorAction Stop
+        $allResults += $results
+    } catch {
+        $crashedFiles += $file
+        Write-Warning "PSScriptAnalyzer internal error on file '$file': $($_.Exception.Message)"
+    }
 }
 
 if (-not (Test-Path $OutputPath)) {
