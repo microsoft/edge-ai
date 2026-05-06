@@ -19,7 +19,7 @@
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags            = var.tags
+  tags            = merge(var.tags, { blueprint = "partial-single-node-cluster" })
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
