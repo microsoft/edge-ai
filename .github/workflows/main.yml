@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
+        uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -70,10 +70,10 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
+        uses: github/codeql-action/autobuild@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
+        uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
         with:
           category: "/language:${{matrix.language}}"
 
@@ -154,6 +154,15 @@ jobs:
       break-build: true
     secrets: inherit
 
+  # Rust unit/integration tests with coverage for main branch
+  rust-tests-main:
+    name: Rust Tests
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/rust-tests.yml
+    secrets: inherit
+
   # Dependency advisory audit (cargo-audit + govulncheck) for main branch
   dep-audit-main:
     name: Dependency Audit
@@ -162,6 +171,17 @@ jobs:
     uses: ./.github/workflows/dep-audit.yml
     with:
       break-build: false
+    secrets: inherit
+
+  # ClusterFuzzLite fuzzing for changed Rust/Python/JS fuzz targets (main)
+  fuzz-main:
+    name: Fuzz
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+      actions: read
+    uses: ./.github/workflows/fuzz-pr.yml
     secrets: inherit
 
   # Call docs-check-terraform workflow

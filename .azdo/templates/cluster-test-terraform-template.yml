@@ -386,8 +386,9 @@ jobs:
       # This tool is available as an NPM package and can be installed and run in the pipeline
       # But it requires Node.js to be installed on the agent
       - task: UseNode@1
+        displayName: 'Use Node.js 24.x'
         inputs:
-          version: "22.x"
+          version: "24.x"
         condition: always()
 
       # Install the tftest-to-junitxml NPM package

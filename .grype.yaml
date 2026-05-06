@@ -58,3 +58,10 @@ ignore:
     package:
       type: binary
       name: ffmpeg
+
+  # GHSA-rp8m-h266-53jh - grype v0.86.1 pep440 parser bug
+  # Justification: syft scan dir:/ captures Debian dpkg version 1.9.0ubuntu1.2
+  # which grype 0.86.1 mis-routes into the pypi ecosystem, triggering a pep440
+  # inflate error (exit 16). Upstream grype bug; remove when upgrading past 0.86.1
+  # with the fix included.
+  - vulnerability: GHSA-rp8m-h266-53jh

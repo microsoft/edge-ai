@@ -4,7 +4,7 @@ Docusaurus-based static site that renders the canonical markdown content from th
 
 ## Prerequisites
 
-- Node.js 20 or later
+- Node.js 24 or later
 - npm (bundled with Node.js)
 
 ## Local Development

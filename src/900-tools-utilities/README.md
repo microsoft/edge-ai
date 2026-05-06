@@ -42,7 +42,7 @@ Each component supports multiple frameworks and languages:
 ## Prerequisites
 
 - Python 3.8+ for Python-based tools
-- Node.js 18+ for JavaScript/TypeScript tools
+- Node.js 24+ for JavaScript/TypeScript tools
 - Rust toolchain for Rust-based CLI utilities
 - Bash or PowerShell for script execution
 

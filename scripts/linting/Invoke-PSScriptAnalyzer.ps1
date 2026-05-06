@@ -12,7 +12,7 @@ Import-Module (Join-Path $PSScriptRoot '../ci/Modules/CIHelpers.psm1') -Force
 Import-Module (Join-Path $PSScriptRoot 'Modules/LintingHelpers.psm1') -Force
 
 if (-not (Get-Module -ListAvailable -Name PSScriptAnalyzer)) {
-    Install-Module -Name PSScriptAnalyzer -RequiredVersion '1.22.0' -Force -Scope CurrentUser -AllowClobber
+    Install-Module -Name PSScriptAnalyzer -RequiredVersion '1.23.0' -Force -Scope CurrentUser -AllowClobber
 }
 Import-Module PSScriptAnalyzer -Force
 
@@ -31,9 +31,15 @@ if ($ChangedOnly) {
 Write-Host "Scanning $($files.Count) file(s)..."
 
 $allResults = @()
+$crashedFiles = @()
 foreach ($file in $files) {
-    $results = Invoke-ScriptAnalyzer -Path $file -Settings $SettingsPath -ReportSummary
-    $allResults += $results
+    try {
+        $results = Invoke-ScriptAnalyzer -Path $file -Settings $SettingsPath -ReportSummary -ErrorAction Stop
+        $allResults += $results
+    } catch {
+        $crashedFiles += $file
+        Write-Warning "PSScriptAnalyzer internal error on file '$file': $($_.Exception.Message)"
+    }
 }
 
 if (-not (Test-Path $OutputPath)) {

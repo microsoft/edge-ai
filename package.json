@@ -67,5 +67,8 @@
   "overrides": {
     "minimatch": "^10.2.4",
     "basic-ftp": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

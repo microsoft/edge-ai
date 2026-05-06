@@ -234,7 +234,6 @@ $DockerImageSHAMap = @{
     'ubuntu:22.04'                                         = 'ubuntu:22.04@sha256:6042500cf4b44023ea1894effe7890666b0c5c7871ed83a97c36c76ae560bb9b'
     'alpine:3.19'                                          = 'alpine:3.19@sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b'
     'debian:bookworm-slim'                                 = 'debian:bookworm-slim@sha256:c618be84fc82d365ce1834a31746b0ffe0499cf50fb1a0ce7b74863b52e5682c'
-    'node:20-alpine'                                       = 'node:20-alpine@sha256:c1ee51b68c17fe1e9e9fb5c481e44b6b74c6c2f6b9f7f0b4b4b4c4c4c4c4c4c4'
     'ubuntu:24.04'                                         = 'ubuntu:24.04@sha256:353675e2a41babd526e2b837d7ec780c2a05bca0164f7ea5dbbd433d21d166fc'
 }
 

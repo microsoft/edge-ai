@@ -82,6 +82,10 @@ jobs:
               echo "Skipping ${crate_dir} (requires OpenCV/FFmpeg system libraries)"
               continue
             fi
+            if [[ "${crate_dir}" == *"/fuzz" ]]; then
+              echo "Skipping ${crate_dir} (cargo-fuzz crate, uses nightly without clippy component)"
+              continue
+            fi
             echo "::group::Clippy: ${crate_dir}"
             if [[ -z "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]] && grep -q 'registry = "aio-sdks"' "${cargo_toml}"; then
               echo "Skipping ${crate_dir} (requires aio-sdks registry token)"
