@@ -130,6 +130,7 @@ var defaultConfigurationSettings = {
   'AgentOperationTimeoutInMinutes': any(aioExtensionConfig.settings.agentOperationTimeoutInMinutes)
   'connectors.values.mqttBroker.address': aioMqBrokerAddress
   'connectors.values.mqttBroker.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
+  'connectors.values.securityPki.applicationUri': 'urn:microsoft.com:aio:opc:ua:broker:${take(uniqueString(arcConnectedCluster.id), 5)}'
   'dataFlows.values.tinyKube.mqttBroker.hostName': '${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}'
   'dataFlows.values.tinyKube.mqttBroker.port': any(aioMqBrokerConfig.brokerListenerPort)
   'dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
