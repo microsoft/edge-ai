@@ -57,10 +57,23 @@ resource "azurerm_role_assignment" "registry_storage_contributor" {
   skip_service_principal_aad_check = true
 }
 
+// Grant blob data contributor on the schemas container so schema versions can be uploaded.
+// Independent of the optional data-lake module so schema uploads work when should_create_data_lake = false.
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_role_assignment" "schema_container_blob_data_contributor" {
+  principal_id         = coalesce(var.blob_data_contributor_principal_id, data.azurerm_client_config.current.object_id)
+  role_definition_name = "Storage Blob Data Contributor"
+  scope                = azurerm_storage_container.schema_container.id
+}
+
 // Azure RBAC propagation delay for blob data-plane access.
 resource "time_sleep" "wait_for_rbac_propagation" {
   create_duration = "30s"
-  depends_on      = [azurerm_role_assignment.registry_storage_contributor]
+  depends_on = [
+    azurerm_role_assignment.registry_storage_contributor,
+    azurerm_role_assignment.schema_container_blob_data_contributor,
+  ]
 }
 
 resource "terraform_data" "defer" {
