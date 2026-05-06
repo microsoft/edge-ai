@@ -147,8 +147,12 @@ libonnxruntime
 Macross
 mobilenetv
 Newtonsoft
+nicegui
 Obtenez
 Ouvrir
+rtspatt
 tinyyolov
 ullaakut
 youracr
+zeep
+émojis

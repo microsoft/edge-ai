@@ -22,3 +22,39 @@ ignore:
   # for PR #411 (Issue #362 PowerShell security-gate naming fix).
   # Reference: GHSA-cq8v-f236-94qc
   - vulnerability: GHSA-cq8v-f236-94qc
+
+  # ffmpeg 8.0.1 bundled in opencv-python-headless 4.13.0.92
+  # Justification: No newer opencv-python-headless release available. The ffmpeg
+  # binary is statically bundled in the PyPI wheel and cannot be patched independently.
+  # Will be resolved when opencv releases a new wheel with ffmpeg >= 8.1.
+  # References: CVE-2026-40962 (Critical), CVE-2026-30997 (High), CVE-2026-30998 (High),
+  #   CVE-2026-30999 (High), CVE-2025-12343 (Medium), CVE-2025-22921 (Medium),
+  #   CVE-2025-69693 (Medium)
+  - vulnerability: CVE-2026-40962
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2026-30997
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2026-30998
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2026-30999
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2025-12343
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2025-22921
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2025-69693
+    package:
+      type: binary
+      name: ffmpeg

@@ -2052,8 +2052,8 @@ binpack
 checkmark
 colorbar
 Consolas
-deselections
 describedby
+deselections
 eventsource
 fieldsets
 focusability
@@ -2062,12 +2062,15 @@ haspopup
 healthz
 helpviewer
 hsts
+imencode
+IMWRITE
 interactable
 jank
 jsyaml
 KHTML
 labelledby
 Menlo
+mjpeg
 mocharc
 nindent
 nodeorder
@@ -2077,6 +2080,7 @@ percentunit
 piechart
 Preemptable
 prereq
+PYTHONDONTWRITEBYTECODE
 PYTHONUNBUFFERED
 queryparam
 readyz
@@ -2088,6 +2092,7 @@ subsubsection
 Tahoma
 textareas
 timepicker
+tobytes
 TOCCSS
 TOCDOM
 ultrawide
