@@ -90,8 +90,10 @@ Terraform is stateful. The state file holds the previous extension versions; aft
 
    If the upstream pins are now newer than what `az iot ops upgrade` installed, Terraform will move the cluster to the newer pins. If they match, the apply is a no-op for the AIO extensions.
 
-> **Pinned releases**: If your team pins to a specific edge-ai release tag rather than `main`, the version defaults in that release may be older than what `az iot ops upgrade` installed. In that case, after `-refresh-only`, `terraform plan` will show no diff for the AIO extensions (state matches Azure). However, if you later move to a newer edge-ai release with higher version pins, the next `apply` will attempt to upgrade again. To stay aligned, either upgrade edge-ai to the release that matches the AIO versions you upgraded to, or override the version variables in your `terraform.tfvars`.
-
+> **Pinned releases**: If your team pins to a specific edge-ai release tag rather than `main`, the version defaults in that release may be older than what `az iot ops upgrade` installed.
+> In that case, after `-refresh-only`, `terraform plan` will show no diff for the AIO extensions (state matches Azure). However, if you later move to a newer edge-ai release with higher version pins,
+> the next `apply` will attempt to upgrade again. To stay aligned, either upgrade edge-ai to the release that matches the AIO versions you upgraded to, or override the version variables in your `terraform.tfvars`.
+>
 > If you skip step 1, the next `terraform apply` will detect "drift" on the three extensions and roll Azure back to the versions pinned in code. Always run `-refresh-only` first when you upgraded out-of-band.
 
 ## Reconcile with Bicep
@@ -108,7 +110,7 @@ Bicep is stateless — there is no per-deployment record of previously applied v
    If the parameter values are equal to or newer than what `az iot ops upgrade` installed, ARM applies the new versions. Otherwise the deployment is a no-op for the AIO extensions.
 
 > **Pinned releases**: If your team pins to a specific edge-ai release tag, ensure the version parameters passed to the blueprint match or exceed what `az iot ops upgrade` installed. If they are lower, the next deployment will attempt to downgrade the extensions. Override the version parameters explicitly or upgrade to an edge-ai release that includes the newer defaults.
-
+>
 > Because Bicep / ARM compares declared properties to live resource state, you do not need a refresh, import, or state-edit step. The next deployment is the reconciliation.
 
 ## Troubleshooting
