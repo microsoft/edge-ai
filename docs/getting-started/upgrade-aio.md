@@ -34,7 +34,7 @@ This repository currently targets the **AIO 2604** release. The table below maps
 |---------------------------------|-------------|--------------|------------------------|---------------|
 | 2.5.0                           | 2604        | 0.11.0       | 1.4.0                  | 1.3.70        |
 
-For the full upstream compatibility matrix, see [Supported versions — Azure IoT Operations](https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions).
+For the full upstream compatibility matrix, see [Supported versions — Azure IoT Operations](https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions).
 
 ## Prerequisites
 
@@ -119,5 +119,5 @@ Bicep is stateless — there is no per-deployment record of previously applied v
 
 ## References
 
-- [Supported versions — Azure IoT Operations](https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions)
-- [Upgrade Azure IoT Operations — Official guide](https://learn.microsoft.com/en-us/azure/iot-operations/deploy-iot-ops/howto-upgrade)
+- [Supported versions — Azure IoT Operations](https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions)
+- [Upgrade Azure IoT Operations — Official guide](https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-upgrade)
