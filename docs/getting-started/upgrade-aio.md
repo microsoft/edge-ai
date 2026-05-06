@@ -29,7 +29,7 @@ The reconciliation steps differ between Terraform (stateful) and Bicep (stateles
 ## Prerequisites
 
 - Azure CLI logged in to the target subscription.
-- `azure-iot-ops` CLI extension installed (this repo expects version `2.4.0`).
+- `azure-iot-ops` CLI extension installed (this repo expects version `2.5.0`).
 - `<RESOURCE_GROUP_NAME>` — the resource group containing the AIO instance.
 - `<INSTANCE_NAME>` — the AIO instance name (for edge-ai blueprints this is typically `iotops-arck-<resource_prefix>-<environment>-<instance>`).
 
