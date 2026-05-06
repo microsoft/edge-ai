@@ -9,7 +9,36 @@
 # Flag naming convention:
 #   fuzz-<NNN>     -> Rust crates fuzzed with cargo-fuzz
 #   fuzz-py-<NNN>  -> Python connectors fuzzed with Atheris
-#   fuzz-js-<NNN>  -> reserved for future Jazzer.js harnesses (not yet allocated)
+#   fuzz-js-<NNN>  -> JavaScript harnesses fuzzed with Jazzer.js
+codecov:
+  notify:
+    wait_for_ci: true
+coverage:
+  status:
+    project:
+      default: { target: auto, threshold: 1% }
+      rust: { target: auto, threshold: 1%, flags: [rust] }
+    patch:
+      default: { target: 80%, informational: true }
+      rust: { target: 80%, informational: true, flags: [rust] }
+ignore:
+  - "src/500-application/511-rust-embedded-wasm-provider/operators/map/**"
+  - "src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/**"
+  - "src/500-application/512-avro-to-json/**"
+  - "src/500-application/514-wasm-msg-to-dss/**"
+  - "target/**"
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+flags:
+  rust:
+    paths:
+      - "src/500-application/501-rust-telemetry/**"
+      - "src/500-application/502-rust-http-connector/**"
+      - "src/500-application/503-media-capture-service/**"
+      - "src/500-application/504-mqtt-otel-trace-exporter/**"
+      - "src/500-application/507-ai-inference/**"
+    carryforward: true
 flag_management:
   default_rules:
     carryforward: true

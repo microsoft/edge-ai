@@ -336,8 +336,53 @@ $fuzzPythonHasChanges = $false
 $fuzzPythonFolders = [PSCustomObject]@{ folderName = @() }
 $fuzzJsHasChanges = $false
 $fuzzJsFolders = [PSCustomObject]@{ folderName = @() }
+$rustHasChanges = $false
 
 # Use native PowerShell commands where possible and minimize redundant operations
+
+function Test-IsRustChangeFile {
+    <#
+    .SYNOPSIS
+        Returns $true when a repo-relative path should trigger the rust-tests workflow.
+    .DESCRIPTION
+        Matches any Rust source file (*.rs), any Cargo manifest or lockfile at any
+        depth (Cargo.toml / Cargo.lock), and the rust-tests, pr-validation, and
+        codecov gating files. Broader than the legacy 500-application-only rule so
+        Rust crates anywhere in the repository (for example tools and utilities)
+        trigger the rust-tests workflow.
+    #>
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Path
+    )
+
+    return $Path -match '(\.rs$|(^|/)Cargo\.(toml|lock)$|^\.github/workflows/(rust-tests|pr-validation)\.yml$|^codecov\.yml$)'
+}
+
+function Test-RustHasChange {
+    <#
+    .SYNOPSIS
+        Returns $true when any path in $ChangedFiles matches the rust gating ruleset.
+    #>
+    param (
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string[]]$ChangedFiles
+    )
+
+    if ($null -eq $ChangedFiles -or $ChangedFiles.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($file in $ChangedFiles) {
+        if (Test-IsRustChangeFile -Path $file) {
+            return $true
+        }
+    }
+
+    return $false
+}
 
 function Get-ChangedFileData {
     param (
@@ -752,6 +797,16 @@ $jsonOutput | Add-Member -MemberType NoteProperty -Name "fuzz" -Value ([PSCustom
         rust   = [PSCustomObject]@{ has_changes = [bool]$fuzzRustHasChanges; folders = $fuzzRustFolders }
         python = [PSCustomObject]@{ has_changes = [bool]$fuzzPythonHasChanges; folders = $fuzzPythonFolders }
         js     = [PSCustomObject]@{ has_changes = [bool]$fuzzJsHasChanges; folders = $fuzzJsFolders }
+    })
+
+# Detect Rust-relevant changes that should gate the rust-tests workflow.
+# Mirrors the regex previously enforced by the standalone detect-rust-changes job
+# in pr-validation.yml: any crate under src/500-application, root Cargo manifests,
+# or workflow/codecov files that influence the rust-tests pipeline.
+$rustHasChanges = Test-RustHasChange -ChangedFiles $changedFiles
+
+$jsonOutput | Add-Member -MemberType NoteProperty -Name "rust" -Value ([PSCustomObject]@{
+        has_changes = [bool]$rustHasChanges
     })
 
 # Convert to JSON
