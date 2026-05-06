@@ -74,8 +74,8 @@ jobs:
             set -uo pipefail
             mkdir -p powershell-lint-results
 
-            echo "Installing PSScriptAnalyzer 1.22.0..."
-            pwsh -Command "Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.22.0 -Force -Scope CurrentUser"
+            echo "Installing PSScriptAnalyzer 1.23.0..."
+            pwsh -Command "Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.23.0 -Force -Scope CurrentUser"
 
             echo "=== Running PSScriptAnalyzer ==="
             LINT_FAILED=false
