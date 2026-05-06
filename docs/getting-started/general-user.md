@@ -544,12 +544,14 @@ After successful deployment:
 1. **Explore the solution**: Familiarize yourself with deployed components
 2. **Configure monitoring**: Set up alerts and dashboards in Grafana
 3. **Customize settings**: Modify configuration for your specific needs
-4. **Learn more**: Review [Azure IoT Operations documentation][iot-ops-docs] for advanced features
+4. **Upgrade Azure IoT Operations**: When new AIO releases ship, follow the [Upgrade Azure IoT Operations](upgrade-aio.md) guide to upgrade and reconcile with Terraform or Bicep
+5. **Learn more**: Review [Azure IoT Operations documentation][iot-ops-docs] for advanced features
 
 ## Additional Resources
 
 - **[Blueprint Developer Guide](blueprint-developer.md)** - Create custom blueprints
 - **[Feature Developer Guide](feature-developer.md)** - Contribute to the platform
+- **[Upgrade Azure IoT Operations](upgrade-aio.md)** - Upgrade AIO and reconcile state for Terraform / Bicep
 - **[Azure IoT Operations Getting Started][iot-ops-quickstart]** - Official Microsoft guide
 - **[Troubleshooting Documentation](../observability/)** - Detailed troubleshooting guides
 

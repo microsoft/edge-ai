@@ -79,6 +79,14 @@ Development standards and practices for C# code implementation.
 - **Scope**: Code structure, naming conventions, best practices
 - **Apply When**: Writing C# code in `**/*.cs` files
 
+#### [Rust Crate Registration Instructions](rust-crate-registration.instructions.md)
+
+Required registration of Rust crates under `src/500-application` for CI test/coverage and Codecov reporting.
+
+- **Context**: Rust workspace coverage, CI matrix, Codecov flag mapping
+- **Scope**: `rust-tests.yml` matrix and triggers, `codecov.yml` flags and ignore lists, opt-out path
+- **Apply When**: Adding, restructuring, or removing crates under `**/src/500-application/**/Cargo.toml`, or editing `**/.github/workflows/rust-tests.yml` or `**/codecov.yml`
+
 ### Scripting and Automation
 
 #### [Bash Instructions](bash.instructions.md)

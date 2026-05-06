@@ -163,10 +163,8 @@ param shouldCreateAks bool = false
   IoT Operations Parameters
 */
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
-// param trustIssuerSettings iotOpsTypes.TrustIssuerConfig = { trustSource: 'SelfSigned' }
-var trustIssuerSettings = { trustSource: 'SelfSigned' }
+@description('The trust issuer settings for Customer Managed Azure IoT Operations Settings.')
+param trustIssuerSettings types.TrustIssuerConfig = { trustSource: 'SelfSigned' }
 
 @description('Whether to enable an insecure anonymous AIO MQ Broker Listener. (Should only be used for dev or test environments)')
 param shouldCreateAnonymousBrokerListener bool = false
@@ -177,20 +175,14 @@ param shouldInitAio bool = true
 @description('Whether to deploy an Azure IoT Operations Instance and all of its required components into the connected cluster.')
 param shouldDeployAio bool = true
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether to deploy DeploymentScripts for Azure IoT Operations.')
-// param shouldDeployAioDeploymentScripts bool = false
-var shouldDeployAioDeploymentScripts = false
+@description('Whether to deploy DeploymentScripts for Azure IoT Operations.')
+param shouldDeployAioDeploymentScripts bool = false
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
-// param shouldEnableOtelCollector bool = true
-var shouldEnableOtelCollector = false
+@description('Whether or not to enable the Open Telemetry Collector for Azure IoT Operations.')
+param shouldEnableOtelCollector bool = true
 
-// Currently disable setting shouldDeployAioDeploymentScripts, remove when DeploymentScripts supports AZ CLI 2.71+ (post May 4)
-// @description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
-// param shouldEnableOpcUaSimulator bool = true
-var shouldEnableOpcUaSimulator = false
+@description('Whether or not to enable the OPC UA Simulator and deploy ADR Asset for Azure IoT Operations.')
+param shouldEnableOpcUaSimulator bool = false
 
 /*
   Device Configuration Parameters
