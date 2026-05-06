@@ -25,3 +25,9 @@ variable "instance" {
   type        = string
   description = "Instance identifier for naming resources: 001, 002, etc"
 }
+
+variable "blob_data_contributor_principal_id" {
+  type        = string
+  description = "The principal ID that will be assigned the 'Storage Blob Data Contributor' role on the schemas container so it can upload schema versions. Defaults to the current Azure client when null."
+  default     = null
+}
