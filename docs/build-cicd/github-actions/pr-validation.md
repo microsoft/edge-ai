@@ -145,7 +145,7 @@ Calls the reusable `variable-compliance-terraform.yml` workflow to:
 Uses the `cluster-test-terraform.yml` workflow with a matrix strategy to:
 
 - Run tests for each changed Terraform module individually
-- Use a specific Terraform version (1.9.8)
+- Use a specific Terraform version (1.12.2)
 - Test without actually applying the changes
 
 ## Troubleshooting

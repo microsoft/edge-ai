@@ -41,7 +41,7 @@ This blueprint provisions the foundational Microsoft Fabric infrastructure:
 
 - Azure subscription with appropriate permissions
 - Microsoft Fabric capacity (optional - can use free tier)
-- Terraform >= 1.9.8
+- Terraform >= 1.12.0
 - Azure CLI authenticated
 - Existing resource group (default naming: `rg-{resource_prefix}-{environment}-{instance}`)
 

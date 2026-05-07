@@ -7,14 +7,14 @@ Each cluster operates independently but can communicate through the peered virtu
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.3.0        |
-| azuread   | >= 3.0.2        |
-| azurerm   | >= 4.51.0       |
-| local     | >= 2.0.0        |
-| tls       | >= 4.0.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
+| azuread   | >= 3.0.2         |
+| azurerm   | >= 4.51.0        |
+| local     | >= 2.0.0         |
+| tls       | >= 4.0.0         |
 
 ## Providers
 

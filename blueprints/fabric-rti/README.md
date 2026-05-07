@@ -47,7 +47,7 @@ This blueprint requires the following infrastructure to already be deployed (typ
 
 ### Required Tools
 
-- Terraform >= 1.9.8
+- Terraform >= 1.12.0
 - Azure CLI authenticated and initialized (`source ./scripts/az-sub-init.sh`)
 
 ### Required Providers

@@ -64,7 +64,7 @@ For Azure IoT Operations deployments, the component uses:
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
 - **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with REST connector variables
-- **Terraform**: Version 1.9.8 or later
+- **Terraform**: Version 1.12.0 or later
 - **Azure Subscription**: Active subscription with appropriate permissions
 - **Example Configuration**: Reference `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`
 

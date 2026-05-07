@@ -55,7 +55,7 @@ Set the creation flags to `false` to attach to these resources instead of creati
 
 ### Required tools
 
-- Terraform >= 1.9.8
+- Terraform >= 1.12.0
 - Azure CLI authenticated to the target subscription. Run `source ./scripts/az-sub-init.sh` to set `ARM_SUBSCRIPTION_ID` before any Terraform command.
 
 ### Required providers

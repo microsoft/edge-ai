@@ -182,7 +182,7 @@ module "notification" {
 |-------------|-----------|
 | `azurerm`   | >= 4.51.0 |
 | `azapi`     | >= 2.3.0  |
-| `terraform` | >= 1.9.8  |
+| `terraform` | >= 1.12.0 |
 
 ## Deployment Options
 

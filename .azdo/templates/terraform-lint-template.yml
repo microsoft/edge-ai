@@ -74,7 +74,7 @@ jobs:
             set -euo pipefail
             mkdir -p terraform-lint-results
 
-            TERRAFORM_VERSION="1.9.8"
+            TERRAFORM_VERSION="1.12.2"
             echo "Installing Terraform v${TERRAFORM_VERSION}..."
             curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o /tmp/terraform.zip
             unzip -o /tmp/terraform.zip -d /tmp

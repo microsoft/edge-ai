@@ -147,7 +147,7 @@ For Azure IoT Operations deployments, the component uses:
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
 - **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with ONVIF connector variables
-- **Terraform**: Version 1.9.8 or later
+- **Terraform**: Version 1.12.0 or later
 
 ## Getting Started with Local Development
 
