@@ -1,4 +1,7 @@
 {
   "extends": "@docusaurus/tsconfig",
-  "compilerOptions": {}
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "types": ["jest", "node"]
+  }
 }
