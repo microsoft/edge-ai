@@ -79,6 +79,8 @@ Enable verbose logging for debugging security gate logic.
 Returns security gate results object and writes JUnit XML report file.
 #>
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSReviewUnusedParameter', 'AllowMissingReports',
+    Justification = 'Used via colon-syntax: -AllowMissing:$AllowMissingReports')]
 param(
     [Parameter(Mandatory = $false)]
     [string]$SecurityResultsPath = "./security-reports",
