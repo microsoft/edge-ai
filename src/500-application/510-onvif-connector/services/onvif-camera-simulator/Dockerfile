@@ -5,10 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Upgrade base image packages to pull in latest CVE patches
+RUN tdnf upgrade -y && tdnf clean all
+
 # Install runtime dependencies and create application user
 RUN tdnf install -y \
-        ca-certificates-3.0.0-13.azl3 \
-        shadow-utils-4.14.3-2.azl3 \
+        ca-certificates \
+        shadow-utils \
         libxml2 \
         libxslt \
     && tdnf clean all \

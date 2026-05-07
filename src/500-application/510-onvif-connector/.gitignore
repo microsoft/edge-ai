@@ -9,3 +9,4 @@ __pycache__/
 *.swo
 *~
 .DS_Store
+test-media/

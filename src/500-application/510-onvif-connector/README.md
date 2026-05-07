@@ -151,10 +151,6 @@ For Azure IoT Operations deployments, the component uses:
 
 ## Getting Started with Local Development
 
-### Starting the Environment
-
-```bash
-docker compose up -d
 - **Azure Subscription**: Active subscription with appropriate permissions
 - **Example Configuration**: Reference `blueprints/full-single-node-cluster/terraform/onvif-connector-assets.tfvars.example`
 
@@ -185,13 +181,7 @@ docker compose logs -f
 
 # Stop the environment
 docker compose down
-```bash
-
-### Viewing Logs
-
-```bash
-# All services
-```bash
+```
 
 ### 2. Verify ONVIF Camera Simulator
 
@@ -809,6 +799,56 @@ If migrating from legacy camera integration approaches:
 7. **Validate** discovery, events, and PTZ control
 8. **Migrate** production cameras incrementally
 9. **Archive** legacy integration scripts
+
+## Camera Dashboard (`services/camera-dashboard/`)
+
+Web dashboard that displays live RTSP camera feeds via MJPEG proxy and provides PTZ camera control through MQTT integration with the ONVIF connector client.
+
+### Dashboard Features
+
+- Live RTSP video streaming rendered as MJPEG in the browser
+- Dynamic camera management — add cameras at runtime by RTSP URL
+- PTZ (pan/tilt/zoom) camera control via MQTT command publishing
+- MQTT event feed displaying motion and tampering alerts
+- Optional ONVIF auto-discovery for camera stream URIs
+
+### Dashboard Quick Start
+
+```bash
+# Start all services including the dashboard
+docker compose up -d
+
+# Open the dashboard
+open http://localhost:5001
+```
+
+The test RTSP camera streams a SMPTE pattern at `rtsp://admin:password@rtsp-camera-1:8554/pattern`.
+
+### Dashboard Configuration
+
+| Variable         | Description                   | Default                                            |
+|------------------|-------------------------------|----------------------------------------------------|
+| `CAMERA_URLS`    | Comma-separated RTSP URLs     | `rtsp://admin:password@rtsp-camera-1:8554/pattern` |
+| `CAMERA_NAMES`   | Comma-separated display names | `test-camera-1`                                    |
+| `DASHBOARD_PORT` | Dashboard web server port     | `5001`                                             |
+| `DASHBOARD_HOST` | Dashboard bind address        | `0.0.0.0`                                          |
+| `VIDEO_FPS`      | MJPEG stream frame rate       | `15`                                               |
+| `JPEG_QUALITY`   | JPEG encoding quality (0-100) | `75`                                               |
+
+The dashboard uses the shared `onvif-mosquitto-broker` service and the `MQTT_TOPIC_PREFIX` environment variable for MQTT communication.
+
+### Dashboard MQTT Integration
+
+PTZ commands are published using the ONVIF connector topic structure:
+
+| Action | Topic                       | Payload                                      |
+|--------|-----------------------------|----------------------------------------------|
+| Pan    | `{prefix}/ptz/command/pan`  | `{"direction": "left\|right", "speed": 0.5}` |
+| Tilt   | `{prefix}/ptz/command/tilt` | `{"direction": "up\|down", "speed": 0.5}`    |
+| Zoom   | `{prefix}/ptz/command/zoom` | `{"direction": "in\|out", "speed": 0.3}`     |
+| Home   | `{prefix}/ptz/command/home` | `{}`                                         |
+
+The dashboard subscribes to `{prefix}/events/#` and displays incoming events with timestamp, topic, and event type. The connector client translates PTZ commands into ONVIF SOAP operations on the physical camera.
 
 ## Related Documentation
 

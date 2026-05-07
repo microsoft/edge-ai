@@ -5,26 +5,26 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Upgrade base image packages to latest patched versions to clear CVEs
 RUN tdnf upgrade -y && tdnf clean all
 
-# Install runtime dependencies and create application user
 RUN tdnf install -y \
         ca-certificates \
         shadow-utils \
     && tdnf clean all \
     && groupadd -r appuser \
-    && useradd -r -g appuser appuser
+    && useradd -r -g appuser -m appuser
 
-# Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY onvif_connector.py .
+COPY src/ ./src/
 
 RUN chown -R appuser:appuser /app
-
 USER appuser
 
-CMD ["python3", "onvif_connector.py"]
+EXPOSE 5001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health')"
+
+CMD ["python3", "src/app.py"]

@@ -85,7 +85,7 @@ COPY --from=builder /workspace/install/edge_ros_interface/lib/ /opt/ros/jazzy/li
 COPY --from=builder /workspace/install/edge_ros_interface/lib/python3.12/site-packages/edge_ros_interface /opt/ros/jazzy/lib/python3.12/site-packages/edge_ros_interface
 
 # Shared base Python requirements
-COPY services/requirements.txt requirements.base.txt
+COPY services/requirements.base.txt requirements.base.txt
 RUN pip3 install --break-system-packages --ignore-installed --no-cache-dir --require-hashes -r requirements.base.txt
 
 # Simulator-specific requirements
