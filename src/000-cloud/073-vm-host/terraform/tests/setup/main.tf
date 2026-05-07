@@ -49,7 +49,7 @@ output "arc_onboarding_user_assigned_identity" {
 
 output "vm_expected_values" {
   value = {
-    default_vm_size        = "Standard_D8s_v3"
+    default_vm_size        = "Standard_D8s_v6"
     default_admin_username = local.resource_prefix
     os_disk_type           = "Standard_LRS"
     vm_publisher           = "Canonical"

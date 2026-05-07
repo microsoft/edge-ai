@@ -103,6 +103,8 @@ module "cloud_security_identity" {
   should_create_aks_identity               = var.should_create_aks_identity
   should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
   should_create_secret_sync_identity       = var.should_deploy_aio
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
 }
 
 module "cloud_vpn_gateway" {
@@ -243,7 +245,9 @@ module "cloud_messaging" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  should_create_azure_functions = var.should_create_azure_functions
+  should_create_azure_functions     = var.should_create_azure_functions
+  log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings = true
 }
 
 module "cloud_vm_host" {
@@ -287,6 +291,8 @@ module "cloud_acr" {
   public_network_access_enabled      = var.acr_public_network_access_enabled
   should_enable_data_endpoints       = var.acr_data_endpoint_enabled
   should_enable_export_policy        = var.acr_export_policy_enabled
+  log_analytics_workspace_id         = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings  = true
 }
 
 module "cloud_kubernetes" {
@@ -361,6 +367,7 @@ module "cloud_azureml" {
   should_enable_nat_gateway               = var.should_enable_managed_outbound_access
   should_enable_public_network_access     = var.azureml_should_enable_public_network_access
   should_create_compute_cluster           = var.azureml_should_create_compute_cluster
+  compute_cluster_node_public_ip_enabled  = !var.azureml_should_enable_private_endpoint
   ml_workload_identity                    = try(module.cloud_security_identity.ml_workload_identity, null)
   ml_workload_subjects                    = var.azureml_ml_workload_subjects
 
@@ -430,6 +437,7 @@ module "edge_cncf_cluster" {
   should_generate_cluster_server_token  = true
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  cluster_admin_group_oid               = var.cluster_admin_group_oid
   custom_locations_oid                  = var.custom_locations_oid
 
   cluster_server_host_machine_username = var.cluster_server_host_machine_username

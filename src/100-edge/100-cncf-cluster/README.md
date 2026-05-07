@@ -112,7 +112,7 @@ The script performs the following steps:
 - Install K3s, Azure CLI, kubectl
 - Login to Azure CLI (Service Principal or Managed Identity)
 - Connect to Azure Arc and enable features: `custom-locations`, `oidc-issuer`, `workload-identity`, `cluster-connect` and optionally `auto-upgrade`
-- Optionally add the provided Azure AD user as a cluster admin to enable `kubectl` access via `connectedk8s proxy`
+- Optionally add the provided Entra ID user or group as a cluster admin and assign Azure Arc RBAC roles (`Azure Arc Kubernetes Viewer`, `Azure Arc Enabled Kubernetes Cluster User Role`) to enable `az connectedk8s proxy`
 - Configure OIDC issuer url for Azure Arc within K3s
 - Increase limits for Azure container storage within the host machine
 - In non production environments will install k9s and configure `.bashrc` with auto complete and aliases for development
@@ -140,6 +140,25 @@ ENVIRONMENT=dev \
   ARC_RESOURCE_GROUP_NAME=rg-sample-dev-001 \
   ARC_RESOURCE_NAME=arck-sample-dev-001 \
   ./k3s-device-setup.sh
+```
+
+## Cluster Admin Access
+
+By default, the deploying user receives cluster-admin permissions. To grant access to an entire Entra ID group (enabling `az connectedk8s proxy` for all group members), set the following in your Terraform configuration (e.g. `terraform.tfvars`):
+
+```hcl
+cluster_admin_group_oid = "<entra-id-group-object-id>"
+```
+
+This creates:
+
+- A Kubernetes `ClusterRoleBinding` with `--group` for in-cluster access
+- Azure RBAC role assignments (`Azure Arc Kubernetes Viewer` and `Azure Arc Enabled Kubernetes Cluster User Role`) on the Arc connected cluster resource for `az connectedk8s proxy` access
+
+Group members can then connect via:
+
+```sh
+az connectedk8s proxy -n <arc-cluster-name> -g <resource-group-name>
 ```
 
 ---

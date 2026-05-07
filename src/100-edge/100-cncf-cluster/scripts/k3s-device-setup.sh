@@ -9,30 +9,31 @@ ARC_RESOURCE_NAME="${ARC_RESOURCE_NAME}"             # The name of the Azure Arc
 
 ## Optional Environment Variables:
 
-K3S_URL="${K3S_URL}"                             # The url for the k3s server if creating an 'agent' node (ex. 'https://<public-ip>:6443')
-K3S_NODE_TYPE="${K3S_NODE_TYPE}"                 # Type of k3s node to create (ex. 'server' or 'agent', defaults to 'server')
-K3S_TOKEN="${K3S_TOKEN}"                         # The token used to secure k3s agent nodes joining a k3s cluster (refer https://docs.k3s.io/cli/token)
-K3S_VERSION="${K3S_VERSION}"                     # Version of k3s to install (ex. 'v1.31.2+k3s1') leave blank to install latest
-CLUSTER_ADMIN_UPN="${CLUSTER_ADMIN_UPN}"         # The user principal name that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query userPrincipalName -o tsv')
-CLUSTER_ADMIN_OID="${CLUSTER_ADMIN_OID}"         # The object ID that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query id -o tsv')
-AKV_NAME="${AKV_NAME}"                           # Azure Key Vault name to store secrets
-AKV_K3S_TOKEN_SECRET="${AKV_K3S_TOKEN_SECRET}"   # Azure Key Vault secret name for k3s token
-AKV_DEPLOY_SAT_SECRET="${AKV_DEPLOY_SAT_SECRET}" # Azure Key Vault secret name for cluster admin token
-ARC_AUTO_UPGRADE="${ARC_AUTO_UPGRADE}"           # Enable/disable auto upgrade for Azure Arc cluster components (ex. 'false' to disable)
-ARC_SP_CLIENT_ID="${ARC_SP_CLIENT_ID}"           # Service Principal Client ID used to connect the new cluster to Azure Arc
-ARC_SP_SECRET="${ARC_SP_SECRET}"                 # Service Principal Client Secret used to connect the new cluster to Azure Arc
-ARC_TENANT_ID="${ARC_TENANT_ID}"                 # Tenant where the new cluster will be connected to Azure Arc
-AZ_CLI_VER="${AZ_CLI_VER}"                       # The Azure CLI version to install (ex. '2.51.0')
-AZ_CONNECTEDK8S_VER="${AZ_CONNECTEDK8S_VER}"     # The Azure CLI extension connectedk8s version to install (ex. '1.10.0')
-CLIENT_ID="${CLIENT_ID}"                         # Client ID for the managed identity used with Azure CLI `az login --identity`
-CUSTOM_LOCATIONS_OID="${CUSTOM_LOCATIONS_OID}"   # Custom Locations Object ID needed if permissions are not allowed
-DEVICE_USERNAME="${DEVICE_USERNAME}"             # Username for this device that will also need access to the k3s cluster
-SKIP_INSTALL_AZ_CLI="${SKIP_INSTALL_AZ_CLI}"     # Skips downloading and installing Azure CLI (Ubuntu, Debian) from https://aka.ms/InstallAzureCLIDeb
-SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"                 # Skips calling 'az login' and instead expects this to have been done previously
-SKIP_INSTALL_K3S="${SKIP_INSTALL_K3S}"           # Skips downloading and installing k3s from https://get.k3s.io
-SKIP_INSTALL_KUBECTL="${SKIP_INSTALL_KUBECTL}"   # Skips downloading and installing kubectl if it is missing
-SKIP_ARC_CONNECT="${SKIP_ARC_CONNECT}"           # Skips connecting the cluster Azure Arc
-SKIP_DEPLOY_SAT="${SKIP_DEPLOY_SAT}"             # Skips adding a 'cluster-admin' ServiceAccount and token, required for ARM DeploymentScripts
+K3S_URL="${K3S_URL}"                                 # The url for the k3s server if creating an 'agent' node (ex. 'https://<public-ip>:6443')
+K3S_NODE_TYPE="${K3S_NODE_TYPE}"                     # Type of k3s node to create (ex. 'server' or 'agent', defaults to 'server')
+K3S_TOKEN="${K3S_TOKEN}"                             # The token used to secure k3s agent nodes joining a k3s cluster (refer https://docs.k3s.io/cli/token)
+K3S_VERSION="${K3S_VERSION}"                         # Version of k3s to install (ex. 'v1.31.2+k3s1') leave blank to install latest
+CLUSTER_ADMIN_UPN="${CLUSTER_ADMIN_UPN}"             # The user principal name that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query userPrincipalName -o tsv')
+CLUSTER_ADMIN_OID="${CLUSTER_ADMIN_OID}"             # The object ID that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query id -o tsv')
+CLUSTER_ADMIN_GROUP_OID="${CLUSTER_ADMIN_GROUP_OID}" # The Entra ID group Object ID that will be given cluster-admin permissions for 'az connectedk8s proxy'
+AKV_NAME="${AKV_NAME}"                               # Azure Key Vault name to store secrets
+AKV_K3S_TOKEN_SECRET="${AKV_K3S_TOKEN_SECRET}"       # Azure Key Vault secret name for k3s token
+AKV_DEPLOY_SAT_SECRET="${AKV_DEPLOY_SAT_SECRET}"     # Azure Key Vault secret name for cluster admin token
+ARC_AUTO_UPGRADE="${ARC_AUTO_UPGRADE}"               # Enable/disable auto upgrade for Azure Arc cluster components (ex. 'false' to disable)
+ARC_SP_CLIENT_ID="${ARC_SP_CLIENT_ID}"               # Service Principal Client ID used to connect the new cluster to Azure Arc
+ARC_SP_SECRET="${ARC_SP_SECRET}"                     # Service Principal Client Secret used to connect the new cluster to Azure Arc
+ARC_TENANT_ID="${ARC_TENANT_ID}"                     # Tenant where the new cluster will be connected to Azure Arc
+AZ_CLI_VER="${AZ_CLI_VER}"                           # The Azure CLI version to install (ex. '2.51.0')
+AZ_CONNECTEDK8S_VER="${AZ_CONNECTEDK8S_VER}"         # The Azure CLI extension connectedk8s version to install (ex. '1.10.0')
+CLIENT_ID="${CLIENT_ID}"                             # Client ID for the managed identity used with Azure CLI `az login --identity`
+CUSTOM_LOCATIONS_OID="${CUSTOM_LOCATIONS_OID}"       # Custom Locations Object ID needed if permissions are not allowed
+DEVICE_USERNAME="${DEVICE_USERNAME}"                 # Username for this device that will also need access to the k3s cluster
+SKIP_INSTALL_AZ_CLI="${SKIP_INSTALL_AZ_CLI}"         # Skips downloading and installing Azure CLI (Ubuntu, Debian) from https://aka.ms/InstallAzureCLIDeb
+SKIP_AZ_LOGIN="${SKIP_AZ_LOGIN}"                     # Skips calling 'az login' and instead expects this to have been done previously
+SKIP_INSTALL_K3S="${SKIP_INSTALL_K3S}"               # Skips downloading and installing k3s from https://get.k3s.io
+SKIP_INSTALL_KUBECTL="${SKIP_INSTALL_KUBECTL}"       # Skips downloading and installing kubectl if it is missing
+SKIP_ARC_CONNECT="${SKIP_ARC_CONNECT}"               # Skips connecting the cluster Azure Arc
+SKIP_DEPLOY_SAT="${SKIP_DEPLOY_SAT}"                 # Skips adding a 'cluster-admin' ServiceAccount and token, required for ARM DeploymentScripts
 
 ## Examples
 ##  ENVIRONMENT=dev ARC_RESOURCE_GROUP_NAME=rg-sample-eastu2-001 ARC_RESOURCE_NAME=arc-sample ./k3s-device-setup.sh
@@ -55,6 +56,27 @@ log() {
 err() {
   printf "[ ERROR ]: %s" "$1" >&2
   exit 1
+}
+
+install_azure_cli() {
+  log "Installing Azure CLI"
+  export DEBIAN_FRONTEND=noninteractive
+  sudo apt-get -o DPkg::Lock::Timeout=300 update
+  sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes --no-install-recommends apt-transport-https ca-certificates curl gnupg lsb-release
+  sudo mkdir -p /etc/apt/keyrings
+  curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg
+  sudo chmod go+r /etc/apt/keyrings/microsoft.gpg
+  local cli_repo architecture
+  cli_repo=$(lsb_release -cs)
+  architecture=$(dpkg --print-architecture)
+  echo "Types: deb
+URIs: https://packages.microsoft.com/repos/azure-cli/
+Suites: ${cli_repo}
+Components: main
+Architectures: ${architecture}
+Signed-by: /etc/apt/keyrings/microsoft.gpg" | sudo tee /etc/apt/sources.list.d/azure-cli.sources >/dev/null
+  sudo apt-get -o DPkg::Lock::Timeout=300 update
+  sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli
 }
 
 enable_debug() {
@@ -86,21 +108,7 @@ log "Setting up AZ CLI..."
 
 if ! command -v "az" &>/dev/null; then
   if [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
-    log "Installing Azure CLI"
-    # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
-    AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
-    sudo mkdir -p /etc/apt/keyrings
-    curl -sLS https://packages.microsoft.com/keys/microsoft.asc \
-      | gpg --dearmor \
-      | sudo tee /etc/apt/keyrings/microsoft.gpg >/dev/null
-    sudo chmod go+r /etc/apt/keyrings/microsoft.gpg
-    AZ_REPO=$(lsb_release -cs)
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_REPO} main" \
-      | sudo tee /etc/apt/sources.list.d/azure-cli.list >/dev/null
-    sudo apt-get update
-    sudo apt-get install -y "azure-cli=${AZ_CLI_INSTALL_VER}-1~${AZ_REPO}"
+    install_azure_cli
   else
     err "'az' is missing and required"
   fi
@@ -111,8 +119,8 @@ fi
 if [[ $AZ_CLI_VER && ! $SKIP_INSTALL_AZ_CLI ]]; then
   if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
     log "Installing specified version of Azure CLI $AZ_CLI_VER"
-    sudo apt-get remove -y azure-cli && log "Removed Azure CLI to install specific version"
-    sudo apt-get install -y "azure-cli=$AZ_CLI_VER-1~$(lsb_release -cs)"
+    sudo apt-get -o DPkg::Lock::Timeout=300 remove -y azure-cli && log "Removed Azure CLI to install specific version"
+    sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
   fi
 fi
 
@@ -199,20 +207,11 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
       fi
     fi
 
-    # Pin k3s binary + installer (OSSF Scorecard pinned-dependencies)
-    K3S_INSTALL_VERSION="${K3S_VERSION:-v1.31.2+k3s1}"
-    K3S_TAG_URL="${K3S_INSTALL_VERSION//+/%2B}"
-    curl -sfL -o /tmp/k3s "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/k3s"
-    curl -sfL -o /tmp/k3s.sha256sums "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/sha256sum-amd64.txt"
-    (cd /tmp && grep -E '(^|[[:space:]])k3s$' k3s.sha256sums | sha256sum -c -)
-    sudo install -m 0755 /tmp/k3s /usr/local/bin/k3s
-    curl -sfL -o /tmp/k3s-install.sh https://get.k3s.io
-    export INSTALL_K3S_SKIP_DOWNLOAD=true
     export INSTALL_K3S_EXEC="agent"
-    export INSTALL_K3S_VERSION="$K3S_INSTALL_VERSION"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
     export K3S_TOKEN
     export K3S_URL
-    sh /tmp/k3s-install.sh
+    curl -sfL https://get.k3s.io | sh -
 
     log "Finished installing k3s agent node... exiting successfully..."
 
@@ -222,19 +221,10 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
   # Install k3s server if it is missing.
 
   if ! command -v 'k3s' &>/dev/null; then
-    # Pin k3s binary + installer (OSSF Scorecard pinned-dependencies)
-    K3S_INSTALL_VERSION="${K3S_VERSION:-v1.31.2+k3s1}"
-    K3S_TAG_URL="${K3S_INSTALL_VERSION//+/%2B}"
-    curl -sfL -o /tmp/k3s "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/k3s"
-    curl -sfL -o /tmp/k3s.sha256sums "https://github.com/k3s-io/k3s/releases/download/${K3S_TAG_URL}/sha256sum-amd64.txt"
-    (cd /tmp && grep -E '(^|[[:space:]])k3s$' k3s.sha256sums | sha256sum -c -)
-    sudo install -m 0755 /tmp/k3s /usr/local/bin/k3s
-    curl -sfL -o /tmp/k3s-install.sh https://get.k3s.io
-    export INSTALL_K3S_SKIP_DOWNLOAD=true
     export INSTALL_K3S_EXEC="server"
-    export INSTALL_K3S_VERSION="$K3S_INSTALL_VERSION"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
     export K3S_TOKEN
-    sh /tmp/k3s-install.sh
+    curl -sfL https://get.k3s.io | sh -
 
     log "Finished installing k3s server"
   fi
@@ -244,11 +234,7 @@ fi
 
 if ! command -v 'kubectl' &>/dev/null; then
   if [[ ! $SKIP_INSTALL_KUBECTL ]]; then
-    # Pin kubectl version + verify sha256 (OSSF Scorecard pinned-dependencies)
-    KUBECTL_VERSION="${KUBECTL_VERSION:-v1.31.2}"
-    curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-    curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl.sha256"
-    echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c -
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     chmod +x ./kubectl
     sudo mv ./kubectl /usr/local/bin
   else
@@ -322,6 +308,15 @@ if [[ $CLUSTER_ADMIN_UPN ]]; then
   kubectl create clusterrolebinding "$short_upn-user-binding" \
     --clusterrole cluster-admin \
     --user="$CLUSTER_ADMIN_UPN" \
+    --dry-run=client -o yaml | kubectl apply -f -
+fi
+
+if [[ $CLUSTER_ADMIN_GROUP_OID ]]; then
+  log "Adding Entra ID group $CLUSTER_ADMIN_GROUP_OID as cluster admin"
+  short_gid="$(echo "$CLUSTER_ADMIN_GROUP_OID" | cut -c1-7)"
+  kubectl create clusterrolebinding "$short_gid-group-binding" \
+    --clusterrole cluster-admin \
+    --group="$CLUSTER_ADMIN_GROUP_OID" \
     --dry-run=client -o yaml | kubectl apply -f -
 fi
 

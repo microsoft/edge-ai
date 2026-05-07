@@ -254,8 +254,18 @@ steps:
             Write-Host "📝 Pushing to existing branch: $branchName"
           }
 
+          # Resolve local source ref; ADO's default checkout leaves HEAD detached so a
+          # branch named like the triggering ref may not exist locally. Fall back to HEAD.
+          git rev-parse --verify --quiet "refs/heads/$pushSource" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            $srcRef = $pushSource
+          } else {
+            Write-Host "ℹ️ Local branch '$pushSource' not found (detached HEAD); pushing current HEAD."
+            $srcRef = 'HEAD'
+          }
+
           # Configure push arguments with explicit source:target mapping
-          $pushArgs = @('push', 'origin', "${pushSource}:refs/heads/$branchName")
+          $pushArgs = @('push', 'origin', "${srcRef}:refs/heads/$branchName")
           if ('${{ parameters.forceWithLease }}' -eq 'True') {
             $pushArgs += '--force-with-lease'
           }

@@ -47,6 +47,26 @@ resource "terraform_data" "defer" {
 }
 
 /*
+ * Diagnostic Settings
+ */
+
+resource "azurerm_monitor_diagnostic_setting" "key_vault" {
+  count = var.should_enable_diagnostic_settings ? 1 : 0
+
+  name                       = "diag-${azurerm_key_vault.new.name}"
+  target_resource_id         = azurerm_key_vault.new.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  enabled_log {
+    category = "AuditEvent"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
+/*
  * Private Endpoint
  */
 

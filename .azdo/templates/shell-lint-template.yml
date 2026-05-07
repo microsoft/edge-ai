@@ -123,7 +123,7 @@ jobs:
 
             echo "=== Running shfmt ==="
             for f in $SHELL_FILES; do
-              if ! shfmt -d -i 4 "$f" 2>&1 | tee -a shell-lint-results/shfmt-results.txt; then
+              if ! shfmt -d "$f" 2>&1 | tee -a shell-lint-results/shfmt-results.txt; then
                 LINT_FAILED=true
               fi
             done

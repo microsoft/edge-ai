@@ -63,6 +63,55 @@ module "role_assignments" {
 }
 
 /*
+ * Arc Connected Cluster RBAC - enables 'az connectedk8s proxy' access
+ */
+
+locals {
+  arc_cluster_id               = try(data.azapi_resource.arc_connected_cluster[0].id, null)
+  cluster_admin_oid            = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
+  has_arc_cluster              = var.should_deploy_script_to_vm && !var.should_deploy_arc_agents
+  has_cluster_admin            = var.cluster_admin_oid != null || var.should_add_current_user_cluster_admin
+  should_assign_arc_rbac_user  = var.should_assign_roles && local.has_arc_cluster && local.has_cluster_admin
+  should_assign_arc_rbac_group = var.should_assign_roles && local.has_arc_cluster && var.cluster_admin_group_oid != null
+}
+
+resource "azurerm_role_assignment" "arc_kubernetes_viewer_user" {
+  count = local.should_assign_arc_rbac_user ? 1 : 0
+
+  scope                = local.arc_cluster_id
+  role_definition_name = "Azure Arc Kubernetes Viewer"
+  principal_id         = local.cluster_admin_oid
+  principal_type       = var.cluster_admin_oid_type
+}
+
+resource "azurerm_role_assignment" "arc_cluster_user_user" {
+  count = local.should_assign_arc_rbac_user ? 1 : 0
+
+  scope                = local.arc_cluster_id
+  role_definition_name = "Azure Arc Enabled Kubernetes Cluster User Role"
+  principal_id         = local.cluster_admin_oid
+  principal_type       = var.cluster_admin_oid_type
+}
+
+resource "azurerm_role_assignment" "arc_kubernetes_viewer_group" {
+  count = local.should_assign_arc_rbac_group ? 1 : 0
+
+  scope                = local.arc_cluster_id
+  role_definition_name = "Azure Arc Kubernetes Viewer"
+  principal_id         = var.cluster_admin_group_oid
+  principal_type       = "Group"
+}
+
+resource "azurerm_role_assignment" "arc_cluster_user_group" {
+  count = local.should_assign_arc_rbac_group ? 1 : 0
+
+  scope                = local.arc_cluster_id
+  role_definition_name = "Azure Arc Enabled Kubernetes Cluster User Role"
+  principal_id         = var.cluster_admin_group_oid
+  principal_type       = "Group"
+}
+
+/*
  * Ubuntu K3s Cluster Setup
  */
 
@@ -78,6 +127,7 @@ module "ubuntu_k3s" {
   arc_tenant_id                             = data.azurerm_client_config.current.tenant_id
   cluster_admin_oid                         = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
   cluster_admin_upn                         = try(coalesce(var.cluster_admin_upn, local.current_user_upn), null)
+  cluster_admin_group_oid                   = var.cluster_admin_group_oid
   custom_locations_oid                      = local.custom_locations_oid
   should_enable_arc_auto_upgrade            = var.should_enable_arc_auto_upgrade
   environment                               = var.environment

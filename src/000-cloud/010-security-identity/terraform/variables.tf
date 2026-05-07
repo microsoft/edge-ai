@@ -39,6 +39,22 @@ variable "should_enable_purge_protection" {
 }
 
 /*
+ * Key Vault Diagnostic Settings - Optional
+ */
+
+variable "log_analytics_workspace_id" {
+  description = "The ID of the Log Analytics workspace for diagnostic settings. If null, diagnostics are not enabled"
+  type        = string
+  default     = null
+}
+
+variable "should_enable_diagnostic_settings" {
+  description = "Whether to enable diagnostic settings for Key Vault"
+  type        = bool
+  default     = false
+}
+
+/*
  * Key Vault Private Endpoint - Optional
  */
 

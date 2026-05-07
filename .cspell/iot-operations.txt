@@ -95,6 +95,7 @@ connectorinstances
 connectortemplate
 coordinatesystem
 dataflowid
+devicemgmt
 efrecon
 endpointtype
 Hdxxxh
@@ -132,3 +133,4 @@ wict
 wiht
 wsnt
 wspd
+xaddrs

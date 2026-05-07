@@ -18,11 +18,12 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 
 ## Resources
 
-| Name                                                                                                                                         | Type     |
-|----------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| [azapi_resource.eventgrid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)         | resource |
-| [azurerm_eventgrid_namespace.aio_eg_ns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventgrid_namespace) | resource |
-| [azurerm_role_assignment.data_sender](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)       | resource |
+| Name                                                                                                                                                       | Type     |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [azapi_resource.eventgrid_namespace_topic_space](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                       | resource |
+| [azurerm_eventgrid_namespace.aio_eg_ns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventgrid_namespace)               | resource |
+| [azurerm_monitor_diagnostic_setting.eventgrid](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) | resource |
+| [azurerm_role_assignment.data_sender](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                     | resource |
 
 ## Inputs
 
@@ -32,8 +33,10 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 | environment                                       | Environment for all resources in this module: dev, test, or prod                                                                                                       | `string` | n/a         |   yes    |
 | instance                                          | Instance identifier for naming resources: 001, 002, etc                                                                                                                | `string` | n/a         |   yes    |
 | location                                          | Azure region where all resources will be deployed                                                                                                                      | `string` | n/a         |   yes    |
+| log\_analytics\_workspace\_id                     | The ID of the Log Analytics workspace for diagnostic settings                                                                                                          | `string` | n/a         |   yes    |
 | resource\_group\_name                             | Name of the resource group                                                                                                                                             | `string` | n/a         |   yes    |
 | resource\_prefix                                  | Prefix for all resources in this module                                                                                                                                | `string` | n/a         |   yes    |
+| should\_enable\_diagnostic\_settings              | Whether to enable diagnostic settings for the Event Grid namespace                                                                                                     | `bool`   | n/a         |   yes    |
 | capacity                                          | Specifies the Capacity / Throughput Units for a Standard SKU namespace.                                                                                                | `number` | `1`         |    no    |
 | eventgrid\_max\_client\_sessions\_per\_auth\_name | Specifies the maximum number of client sessions per authentication name. Valid values are from 3 to 100. This parameter should be greater than the number of dataflows | `number` | `8`         |    no    |
 | topic\_name                                       | Topic template name to create in the Event Grid namespace                                                                                                              | `string` | `"default"` |    no    |

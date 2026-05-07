@@ -10,14 +10,16 @@ module "eventhub" {
 
   source = "./modules/eventhub"
 
-  environment           = var.environment
-  resource_prefix       = var.resource_prefix
-  instance              = var.instance
-  resource_group_name   = var.resource_group.name
-  location              = var.resource_group.location
-  aio_uami_principal_id = var.aio_identity.principal_id
-  capacity              = var.eventhub_capacity
-  eventhubs             = var.eventhubs
+  environment                       = var.environment
+  resource_prefix                   = var.resource_prefix
+  instance                          = var.instance
+  resource_group_name               = var.resource_group.name
+  location                          = var.resource_group.location
+  aio_uami_principal_id             = var.aio_identity.principal_id
+  capacity                          = var.eventhub_capacity
+  eventhubs                         = var.eventhubs
+  log_analytics_workspace_id        = var.log_analytics_workspace_id
+  should_enable_diagnostic_settings = var.should_enable_diagnostic_settings
 }
 
 module "eventgrid" {
@@ -36,6 +38,8 @@ module "eventgrid" {
   capacity                                    = var.eventgrid_capacity
   eventgrid_max_client_sessions_per_auth_name = var.eventgrid_max_client_sessions
   topic_name                                  = var.eventgrid_topic_name
+  log_analytics_workspace_id                  = var.log_analytics_workspace_id
+  should_enable_diagnostic_settings           = var.should_enable_diagnostic_settings
 }
 
 module "app_service_plan" {

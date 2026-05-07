@@ -29,6 +29,26 @@ resource "azapi_resource" "eventgrid_namespace_topic_space" {
   }
 }
 
+/*
+ * Diagnostic Settings
+ */
+
+resource "azurerm_monitor_diagnostic_setting" "eventgrid" {
+  count = var.should_enable_diagnostic_settings ? 1 : 0
+
+  name                       = "diag-${azurerm_eventgrid_namespace.aio_eg_ns.name}"
+  target_resource_id         = azurerm_eventgrid_namespace.aio_eg_ns.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
 resource "azurerm_role_assignment" "data_sender" {
   scope                = azapi_resource.eventgrid_namespace_topic_space.id
   role_definition_name = "EventGrid TopicSpaces Publisher"
