@@ -115,12 +115,11 @@ resource "azurerm_federated_identity_credential" "ml_workload" {
     for subject in local.ml_workload_subjects : subject => subject
   } : {}
 
-  name                = "aml-${replace(replace(each.value, "system:serviceaccount:", ""), ":", "-")}-fic"
-  parent_id           = var.ml_workload_identity.id
-  resource_group_name = var.resource_group_name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = data.azurerm_kubernetes_cluster.aks[0].oidc_issuer_url
-  subject             = each.value
+  name     = "aml-${replace(replace(each.value, "system:serviceaccount:", ""), ":", "-")}-fic"
+  parent_id = var.ml_workload_identity.id
+  audience = ["api://AzureADTokenExchange"]
+  issuer   = data.azurerm_kubernetes_cluster.aks[0].oidc_issuer_url
+  subject  = each.value
 }
 
 // Deploy Azure Machine Learning extension on AKS cluster

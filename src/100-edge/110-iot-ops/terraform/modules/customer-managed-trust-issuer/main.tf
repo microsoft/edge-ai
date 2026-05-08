@@ -41,12 +41,11 @@ locals {
 }
 
 resource "azurerm_federated_identity_credential" "federated_identity_cred_sse_cert_manager" {
-  name                = "cert-manager-sse-ficred"
-  resource_group_name = var.resource_group.name
-  audience            = ["api://AzureADTokenExchange"]
-  issuer              = data.azapi_resource.cluster_oidc_issuer.output.properties.oidcIssuerProfile.issuerUrl
-  parent_id           = var.sse_user_managed_identity.id
-  subject             = "system:serviceaccount:cert-manager:sa-federated-cred-sse"
+  name     = "cert-manager-sse-ficred"
+  audience = ["api://AzureADTokenExchange"]
+  issuer   = data.azapi_resource.cluster_oidc_issuer.output.properties.oidcIssuerProfile.issuerUrl
+  parent_id = var.sse_user_managed_identity.id
+  subject  = "system:serviceaccount:cert-manager:sa-federated-cred-sse"
 }
 
 data "azapi_resource" "cluster_oidc_issuer" {
