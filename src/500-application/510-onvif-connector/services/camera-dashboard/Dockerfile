@@ -15,7 +15,7 @@ RUN tdnf install -y \
     && useradd -r -g appuser -m appuser
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 COPY src/ ./src/
 

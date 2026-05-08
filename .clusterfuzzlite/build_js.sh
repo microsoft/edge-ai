@@ -19,9 +19,10 @@ if [[ ${#HARNESSES[@]} -eq 0 ]]; then
 fi
 
 # Install npm dependencies for harness service(s) so local module resolution
-# works inside the wrapper at fuzz time.
+# works inside the wrapper at fuzz time. Use `npm ci` against the committed
+# lockfile so the OSSF Scorecard npmCommand check stays clean.
 pushd "${SRC}/edge-ai/src/500-application/513-tiered-notification-service" >/dev/null
-npm install --no-audit --no-fund
+npm ci --no-audit --no-fund
 popd >/dev/null
 
 for entry in "${HARNESSES[@]}"; do
