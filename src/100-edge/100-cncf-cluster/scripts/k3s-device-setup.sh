@@ -13,6 +13,9 @@ K3S_URL="${K3S_URL}"                                 # The url for the k3s serve
 K3S_NODE_TYPE="${K3S_NODE_TYPE}"                     # Type of k3s node to create (ex. 'server' or 'agent', defaults to 'server')
 K3S_TOKEN="${K3S_TOKEN}"                             # The token used to secure k3s agent nodes joining a k3s cluster (refer https://docs.k3s.io/cli/token)
 K3S_VERSION="${K3S_VERSION}"                         # Version of k3s to install (ex. 'v1.31.2+k3s1') leave blank to install latest
+K3S_INSTALL_SCRIPT_SHA256="${K3S_INSTALL_SCRIPT_SHA256}" # Optional SHA-256 of https://get.k3s.io install script for verify-then-run (recommended)
+KUBECTL_VERSION="${KUBECTL_VERSION}"                 # Version of kubectl to install (ex. 'v1.31.2'); leave blank to use latest stable
+KUBECTL_SHA256="${KUBECTL_SHA256}"                   # Optional SHA-256 of the kubectl binary for verify-then-run (recommended)
 CLUSTER_ADMIN_UPN="${CLUSTER_ADMIN_UPN}"             # The user principal name that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query userPrincipalName -o tsv')
 CLUSTER_ADMIN_OID="${CLUSTER_ADMIN_OID}"             # The object ID that would be given the cluster-admin permission in the cluster (ex. 'az ad signed-in-user show --query id -o tsv')
 CLUSTER_ADMIN_GROUP_OID="${CLUSTER_ADMIN_GROUP_OID}" # The Entra ID group Object ID that will be given cluster-admin permissions for 'az connectedk8s proxy'
@@ -82,6 +85,35 @@ Signed-by: /etc/apt/keyrings/microsoft.gpg" | sudo tee /etc/apt/sources.list.d/a
 enable_debug() {
   echo "[ DEBUG ]: Enabling writing out all commands being executed"
   set -x
+}
+
+install_k3s_verified() {
+  local script_path
+  script_path="$(mktemp)"
+  log "Downloading k3s install script"
+  curl -fsSL https://get.k3s.io -o "$script_path"
+  if [[ -n ${K3S_INSTALL_SCRIPT_SHA256:-} ]]; then
+    echo "${K3S_INSTALL_SCRIPT_SHA256}  ${script_path}" | sha256sum -c - || err "k3s install script SHA-256 verification failed"
+  else
+    log "WARNING: K3S_INSTALL_SCRIPT_SHA256 not set; skipping integrity verification (recommended for production)"
+  fi
+  sh "$script_path"
+  rm -f "$script_path"
+}
+
+install_kubectl_verified() {
+  local version bin_path
+  version="${KUBECTL_VERSION:-$(curl -fsSL https://dl.k8s.io/release/stable.txt)}"
+  bin_path="$(mktemp)"
+  log "Downloading kubectl ${version}"
+  curl -fsSL "https://dl.k8s.io/release/${version}/bin/linux/amd64/kubectl" -o "$bin_path"
+  if [[ -n ${KUBECTL_SHA256:-} ]]; then
+    echo "${KUBECTL_SHA256}  ${bin_path}" | sha256sum -c - || err "kubectl SHA-256 verification failed"
+  else
+    log "WARNING: KUBECTL_SHA256 not set; skipping integrity verification (recommended for production)"
+  fi
+  chmod +x "$bin_path"
+  sudo mv "$bin_path" /usr/local/bin/kubectl
 }
 
 if [[ $# -gt 0 ]]; then
@@ -211,7 +243,7 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
     export INSTALL_K3S_VERSION="$K3S_VERSION"
     export K3S_TOKEN
     export K3S_URL
-    curl -sfL https://get.k3s.io | sh -
+    install_k3s_verified
 
     log "Finished installing k3s agent node... exiting successfully..."
 
@@ -224,7 +256,7 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
     export INSTALL_K3S_EXEC="server"
     export INSTALL_K3S_VERSION="$K3S_VERSION"
     export K3S_TOKEN
-    curl -sfL https://get.k3s.io | sh -
+    install_k3s_verified
 
     log "Finished installing k3s server"
   fi
@@ -234,9 +266,7 @@ fi
 
 if ! command -v 'kubectl' &>/dev/null; then
   if [[ ! $SKIP_INSTALL_KUBECTL ]]; then
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    chmod +x ./kubectl
-    sudo mv ./kubectl /usr/local/bin
+    install_kubectl_verified
   else
     err "'kubectl' is missing and required"
   fi
