@@ -40,8 +40,9 @@ RUN curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-
 # Action does not forward its `language:` input as a Docker build-arg, so the
 # `LANGUAGE` ARG above is always the default at image-build time and a
 # conditional install would never fire for python harnesses.
-# hadolint ignore=DL3013
-RUN python3 -m pip install --no-cache-dir atheris pyinstaller
+COPY .clusterfuzzlite/fuzz-tools-requirements.txt /tmp/fuzz-tools-requirements.txt
+RUN python3 -m pip install --no-cache-dir --require-hashes -r /tmp/fuzz-tools-requirements.txt \
+  && rm /tmp/fuzz-tools-requirements.txt
 
 COPY . $SRC/edge-ai
 COPY .clusterfuzzlite/build.sh        $SRC/build.sh
