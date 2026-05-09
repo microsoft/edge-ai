@@ -1,0 +1,82 @@
+---
+name: Check Binary Integrity
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to verify (e.g. v1.2.3)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-binary-integrity-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-attestations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG_NAME: ${{ inputs.tag || github.event.release.tag_name }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Download release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          gh release download "${TAG_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --dir release-assets \
+            --skip-existing
+
+      - name: Verify provenance attestations
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          attestations=(release-assets/*.intoto.jsonl)
+          if [[ ${#attestations[@]} -eq 0 ]]; then
+            echo "No *.intoto.jsonl attestations found in release ${TAG_NAME}." >&2
+            exit 1
+          fi
+          for bundle in "${attestations[@]}"; do
+            echo "::group::Verifying ${bundle}"
+            gh attestation verify "${bundle}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --bundle "${bundle}"
+            echo "::endgroup::"
+          done
+
+      - name: Recompute and compare digests
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          assets=(release-assets/*)
+          if [[ ${#assets[@]} -eq 0 ]]; then
+            echo "No release assets downloaded." >&2
+            exit 1
+          fi
+          {
+            echo "## Release asset digests (${TAG_NAME})"
+            echo
+            echo '| Asset | SHA256 |'
+            echo '| --- | --- |'
+          } >> "${GITHUB_STEP_SUMMARY}"
+          for asset in "${assets[@]}"; do
+            [[ "${asset}" == *.intoto.jsonl ]] && continue
+            digest=$(sha256sum "${asset}" | awk '{print $1}')
+            name=$(basename "${asset}")
+            echo "| \`${name}\` | \`${digest}\` |" >> "${GITHUB_STEP_SUMMARY}"
+          done
