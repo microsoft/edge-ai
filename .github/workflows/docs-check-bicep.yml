@@ -4,8 +4,7 @@
 # Purpose:
 # This workflow validates documentation standards across the codebase to ensure
 # all Bicep modules are properly documented and documentation stays in sync with code.
-permissions:
-  contents: read
+permissions: {}
 #
 # Functionality:
 # - Verifies Bicep module documentation is current using custom documentation generator
@@ -59,6 +58,8 @@ jobs:
   docs-check-bicep:
     name: Bicep Documentation Compliance Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     env:
       BREAK_BUILD: ${{ inputs.break_build || github.event.inputs.break_build || 'false' }}  # Support both workflow_call and workflow_dispatch

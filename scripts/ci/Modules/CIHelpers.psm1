@@ -554,6 +554,22 @@ function Publish-CIArtifact {
     }
 }
 
+function Get-StandardTimestamp {
+    <#
+    .SYNOPSIS
+    Returns an ISO-8601 UTC timestamp with sub-second precision.
+
+    .DESCRIPTION
+    Produces a timestamp in the form `yyyy-MM-ddTHH:mm:ss.fffffffZ` for use in
+    structured logs, SARIF runs, and audit trails. Always emitted in UTC.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    return [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ss.fffffffZ')
+}
+
 Export-ModuleMember -Function @(
     'ConvertTo-GitHubActionsEscaped',
     'ConvertTo-AzureDevOpsEscaped',
@@ -565,5 +581,6 @@ Export-ModuleMember -Function @(
     'Write-CIAnnotation',
     'Write-CIAnnotations',
     'Set-CITaskResult',
-    'Publish-CIArtifact'
+    'Publish-CIArtifact',
+    'Get-StandardTimestamp'
 )

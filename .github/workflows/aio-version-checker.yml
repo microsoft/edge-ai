@@ -24,8 +24,7 @@
 # This workflow is triggered by the ci-cd.yml workflow.
 
 # GitHub Actions permissions
-permissions:
-  contents: read
+permissions: {}
 
 name: AIO Version Checker
 
@@ -69,6 +68,8 @@ jobs:
   check-aio-versions:
     name: Check AIO Component Versions
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       mismatches_found: ${{ steps.version-check.outputs.mismatches_found }}
 
