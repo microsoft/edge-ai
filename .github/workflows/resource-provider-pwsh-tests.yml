@@ -57,13 +57,15 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: 'test-results'
 
-permissions:
-  contents: read
+permissions: {}
+
 jobs:
   # Job to run PowerShell script tests for the resource providers
   resource-provider-pwsh-test:
     name: PowerShell Resource Provider Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository

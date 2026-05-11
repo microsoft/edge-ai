@@ -129,8 +129,7 @@ on:  # yamllint disable-line rule:truthy
         default: '{}'
         type: string
 
-permissions:
-  contents: read
+permissions: {}
 
 env:
   REGISTRY: ${{ inputs.registryName || 'local' }}

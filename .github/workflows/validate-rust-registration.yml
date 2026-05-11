@@ -22,13 +22,14 @@ on:
       - 'scripts/tests/Validate-RustCrateRegistration.Tests.ps1'
       - '.github/instructions/rust-crate-registration.instructions.md'
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   validate:
     name: Validate Rust crate registration
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         shell: pwsh

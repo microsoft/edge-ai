@@ -27,8 +27,7 @@
 ---
 name: Main Branch CI/CD
 
-permissions:
-  contents: read
+permissions: {}
 
 on: # yamllint disable-line rule:truthy
   push:
@@ -136,6 +135,16 @@ jobs:
       contents: read
       security-events: write
     uses: ./.github/workflows/security-scan.yml
+
+  # Workflow permissions deny-all scan (main)
+  permissions-scan-main:
+    name: Workflow Permissions Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/workflow-permissions-scan.yml
+    with:
+      require-deny-all: true
 
   # YAML and container linting (main)
   yaml-lint-main:
