@@ -89,11 +89,11 @@ resource "azurerm_federated_identity_credential" "ml_workload" {
     for subject in local.ml_workload_subjects : subject => subject
   } : {}
 
-  name     = "aml-${replace(replace(each.value, "system:serviceaccount:", ""), ":", "-")}-fic"
+  name      = "aml-${replace(replace(each.value, "system:serviceaccount:", ""), ":", "-")}-fic"
   parent_id = var.ml_workload_identity.id
-  audience = ["api://AzureADTokenExchange"]
-  issuer   = data.azapi_resource.arc_oidc[0].output.properties.oidcIssuerProfile.issuerUrl
-  subject  = each.value
+  audience  = ["api://AzureADTokenExchange"]
+  issuer    = data.azapi_resource.arc_oidc[0].output.properties.oidcIssuerProfile.issuerUrl
+  subject   = each.value
 }
 
 resource "azurerm_arc_kubernetes_cluster_extension" "azureml" {
