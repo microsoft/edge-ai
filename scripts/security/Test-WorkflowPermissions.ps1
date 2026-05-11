@@ -82,7 +82,6 @@ Import-Module (Join-Path $PSScriptRoot 'Modules/SecurityHelpers.psm1') -Force
 
 # region Helper Functions
 
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Validates permissions across multiple workflow files.')]
 function Test-WorkflowPermissions {
     <#
     .SYNOPSIS
@@ -94,6 +93,7 @@ function Test-WorkflowPermissions {
         explicitly set to 'none'.
     #>
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Validates permissions across multiple workflow files.')]
     param(
         [Parameter(Mandatory = $true)]
         [string]$FilePath,
@@ -203,6 +203,7 @@ function ConvertTo-PermissionsSarif {
         Converts violations to SARIF 2.1.0 format.
     #>
     [CmdletBinding()]
+    [OutputType([hashtable])]
     param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyCollection()]
