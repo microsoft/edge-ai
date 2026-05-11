@@ -69,7 +69,10 @@ param(
     [string]$ExcludePaths = 'copilot-setup-steps.yml',
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireDenyAll
+    [switch]$RequireDenyAll,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$Recurse
 )
 
 $ErrorActionPreference = 'Stop'
@@ -79,6 +82,7 @@ Import-Module (Join-Path $PSScriptRoot 'Modules/SecurityHelpers.psm1') -Force
 
 # region Helper Functions
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Validates permissions across multiple workflow files.')]
 function Test-WorkflowPermissions {
     <#
     .SYNOPSIS
@@ -279,7 +283,10 @@ function Invoke-WorkflowPermissionsCheck {
         [string]$ExcludePaths = 'copilot-setup-steps.yml',
 
         [Parameter(Mandatory = $false)]
-        [switch]$RequireDenyAll
+        [switch]$RequireDenyAll,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$Recurse
     )
 
     Write-SecurityLog "Starting workflow permissions validation" -Level Info -CIAnnotation
@@ -299,7 +306,7 @@ function Invoke-WorkflowPermissionsCheck {
     }
 
     # Discover workflow files
-    $workflowFiles = Get-ChildItem -Path $resolvedPath -File | Where-Object { $_.Extension -in '.yml', '.yaml' }
+    $workflowFiles = Get-ChildItem -Path $resolvedPath -File -Recurse:$Recurse | Where-Object { $_.Extension -in '.yml', '.yaml' }
     $totalFiles = @($workflowFiles).Count
     Write-SecurityLog "Found $totalFiles workflow file(s)" -Level Info
 

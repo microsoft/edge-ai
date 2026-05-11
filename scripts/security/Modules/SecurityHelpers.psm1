@@ -110,6 +110,7 @@ function Write-SecurityLog {
     }
 }
 
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pure factory function returns a PSCustomObject; performs no state changes.')]
 function New-SecurityIssue {
     <#
     .SYNOPSIS
