@@ -110,7 +110,6 @@ function Write-SecurityLog {
     }
 }
 
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pure factory function returns a PSCustomObject; performs no state changes.')]
 function New-SecurityIssue {
     <#
     .SYNOPSIS
@@ -146,6 +145,7 @@ function New-SecurityIssue {
     #>
     [CmdletBinding()]
     [OutputType([PSCustomObject])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Pure factory function returns a PSCustomObject; performs no state changes.')]
     param(
         [Parameter(Mandatory)]
         [string]$Type,
