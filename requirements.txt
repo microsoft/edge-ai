@@ -431,9 +431,9 @@ charset-normalizer==3.4.7 \
     # via
     #   checkov
     #   requests
-checkov==3.2.526 \
-    --hash=sha256:834d60811898675035187214412290013ba977a9d0b884f3e07545b654742bad \
-    --hash=sha256:e4083f4eedc7ba0e6b299e13d9f74ea432137504e47c538b129d6f25c6ce2518
+checkov==3.2.528 \
+    --hash=sha256:311c1113ea9d08060dba54b7315937e49a357bfafc7464288e15cd56a477b0c8 \
+    --hash=sha256:c1812d5595d466a3182c04e25441a6ee1475558f6b6f73380ad85134e9fe05f3
     # via -r requirements.in
 click==8.3.2 \
     --hash=sha256:14162b8b3b3550a7d479eafa77dfd3c38d9dc8951f6f69c78913a8f9a7540fd5 \
@@ -1684,9 +1684,9 @@ regex==2026.4.4 \
     # via
     #   pycep-parser
     #   python-hcl2
-requests==2.33.1 \
-    --hash=sha256:18817f8c57c6263968bc123d237e3b8b08ac046f5456bd1e307ee8f4250d3517 \
-    --hash=sha256:4e6d1ef462f3626a1f0a0a9c42dd93c63bad33f9f1c1937509b8c5c8718ab56a
+requests==2.34.0 \
+    --hash=sha256:7d62fe92f50eb82c529b0916bb445afa1531a566fc8f35ffdc64446e771b856a \
+    --hash=sha256:917520a21b767485ce7c588f4ebb917c436b24a31231b44228715eaeb5a52c60
     # via
     #   -r requirements.in
     #   bc-detect-secrets
