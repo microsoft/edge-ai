@@ -137,7 +137,13 @@ Confirm the following resources are provisioned:
 
 **Estimated time:** ~30 minutes
 
-Application container images must be built and pushed to the Azure Container Registry created in Phase 1.
+The scenario uses three application container images, built from this repository and pushed to the Azure Container Registry created in Phase 1. The Azure IoT Operations Media Connector is **not** built here; it is a first-party AIO component enabled by the blueprint.
+
+| Image                   | Source path                                                       | Role                                                                                                       |
+|-------------------------|-------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `ai-edge-inference`     | `src/500-application/507-ai-inference/services/ai-edge-inference` | Rust ONNX/Candle vision inference service that publishes alert events to the AIO MQTT broker.              |
+| `sse-server`            | `src/500-application/509-sse-connector/services/sse-server`       | Python analytics-camera simulator that emits Server-Sent Events consumed by the Akri SSE HTTP connector.   |
+| `media-capture-service` | `src/500-application/503-media-capture-service/services/media-capture-service` | Rust workload that maintains an RTSP ring buffer and extracts clips on alert to Azure Blob via ACSA. |
 
 #### Option A: Automated Build
 
@@ -151,26 +157,51 @@ cd blueprints/full-single-node-cluster
 
 #### Option B: Manual Build
 
-For each application component (507-ai-inference, 508-media-connector, 503-media-capture, 509-sse-connector):
+Build and push the three images individually. The image names must match those produced by the automated build because Phase 3 manifests reference them by these exact tags.
 
 ```bash
 ACR_NAME=$(cd blueprints/full-single-node-cluster/terraform && terraform output -raw container_registry | jq -r .name)
+TAG="latest"
 
 az acr login --name "$ACR_NAME"
 
-docker build -t "$ACR_NAME.azurecr.io/507-ai-inference:latest" \
-  ../../src/500-application/507-ai-inference/
+# ai-edge-inference (uses Dockerfile.acr, amd64)
+docker build \
+  -t "$ACR_NAME.azurecr.io/ai-edge-inference:$TAG" \
+  -f src/500-application/507-ai-inference/services/ai-edge-inference/Dockerfile.acr \
+  src/500-application/507-ai-inference/services/ai-edge-inference
+docker push "$ACR_NAME.azurecr.io/ai-edge-inference:$TAG"
 
-docker push "$ACR_NAME.azurecr.io/507-ai-inference:latest"
+# sse-server
+docker build \
+  -t "$ACR_NAME.azurecr.io/sse-server:$TAG" \
+  src/500-application/509-sse-connector/services/sse-server
+docker push "$ACR_NAME.azurecr.io/sse-server:$TAG"
+
+# media-capture-service
+docker build \
+  -t "$ACR_NAME.azurecr.io/media-capture-service:$TAG" \
+  src/500-application/503-media-capture-service/services/media-capture-service
+docker push "$ACR_NAME.azurecr.io/media-capture-service:$TAG"
 ```
 
-Repeat for each application image.
+For the `ai-edge-inference` image you can also offload the build to ACR Tasks (avoids needing the local Rust/ONNX toolchain):
+
+```bash
+az acr build \
+  --registry "$ACR_NAME" \
+  --image "ai-edge-inference:$TAG" \
+  --file src/500-application/507-ai-inference/services/ai-edge-inference/Dockerfile.acr \
+  src/500-application/507-ai-inference/services/ai-edge-inference
+```
 
 #### Verify Images
 
 ```bash
 az acr repository list --name "$ACR_NAME" --output table
 ```
+
+Expected repositories: `ai-edge-inference`, `sse-server`, `media-capture-service`.
 
 ### Phase 3: Deploy Kubernetes Workloads
 
