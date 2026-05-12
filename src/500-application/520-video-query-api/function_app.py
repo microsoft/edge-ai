@@ -45,6 +45,10 @@ ALLOWED_CAMERAS = {
 }
 EVENT_GRID_MQTT_SCOPE = "https://eventgrid.azure.net/.default"
 
+# Allowed camera_id format: alphanumeric, underscore, hyphen. Prevents injection
+# into Azure Blob Storage index tag filter expressions (single-quote breakout).
+CAMERA_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-]+$")
+
 
 def _publish_mqtt_trigger(hostname: str, topic: str, payload: str) -> None:
     """Publish a message to Event Grid namespace via MQTT with managed identity auth."""
@@ -798,6 +802,13 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
         if not camera_id:
             return func.HttpResponse(
                 json.dumps({"error": "Missing required parameter: camera"}),
+                status_code=400,
+                mimetype="application/json"
+            )
+
+        if not CAMERA_ID_PATTERN.fullmatch(camera_id):
+            return func.HttpResponse(
+                json.dumps({"error": "Invalid camera_id format"}),
                 status_code=400,
                 mimetype="application/json"
             )

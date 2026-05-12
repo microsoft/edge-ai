@@ -2,4 +2,6 @@ azure-functions>=1.18.0
 azure-storage-blob>=12.19.0
 azure-identity>=1.15.0
 azure-core>=1.29.0
-cryptography==43.0.3
+# >=46.0.5 patches GHSA-r6ph-v2qm-q3c2 (SECT curve subgroup attack)
+cryptography>=46.0.5
+paho-mqtt>=2.1.0

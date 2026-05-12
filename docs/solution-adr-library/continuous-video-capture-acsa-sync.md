@@ -455,7 +455,7 @@ result = client.get_video_api(
 |----------------------------|----------|---------------------------------|-------------------------|-------------------------|
 | **Development Effort**     | High     | 40 hours                        | 60 hours                | 50 hours                |
 | **Maintenance Burden**     | High     | Low (ACSA handles sync)         | High (custom sync code) | Medium-High             |
-| **Resource Efficiency**    | High     | Excellent (<100MB, low CPU)     | Good                    | Poor (1.2GB+, high CPU) |
+| **Resource Efficiency**    | High     | Excellent (&lt;100MB, low CPU)  | Good                    | Poor (1.2GB+, high CPU) |
 | **Sync Reliability**       | Critical | Excellent (ACSA built-in)       | Manual implementation   | Manual implementation   |
 | **Architecture Alignment** | High     | Perfect (Azure IoT Ops native)  | Bypasses ACSA           | Bypasses ACSA           |
 | **Offline Resilience**     | High     | Excellent (ACSA buffer)         | Manual implementation   | Manual implementation   |
@@ -688,8 +688,8 @@ helm install media-capture ./charts/media-capture-service \
 
 ### External References
 
-- [Azure Container Storage Accelerator Documentation](https://learn.microsoft.com/en-us/azure/azure-arc/container-storage/)
-- [Azure Blob Storage Lifecycle Management](https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview)
+- [Azure Container Storage Accelerator Documentation](https://learn.microsoft.com/azure/azure-arc/container-storage/)
+- [Azure Blob Storage Lifecycle Management](https://learn.microsoft.com/azure/storage/blobs/lifecycle-management-overview)
 - [ONVIF Specification](https://www.onvif.org/specs/)
 - [FFmpeg Documentation](https://ffmpeg.org/documentation.html)
 

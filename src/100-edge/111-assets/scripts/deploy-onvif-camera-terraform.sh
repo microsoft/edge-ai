@@ -62,7 +62,7 @@ print_info() {
 prompt_input() {
   local prompt="$1"
   local default="$2"
-  local var_name="$3"
+  local -n _target="$3" # nameref -- avoids eval and shell injection
 
   if [ -n "$default" ]; then
     read -r -p "$(echo -e "${YELLOW}${prompt}${NC} [${default}]: ")" value
@@ -71,7 +71,7 @@ prompt_input() {
     read -r -p "$(echo -e "${YELLOW}${prompt}${NC}: ")" value
   fi
 
-  eval "$var_name='$value'"
+  _target="$value"
 }
 
 prompt_confirm() {

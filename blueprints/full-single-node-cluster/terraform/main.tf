@@ -16,11 +16,15 @@ locals {
 
   eventhubs = merge(local.alert_eventhub_config, var.eventhubs)
 
-  function_app_computed_settings = var.should_create_azure_functions ? {
+  function_app_computed_settings = var.should_create_azure_functions ? merge({
     "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
     "EventHubConnection__credential"              = "managedidentity"
     "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
     "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
+  }, local.video_capture_computed_settings) : {}
+
+  video_capture_computed_settings = var.should_deploy_video_capture ? {
+    "STORAGE_ACCOUNT_NAME" = module.cloud_data.storage_account.name
   } : {}
 
   acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
@@ -244,7 +248,9 @@ module "cloud_messaging" {
   // Event Hub configuration with alerts hub merged when Functions are enabled
   eventhubs = local.eventhubs
 
-  function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
+  function_app_settings   = merge(var.function_app_settings, local.function_app_computed_settings)
+  function_node_version   = var.function_node_version
+  function_python_version = var.function_python_version
 
   log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
   should_enable_diagnostic_settings = true
@@ -532,4 +538,15 @@ module "edge_azureml" {
   workspace_identity_principal_id = module.cloud_azureml[0].workspace_principal_id
   ml_workload_identity            = module.cloud_security_identity.ml_workload_identity
   ml_workload_subjects            = var.azureml_ml_workload_subjects
+}
+
+# Grants the Video Query API Function App's managed identity read access to the
+# blob storage account hosting video recordings. Only created when the Video
+# Capture Query feature is enabled and the Function App is provisioned.
+resource "azurerm_role_assignment" "video_query_storage_blob_data_contributor" {
+  count = var.should_deploy_video_capture && var.should_create_azure_functions ? 1 : 0
+
+  scope                = module.cloud_data.storage_account.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = module.cloud_messaging.function_app.principal_id
 }
