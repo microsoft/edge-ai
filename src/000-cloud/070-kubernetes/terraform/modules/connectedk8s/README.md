@@ -5,10 +5,10 @@ Deploys Azure Arc cluster instances
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.3.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
 
 ## Providers
 

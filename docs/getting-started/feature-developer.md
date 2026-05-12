@@ -297,7 +297,7 @@ Before coding, define:
    # src/000-cloud/{next-number}-{component-name}/terraform/main.tf
 
    terraform {
-     required_version = ">= 1.0"
+     required_version = ">= 1.12.0, < 2.0"
      required_providers {
        azurerm = {
          source  = "hashicorp/azurerm"
