@@ -374,7 +374,7 @@ FodyWeavers.xsd
 # Ignore tfplan files
 *.tfplan
 
-# Ignore .terraform lock
+# .terraform.lock.hcl excluded from VCS — see docs/project-planning/adrs/001-terraform-lock-file-exclusion.md
 .terraform.lock.hcl
 
 # Crash log files
