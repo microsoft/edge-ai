@@ -19,10 +19,10 @@ locals {
 module "cluster_a_cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
+  tags = merge(var.tags, {
     blueprint = "dual-peered-single-cluster"
     cluster   = local.cluster_a_name
-  }
+  })
   environment     = var.environment
   location        = var.location
   resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
@@ -274,10 +274,10 @@ module "cluster_a_edge_messaging" {
 module "cluster_b_cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
+  tags = merge(var.tags, {
     blueprint = "dual-peered-single-cluster"
     cluster   = local.cluster_b_name
-  }
+  })
   environment     = var.environment
   location        = var.location
   resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"

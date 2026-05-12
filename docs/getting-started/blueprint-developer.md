@@ -151,7 +151,7 @@ Before coding, define:
    # blueprints/my-custom-blueprint/terraform/main.tf
 
    terraform {
-     required_version = ">= 1.0"
+     required_version = ">= 1.12.0, < 2.0"
      required_providers {
        azurerm = {
          source  = "hashicorp/azurerm"

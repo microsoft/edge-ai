@@ -6,11 +6,11 @@ MCR endpoint and custom registry endpoints with optional ACR role assignments.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.0          |
-| azurerm   | >= 4.0          |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.0           |
+| azurerm   | >= 4.0           |
 
 ## Providers
 

@@ -5,10 +5,10 @@ Creates an ADR namespace for organizing assets and devices in Azure IoT Operatio
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.3.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
 
 ## Providers
 

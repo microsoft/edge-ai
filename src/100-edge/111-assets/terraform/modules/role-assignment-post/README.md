@@ -5,11 +5,11 @@ Assigns Azure Kubernetes Service Arc Contributor Role to K8 Bridge principal.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azuread   | >= 2.0.0        |
-| azurerm   | >= 4.51.0       |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azuread   | >= 2.0.0         |
+| azurerm   | >= 4.51.0        |
 
 ## Providers
 

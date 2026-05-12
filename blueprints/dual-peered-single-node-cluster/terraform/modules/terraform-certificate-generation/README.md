@@ -8,11 +8,11 @@ for both server and client authentication.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| local     | >= 2.0.0        |
-| tls       | >= 4.0.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| local     | >= 2.0.0         |
+| tls       | >= 4.0.0         |
 
 ## Providers
 

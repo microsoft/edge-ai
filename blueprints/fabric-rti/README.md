@@ -2,7 +2,7 @@
 title: Fabric RTI Minimal Blueprint
 description: Essential Microsoft Fabric Real-Time Intelligence (RTI) components on top of existing Azure IoT Operations infrastructure with CustomEndpoint for AIO integration
 author: Edge AI Team
-ms.date: 2025-07-29
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 9
 keywords:
@@ -47,7 +47,7 @@ This blueprint requires the following infrastructure to already be deployed (typ
 
 ### Required Tools
 
-- Terraform >= 1.9.8
+- Terraform >= 1.12.0
 - Azure CLI authenticated and initialized (`source ./scripts/az-sub-init.sh`)
 
 ### Required Providers

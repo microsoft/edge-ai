@@ -1207,7 +1207,8 @@ variable "ai_foundry_rai_policies" {
 variable "tags" {
   type        = map(string)
   default     = {}
-  description = "Tags to apply to all resources in this blueprint"
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
 }
 
 /*

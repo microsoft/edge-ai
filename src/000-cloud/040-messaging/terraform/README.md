@@ -6,11 +6,11 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.3.0        |
-| azurerm   | >= 4.51.0       |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
+| azurerm   | >= 4.51.0        |
 
 ## Providers
 

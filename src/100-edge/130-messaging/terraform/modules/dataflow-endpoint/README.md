@@ -7,10 +7,10 @@ Fabric OneLake, local storage, and OpenTelemetry.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.0.1        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.0.1         |
 
 ## Providers
 
