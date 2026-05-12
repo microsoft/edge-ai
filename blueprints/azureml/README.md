@@ -1,7 +1,7 @@
 ---
 title: Azure Machine Learning Blueprint
 description: Comprehensive Azure Machine Learning deployment with optional cloud foundation, managed compute, AKS/Arc integration, and secure connectivity controls
-ms.date: 2025-09-24
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 12
 keywords:
@@ -55,7 +55,7 @@ Set the creation flags to `false` to attach to these resources instead of creati
 
 ### Required tools
 
-- Terraform >= 1.9.8
+- Terraform >= 1.12.0
 - Azure CLI authenticated to the target subscription. Run `source ./scripts/az-sub-init.sh` to set `ARM_SUBSCRIPTION_ID` before any Terraform command.
 
 ### Required providers

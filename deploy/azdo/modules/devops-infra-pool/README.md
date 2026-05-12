@@ -5,9 +5,9 @@ Create a Dev Center and Project to host a Managed DevOps Pool for Accelerator
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
 
 ## Providers
 

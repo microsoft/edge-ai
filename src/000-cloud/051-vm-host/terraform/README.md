@@ -5,13 +5,13 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azurerm   | >= 4.51.0       |
-| local     | >= 2.5.0        |
-| random    | >= 3.6.0        |
-| tls       | >= 4.0.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azurerm   | >= 4.51.0        |
+| local     | >= 2.5.0         |
+| random    | >= 3.6.0         |
+| tls       | >= 4.0.0         |
 
 ## Providers
 

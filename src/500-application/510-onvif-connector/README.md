@@ -2,7 +2,7 @@
 title: Akri ONVIF Connector
 description: Complete standalone development and demo environment for integrating ONVIF-compliant IP cameras with Azure IoT Operations using the Akri connector framework
 author: Edge AI Team
-ms.date: 2025-11-17
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 10
 keywords:
@@ -147,7 +147,7 @@ For Azure IoT Operations deployments, the component uses:
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
 - **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with ONVIF connector variables
-- **Terraform**: Version 1.9.8 or later
+- **Terraform**: Version 1.12.0 or later
 
 ## Getting Started with Local Development
 

@@ -139,11 +139,6 @@ variable "ml_workload_subjects" {
   description = "Custom Kubernetes service account subjects for AzureML workload federation."
 }
 
-variable "resource_group_name" {
-  type        = string
-  description = "Name of the resource group containing the workload identity."
-}
-
 /*
  * Toleration Configuration - Optional
  */
