@@ -139,11 +139,11 @@ Confirm the following resources are provisioned:
 
 The scenario uses three application container images, built from this repository and pushed to the Azure Container Registry created in Phase 1. The Azure IoT Operations Media Connector is **not** built here; it is a first-party AIO component enabled by the blueprint.
 
-| Image                   | Source path                                                       | Role                                                                                                       |
-|-------------------------|-------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| `ai-edge-inference`     | `src/500-application/507-ai-inference/services/ai-edge-inference` | Rust ONNX/Candle vision inference service that publishes alert events to the AIO MQTT broker.              |
-| `sse-server`            | `src/500-application/509-sse-connector/services/sse-server`       | Python analytics-camera simulator that emits Server-Sent Events consumed by the Akri SSE HTTP connector.   |
-| `media-capture-service` | `src/500-application/503-media-capture-service/services/media-capture-service` | Rust workload that maintains an RTSP ring buffer and extracts clips on alert to Azure Blob via ACSA. |
+| Image                   | Source path                                                                    | Role                                                                                                     |
+|-------------------------|--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| `ai-edge-inference`     | `src/500-application/507-ai-inference/services/ai-edge-inference`              | Rust ONNX/Candle vision inference service that publishes alert events to the AIO MQTT broker.            |
+| `sse-server`            | `src/500-application/509-sse-connector/services/sse-server`                    | Python analytics-camera simulator that emits Server-Sent Events consumed by the Akri SSE HTTP connector. |
+| `media-capture-service` | `src/500-application/503-media-capture-service/services/media-capture-service` | Rust workload that maintains an RTSP ring buffer and extracts clips on alert to Azure Blob via ACSA.     |
 
 #### Option A: Automated Build
 
@@ -314,4 +314,4 @@ Replace `<video-query-api-url>` and `<camera-id>` with values from your deployme
 * **Customize the inference model** — Replace the placeholder ONNX model in 507-ai-inference with a trained leak detection model
 * **Add camera sources** — Extend 111-assets definitions to include additional ONVIF/RTSP cameras
 * **Scale to multi-node** — Use the [full-multi-node-cluster](../../blueprints/full-multi-node-cluster/) blueprint as a base, then layer leak detection components
-* **Explore the Learning Platform** — Visit the [Learning Platform](../../learning/) for hands-on katas and training labs
+* **Explore other getting-started guides** — Browse the [Getting Started index](README.md) for additional walkthroughs and learning resources
