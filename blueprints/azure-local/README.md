@@ -2,7 +2,7 @@
 title: Azure Local IoT Operations Blueprint
 description: End-to-end Terraform blueprint that provisions required Azure cloud services and an Azure Local (Azure Stack HCI) Kubernetes cluster, then deploys Azure IoT Operations (AIO) with optional assets, messaging, observability, and OPC UA simulation.
 author: Edge AI Team
-ms.date: 2025-11-11
+ms.date: 2026-05-12
 ms.topic: reference
 keywords:
    - azure iot operations

@@ -1,7 +1,7 @@
 ---
 title: Azure Machine Learning Blueprint
 description: Comprehensive Azure Machine Learning deployment with optional cloud foundation, managed compute, AKS/Arc integration, and secure connectivity controls
-ms.date: 2025-09-24
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 12
 keywords:

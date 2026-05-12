@@ -2,7 +2,7 @@
 title: Cloud Notification Component
 description: Generic Event Hub to Microsoft Teams notification with Table Storage session deduplication, deployed as consumption-tier Azure Logic Apps with managed identity authentication
 author: Edge AI Team
-ms.date: 2026-02-27
+ms.date: 2026-05-12
 ms.topic: reference
 keywords:
   - notification

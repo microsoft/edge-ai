@@ -2,7 +2,7 @@
 title: Akri REST HTTP Connector
 description: Complete standalone development and demo environment for integrating REST/HTTP endpoints with Azure IoT Operations using the Akri connector framework
 author: Edge AI Team
-ms.date: 11/05/2025
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 8
 keywords:
