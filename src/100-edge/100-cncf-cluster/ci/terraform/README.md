@@ -1,154 +1,48 @@
-# CNCF cluster CI Terraform module
-
 <!-- BEGIN_TF_DOCS -->
-<!-- markdown-table-prettify-ignore-start -->
-{
-  "header": "",
-  "footer": "",
-  "inputs": [
-    {
-      "name": "environment",
-      "type": "string",
-      "description": "Environment for all resources in this module: dev, test, or prod",
-      "default": null,
-      "required": true
-    },
-    {
-      "name": "resource_prefix",
-      "type": "string",
-      "description": "Prefix for all resources in this module",
-      "default": null,
-      "required": true
-    },
-    {
-      "name": "custom_locations_oid",
-      "type": "string",
-      "description": "The object id of the Custom Locations Entra ID application for your tenant.\nIf none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.\n\naz ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv",
-      "default": null,
-      "required": false
-    },
-    {
-      "name": "instance",
-      "type": "string",
-      "description": "Instance identifier for naming resources: 001, 002, etc",
-      "default": "001",
-      "required": false
-    },
-    {
-      "name": "key_vault_script_secret_prefix",
-      "type": "string",
-      "description": "Optional prefix for the Key Vault script secret name when should_use_script_from_secrets_for_deploy is true.",
-      "default": "",
-      "required": false
-    },
-    {
-      "name": "should_add_current_user_cluster_admin",
-      "type": "bool",
-      "description": "Gives the current logged in user cluster-admin permissions with the new cluster.",
-      "default": true,
-      "required": false
-    },
-    {
-      "name": "should_get_custom_locations_oid",
-      "type": "bool",
-      "description": "Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom_locations_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)",
-      "default": true,
-      "required": false
-    },
-    {
-      "name": "should_use_script_from_secrets_for_deploy",
-      "type": "bool",
-      "description": "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault",
-      "default": true,
-      "required": false
-    }
-  ],
-  "modules": [
-    {
-      "name": "ci",
-      "source": "../../terraform",
-      "version": "",
-      "description": null
-    }
-  ],
-  "outputs": [],
-  "providers": [
-    {
-      "name": "azurerm",
-      "alias": null,
-      "version": "\u003e= 4.8.0"
-    },
-    {
-      "name": "terraform",
-      "alias": null,
-      "version": null
-    }
-  ],
-  "requirements": [
-    {
-      "name": "terraform",
-      "version": "\u003e= 1.9.8, \u003c 2.0"
-    },
-    {
-      "name": "azapi",
-      "version": "\u003e= 2.3.0"
-    },
-    {
-      "name": "azuread",
-      "version": "\u003e= 3.0.2"
-    },
-    {
-      "name": "azurerm",
-      "version": "\u003e= 4.8.0"
-    }
-  ],
-  "resources": [
-    {
-      "type": "data",
-      "name": "defer",
-      "provider": "terraform",
-      "source": "hashicorp/terraform",
-      "mode": "managed",
-      "version": "latest",
-      "description": "Defer computation to prevent `data` objects from querying for state on `terraform plan`. Needed for testing and build system."
-    },
-    {
-      "type": "key_vault",
-      "name": "aio",
-      "provider": "azurerm",
-      "source": "hashicorp/azurerm",
-      "mode": "data",
-      "version": "latest",
-      "description": null
-    },
-    {
-      "type": "resource_group",
-      "name": "aio",
-      "provider": "azurerm",
-      "source": "hashicorp/azurerm",
-      "mode": "data",
-      "version": "latest",
-      "description": null
-    },
-    {
-      "type": "user_assigned_identity",
-      "name": "arc",
-      "provider": "azurerm",
-      "source": "hashicorp/azurerm",
-      "mode": "data",
-      "version": "latest",
-      "description": null
-    },
-    {
-      "type": "virtual_machine",
-      "name": "aio",
-      "provider": "azurerm",
-      "source": "hashicorp/azurerm",
-      "mode": "data",
-      "version": "latest",
-      "description": null
-    }
-  ]
-}
-<!-- markdown-table-prettify-ignore-end -->
+# Terraform IaC
+
+## Requirements
+
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
+| azuread   | >= 3.0.2         |
+| azurerm   | >= 4.51.0        |
+
+## Providers
+
+| Name      | Version   |
+|-----------|-----------|
+| azurerm   | >= 4.51.0 |
+| terraform | n/a       |
+
+## Resources
+
+| Name                                                                                                                                            | Type        |
+|-------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                                  | resource    |
+| [azurerm_key_vault.aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault)                           | data source |
+| [azurerm_resource_group.aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group)                 | data source |
+| [azurerm_user_assigned_identity.arc](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
+| [azurerm_virtual_machine.aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/virtual_machine)               | data source |
+
+## Modules
+
+| Name | Source          | Version |
+|------|-----------------|---------|
+| ci   | ../../terraform | n/a     |
+
+## Inputs
+
+| Name                                            | Description                                                                                                                                                                                                                                                                                        | Type     | Default | Required |
+|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|:--------:|
+| environment                                     | Environment for all resources in this module: dev, test, or prod                                                                                                                                                                                                                                   | `string` | n/a     |   yes    |
+| resource\_prefix                                | Prefix for all resources in this module                                                                                                                                                                                                                                                            | `string` | n/a     |   yes    |
+| custom\_locations\_oid                          | The object id of the Custom Locations Entra ID application for your tenant. If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions. ```sh az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv``` | `string` | `null`  |    no    |
+| instance                                        | Instance identifier for naming resources: 001, 002, etc                                                                                                                                                                                                                                            | `string` | `"001"` |    no    |
+| key\_vault\_script\_secret\_prefix              | Optional prefix for the Key Vault script secret name when should\_use\_script\_from\_secrets\_for\_deploy is true.                                                                                                                                                                                 | `string` | `""`    |    no    |
+| should\_add\_current\_user\_cluster\_admin      | Gives the current logged in user cluster-admin permissions with the new cluster.                                                                                                                                                                                                                   | `bool`   | `true`  |    no    |
+| should\_get\_custom\_locations\_oid             | Whether to get Custom Locations Object ID using Terraform's azuread provider. (Otherwise, provided by 'custom\_locations\_oid' or `az connectedk8s enable-features` for custom-locations on cluster setup if not provided.)                                                                        | `bool`   | `true`  |    no    |
+| should\_use\_script\_from\_secrets\_for\_deploy | Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault                                                                                                                                                                                          | `bool`   | `true`  |    no    |
 <!-- END_TF_DOCS -->

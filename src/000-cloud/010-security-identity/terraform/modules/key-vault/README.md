@@ -5,9 +5,9 @@ Create or use and existing a Key Vault for Secret Sync Extension
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
 
 ## Providers
 

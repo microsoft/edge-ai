@@ -5,9 +5,9 @@ Create a new Event Grid namespace and namespace topic and assign the AIO instanc
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
 
 ## Providers
 

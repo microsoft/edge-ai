@@ -5,9 +5,9 @@ Deploys Azure Container Registry with a private endpoint and private DNS zone.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
 
 ## Providers
 
