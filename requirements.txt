@@ -431,7 +431,7 @@ charset-normalizer==3.4.7 \
     # via
     #   checkov
     #   requests
-checkov==3.2.526 \
+checkov==3.2.528 \
     --hash=sha256:834d60811898675035187214412290013ba977a9d0b884f3e07545b654742bad \
     --hash=sha256:e4083f4eedc7ba0e6b299e13d9f74ea432137504e47c538b129d6f25c6ce2518
     # via -r requirements.in
@@ -1684,7 +1684,7 @@ regex==2026.4.4 \
     # via
     #   pycep-parser
     #   python-hcl2
-requests==2.33.1 \
+requests==2.34.0 \
     --hash=sha256:18817f8c57c6263968bc123d237e3b8b08ac046f5456bd1e307ee8f4250d3517 \
     --hash=sha256:4e6d1ef462f3626a1f0a0a9c42dd93c63bad33f9f1c1937509b8c5c8718ab56a
     # via
