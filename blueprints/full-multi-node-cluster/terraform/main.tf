@@ -52,9 +52,7 @@ data "azurerm_arc_machine" "arc_machines" {
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
-    blueprint = "full-multi-cluster"
-  }
+  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -137,6 +135,7 @@ module "cloud_vpn_gateway" {
 module "cloud_observability" {
   source = "../../../src/000-cloud/020-observability/terraform"
 
+  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -239,6 +238,7 @@ module "cloud_managed_redis" {
 module "cloud_messaging" {
   source = "../../../src/000-cloud/040-messaging/terraform"
 
+  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
   resource_group  = module.cloud_resource_group.resource_group
   aio_identity    = module.cloud_security_identity.aio_identity
   environment     = var.environment
@@ -388,6 +388,7 @@ module "cloud_ai_foundry" {
   count  = var.should_deploy_ai_foundry ? 1 : 0
   source = "../../../src/000-cloud/085-ai-foundry/terraform"
 
+  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
   environment     = var.environment
   resource_prefix = var.resource_prefix
   location        = var.location
