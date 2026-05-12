@@ -26,13 +26,15 @@ fi
 # atheris and pyinstaller are pre-installed in the Dockerfile for the python
 # language path so they are available before the OSS-Fuzz `compile` wrapper
 # runs. Local-repro fallbacks below cover environments using a stock
-# base-builder-python image.
+# base-builder-python image; they install from the hashed lockfile so the
+# OSSF Scorecard pipCommand check stays clean.
+FUZZ_TOOLS_REQS="${SRC}/edge-ai/.clusterfuzzlite/fuzz-tools-requirements.txt"
 if ! command -v pyinstaller >/dev/null 2>&1; then
-  python3 -m pip install --no-cache-dir pyinstaller
+  python3 -m pip install --no-cache-dir --require-hashes -r "${FUZZ_TOOLS_REQS}"
 fi
 
 if ! python3 -c "import atheris" >/dev/null 2>&1; then
-  python3 -m pip install --no-cache-dir atheris
+  python3 -m pip install --no-cache-dir --require-hashes -r "${FUZZ_TOOLS_REQS}"
 fi
 
 for entry in "${HARNESSES[@]}"; do
@@ -41,7 +43,7 @@ for entry in "${HARNESSES[@]}"; do
 
   pushd "${svc_path}" >/dev/null
   if [[ -f requirements.txt ]]; then
-    pip3 install --no-cache-dir -r requirements.txt
+    pip3 install --no-cache-dir --require-hashes -r requirements.txt
   fi
   # Only collect src.message_types submodules for services that actually ship
   # that package (currently 506-ros2-connector). PyInstaller aborts when asked
