@@ -1,24 +1,23 @@
 # Multi-stage build for ai-edge-inference with configurable backend support
 # Build with: docker build --build-arg BACKEND=onnx|candle .
 
-# Build stage - using SHA-pinned Azure Linux image
-# SHA mapping maintained in scripts/security/Update-DockerSHAPinning.ps1
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS build
+# Build stage
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS build
 
 # Install build dependencies including Rust and cross-compilation tools
 RUN tdnf install -y \
-    openssl-devel-1.1.1k-36.cm2 \
-    gcc-11.2.0-8.cm2 \
-    make-4.3-3.cm2 \
-    binutils-2.37-16.cm2 \
-    glibc-devel-2.35-7.cm2 \
-    curl-8.8.0-6.cm2 \
-    ca-certificates-2.0.0-22.cm2 \
-    clang-12.0.1-4.cm2 \
-    pkgconf-pkg-config-1.8.0-3.cm2 \
-    protobuf-devel-3.17.3-4.cm2 \
-    wget-1.21.2-4.cm2 \
-    tar-1.34-3.cm2 \
+    openssl-devel \
+    gcc \
+    make \
+    binutils \
+    glibc-devel \
+    curl \
+    ca-certificates \
+    clang \
+    pkgconf-pkg-config \
+    protobuf-devel \
+    wget \
+    tar \
     && tdnf clean all
 
 # Set shell options for better error handling with pipes
@@ -106,17 +105,15 @@ RUN echo "backend=${BACKEND}" > /app/build-info.txt && \
     echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/build-info.txt
 
 # Conditional runtime stage based on backend
-# Runtime stage - using SHA-pinned Azure Linux image
-# SHA mapping maintained in scripts/security/Update-DockerSHAPinning.ps1
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS runtime
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS runtime
 ARG BACKEND=onnx
 
 # Install runtime dependencies and create non-root user
 RUN tdnf install -y \
-    ca-certificates-2.0.0-22.cm2 \
-    shadow-utils-4.9-14.cm2 \
-    wget-1.21.2-4.cm2 \
-    tar-1.34-3.cm2 \
+    ca-certificates \
+    shadow-utils \
+    wget \
+    tar \
     && tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
