@@ -40,7 +40,6 @@ module "inference_cluster_integration" {
   workload_tolerations                = var.workload_tolerations
   ml_workload_identity                = var.ml_workload_identity
   ml_workload_subjects                = var.ml_workload_subjects
-  resource_group_name                 = var.resource_group.name
 
   // Kubernetes compute configuration
   default_instance_type            = var.cluster_integration_default_instance_type

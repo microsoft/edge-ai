@@ -1012,6 +1012,3 @@ variable "should_install_charts" {
 }
 
 
-
-
-

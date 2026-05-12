@@ -390,7 +390,7 @@ npm update
 
 If you cannot use Dev Containers, manually install these tools:
 
-- **Terraform** >= 1.0
+- **Terraform** >= 1.12.0
 - **Azure CLI** >= 2.0
 - **Bicep CLI** (via Azure CLI)
 - **kubectl** >= 1.20
