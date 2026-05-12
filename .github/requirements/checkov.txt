@@ -429,7 +429,7 @@ charset-normalizer==3.4.7 \
     # via
     #   checkov
     #   requests
-checkov==3.2.521 \
+checkov==3.2.528 \
     --hash=sha256:8ccfe2d0c20016419e0b9d3b4e9662dab6ed1ba201a970ed03f7c6195c8c0bea \
     --hash=sha256:b404b0bb96ef21d75094ecef8ae3c3b067751d798f5b840b76076f9566393ac8
     # via -r checkov.in
@@ -624,7 +624,7 @@ gitdb==4.0.12 \
     --hash=sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571 \
     --hash=sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf
     # via gitpython
-gitpython==3.1.49 \
+gitpython==3.1.50 \
     --hash=sha256:024b0422d7f84d15cd794844e029ffebd4c5d42a7eb9b936b458697ef550a02c \
     --hash=sha256:42f9399c9eb33fc581014bedd76049dfbaf6375aa2a5754575966387280315e1
     # via checkov
@@ -1673,7 +1673,7 @@ regex==2026.4.4 \
     --hash=sha256:fe896e07a5a2462308297e515c0054e9ec2dd18dfdc9427b19900b37dfe6f40b \
     --hash=sha256:ffa81f81b80047ba89a3c69ae6a0f78d06f4a42ce5126b0eb2a0a10ad44e0b2e
     # via pycep-parser
-requests==2.33.1 \
+requests==2.34.0 \
     --hash=sha256:18817f8c57c6263968bc123d237e3b8b08ac046f5456bd1e307ee8f4250d3517 \
     --hash=sha256:4e6d1ef462f3626a1f0a0a9c42dd93c63bad33f9f1c1937509b8c5c8718ab56a
     # via
