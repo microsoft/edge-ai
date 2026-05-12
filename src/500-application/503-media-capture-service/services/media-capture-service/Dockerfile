@@ -3,7 +3,7 @@ ARG BUILDPLATFORM=linux/amd64
 # =============================================================================
 # Build Stage
 # =============================================================================
-FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS build
+FROM mcr.microsoft.com/azurelinux/base/core:3.0 AS build
 
 # Ensure robust shell behavior and pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -118,7 +118,7 @@ RUN cargo build --release
 # =============================================================================
 # Runtime Stage
 # =============================================================================
-FROM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81
+FROM mcr.microsoft.com/azurelinux/base/core:3.0
 # Ensure robust shell behavior and pipefail
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
