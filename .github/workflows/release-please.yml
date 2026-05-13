@@ -25,8 +25,6 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-      upload_url: ${{ steps.release.outputs.upload_url }}
-      body: ${{ steps.release.outputs.body }}
     steps:
       - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
         id: app-token
@@ -34,7 +32,7 @@ jobs:
           client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: chainguard-dev/actions/setup-gitsign@v0.13.0
+      - uses: chainguard-dev/actions/setup-gitsign@0cda751b114eb55c388e88f7479292668165602a # v1.0.2
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
@@ -55,7 +53,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
@@ -72,22 +70,25 @@ jobs:
           predicate-path: dep-sbom.spdx.json
 
       - name: Extract DSSE envelope
-        run: jq '.dsseEnvelope' "${{ steps.attest-sbom.outputs.bundle-path }}" > dep-sbom.intoto.jsonl
+        run: |
+          set -euo pipefail
+          jq '.dsseEnvelope' "${{ steps.attest-sbom.outputs.bundle-path }}" > dep-sbom.spdx.json.intoto.jsonl
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dep-sbom
           path: |
             dep-sbom.spdx.json
-            dep-sbom.intoto.jsonl
+            dep-sbom.spdx.json.intoto.jsonl
           if-no-files-found: error
 
       - name: Attach SBOM to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           gh release upload "${{ needs.release-please.outputs.tag_name }}" \
-            dep-sbom.spdx.json dep-sbom.intoto.jsonl --clobber
+            dep-sbom.spdx.json dep-sbom.spdx.json.intoto.jsonl --clobber
 
   attest-release:
     needs: release-please
@@ -107,6 +108,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
+          set -euo pipefail
           mkdir -p release-artifacts
           gh api "repos/${{ github.repository }}/tarball/${TAG}" \
             > "release-artifacts/source-${TAG}.tar.gz"
@@ -117,18 +119,25 @@ jobs:
           subject-path: 'release-artifacts/*'
 
       - name: Extract DSSE envelope
-        run: jq '.dsseEnvelope' "${{ steps.provenance.outputs.bundle-path }}" > release.intoto.jsonl
+        run: |
+          set -euo pipefail
+          jq '.dsseEnvelope' "${{ steps.provenance.outputs.bundle-path }}" \
+            > "release-artifacts/source-${{ needs.release-please.outputs.tag_name }}.tar.gz.intoto.jsonl"
 
       - name: Attach provenance to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
+          set -euo pipefail
           gh release upload "${TAG}" \
-            release-artifacts/source-${TAG}.tar.gz release.intoto.jsonl --clobber
+            "release-artifacts/source-${TAG}.tar.gz" \
+            "release-artifacts/source-${TAG}.tar.gz.intoto.jsonl" \
+            --clobber
 
   sbom-diff:
     needs: [release-please, generate-dependency-sbom]
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -143,17 +152,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
+          set -euo pipefail
           mkdir -p previous-sbom
           prev=$(gh release list --limit 10 --json tagName \
             --jq "[.[] | select(.tagName != \"${TAG}\")][0].tagName // empty")
-          if [ -n "$prev" ]; then
-            gh release download "$prev" --pattern 'dep-sbom.spdx.json' \
+          if [[ -n "${prev}" ]]; then
+            gh release download "${prev}" --pattern 'dep-sbom.spdx.json' \
               --dir previous-sbom || true
           fi
 
       - name: Diff SBOMs
         run: |
-          if [ -f previous-sbom/dep-sbom.spdx.json ]; then
+          set -euo pipefail
+          if [[ -f previous-sbom/dep-sbom.spdx.json ]]; then
             diff -u previous-sbom/dep-sbom.spdx.json current-sbom/dep-sbom.spdx.json \
               > sbom-diff.txt || true
           else
@@ -168,6 +179,7 @@ jobs:
 
   append-verification-notes:
     needs: [release-please, attest-release, sbom-diff]
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -183,28 +195,33 @@ jobs:
           TAG: ${{ needs.release-please.outputs.tag_name }}
           OWNER: ${{ github.repository_owner }}
         run: |
+          set -euo pipefail
           {
             printf '## Verification\n\n'
             printf 'Verify the signed tag:\n\n'
             printf '```sh\n'
             printf 'git fetch --tags\n'
-            printf "gitsign verify --certificate-identity-regexp '.*' --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' %s\n" "$TAG"
+            printf 'gitsign verify-tag \\\n'
+            printf "  --certificate-identity 'https://github.com/microsoft/edge-ai/.github/workflows/release-please.yml@refs/heads/main' \\\n"
+            printf "  --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \\\n"
+            printf '  %s\n' "${TAG}"
             printf '```\n\n'
             printf 'Verify a downloaded artifact attestation:\n\n'
             printf '```sh\n'
-            printf 'gh attestation verify <artifact> --owner %s\n' "$OWNER"
+            printf 'gh attestation verify <artifact> --owner %s --bundle <artifact>.intoto.jsonl\n' "${OWNER}"
             printf '```\n\n'
             printf '### SBOM diff (vs previous release)\n\n'
             printf '```diff\n'
             cat sbom-diff/sbom-diff.txt
             printf '```\n'
           } > notes-appendix.md
-          gh release view "$TAG" --json body --jq .body > existing-body.md || true
+          gh release view "${TAG}" --json body --jq .body > existing-body.md || true
           cat existing-body.md notes-appendix.md > merged-body.md
-          gh release edit "$TAG" --notes-file merged-body.md
+          gh release edit "${TAG}" --notes-file merged-body.md
 
   publish-release:
     needs: [release-please, attest-release, sbom-diff, append-verification-notes]
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -213,7 +230,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
-        run: gh release edit "$TAG" --draft=false
+        run: |
+          set -euo pipefail
+          gh release edit "${TAG}" --draft=false
 
   close-milestone:
     needs: [release-please, publish-release]
@@ -227,9 +246,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
+          set -euo pipefail
           milestone=$(gh api "repos/${{ github.repository }}/milestones?state=open" \
             --jq ".[] | select(.title == \"$TAG\") | .number" | head -n1)
-          if [ -n "$milestone" ]; then
-            gh api -X PATCH "repos/${{ github.repository }}/milestones/$milestone" \
+          if [[ -n "${milestone}" ]]; then
+            gh api -X PATCH "repos/${{ github.repository }}/milestones/${milestone}" \
               -f state=closed
           fi

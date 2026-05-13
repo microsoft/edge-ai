@@ -370,7 +370,7 @@ jobs:
           path: test-results/
           retention-days: 30
 
-  # Aggregator gate - single required check for branch protection (PD-07 Option D)
+  # Aggregator gate - single required check for branch protection
   pr-validation-gate:
     name: PR Validation Gate
     runs-on: ubuntu-latest

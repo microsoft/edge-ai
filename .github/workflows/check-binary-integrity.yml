@@ -46,20 +46,32 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          attestations=(release-assets/*.intoto.jsonl)
-          if [[ ${#attestations[@]} -eq 0 ]]; then
-            echo "No *.intoto.jsonl attestations found in release ${TAG_NAME}." >&2
+          assets=(release-assets/*)
+          if [[ ${#assets[@]} -eq 0 ]]; then
+            echo "No release assets downloaded." >&2
             exit 1
           fi
-          for bundle in "${attestations[@]}"; do
-            echo "::group::Verifying ${bundle}"
-            gh attestation verify "${bundle}" \
+          verified=0
+          for asset in "${assets[@]}"; do
+            [[ "${asset}" == *.intoto.jsonl ]] && continue
+            bundle="${asset}.intoto.jsonl"
+            if [[ ! -f "${bundle}" ]]; then
+              echo "No attestation bundle found for ${asset}." >&2
+              exit 1
+            fi
+            echo "::group::Verifying ${asset}"
+            gh attestation verify "${asset}" \
               --repo "${GITHUB_REPOSITORY}" \
               --bundle "${bundle}"
             echo "::endgroup::"
+            (( verified += 1 ))
           done
+          if [[ ${verified} -eq 0 ]]; then
+            echo "No non-attestation assets found to verify." >&2
+            exit 1
+          fi
 
-      - name: Recompute and compare digests
+      - name: Log release asset digests
         run: |
           set -euo pipefail
           shopt -s nullglob
