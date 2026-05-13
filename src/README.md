@@ -168,7 +168,7 @@ This may take sometime to complete, the resources can also be deleted from the [
 If deleting manually, be sure delete your local state representation by removing the following:
 
 - `terraform.tfstate` → Local `tfstate` file representing what was deployed by Terraform.
-- `.terraform.lock.hcl` → Local lock file for `tfstate`, prevents conflicting updates.
+- `.terraform.lock.hcl` → Terraform provider dependency lock file; excluded from version control — see [ADR 001](../docs/project-planning/adrs/001-terraform-lock-file-exclusion.md).
 - `.terraform` → (Optional) Terraform providers and modules pulled down from `terraform init`
 
 #### Terraform - Scripts

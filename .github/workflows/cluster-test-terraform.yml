@@ -45,7 +45,7 @@
 #     uses: ./.github/workflows/cluster-test-terraform.yml
 #     with:
 #       working-directory: 'blueprints/full-single-cluster/terraform'
-#       terraform-version: '1.9.8'
+#       terraform-version: '1.12.2'
 #       terraform-vars-file: './test.tfvars'
 #       backend-key: 'custom-state.tfstate'
 # ```
@@ -65,7 +65,7 @@ on:  # yamllint disable-line rule:truthy
       terraform-version:
         description: 'Version of Terraform to use'
         required: false
-        default: '1.9.8'
+        default: '1.12.2'
         type: string
       backend-config:
         description: 'Optional backend configuration parameters (JSON format)'

@@ -8,11 +8,11 @@ dependent on extension deployment completion.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.3.0        |
-| azurerm   | >= 4.51.0       |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
+| azurerm   | >= 4.51.0        |
 
 ## Providers
 
@@ -61,7 +61,6 @@ dependent on extension deployment completion.
 | machine\_learning\_workspace\_id        | Resource ID of the Azure ML workspace for compute target attachment                                                                          | `string`                                                                                                                                                      | n/a     |   yes    |
 | ml\_workload\_identity                  | AzureML workload managed identity object containing id and principal\_id.                                                                    | ```object({ id = string principal_id = string })```                                                                                                           | n/a     |   yes    |
 | ml\_workload\_subjects                  | Custom Kubernetes service account subjects for AzureML workload federation.                                                                  | `list(string)`                                                                                                                                                | n/a     |   yes    |
-| resource\_group\_name                   | Name of the resource group containing the workload identity.                                                                                 | `string`                                                                                                                                                      | n/a     |   yes    |
 | resource\_prefix                        | Prefix for all resources                                                                                                                     | `string`                                                                                                                                                      | n/a     |   yes    |
 | should\_install\_dcgm\_exporter         | Whether to install DCGM exporter for GPU metrics collection                                                                                  | `bool`                                                                                                                                                        | n/a     |   yes    |
 | should\_install\_nvidia\_device\_plugin | Whether to install NVIDIA Device Plugin for GPU hardware support                                                                             | `bool`                                                                                                                                                        | n/a     |   yes    |

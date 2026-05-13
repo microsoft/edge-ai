@@ -2,7 +2,7 @@
 title: Fabric Blueprint
 description: Microsoft Fabric components for data analytics and optionally real-time intelligence (RTI) scenarios
 author: Edge AI Team
-ms.date: 2025-07-29
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 7
 keywords:
@@ -41,7 +41,7 @@ This blueprint provisions the foundational Microsoft Fabric infrastructure:
 
 - Azure subscription with appropriate permissions
 - Microsoft Fabric capacity (optional - can use free tier)
-- Terraform >= 1.9.8
+- Terraform >= 1.12.0
 - Azure CLI authenticated
 - Existing resource group (default naming: `rg-{resource_prefix}-{environment}-{instance}`)
 

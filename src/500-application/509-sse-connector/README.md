@@ -2,7 +2,7 @@
 title: Akri SSE HTTP Connector
 description: Complete standalone development and demo environment for integrating Server-Sent Events (SSE) endpoints with Azure IoT Operations using the Akri connector framework
 author: Edge AI Team
-ms.date: 2025-11-18
+ms.date: 2026-05-12
 ms.topic: reference
 estimated_reading_time: 8
 keywords:
@@ -94,7 +94,7 @@ For Azure IoT Operations deployments, the component uses:
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
 - **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with SSE connector variables
-- **Terraform**: Version 1.9.8 or later
+- **Terraform**: Version 1.12.0 or later
 - **Azure Subscription**: Active subscription with appropriate permissions
 - **Example Configuration**: Reference `blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example`
 
