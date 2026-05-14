@@ -9,6 +9,7 @@ Keycloak
 Linfa
 Multimodal
 Ollama
+RUSTSEC
 SARIF
 TMDL
 WIQL
@@ -63,9 +64,11 @@ imageproc
 inproc
 interactifs
 isengineering
+jackc
 jointable
 jspx
 kalypso
+kiota
 libopencv
 logissue
 managedidentity
@@ -111,6 +114,7 @@ snakefoot
 snapshotting
 snet
 sorahex
+spdystream
 steinberg
 steveyegge
 stretchr
