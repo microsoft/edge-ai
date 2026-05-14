@@ -87,12 +87,55 @@ dependencies = [
 ]
 
 [[package]]
+name = "azure_iot_operations_mqtt"
+version = "0.10.0"
+source = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/"
+checksum = "2b13135acf0a18eb9bb194b59cfdef21d8393df6dd25c187c90d8a404ec12fdb"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "derive-getters",
+ "derive_builder",
+ "futures",
+ "log",
+ "notify",
+ "notify-debouncer-full",
+ "openssl",
+ "rand 0.8.5",
+ "rumqttc",
+ "thiserror 2.0.17",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
 name = "azure_iot_operations_protocol"
 version = "0.9.0"
 source = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/"
 checksum = "1efcc7d71480a236904c791a92ffc5ae79d47398fd6b4a6bed817ea6641f2770"
 dependencies = [
- "azure_iot_operations_mqtt",
+ "azure_iot_operations_mqtt 0.9.0",
+ "bytes",
+ "chrono",
+ "derive_builder",
+ "fluent-uri",
+ "iso8601-duration",
+ "log",
+ "regex",
+ "thiserror 2.0.17",
+ "tokio",
+ "tokio-util",
+ "uuid",
+]
+
+[[package]]
+name = "azure_iot_operations_protocol"
+version = "0.10.0"
+source = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/"
+checksum = "baf89924db56bf69632289d596fdbc598268d27d80ef3359aca772fec7c3d447"
+dependencies = [
+ "azure_iot_operations_mqtt 0.10.0",
  "bytes",
  "chrono",
  "derive_builder",
@@ -108,17 +151,18 @@ dependencies = [
 
 [[package]]
 name = "azure_iot_operations_services"
-version = "0.8.0"
+version = "0.9.0"
 source = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/"
-checksum = "4724f4a990e35b7fd00268b21583fb6cb07535757ef48e93cc0cb6019b079148"
+checksum = "c6055c56a316f6de85cc4620ae42de2c5c2c808ac79c50012c5f5acc1ba5ebf5"
 dependencies = [
- "azure_iot_operations_mqtt",
- "azure_iot_operations_protocol",
+ "azure_iot_operations_mqtt 0.10.0",
+ "azure_iot_operations_protocol 0.10.0",
  "data-encoding",
  "derive_builder",
  "log",
  "thiserror 2.0.17",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -258,6 +302,17 @@ name = "data-encoding"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
+
+[[package]]
+name = "derive-getters"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74ef43543e701c01ad77d3a5922755c6a1d71b22d942cb8042be4994b380caff"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "derive_builder"
@@ -1652,8 +1707,8 @@ name = "sender"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "azure_iot_operations_mqtt",
- "azure_iot_operations_protocol",
+ "azure_iot_operations_mqtt 0.9.0",
+ "azure_iot_operations_protocol 0.9.0",
  "azure_iot_operations_services",
  "chrono",
  "opentelemetry",
