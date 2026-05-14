@@ -1,0 +1,54 @@
+---
+name: Verify Tag Signature
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag name to verify (e.g. v1.2.3)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-tag-signature-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TAG_NAME: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: chainguard-dev/actions/setup-gitsign@0cda751b114eb55c388e88f7479292668165602a # v1.0.2
+
+      - name: Verify gitsign tag signature
+        run: |
+          set -euo pipefail
+          if ! git rev-parse "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            echo "Tag ${TAG_NAME} not found in repository." >&2
+            exit 1
+          fi
+          gitsign verify-tag \
+            --certificate-identity 'https://github.com/microsoft/edge-ai/.github/workflows/release-please.yml@refs/heads/main' \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            "${TAG_NAME}"
+
+      - name: Surface Sigstore identity claims
+        run: |
+          set -euo pipefail
+          git tag -v "${TAG_NAME}" 2>&1 \
+            | grep -E '(Issuer|Subject|Identity|certificate)' \
+            || true

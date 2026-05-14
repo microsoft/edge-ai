@@ -369,3 +369,46 @@ jobs:
           name: pester-test-results
           path: test-results/
           retention-days: 30
+
+  # Aggregator gate - single required check for branch protection
+  pr-validation-gate:
+    name: PR Validation Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - codeql-analysis
+      - dependency-scan
+      - shell-lint
+      - terraform-lint
+      - bicep-lint
+      - docs-lint
+      - code-quality-lint
+      - powershell-lint
+      - security-scan
+      - yaml-lint
+      - docs-automation
+      - docusaurus-tests
+      - docs-check-terraform
+      - docs-check-bicep
+      - aio-version-check
+      - rust-clippy
+      - rust-tests
+      - dep-audit
+      - fuzz
+      - matrix-changes
+      - pwsh-provider-tests
+      - terraform-var-compliance
+      - terraform-module-tests
+      - application-matrix-builds
+      - pester-tests
+    permissions:
+      contents: read
+    steps:
+      - name: Verify all required checks passed
+        shell: bash
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+            echo "::error::One or more required PR validation checks failed or were cancelled."
+            exit 1
+          fi
+          echo "All required PR validation checks passed."
