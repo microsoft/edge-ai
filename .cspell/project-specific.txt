@@ -12,6 +12,7 @@ Multimodal
 Obtenez
 Ollama
 Ouvrir
+RUSTSEC
 SARIF
 Standardised
 TMDL
@@ -70,9 +71,11 @@ imageproc
 inproc
 interactifs
 isengineering
+jackc
 jointable
 jspx
 kalypso
+kiota
 leakdet
 libonnxruntime
 libopencv
@@ -122,6 +125,7 @@ snakefoot
 snapshotting
 snet
 sorahex
+spdystream
 steinberg
 steveyegge
 stretchr
