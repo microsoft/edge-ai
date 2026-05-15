@@ -9,9 +9,7 @@
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
-    blueprint = "minimum-single-cluster"
-  }
+  tags            = merge(var.tags, { blueprint = "minimum-single-node-cluster" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -106,6 +104,7 @@ module "edge_cncf_cluster" {
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   custom_locations_oid                  = var.custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  cluster_admin_group_oid               = var.cluster_admin_group_oid
 
   key_vault = module.cloud_security_identity.key_vault
 }

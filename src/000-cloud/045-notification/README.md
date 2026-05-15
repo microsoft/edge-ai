@@ -2,7 +2,7 @@
 title: Cloud Notification Component
 description: Generic Event Hub to Microsoft Teams notification with Table Storage session deduplication, deployed as consumption-tier Azure Logic Apps with managed identity authentication
 author: Edge AI Team
-ms.date: 2026-02-27
+ms.date: 2026-05-12
 ms.topic: reference
 keywords:
   - notification
@@ -182,7 +182,7 @@ module "notification" {
 |-------------|-----------|
 | `azurerm`   | >= 4.51.0 |
 | `azapi`     | >= 2.3.0  |
-| `terraform` | >= 1.9.8  |
+| `terraform` | >= 1.12.0 |
 
 ## Deployment Options
 

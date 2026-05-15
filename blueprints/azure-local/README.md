@@ -2,7 +2,7 @@
 title: Azure Local IoT Operations Blueprint
 description: End-to-end Terraform blueprint that provisions required Azure cloud services and an Azure Local (Azure Stack HCI) Kubernetes cluster, then deploys Azure IoT Operations (AIO) with optional assets, messaging, observability, and OPC UA simulation.
 author: Edge AI Team
-ms.date: 2025-11-11
+ms.date: 2026-05-12
 ms.topic: reference
 keywords:
    - azure iot operations
@@ -103,7 +103,7 @@ Before deploying:
    * A custom location created for the Azure Local cluster
    * A logical network configured for Kubernetes cluster deployment
 2. **Resource Providers**: Register required Azure resource providers by running `scripts/az-sub-init.sh` or following the [blueprints registration guidance](../README.md#register-resource-providers).
-3. **Tooling**: Install Terraform 1.9.8 or later (but < 2.0) and Azure CLI.
+3. **Tooling**: Install Terraform 1.12.0 or later (but < 2.0) and Azure CLI.
 4. **Authentication**: Authenticate with `az login` using an account with:
    * Permission to create resources in the target subscription
    * Permission to deploy Kubernetes clusters on Azure Local

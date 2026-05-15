@@ -77,6 +77,62 @@ services:
     networks:
       - onvif-network
 
+  camera-dashboard:
+    image: ${REGISTRY:-local}/${APPLICATION:-onvif-connector}/camera-dashboard:${BUILD_ID:-latest}
+    build:
+      context: ./services/camera-dashboard
+      dockerfile: Dockerfile
+    container_name: camera-dashboard
+    ports:
+      - "${DASHBOARD_PORT:-5001}:5001"
+    environment:
+      - CAMERA_URLS=${CAMERA_URLS:-rtsp://admin:password@rtsp-camera-1:8554/live.sdp/pattern}
+      - CAMERA_NAMES=${CAMERA_NAMES:-test-camera-1}
+      - MQTT_BROKER=onvif-mosquitto-broker
+      - MQTT_PORT=1883
+      - MQTT_TOPIC_PREFIX=${MQTT_TOPIC_PREFIX:-onvif-camera}
+      - DASHBOARD_PORT=5001
+      - DASHBOARD_HOST=0.0.0.0
+      - VIDEO_FPS=${VIDEO_FPS:-15}
+      - JPEG_QUALITY=${JPEG_QUALITY:-75}
+      - ONVIF_PORT=${ONVIF_PORT:-8080}
+    depends_on:
+      rtsp-camera-1:
+        condition: service_started
+      onvif-mosquitto-broker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - onvif-network
+
+  rtsp-camera-1:
+    image: ullaakut/rtspatt@sha256:ff78ebe83192b0af8a20ab61fc598365e706ad356acb9511f710bb457c3585d4
+    container_name: rtsp-camera-1
+    ports:
+      - "8554:8554"
+    command:
+      - "-s"
+      - "1920x1080"
+      - "-f"
+      - "30"
+      - "-i"
+      - "pattern:smpte"
+      - "-r"
+      - "/pattern"
+      - "-u"
+      - "admin"
+      - "-p"
+      - "password"
+    restart: unless-stopped
+    networks:
+      - onvif-network
+
 networks:
   onvif-network:
     driver: bridge

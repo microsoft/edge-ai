@@ -1,8 +1,6 @@
 """Unit tests for Pydantic models in the sensor simulator."""
 
 import pytest
-from pydantic import ValidationError
-
 from models import (
     DataType,
     FieldConfig,
@@ -10,6 +8,7 @@ from models import (
     FieldValueResponse,
     SimulatorMetadata,
 )
+from pydantic import ValidationError
 
 
 class TestFieldConfigValidation:

@@ -5,11 +5,11 @@ Creates Azure Stack HCI (Azure Local) cluster resources.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.3.0        |
-| azurerm   | >= 4.8.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
+| azurerm   | >= 4.8.0         |
 
 ## Providers
 
@@ -52,7 +52,7 @@ Creates Azure Stack HCI (Azure Local) cluster resources.
 | load\_balancer\_count                   | Number of load balancers for the cluster (Otherwise, 0).                                                                                              | `number`                                                                                                                                       | `0`                                                                                  |    no    |
 | nfs\_csi\_driver\_enabled               | Enable NFS CSI driver for persistent storage (Otherwise, false).                                                                                      | `bool`                                                                                                                                         | `false`                                                                              |    no    |
 | node\_pool\_count                       | Number of worker nodes in the default node pool (Otherwise, 1).                                                                                       | `number`                                                                                                                                       | `1`                                                                                  |    no    |
-| node\_pool\_vm\_size                    | VM size for worker nodes (Otherwise, 'Standard\_D8s\_v3').                                                                                            | `string`                                                                                                                                       | `"Standard_D8s_v3"`                                                                  |    no    |
+| node\_pool\_vm\_size                    | VM size for worker nodes (Otherwise, 'Standard\_D8s\_v6').                                                                                            | `string`                                                                                                                                       | `"Standard_D8s_v6"`                                                                  |    no    |
 | pod\_cidr                               | CIDR range for Kubernetes pods (Otherwise, '10.244.0.0/16').                                                                                          | `string`                                                                                                                                       | `"10.244.0.0/16"`                                                                    |    no    |
 | smb\_csi\_driver\_enabled               | Enable SMB CSI driver for persistent storage (Otherwise, false).                                                                                      | `bool`                                                                                                                                         | `false`                                                                              |    no    |
 | ssh\_public\_key                        | SSH public key for Linux nodes (Otherwise, generated).                                                                                                | `string`                                                                                                                                       | `null`                                                                               |    no    |

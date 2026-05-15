@@ -19,6 +19,7 @@
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
+  tags            = merge(var.tags, { blueprint = "partial-single-node-cluster" })
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
@@ -85,6 +86,7 @@ module "edge_cncf_cluster" {
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   custom_locations_oid                  = var.custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  cluster_admin_group_oid               = var.cluster_admin_group_oid
 
   // Key Vault configuration
   key_vault                                 = module.cloud_security_identity.key_vault

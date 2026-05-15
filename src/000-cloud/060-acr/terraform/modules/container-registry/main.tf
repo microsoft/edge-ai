@@ -38,6 +38,30 @@ resource "azurerm_container_registry" "acr" {
   }
 }
 
+/*
+ * Diagnostic Settings
+ */
+
+resource "azurerm_monitor_diagnostic_setting" "acr" {
+  count = var.should_enable_diagnostic_settings ? 1 : 0
+
+  name                       = "diag-${azurerm_container_registry.acr.name}"
+  target_resource_id         = azurerm_container_registry.acr.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  enabled_log {
+    category = "ContainerRegistryRepositoryEvents"
+  }
+
+  enabled_log {
+    category = "ContainerRegistryLoginEvents"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
 resource "azurerm_private_endpoint" "pep" {
   count = var.should_create_acr_private_endpoint ? 1 : 0
 

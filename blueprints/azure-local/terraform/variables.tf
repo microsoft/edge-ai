@@ -101,7 +101,7 @@ variable "azure_local_control_plane_vm_size" {
 variable "azure_local_node_pool_vm_size" {
   type        = string
   description = "VM size for worker nodes in Azure Local cluster"
-  default     = "Standard_D8s_v3"
+  default     = "Standard_D8s_v6"
 }
 
 variable "azure_local_pod_cidr" {
@@ -268,3 +268,14 @@ variable "should_enable_opc_ua_simulator" {
 
 
 
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}

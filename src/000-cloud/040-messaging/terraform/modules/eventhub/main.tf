@@ -45,6 +45,26 @@ resource "azurerm_eventhub_consumer_group" "destination_eh_cg" {
   depends_on          = [azurerm_eventhub.destination_eh]
 }
 
+/*
+ * Diagnostic Settings
+ */
+
+resource "azurerm_monitor_diagnostic_setting" "eventhub" {
+  count = var.should_enable_diagnostic_settings ? 1 : 0
+
+  name                       = "diag-${azurerm_eventhub_namespace.destination_eventhub_namespace.name}"
+  target_resource_id         = azurerm_eventhub_namespace.destination_eventhub_namespace.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
+}
+
 resource "azurerm_role_assignment" "data_sender" {
   scope                = azurerm_eventhub_namespace.destination_eventhub_namespace.id
   role_definition_name = "Azure Event Hubs Data Sender"

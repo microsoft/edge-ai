@@ -53,8 +53,8 @@ variable "node_count" {
 
 variable "node_vm_size" {
   type        = string
-  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v5."
-  default     = "Standard_D8ds_v5"
+  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v6."
+  default     = "Standard_D8ds_v6"
 }
 
 variable "enable_auto_scaling" {
@@ -154,4 +154,15 @@ variable "should_create_azure_functions" {
   type        = bool
   description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
+}
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
 }

@@ -106,7 +106,9 @@ jobs:
           node-version: '24'
 
       - name: Install markdown-link-check
-        run: npm install -g markdown-link-check@3.14.2
+        # Pinned via .github/scripts/markdown-link-check/package-lock.json so the
+        # OSSF Scorecard `npmCommand` check stays clean (npm ci enforces the lockfile).
+        run: npm ci --no-audit --no-fund --prefix .github/scripts/markdown-link-check
 
       - name: Check links in documentation
         continue-on-error: true
@@ -135,11 +137,12 @@ jobs:
           EOF
 
           # Check all markdown files
+          MLC=".github/scripts/markdown-link-check/node_modules/.bin/markdown-link-check"
           find docs src blueprints .github copilot \
             -name "*.md" -type f | \
             grep -v node_modules | \
             xargs -I {} sh -c 'echo "Checking: {}" &&
-              markdown-link-check {} --config .markdown-link-check.json'
+              "'"$MLC"'" {} --config .markdown-link-check.json'
 
   report-documentation-health:
     name: 📊 Documentation Health Report

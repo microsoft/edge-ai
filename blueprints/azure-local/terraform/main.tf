@@ -19,6 +19,7 @@ module "arc_cluster_resource_group" {
   count  = local.use_separate_arc_rg ? 1 : 0
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
+  tags            = merge(var.tags, { blueprint = "azure-local" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -31,6 +32,7 @@ module "arc_cluster_resource_group" {
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
+  tags            = merge(var.tags, { blueprint = "azure-local" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -58,11 +60,14 @@ module "cloud_security_identity" {
   should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
   should_create_aks_identity               = false
   should_create_ml_workload_identity       = false
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
 }
 
 module "cloud_observability" {
   source = "../../../src/000-cloud/020-observability/terraform"
 
+  tags            = merge(var.tags, { blueprint = "azure-local" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -96,13 +101,16 @@ module "cloud_data" {
 module "cloud_messaging" {
   source = "../../../src/000-cloud/040-messaging/terraform"
 
+  tags            = merge(var.tags, { blueprint = "azure-local" })
   resource_group  = module.cloud_resource_group.resource_group
   aio_identity    = module.cloud_security_identity.aio_identity
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  should_create_azure_functions = var.should_create_azure_functions
+  should_create_azure_functions     = var.should_create_azure_functions
+  log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings = true
 }
 
 module "azure_local_host" {
