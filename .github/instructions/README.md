@@ -2,7 +2,7 @@
 title: GitHub Copilot Instructions
 description: Context-specific development instructions for systematic AI-assisted implementation
 author: Edge AI Team
-ms.date: 2025-01-11
+ms.date: 2026-05-15
 ms.topic: reference
 estimated_reading_time: 3
 keywords:
@@ -13,11 +13,11 @@ keywords:
   - context-specific guidance
 ---
 
-This directory contains context-specific instruction files designed to be used with GitHub Copilot's "Add Context > Instructions" feature for systematic AI-assisted development.
+This directory contains Edge AI-specific instruction files designed to be used with GitHub Copilot's "Add Context > Instructions" feature for systematic AI-assisted development.
 
 ## Overview
 
-Instructions provide focused guidance for specific development contexts, technologies, and workflows. They are applied directly to Copilot conversations to ensure consistent adherence to project standards and best practices.
+Instructions provide focused guidance for repository-specific development contexts and workflows. Shared language, documentation, commit message, and infrastructure coding standards are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ## Available Instructions
 
@@ -25,33 +25,7 @@ Instructions provide focused guidance for specific development contexts, technol
 
 ### Development Workflows
 
-> **Note:** Git merge, rebase, and branch operation instructions are now provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
-
-#### [Task Implementation Instructions](task-implementation.instructions.md)
-
-Systematic process for implementing comprehensive task plans and tracking progress.
-
-- **Context**: Task plan execution, implementation tracking
-- **Scope**: Plan analysis, progressive implementation, change documentation
-- **Apply When**: Following implementation plans from `**/.copilot-tracking/changes/*.md`
-
-### Infrastructure as Code
-
-#### [Bicep Instructions](bicep.instructions.md)
-
-Infrastructure as Code implementation guidance for Azure Bicep development.
-
-- **Context**: Azure infrastructure deployment, Bicep templates
-- **Scope**: Bicep syntax, module organization, deployment patterns
-- **Apply When**: Creating or modifying Bicep infrastructure code in `**/*.bicep` files
-
-#### [Terraform Instructions](terraform.instructions.md)
-
-Infrastructure as Code implementation guidance for HashiCorp Terraform development.
-
-- **Context**: Multi-cloud infrastructure deployment, Terraform modules
-- **Scope**: Terraform syntax, module design, provider configuration
-- **Apply When**: Creating or modifying Terraform infrastructure in `**/*.{tf,hcl,tfvars}` files
+> **Note:** Git merge, rebase, branch operation, task implementation, task research, and task review workflows are now provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 #### [Terraform Variable Consistency Manager Instructions](tf-variable-consistency-manager.instructions.md)
 
@@ -60,6 +34,30 @@ Required instructions for Terraform variable consistency including canonical def
 - **Context**: Terraform variable validation and standardization
 - **Scope**: Variable naming, type definitions, validation rules, documentation
 - **Apply When**: Working with `.copilot-tracking/chore/tf-variable-check.md`
+
+#### [Build Documentation Instructions](build-documentation.instructions.md)
+
+Required documentation standards for build and CI/CD content.
+
+- **Context**: Build and CI/CD documentation authoring
+- **Scope**: Troubleshooting sections, related documentation, frontmatter, heading hierarchy, and code examples
+- **Apply When**: Working in `docs/build-cicd/**/*.md`
+
+#### [CSS Instructions](css.instructions.md)
+
+Required CSS architecture and implementation standards for the documentation site.
+
+- **Context**: Edge AI documentation styling and theme implementation
+- **Scope**: Modular CSS structure, design tokens, dark mode, specificity, responsive behavior, and validation
+- **Apply When**: Working with `**/*.css`
+
+#### [JavaScript Instructions](javascript.instructions.md)
+
+Required JavaScript standards that load Edge AI-specific JavaScript guidance.
+
+- **Context**: Repository JavaScript implementation
+- **Scope**: Backend, frontend, and utility JavaScript conventions, testing expectations, performance, and CSS separation
+- **Apply When**: Working with `**/*.js`
 
 ### Application Development
 
@@ -71,14 +69,6 @@ Instructions for creating, importing, and managing edge applications.
 - **Scope**: Application structure, deployment patterns, edge-specific requirements
 - **Apply When**: Working in `**/src/500-application/**` pattern
 
-#### [C# Instructions](csharp.instructions.md)
-
-Development standards and practices for C# code implementation.
-
-- **Context**: C# application development, .NET projects
-- **Scope**: Code structure, naming conventions, best practices
-- **Apply When**: Writing C# code in `**/*.cs` files
-
 #### [Rust Crate Registration Instructions](rust-crate-registration.instructions.md)
 
 Required registration of Rust crates under `src/500-application` for CI test/coverage and Codecov reporting.
@@ -87,49 +77,33 @@ Required registration of Rust crates under `src/500-application` for CI test/cov
 - **Scope**: `rust-tests.yml` matrix and triggers, `codecov.yml` flags and ignore lists, opt-out path
 - **Apply When**: Adding, restructuring, or removing crates under `**/src/500-application/**/Cargo.toml`, or editing `**/.github/workflows/rust-tests.yml` or `**/codecov.yml`
 
-### Scripting and Automation
+#### [WASM Build Deploy Instructions](wasm-build-deploy.instructions.md)
 
-#### [Bash Instructions](bash.instructions.md)
+Required build, deployment, and test standards for Rust-based WASM operators.
 
-Comprehensive guidance for bash script development and shell command execution.
+- **Context**: WASM operator build and deployment workflows
+- **Scope**: Graph schemas, Terraform integration, naming conventions, and validation rules
+- **Apply When**: Working in `**/src/500-application/**/operators/**`
 
-- **Context**: Shell scripting, automation scripts, CI/CD workflows
-- **Scope**: Bash syntax standards, error handling, script structure
-- **Apply When**: Writing bash scripts in `**/src/**/*.sh` pattern
+#### [WASM Operator Templates Instructions](wasm-operator-templates.instructions.md)
 
-#### [Python Script Instructions](python-script.instructions.md)
+Code templates for Rust-based WASM operator modules.
 
-Enhanced guidance for Python script development specifically targeting utility scripts.
+- **Context**: WASM operator creation and modification
+- **Scope**: Cargo manifests, Map, Filter, Accumulate, ONNX, graph YAML, and Terraform configuration templates
+- **Apply When**: Working in `**/src/500-application/**/operators/**`
 
-- **Context**: Python automation scripts, build system utilities, deployment tools
-- **Scope**: PEP 8 compliance, error handling, testing, documentation
-- **Apply When**: Working with Python scripts in `**/scripts/**/*.py` pattern
+#### [WASM SDK Reference Instructions](wasm-sdk-reference.instructions.md)
 
-#### [Shell Instructions](shell.instructions.md)
+SDK reference guidance for Rust-based WASM operator types and integration patterns.
 
-General shell environment and command-line interface guidance.
+- **Context**: Azure IoT Operations dataflow graph operator implementation
+- **Scope**: SDK types, integration patterns, operator behavior, and best practices
+- **Apply When**: Working in `**/src/500-application/**/operators/**`
 
-- **Context**: Shell operations, command-line tools, system interaction
-- **Scope**: Shell usage patterns, command structure, environment setup
-- **Apply When**: Working with shell files in `**/*.sh` pattern
+### Shared HVE Core Instructions
 
-### Documentation
-
-#### [Commit Message Instructions](commit-message.instructions.md)
-
-Standardized commit message formatting using Conventional Commit patterns.
-
-- **Context**: Git commit message creation
-- **Scope**: Message format, types, scopes, standardization
-- **Apply When**: Creating commit messages in `**/` pattern
-
-#### [Markdown Instructions](markdown.instructions.md)
-
-Required instructions for creating or editing any Markdown files.
-
-- **Context**: Documentation, README files, markdown content
-- **Scope**: Markdown syntax, formatting standards, frontmatter, structure
-- **Apply When**: Creating or editing `**/*.md` files
+Use the [hve-core](https://github.com/microsoft/hve-core) VS Code extension for shared coding standards and workflow guidance, including Bash, Bicep, C#, commit messages, Markdown, Python scripting, Rust, Terraform, pull request creation, task implementation, task research, task review, Git merge/rebase, and Azure DevOps workflows.
 
 ## Usage Guidelines
 
@@ -164,12 +138,12 @@ While instructions are automatically applied, you may want to manually add them 
 
 The instruction system uses sophisticated pattern matching to automatically apply relevant guidance:
 
-| Working On                                             | Auto-Applied Instructions                                 |
-|--------------------------------------------------------|-----------------------------------------------------------|
-| `src/000-cloud/010-security/terraform/main.tf`         | `terraform.instructions.md`                               |
-| `blueprints/full-single-node-cluster/bicep/main.bicep` | `bicep.instructions.md`                                   |
-| `scripts/deploy-infrastructure.py`                     | `python-script.instructions.md`                           |
-| `src/500-application/501-rust-telemetry/README.md`     | `markdown.instructions.md`, `application.instructions.md` |
+| Working On                                             | Auto-Applied Instructions                                         |
+|--------------------------------------------------------|-------------------------------------------------------------------|
+| `src/000-cloud/010-security/terraform/main.tf`         | HVE Core Terraform instructions                                   |
+| `blueprints/full-single-node-cluster/bicep/main.bicep` | HVE Core Bicep instructions                                       |
+| `scripts/deploy-infrastructure.py`                     | HVE Core Python scripting instructions                            |
+| `src/500-application/501-rust-telemetry/README.md`     | HVE Core Markdown instructions and local Application instructions |
 
 ### Best Practices
 

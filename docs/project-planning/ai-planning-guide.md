@@ -37,15 +37,15 @@ This guide shows you how to leverage GitHub Copilot and our specialized project 
 
 ## Quick Start: AI-Powered Project Planning
 
-### 1. Activate the Interactive Project Planner
+### 1. Start Edge AI Project Planning
 
-In GitHub Copilot Chat, activate our specialized interactive project planner:
+In GitHub Copilot Chat, run the repository **Edge AI Project Planning** prompt. The local prompt file is `.github/prompts/edge-ai-project-planning.prompt.md`.
 
 ```text
-@edge-ai-project-planner
+Run the Edge AI Project Planning prompt, then describe your Edge AI project goals.
 ```
 
-The interactive project planner provides:
+The Edge AI Project Planning prompt provides:
 
 - **Guided Discovery**: Step-by-step requirements gathering with focused questions
 - **Scenario Matching**: AI-powered analysis to identify the best scenarios for your project
@@ -91,8 +91,6 @@ The AI assistant will:
 **Initial Input:**
 
 ```text
-@edge-ai-project-planner
-
 I'm planning an edge AI project for automated quality control in our electronics manufacturing line. We want to detect defects in real-time during production and reduce manual inspection overhead by 80%.
 ```
 
@@ -107,8 +105,6 @@ The project planner will ask focused questions about your manufacturing type, in
 **Initial Input:**
 
 ```text
-@edge-ai-project-planner
-
 I need to implement predictive maintenance for our industrial equipment fleet. We have 200+ pieces of critical equipment causing 15% unplanned downtime. Goal is to reduce this to less than 5%.
 ```
 
@@ -146,8 +142,6 @@ Apply these skills to your actual Edge AI projects for faster, more effective pl
 Use the project planner for complex scenarios involving multiple use cases:
 
 ```text
-@edge-ai-project-planner
-
 I want to implement both Quality Process Optimization and Packaging Line Performance Optimization. Can you help me create an integrated implementation plan that identifies shared capabilities and optimizes implementation sequence?
 ```
 
@@ -158,8 +152,6 @@ I want to implement both Quality Process Optimization and Packaging Line Perform
 For complex multi-facility implementations:
 
 ```text
-@edge-ai-project-planner
-
 I'm architecting Edge AI transformation for a global manufacturing conglomerate with 12 facilities. We need predictive maintenance, quality optimization, and performance monitoring across diverse product lines with 24-month phased rollout.
 ```
 
@@ -209,7 +201,7 @@ I'm particularly interested in the Cloud AI Platform capabilities. For my [speci
 
 ---
 
-*Ready to start planning? Try `@edge-ai-project-planner` in GitHub Copilot Chat to begin your interactive planning session. For hands-on practice, start with the [Project Planning Katas][project-planning-katas] to build fluency with the planning tools and process.*
+*Ready to start planning? Run the Edge AI Project Planning prompt in GitHub Copilot Chat to begin your interactive planning session. For hands-on practice, start with the [Project Planning Katas][project-planning-katas] to build fluency with the planning tools and process.*
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

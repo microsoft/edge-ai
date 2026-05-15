@@ -36,7 +36,7 @@ Complete overview of the GitHub Copilot resources directory structure and availa
 These GitHub Copilot resources are designed to work seamlessly with the [Learning Platform](https://github.com/microsoft/edge-ai/blob/main/learning/README.md), providing AI-assisted guidance for:
 
 - **Kata Practice**: Enhanced prompts for deliberate practice exercises
-- **Project Planning**: AI-assisted project envisioning and task planning
+- **Project Planning**: AI-assisted project discovery, scope definition, and task planning
 - **Code Development**: Context-aware instructions for specific technologies
 - **Security Planning**: Specialized modes for security considerations
 
