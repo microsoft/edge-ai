@@ -18,7 +18,7 @@ tokio = { version = "1.14.0", features = ["full"] }
 chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-azure_iot_operations_mqtt = { version = "1.0.1", registry = "aio-sdks" }
+azure_iot_operations_mqtt = { version = "1.0.2", registry = "aio-sdks" }
 windows-sys = { version = "0.52.0" }
 tokio-retry = "0.3"
 
