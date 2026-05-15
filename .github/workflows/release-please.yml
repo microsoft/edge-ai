@@ -37,3 +37,19 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Create git tag for draft release
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          TAG="${{ steps.release.outputs.tag_name }}"
+          REPO="${{ github.repository }}"
+          if ! gh api "/repos/$REPO/git/refs/tags/$TAG" --silent 2>/dev/null; then
+            gh api "/repos/$REPO/git/refs" \
+              -f "ref=refs/tags/$TAG" \
+              -f "sha=${{ github.sha }}"
+            echo "Created git tag $TAG -> ${{ github.sha }}"
+          else
+            echo "Git tag $TAG already exists"
+          fi
