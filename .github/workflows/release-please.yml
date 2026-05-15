@@ -41,6 +41,24 @@ jobs:
           config-file: release-please-config.json
           manifest-file: release-please-manifest.json
 
+      - name: Create git tag for draft release
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TAG: ${{ steps.release.outputs.tag_name }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if ! gh api "/repos/$REPO/git/refs/tags/$TAG" --silent 2>/dev/null; then
+            gh api "/repos/$REPO/git/refs" \
+              -f "ref=refs/tags/$TAG" \
+              -f "sha=$SHA"
+            echo "Created git tag $TAG -> $SHA"
+          else
+            echo "Git tag $TAG already exists"
+          fi
+
   generate-dependency-sbom:
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
