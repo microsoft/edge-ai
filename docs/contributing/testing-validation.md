@@ -32,7 +32,7 @@ To maintain code quality and the OSSF Best Practices Badge, we enforce the follo
 | Technology     | Framework               | Minimum Requirement                                   |
 |:---------------|:------------------------|:------------------------------------------------------|
 | **Terraform**  | native `terraform test` | One `.tftest.hcl` per component with `command = plan` |
-| **Rust**       | `cargo test`            | Run from each service crate with a local `Cargo.toml` |
+| **Rust**       | `cargo test`            | `#[cfg(test)]` module covering core logic             |
 | **.NET**       | xUnit / NUnit           | Test project covering business logic                  |
 | **JavaScript** | Jest / TypeScript       | Docs tests and `tsc --noEmit` checks                  |
 
@@ -314,19 +314,26 @@ provider "azurerm" {
   features {}
 }
 
-run "resource_group_uses_expected_name" {
+# Call the setup module to create a random resource prefix
+run "setup_tests" {
+  module {
+    source = "./tests/setup"
+  }
+}
+
+run "naming_with_different_environments" {
   command = plan
 
   variables {
-    resource_prefix = "edge-ai"
-    environment     = "dev"
+    resource_prefix = run.setup_tests.resource_prefix
+    environment     = "prod"
     location        = "eastus2"
     instance        = "001"
   }
 
   assert {
-    condition     = azurerm_resource_group.new[0].name == "rg-edge-ai-dev-001"
-    error_message = "Resource group name should follow the expected naming convention"
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-prod-001"
+    error_message = "Resource group name should follow convention with environment = prod"
   }
 }
 ```
@@ -338,14 +345,24 @@ group component provides a setup module for generated prefixes:
 
 ```hcl
 # terraform/tests/setup/main.tf
-resource "random_string" "resource_prefix" {
-  length  = 8
+terraform {
+  required_providers {
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.5.1"
+    }
+  }
+  required_version = ">= 1.12.0, < 2.0"
+}
+
+resource "random_string" "prefix" {
+  length  = 4
   special = false
   upper   = false
 }
 
 output "resource_prefix" {
-  value = random_string.resource_prefix.result
+  value = "a${random_string.prefix.id}"
 }
 ```
 
@@ -355,17 +372,22 @@ Blueprint testing should follow the same layered approach as component testing:
 fast static validation first, then optional deployment validation when Azure
 credentials and cost controls are available.
 
-### Blueprint Test Architecture
+### Terraform Test Reference
+
+The resource group component is the current concrete Terraform test reference.
+Blueprint tests should follow the same layered approach: fast static validation
+first, then optional deployment validation when Azure credentials and cost
+controls are available.
 
 **Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](https://github.com/microsoft/edge-ai/tree/main/src/900-tools-utilities/904-test-utilities/)
 
-Provides reusable testing functions for all blueprints including:
+Provides reusable testing functions for blueprints including:
 
 - Contract validation functions for Terraform and Bicep
 - Deployment and cleanup utilities
 - Output normalization across frameworks
 
-**Reference Implementation:** [src/000-cloud/000-resource-group/terraform/tests/](https://github.com/microsoft/edge-ai/tree/main/src/000-cloud/000-resource-group/terraform/tests/)
+**Terraform Reference Implementation:** [src/000-cloud/000-resource-group/terraform/tests/](https://github.com/microsoft/edge-ai/tree/main/src/000-cloud/000-resource-group/terraform/tests/)
 
 Complete test suite demonstrating:
 
@@ -414,6 +436,7 @@ cd blueprints/full-single-node-cluster/terraform
 # Terraform deployment check
 terraform init
 terraform plan -var-file="test.tfvars"
+# Requires ARM_* credentials; provisions billable Azure resources.
 terraform apply -var-file="test.tfvars" -auto-approve
 
 # Clean up billable resources after validation
