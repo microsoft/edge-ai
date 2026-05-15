@@ -15,9 +15,9 @@ path = "src/main.rs"
 ai-edge-inference-crate = { path = "../ai-edge-inference-crate", default-features = false, features = ["onnx-runtime", "candle", "cpu-only"] }
 
 # Azure IoT Operations SDKs - Updated for AIO 2508 compatibility
-azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
-azure_iot_operations_protocol = { version = "0.9.0", registry = "aio-sdks" }
-azure_iot_operations_services = { version = "0.8.0", registry = "aio-sdks", features = ["state_store"] }
+azure_iot_operations_mqtt = { version = "1.0.2", registry = "aio-sdks" }
+azure_iot_operations_protocol = { version = "1.0.0", registry = "aio-sdks" }
+azure_iot_operations_services = { version = "1.2.0", registry = "aio-sdks", features = ["state_store"] }
 
 # Async runtime and utilities
 tokio = { version = "1.14.0", features = ["full", "signal"] }
