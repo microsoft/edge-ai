@@ -544,12 +544,14 @@ After successful deployment:
 1. **Explore the solution**: Familiarize yourself with deployed components
 2. **Configure monitoring**: Set up alerts and dashboards in Grafana
 3. **Customize settings**: Modify configuration for your specific needs
-4. **Learn more**: Review [Azure IoT Operations documentation][iot-ops-docs] for advanced features
+4. **Upgrade Azure IoT Operations**: When new AIO releases ship, follow the [Upgrade Azure IoT Operations](upgrade-aio.md) guide to upgrade and reconcile with Terraform or Bicep
+5. **Learn more**: Review [Azure IoT Operations documentation][iot-ops-docs] for advanced features
 
 ## Additional Resources
 
 - **[Blueprint Developer Guide](blueprint-developer.md)** - Create custom blueprints
 - **[Feature Developer Guide](feature-developer.md)** - Contribute to the platform
+- **[Upgrade Azure IoT Operations](upgrade-aio.md)** - Upgrade AIO and reconcile state for Terraform / Bicep
 - **[Azure IoT Operations Getting Started][iot-ops-quickstart]** - Official Microsoft guide
 - **[Troubleshooting Documentation](../observability/)** - Detailed troubleshooting guides
 
@@ -568,7 +570,7 @@ _This guide is part of the AI on Edge Flagship Accelerator project. For the late
 [iot-ops-quickstart]: https://learn.microsoft.com/azure/iot-operations/get-started-end-to-end-sample/quickstart-deploy
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
 [iot-ops-permissions]: https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/overview-deploy#required-permissions
-[project-repo]: {{REPO_URL}}
+[project-repo]: https://github.com/microsoft/edge-ai
 [python-install]: https://www.python.org/downloads/
 [azure-resource-providers]: /src/azure-resource-providers/
 

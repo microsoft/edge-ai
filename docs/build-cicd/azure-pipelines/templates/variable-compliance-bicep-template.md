@@ -83,9 +83,9 @@ This template depends on the following:
 # Advanced implementation with all parameters
   - template: .azdo/templates/variable-compliance-bicep-template.yml
   parameters:
-    dependsOn: [MegaLinter]
+    dependsOn: [BicepLint]
     displayName: "Parameter Definition Compliance"
-    condition: succeeded('MegaLinter')
+    condition: succeeded('BicepLint')
     breakBuild: true
     pool:
       name: 'custom-pool'

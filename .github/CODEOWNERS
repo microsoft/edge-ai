@@ -31,7 +31,6 @@
 
 # Documentation
 /docs/ @microsoft/edge-ai-core-dev
-/learning/ @microsoft/edge-ai-core-dev
 /project-adrs/ @microsoft/edge-ai-core-dev
 
 # Scripts and automation

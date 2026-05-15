@@ -145,7 +145,7 @@ var shouldEnableOpcAssetDiscovery = length(filter(
   Resources
 */
 
-resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2025-10-01' existing = {
+resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2026-04-01' existing = {
   name: adrNamespaceName!
 }
 
@@ -153,7 +153,7 @@ resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2025-10-01' existing 
   Namespaced Devices (replaces Asset Endpoint Profiles)
 */
 
-resource namespacedDevice 'Microsoft.DeviceRegistry/namespaces/devices@2025-10-01' = [
+resource namespacedDevice 'Microsoft.DeviceRegistry/namespaces/devices@2026-04-01' = [
   for device in processedNamespacedDevices: {
     name: device.name
     parent: adrNamespace
@@ -173,7 +173,7 @@ resource namespacedDevice 'Microsoft.DeviceRegistry/namespaces/devices@2025-10-0
   Namespaced Asset Instances
 */
 
-resource namespacedAsset 'Microsoft.DeviceRegistry/namespaces/assets@2025-10-01' = [
+resource namespacedAsset 'Microsoft.DeviceRegistry/namespaces/assets@2026-04-01' = [
   for asset in processedNamespacedAssets: {
     name: asset.name
     parent: adrNamespace
@@ -217,7 +217,7 @@ resource namespacedAsset 'Microsoft.DeviceRegistry/namespaces/assets@2025-10-01'
   Legacy Asset Endpoint Profiles
 */
 
-resource assetEndpointProfile 'Microsoft.DeviceRegistry/assetEndpointProfiles@2025-10-01' = [
+resource assetEndpointProfile 'Microsoft.DeviceRegistry/assetEndpointProfiles@2026-04-01' = [
   for profile in processedAssetEndpointProfiles: {
     name: profile.name
     properties: union(
@@ -242,7 +242,7 @@ resource assetEndpointProfile 'Microsoft.DeviceRegistry/assetEndpointProfiles@20
   Legacy Asset Instances
 */
 
-resource legacyAsset 'Microsoft.DeviceRegistry/assets@2025-10-01' = [
+resource legacyAsset 'Microsoft.DeviceRegistry/assets@2026-04-01' = [
   for asset in processedLegacyAssets: {
     name: asset.name
     dependsOn: assetEndpointProfile

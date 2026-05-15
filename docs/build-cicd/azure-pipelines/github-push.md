@@ -15,7 +15,6 @@ keywords:
   - jwt authentication
   - pull request automation
   - branch management
-  - git version
   - continuous integration
   - repository mirroring
   - manual trigger
@@ -51,10 +50,6 @@ This pipeline automates pushing content from Azure DevOps repositories to GitHub
    - Pushes current branch to a new branch on GitHub (named `azdo-{BuildId}`)
    - Opens a pull request in GitHub
 
-2. **Versioning**: Updates version based on Git tag (runs only on `feat/gh-push` branch)
-   - Uses GitVersion to determine semantic version
-   - Creates and pushes a Git tag with the version
-
 ## Usage
 
 1. Run the pipeline manually when you want to sync changes from Azure DevOps to GitHub
@@ -72,7 +67,6 @@ This pipeline uses GitHub App authentication:
 ## Notes
 
 - The pipeline force-pushes to GitHub, overwriting the target branch if it exists
-- The versioning job only runs when the source branch is `feat/gh-push`
 - The pipeline depends on helper scripts in `scripts/github/` directory
 
 ---

@@ -43,34 +43,6 @@ This template architecture ensures consistent authentication patterns, standardi
 * Creates sync PRs to development branch
 * Handles merge conflicts with automated resolution strategies
 
-### Release Management Pipelines
-
-#### release-branch-create.yml
-
-**Purpose**: Creates release branches with version management and validation.
-
-**Trigger**: Manual or scheduled
-
-**Functionality**:
-
-* Creates release branches following semantic versioning
-* Validates branch naming conventions
-* Checks for PR collisions (Gap 1 validation)
-* Verifies branch existence (Gap 3 validation)
-* Updates version files and changelogs
-
-**Prerequisites**:
-
-* Azure Key Vault access for GitHub credentials
-* Git configuration with service principal
-
-**Related Scripts**:
-
-* `scripts/github/auth/Get-GitHubInstallationToken.ps1`: GitHub App authentication
-* `scripts/github/Test-GitHubBranchExists.ps1`: Branch existence validation (Gap 3)
-* `scripts/github/New-GitHubBranch.ps1`: GitHub branch creation via REST API
-* `scripts/github/New-GitHubPullRequest.ps1`: Pull request creation
-
 ## Pipeline Architecture
 
 ### Authentication Pattern
@@ -141,18 +113,6 @@ All pipelines follow this standard authentication pattern:
 ## Gap Implementations
 
 The pipelines implement solutions for intelligent main-to-dev synchronization gaps:
-
-* **Gap 1**: Automated Release PR Creation (integrated into `release-branch-create.yml`)
-  * Status: IMPLEMENTED
-  * Prevents manual PR creation errors
-  * Ensures consistent PR structure and metadata
-
-* **Gap 3**: GitHub Release Automation (`.github/workflows/create-release.yml`)
-  * Status: IMPLEMENTED
-  * Creates GitHub releases automatically after PR merge from `release/*` branches
-  * Generates release notes with emoji-categorized conventional commits
-  * Includes idempotency checks and error handling
-  * Configuration: `.github/release.yml`
 
 * **Gap 4**: Main-to-Dev Sync Automation (`main-to-dev-sync.yml`)
   * Status: PARTIAL
@@ -290,7 +250,6 @@ This section covers troubleshooting scenarios that apply to all GitHub-integrate
 * [GitHub Copilot Instructions](../../.github/copilot-instructions.md) - General repository conventions
 * [Script Documentation](../../scripts/README.md) - Helper script reference
 * [Main to Dev Sync Pipeline](../docs/main-to-dev-sync.md) - Detailed sync pipeline documentation
-* [Release Branch Creation Pipeline](../docs/release-branch-create.md) - Release branch automation details
 
 ---
 

@@ -32,7 +32,7 @@ This project encourages the contribution of high-quality Technology Papers that 
 
 * Review the existing Technology Papers in the library to see if an existing one can be extended or improved before contributing a new document.
 * All Technology Papers must be formatted as Markdown documents and use the `.md` file extension
-* All Technology Papers must follow the formatting of the [Security Plan template](../../project-security-plans/templates/security-plan-template.md)
+* All Technology Papers must follow the formatting of the [Security Plan template](../solution-security-plan-library/security-plan-template.md)
 * All Technology Papers must use short, concise, English file names
 * Technology Papers may include optional language translations, please copy the Technology Paper and add an intermediate, language extension using appropriate ISO 639 language codes (e.g. `Impact of Clock Sync for Edge Systems.en.md` and `Impact of Clock Sync for Edge Systems.zh.md` for English and Chinese)
 * Assign a workitem to yourself before beginning any effort, and set the item's status field accordingly.

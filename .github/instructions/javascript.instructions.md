@@ -12,12 +12,11 @@ You will ALWAYS think hard about JavaScript instructions and established convent
 
 ## Context-Specific Requirements
 
-### Backend JavaScript (Node.js - docs/_server/**, src/**)
+### Backend JavaScript (Node.js - src/**)
 
 - Use **ES6 modules** (import/export) for consistency with existing backend code
 - Apply **Vitest** testing framework for all backend testing (API, integration, unit tests)
 - Use **Node.js environment** for backend tests with appropriate mocking patterns
-- Follow Express.js application architecture patterns
 - Implement proper error handling, logging, and security middleware
 
 ### Frontend JavaScript (docs/assets/js/**, public/**)

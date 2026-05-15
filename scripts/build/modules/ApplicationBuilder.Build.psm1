@@ -774,11 +774,23 @@ function Invoke-SecurityScan {
         Write-Info "Scanning service: $service"
 
         try {
+            # Use a per-service OutputPath so sequential per-service scans write to
+            # separate report directories, keeping findings cleanly separated. The
+            # downstream gate reader (Get-GrypeScanResult) recurses, so
+            # './security-reports' as the gate root still discovers all per-service
+            # subdirectories (issue #362).
+            # Sanitize service name for filesystem path (strip path separators and colons)
+            $safeService = ($service -replace '[\\/:]', '_').Trim('_')
+            $serviceReportPath = Join-Path './security-reports' $safeService
+            if (-not (Test-Path $serviceReportPath)) {
+                New-Item -ItemType Directory -Path $serviceReportPath -Force | Out-Null
+            }
+
             $scanArgs = @{
                 ImageName      = "$($Context.App.Name)/$service"
                 ImageTag       = $Context.App.BuildId
                 Registry       = $Context.App.Registry
-                OutputPath     = "./security-reports"
+                OutputPath     = $serviceReportPath
                 FailOnSeverity = $Threshold
                 Quiet          = $true
                 VerboseLogging = $true

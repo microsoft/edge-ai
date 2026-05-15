@@ -16,7 +16,6 @@ keywords:
   - infrastructure as code
   - service principal
   - azure authentication
-  - megalinter
   - security scanning
   - pull request validation
   - deployment
@@ -54,13 +53,13 @@ The build workflow provides several key features, with more on the way:
 
 - Checks Terraform Provider versions for update opportunities and publishes build warning
 - Runs a lightweight vulnerability scan for all dependant packages
-- Runs file linting on a wide variety of languages and file types using MegaLinter
+- Runs file linting on a wide variety of languages and file types using dedicated lint jobs
 - Performs a matrix build on only resources that have been modified in the current PR
 - Publishes Terraform Plans for all changed resources within the current PR
 - Runs unit tests on changed Terraform within the current PR
 - Provides modular, reusable workflow components for flexible workflow creation
 - Ensures consistent validation steps across all workflows through shared components
-- Enables PR comment integration for linting results through MegaLinter
+- Enables PR comment integration for linting results through dedicated lint jobs
 - Optimizes workflow performance with intelligent caching mechanisms
 
 ## Getting Started
@@ -112,18 +111,17 @@ These core workflows typically call the template workflows above in a specific s
 
 The following reusable template workflows are available in the `.github/workflows` directory:
 
-| Workflow                            | Purpose                                                                   | Documentation                                                |
-|-------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------|
-| `aio-version-checker.yml`           | Checks component versions against latest available releases               | [Workflow Documentation](./aio-version-checker.md)           |
-| `cluster-test-terraform.yml`        | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./cluster-test-terraform.md)        |
-| `docs-check-bicep.yml`              | Validates documentation quality including Bicep docs and URL checks       | [Workflow Documentation](./docs-check-bicep.md)              |
-| `docs-check-terraform.yml`          | Validates documentation quality including Terraform docs and URL checks   | [Workflow Documentation](./docs-check-terraform.md)          |
-| `matrix-folder-check.yml`           | Creates dynamic matrices of changed folders for downstream jobs           | [Workflow Documentation](./matrix-folder-check.md)           |
-| `megalinter.yml`                    | Provides linting capabilities across multiple languages and file formats  | [Workflow Documentation](./megalinter.md)                    |
-| `pages-deploy.yml`                  | Deploys documentation to GitHub Pages                                     | [Workflow Documentation](./pages-deploy.md)                  |
-| `resource-provider-pwsh-tests.yml`  | Validates Azure resource provider registration scripts                    | [Workflow Documentation](./resource-provider-pwsh-tests.md)  |
-| `variable-compliance-bicep.yml`     | Ensures consistent Bicep variable definitions across modules              | [Workflow Documentation](./variable-compliance-bicep.md)     |
-| `variable-compliance-terraform.yml` | Ensures consistent Terraform variable definitions across modules          | [Workflow Documentation](./variable-compliance-terraform.md) |
+| Workflow                            | Purpose                                                                   | Documentation                                                          |
+|-------------------------------------|---------------------------------------------------------------------------|------------------------------------------------------------------------|
+| `aio-version-checker.yml`           | Checks component versions against latest available releases               | [Workflow Documentation](./templates/aio-version-checker.md)           |
+| `cluster-test-terraform.yml`        | Performs comprehensive testing of Terraform modules against real clusters | [Workflow Documentation](./templates/cluster-test-terraform.md)        |
+| `docs-check-bicep.yml`              | Validates documentation quality including Bicep docs and URL checks       | [Workflow Documentation](./templates/docs-check-bicep.md)              |
+| `docs-check-terraform.yml`          | Validates documentation quality including Terraform docs and URL checks   | [Workflow Documentation](./templates/docs-check-terraform.md)          |
+| `matrix-folder-check.yml`           | Creates dynamic matrices of changed folders for downstream jobs           | [Workflow Documentation](./templates/matrix-folder-check.md)           |
+| `pages-deploy.yml`                  | Deploys documentation to GitHub Pages                                     | [Workflow Documentation](./templates/pages-deploy.md)                  |
+| `resource-provider-pwsh-tests.yml`  | Validates Azure resource provider registration scripts                    | [Workflow Documentation](./templates/resource-provider-pwsh-tests.md)  |
+| `variable-compliance-bicep.yml`     | Ensures consistent Bicep variable definitions across modules              | [Workflow Documentation](./templates/variable-compliance-bicep.md)     |
+| `variable-compliance-terraform.yml` | Ensures consistent Terraform variable definitions across modules          | [Workflow Documentation](./templates/variable-compliance-terraform.md) |
 
 > **Note:** All workflow documentation follows a standardized format that includes overview,
 > features, parameters, usage examples, implementation details, and troubleshooting sections.
@@ -195,13 +193,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  megalinter:
-    name: MegaLinter
-    uses: ./.github/workflows/megalinter.yml
-    with:
-      github_comment_reporter: true
-      github_status_reporter: true
-      validate_all_codebase: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  shell-lint:
+    name: Shell Lint
+    uses: ./.github/workflows/shell-lint.yml
+    secrets: inherit
+
+  yaml-lint:
+    name: YAML Lint
+    uses: ./.github/workflows/yaml-lint.yml
+    secrets: inherit
+
+  terraform-lint:
+    name: Terraform Lint
+    uses: ./.github/workflows/terraform-lint.yml
     secrets: inherit
 ```
 

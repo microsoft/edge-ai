@@ -284,12 +284,6 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# Docsify configuration (generated at runtime)
-docsify-url-config.js
-
-# Learning path manifest (generated at runtime)
-manifest.json
-
 # Visual Studio 6 build log
 *.plg
 
@@ -380,7 +374,7 @@ FodyWeavers.xsd
 # Ignore tfplan files
 *.tfplan
 
-# Ignore .terraform lock
+# .terraform.lock.hcl excluded from VCS — see docs/project-planning/adrs/001-terraform-lock-file-exclusion.md
 .terraform.lock.hcl
 
 # Crash log files
@@ -402,8 +396,6 @@ terraform.rc
 # Ignore ssh folders
 .ssh/
 
-# Ignore megalinter reports
-[Mm]egalinter-reports
 
 # Ignore .temp files used for some processing
 *.temp
@@ -442,7 +434,6 @@ pr-reference.xml
 .copilot-tracking/
 
 # Test artifacts
-test-progress-*/
 test-performance/
 test-selections/
 __test-data__/
@@ -474,3 +465,7 @@ crates/
 
 # Ignore beads files
 .beads/
+
+# Docusaurus build artifacts
+docs/docusaurus/.docusaurus/
+docs/docusaurus/build/

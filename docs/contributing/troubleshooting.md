@@ -434,38 +434,27 @@ git checkout main
 
 ## Linting and Code Quality Issues
 
-### MegaLinter Issues
+### Lint Job Issues
 
 #### Linter Failures
 
-**Symptoms**: MegaLinter reports multiple errors
+**Symptoms**: CI lint jobs report errors
 
 **Solutions**:
 
-1. **Run specific linters**:
+1. **Run specific linters locally**:
 
    ```bash
-   # Run only Terraform linting
-   npx mega-linter-runner --flavor terraform
+   # Run Terraform linting
+   npm run tflint-fix-all
 
-   # Run only markdown linting
-   npm run mdlint
+   # Run markdown linting
+   npm run mdlint-fix
    ```
 
-2. **Fix automatically fixable issues**:
+2. **Review pipeline logs**:
 
-   ```bash
-   npm run lint-fix-devcontainer
-   ```
-
-3. **Review configuration**:
-
-   ```yaml
-   # Check .mega-linter.yml for disabled linters
-   DISABLE:
-     - COPYPASTE
-     - SPELL_LYCHEE
-   ```
+   Check the individual lint job output in the Azure Pipelines run to identify which linter and file failed.
 
 ### Markdown Linting Issues
 
@@ -721,6 +710,6 @@ For critical issues:
 
 Remember: Most issues have been encountered before. Search existing documentation and issues first, then ask for help with specific details about your situation.
 
-For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](./contributing.md).
+For more information about development workflows, see the [Development Environment](./development-environment.md) and [Contributing Guidelines](../contributions.md).
 
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction, then carefully refined by our team of discerning human reviewers.*

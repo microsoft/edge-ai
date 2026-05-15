@@ -12,7 +12,6 @@ keywords:
   - terraform testing
   - bicep validation
   - checkov security scanning
-  - megalinter
   - matrix testing
   - change detection
   - service connections
@@ -88,7 +87,6 @@ Located in `.azdo/templates/`, these templates provide reusable pipeline functio
 - **`application-build-template.yaml`**: Multi-language application build orchestration
 - **`cluster-test-terraform-template.yml`**: Terraform component testing
 - **`checkov-template.yml`**: Security scanning with Checkov
-- **`megalinter-template.yml`**: Code quality and linting
 - **`aio-version-checker-template.yml`**: Component version validation
 
 ### Validation templates

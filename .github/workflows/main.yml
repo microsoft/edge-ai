@@ -29,11 +29,6 @@ name: Main Branch CI/CD
 
 permissions:
   contents: read
-  actions: read
-  checks: write
-  pull-requests: write
-  statuses: write
-  security-events: write
 
 on: # yamllint disable-line rule:truthy
   push:
@@ -64,7 +59,7 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -75,28 +70,12 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/autobuild@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/analyze@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           category: "/language:${{matrix.language}}"
-
-  # Dependency scanning job for main branch
-  dependency-scan-main:
-    name: Dependency Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      # GitHub doesn't have a direct equivalent to Azure's ComponentGovernanceComponentDetection
-      # Using a basic dependency check with built-in security scanning
-      - name: Dependency Review
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
-        with:
-          head-ref: refs/heads/main
-          base-ref: refs/heads/main
 
   # Shell script linting (main)
   shell-lint-main:
@@ -172,7 +151,37 @@ jobs:
       contents: read
     uses: ./.github/workflows/rust-clippy.yml
     with:
+      break-build: true
+    secrets: inherit
+
+  # Rust unit/integration tests with coverage for main branch
+  rust-tests-main:
+    name: Rust Tests
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/rust-tests.yml
+    secrets: inherit
+
+  # Dependency advisory audit (cargo-audit + govulncheck) for main branch
+  dep-audit-main:
+    name: Dependency Audit
+    permissions:
+      contents: read
+    uses: ./.github/workflows/dep-audit.yml
+    with:
       break-build: false
+    secrets: inherit
+
+  # ClusterFuzzLite fuzzing for changed Rust/Python/JS fuzz targets (main)
+  fuzz-main:
+    name: Fuzz
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+      actions: read
+    uses: ./.github/workflows/fuzz-pr.yml
     secrets: inherit
 
   # Call docs-check-terraform workflow
@@ -182,7 +191,8 @@ jobs:
       contents: read
     uses: ./.github/workflows/docs-check-terraform.yml
     with:
-      break_build: false
+      break_build: true
+      terraformDocsVersion: 'v0.20.0'
     secrets: inherit
 
   # Call docs-check-bicep workflow
@@ -192,7 +202,7 @@ jobs:
       contents: read
     uses: ./.github/workflows/docs-check-bicep.yml
     with:
-      break_build: false
+      break_build: true
     secrets: inherit
 
   # Security monitoring job for main branch
@@ -203,6 +213,8 @@ jobs:
       security-events: write
       actions: read
     uses: ./.github/workflows/security-comprehensive.yml
+    with:
+      fail-on-critical: true
     secrets: inherit
 
   # Pages deployment for main branch (replaces wiki update)

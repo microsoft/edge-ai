@@ -45,16 +45,16 @@ var assetRef = !empty(adrNamespaceName) ? '${adrNamespaceName}/${assetName}' : a
   Resources
 */
 
-resource aioInstanceResource 'Microsoft.IoTOperations/instances@2025-10-01' existing = {
+resource aioInstanceResource 'Microsoft.IoTOperations/instances@2026-03-01' existing = {
   name: aioInstanceName
 }
 
-resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2025-10-01' existing = {
+resource aioDataflowProfileResource 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01' existing = {
   parent: aioInstanceResource
   name: aioDataflowProfileName
 }
 
-resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflowEndpoints@2025-10-01' = {
+resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-03-01' = {
   name: 'dfe-eg-${common.resourcePrefix}-${common.environment}-sample-${common.instance}'
   parent: aioInstanceResource
   extendedLocation: {
@@ -79,7 +79,7 @@ resource dataflowEndpointToEventGrid 'Microsoft.IoTOperations/instances/dataflow
   }
 }
 
-resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-10-01' = {
+resource dataflowToEventGrid 'Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2026-03-01' = {
   parent: aioDataflowProfileResource
   name: 'df-eg-${common.resourcePrefix}-${common.environment}-passthrough-${common.instance}'
   extendedLocation: {

@@ -1,521 +1,377 @@
 ---
-title: Documentation Development Guide
-description: Comprehensive guide for developing and maintaining documentation for the Edge AI project, including writing conventions, URL management, local development, and publishing workflows
-author: Edge AI Team
-ms.date: 2025-06-06
-ms.topic: concept
-estimated_reading_time: 15
+title: "Documentation Development - Edge AI"
+description: "Complete guide for developing, maintaining, and contributing to the Edge AI documentation system with Docusaurus and context-aware URL management for Azure DevOps Wiki builds."
 keywords:
-  - documentation development
-  - docsify
-  - url replacement
-  - markdown guidelines
-  - local development
-  - publishing workflows
-  - documentation system
-  - writing conventions
-  - content management
-  - github pages
-  - azure devops wiki
+  - documentation
+  - docusaurus
+  - mdx
+  - markdown
+  - url-tokens
+  - azure-devops-wiki
+  - github-pages
+  - url-replacement
+  - documentation-contributing
+  - site-development
+author: "Edge AI Documentation Team"
+last_updated: "2025-09-26"
 ---
 
-## Documentation Development
+## Overview
 
-This guide covers all aspects of developing and maintaining documentation for the Edge AI project, including writing conventions, URL management, local development, and publishing workflows.
+The Edge AI documentation is built with [Docusaurus 3.9.2](https://docusaurus.io/) and rendered from the Markdown sources in this `docs/` tree. The Docusaurus site lives at `docs/docusaurus/` and consumes the same Markdown files used for the Azure DevOps Wiki build, so most contributions only require editing Markdown.
 
-## Documentation System Overview
+URL token replacement (for example `{{REPO_URL}}`) is a **build-time** feature used by the Azure DevOps Wiki builder (`scripts/Build-Wiki.ps1`). Docusaurus and GitHub Pages render Markdown as-is, so use standard relative links in normal documentation authoring.
 
-The Edge AI project uses a comprehensive documentation system that supports multiple publishing contexts and maintains consistency across all content. Our documentation is built with [Docsify](https://docsify.js.org/) and supports context-aware URL replacement for seamless deployment across different platforms.
+## Quick Start
 
-## Quick Start for Documentation Development
-
-### 1. Set Up Local Development Environment
-
-```bash
-# Clone the repository
-git clone {{CLONE_URL}}
-cd edge-ai
-
-# Install dependencies
-npm install
-
-# Serve documentation locally with hot reload
-npm run docs
-```
-
-This will start a local development server at `http://localhost:8080` with automatic URL replacement and hot reload for all documentation changes.
-
-### 2. Writing Documentation
-
-Always use variable tokens instead of hardcoded URLs:
-
-```markdown
-<!-- ✅ Good -->
-[Clone the repository]({{CLONE_URL}})
-[Report an issue]({{NEW_ISSUE_URL}})
-[View documentation]({{DOCS_BASE_URL}}/docs/getting-started)
-
-<!-- ❌ Avoid hardcoded URLs -->
-[Clone the repository](https://github.com/microsoft/edge-ai.git)
-[Report an issue](https://github.com/microsoft/edge-ai/issues/new)
-```
-
-### 3. Testing Your Changes
-
-The URL replacement system works automatically:
-
-- **Local Development**: URLs are replaced at runtime by the docs server
-- **GitHub Pages**: URLs are replaced at build time by the GitHub workflow
-- **Azure DevOps Wiki**: URLs are replaced at build time by the wiki build script
-
-Simply use the variable tokens in your documentation and the system handles the rest!
-
-## Context-Aware URL System
-
-### System Overview
-
-The Edge AI project uses a variable-based URL replacement system that automatically adapts documentation links based on the publishing context. This ensures that links work correctly whether you're developing locally, viewing on GitHub Pages, or reading in Azure DevOps Wiki.
-
-**Key Benefits:**
-
-- ✅ Links work across all publishing platforms
-- ✅ No manual URL updates needed when switching contexts
-- ✅ Consistent experience for all users
-- ✅ Automated testing and validation
-
-### Available URL Tokens
-
-| Token                  | Description          | Local                   | GitHub           | Azure DevOps               |
-|------------------------|----------------------|-------------------------|------------------|----------------------------|
-| `{{REPO_URL}}`         | Repository home page | GitHub URL              | GitHub URL       | Azure DevOps URL           |
-| `{{CLONE_URL}}`        | Git clone URL        | GitHub clone            | GitHub clone     | Azure DevOps clone         |
-| `{{ISSUES_URL}}`       | Issues/bug tracker   | GitHub issues           | GitHub issues    | Azure DevOps work items    |
-| `{{NEW_ISSUE_URL}}`    | Create new issue     | GitHub new issue        | GitHub new issue | Azure DevOps new work item |
-| `{{DOCS_BASE_URL}}`    | Documentation base   | `http://localhost:8080` | GitHub Pages     | Azure DevOps Wiki          |
-| `{{CONTRIBUTING_URL}}` | Contributing guide   | Local path              | GitHub path      | Azure DevOps path          |
-| `{{PR_URL}}`           | Pull request base    | GitHub PRs              | GitHub PRs       | Azure DevOps PRs           |
-| `{{WIKI_URL}}`         | Wiki base            | Local docs              | GitHub wiki      | Azure DevOps wiki          |
-
-### Publishing Contexts
-
-#### Local Development (`local`)
-
-- **Purpose**: Development and testing
-- **Docs Base**: `http://localhost:8080`
-- **Features**: Hot reload, runtime URL replacement, automatic environment detection
-
-#### GitHub Pages (`github`)
-
-- **Purpose**: Public documentation hosting
-- **Docs Base**: `https://microsoft.github.io/edge-ai`
-- **Features**: Static site generation, GitHub integration
-
-#### Azure DevOps Wiki (`azdo`)
-
-- **Purpose**: Internal documentation and enterprise scenarios
-- **Docs Base**: Azure DevOps Wiki URL
-- **Features**: Enterprise integration, work item linking
-
-### Runtime URL Replacement
-
-The documentation server includes intelligent runtime URL replacement:
-
-```javascript
-// Automatic context detection and URL replacement
-// Generated dynamically based on current environment
-window.$docsify.plugins.push(function(hook) {
-  hook.beforeEach(function(content) {
-    return replaceTokens(content, currentContext);
-  });
-});
-```
-
-### Configuration
-
-URL mappings are defined in `scripts/url-config.json`:
-
-```json
-{
-  "local": {
-    "REPO_URL": "https://github.com/microsoft/edge-ai",
-    "CLONE_URL": "https://github.com/microsoft/edge-ai.git",
-    "DOCS_BASE_URL": "http://localhost:8080"
-  },
-  "github": {
-    "REPO_URL": "https://github.com/microsoft/edge-ai",
-    "CLONE_URL": "https://github.com/microsoft/edge-ai.git",
-    "DOCS_BASE_URL": "https://microsoft.github.io/edge-ai"
-  },
-  "azdo": {
-    "REPO_URL": "https://dev.azure.com/msazure/One/_git/edge-ai",
-    "CLONE_URL": "https://dev.azure.com/msazure/One/_git/edge-ai",
-    "DOCS_BASE_URL": "https://dev.azure.com/msazure/One/_wiki/wikis/edge-ai.wiki"
-  }
-}
-```
-
-## Writing Guidelines
-
-### Markdown Standards
-
-Follow the linting rules defined in `.mega-linter.yml`:
-
-- **Headers**: Always include blank lines before and after headers
-- **Lists**: Use `-` for unordered lists, `1.` for ordered lists
-- **Code blocks**: Always specify the language
-- **Tables**: Include header row and separator row
-- **Links**: Use reference-style for repeated URLs
-
-### Content Structure
-
-#### Document Organization
-
-```txt
-docs/
-├── README.md                   # Main documentation index
-├── getting-started/            # User onboarding guides
-│   ├── general-user.md
-│   ├── blueprint-developer.md
-│   └── feature-developer.md
-├── contributing/               # Developer documentation
-│   ├── README.md
-│   ├── documentation-development.md
-│   ├── url-replacement.md
-│   └── ...
-└── solution-*/                 # Reference materials
-```
-
-#### File Naming Conventions
-
-- Use lowercase with hyphens: `my-documentation-file.md`
-- Be descriptive: `azure-iot-operations-setup.md` not `aio-setup.md`
-- Group related files in directories
-
-### Sidebar Navigation System
-
-The documentation uses a dynamic section-specific sidebar navigation system that automatically displays relevant navigation based on the current URL path.
-
-#### Sidebar Files
-
-| File                                    | Purpose                | Content                                          |
-|-----------------------------------------|------------------------|--------------------------------------------------|
-| `docs/_parts/home-sidebar.md`           | Home section           | Default sidebar for home page                    |
-| `docs/_parts/docs-sidebar.md`           | Documentation section  | Getting Started, Contributing, ADR Library, etc. |
-| `docs/_parts/learning-sidebar.md`       | Learning section       | Katas, Training Labs, Shared Resources           |
-| `docs/_parts/blueprints-sidebar.md`     | Blueprints section     | Various cluster configurations                   |
-| `docs/_parts/infrastructure-sidebar.md` | Infrastructure section | Source code navigation                           |
-| `docs/_parts/copilot-sidebar.md`        | GitHub Copilot section | AI prompts and guides                            |
-
-#### Dynamic Loading
-
-The system automatically detects the current section based on URL patterns and navbar clicks:
-
-- `/docs/getting-started/` → loads `docs/_parts/docs-sidebar.md`
-- `/learning/katas/` → loads `docs/_parts/learning-sidebar.md`
-- `/blueprints/full-single-node-cluster/` → loads `docs/_parts/blueprints-sidebar.md`
-- `/src/000-cloud/` → loads `docs/_parts/infrastructure-sidebar.md`
-- `/copilot/` → loads `docs/_parts/copilot-sidebar.md`
-
-#### Adding New Sections
-
-To add a new navigation section:
-
-1. **Create sidebar file**: `docs/_parts/newsection-sidebar.md`
-2. **Update integration**: Add section mapping to `navbar-sidebar-integration.js`
-3. **Add navbar**: Update `docs/_navbar.md` with new section
-4. **Test functionality**: Verify sidebar switches correctly when clicking navbar
-
-#### Maintenance
-
-- **Section-specific sidebars**: Update only the relevant sidebar file in `docs/_parts/` when adding content
-- **Testing**: Dynamic sidebars are tested by navigating between navbar sections
-- **Architecture**: All sidebar functionality uses the established `docs/_parts/` structure
-
-### Link Guidelines
-
-#### Internal Links
-
-```markdown
-<!-- ✅ Relative links for internal content -->
-[Getting Started](./getting-started/README.md)
-[Contributing](../contributing/README.md)
-
-<!-- ✅ Use tokens for dynamic base URLs -->
-[Documentation Home]({{DOCS_BASE_URL}}/docs/)
-```
-
-#### External Links
-
-```markdown
-<!-- ✅ Use tokens for repository links -->
-[Report an Issue]({{NEW_ISSUE_URL}})
-[Clone Repository]({{CLONE_URL}})
-
-<!-- ✅ Direct links for external resources -->
-[Azure Documentation](https://docs.microsoft.com/azure/)
-```
-
-## Development Workflow
-
-### Quick Start
-
-1. **Install dependencies** (first time only):
+1. Clone and install:
 
    ```bash
+   git clone {{CLONE_URL}}
+   cd edge-ai/docs/docusaurus
    npm install
    ```
 
-2. **Start the documentation server**:
+2. Start the local development server:
 
    ```bash
-   npm run docs
+   npm start
    ```
 
-3. **Edit documentation** - the server will automatically reload
+   Docusaurus serves the site at `http://localhost:3000/edge-ai/` with fast refresh and live reload.
+
+3. Make your changes in Markdown files under `docs/`, then verify them in the browser.
+
+## Writing Documentation
+
+### Use Relative Links Between Docs
+
+Prefer relative Markdown links for navigation inside `docs/`:
+
+```markdown
+[Development Environment](./development-environment.md)
+[Build CI/CD Overview](../build-cicd/README.md)
+```
+
+Absolute repository URLs should only be used when linking to artifacts that are not part of the Docusaurus site (for example, source files, issues, or external repositories).
+
+### URL Tokens (Azure DevOps Wiki Build Only)
+
+When content is destined for the Azure DevOps Wiki, `scripts/Build-Wiki.ps1` replaces URL tokens with the correct absolute URLs for that publishing context. Use tokens only in pages that are intended to appear in the AzDO Wiki build.
+
+Good (AzDO Wiki content):
+
+```markdown
+For issues, see {{NEW_ISSUE_URL}}.
+Clone with: `git clone {{CLONE_URL}}`
+```
+
+Docusaurus and GitHub Pages do not process these tokens at runtime — tokens left in content that is only rendered by Docusaurus will display literally.
+
+### Testing Your Changes
+
+- Run `npm start` in `docs/docusaurus/` and browse the changed pages.
+- Check the terminal for broken link warnings emitted by Docusaurus.
+- Run `npm run mdlint` from the repo root to lint Markdown.
+
+## Context-Aware URL System (AzDO Wiki Build)
+
+The URL token system is a **build-time** mechanism used by the PowerShell wiki builder to produce correct links for Azure DevOps Wiki output. It does not run in Docusaurus or GitHub Pages output.
+
+### Key Benefits
+
+- **Single-source content**: one Markdown file supports multiple publishing targets.
+- **Correct AzDO links**: tokens resolve to AzDO-specific URLs during wiki builds.
+- **Environment parity**: the same source content is rendered by Docusaurus for local and GitHub Pages output.
+
+### Available URL Tokens
+
+| Token                  | Purpose                | AzDO Wiki Example                                |
+|------------------------|------------------------|--------------------------------------------------|
+| `{{REPO_URL}}`         | Repository base URL    | `https://dev.azure.com/{org}/{project}/_git/...` |
+| `{{CLONE_URL}}`        | Git clone URL          | `https://dev.azure.com/.../edge-ai`              |
+| `{{ISSUES_URL}}`       | Issues listing URL     | AzDO Boards URL                                  |
+| `{{NEW_ISSUE_URL}}`    | New issue URL          | AzDO new work item URL                           |
+| `{{DOCS_BASE_URL}}`    | Documentation base URL | AzDO Wiki base URL                               |
+| `{{CONTRIBUTING_URL}}` | Contributing guide URL | AzDO Wiki contributing page                      |
+| `{{PR_URL}}`           | Pull request URL       | AzDO Pull Request URL                            |
+| `{{WIKI_URL}}`         | Wiki URL               | AzDO Wiki root                                   |
+
+### Publishing Contexts
+
+- **Local development**: Docusaurus at `http://localhost:3000/edge-ai/`. Tokens render as literal text — use relative links instead.
+- **GitHub Pages**: Docusaurus static build deployed under `/edge-ai/`. Tokens render literally.
+- **Azure DevOps Wiki**: Built by `scripts/Build-Wiki.ps1`; URL tokens are replaced at build time.
+
+## Content Structure and Organization
+
+### Directory Structure
+
+```text
+docs/
+├── README.md                   # Documentation landing
+├── contributing/               # Contribution guides (this folder)
+├── build-cicd/                 # Build and CI/CD documentation
+├── getting-started/            # Getting started guides
+├── github-copilot/             # Copilot usage docs
+├── observability/              # Observability documentation
+├── project-planning/           # Planning artifacts and references
+├── solution-adr-library/       # Architectural Decision Records
+├── solution-security-plan-library/
+├── solution-technology-paper-library/
+├── templates/                  # Shared templates
+├── _parts/                     # AzDO Wiki build fragments (excluded from Docusaurus)
+└── docusaurus/                 # Docusaurus site (config, sidebars, theme)
+```
+
+### File Naming
+
+- Use lowercase, hyphen-separated file names (`my-new-guide.md`).
+- Use `README.md` for section landings.
+- Keep related assets under `docs/assets/` and reference them with relative paths.
+
+## Sidebar Navigation (Docusaurus)
+
+Docusaurus generates site navigation from `docs/docusaurus/sidebars.js`. The Docusaurus plugin is configured with `docs.path: '../'` so `docs/` serves as the content root.
+
+To add or change navigation:
+
+1. Edit `docs/docusaurus/sidebars.js` to add or reorder items.
+2. Reference documents by their path relative to the `docs/` root, without the `.md` extension.
+3. Restart `npm start` if automatic reload does not pick up new files.
+
+## Link Guidelines
+
+### Internal Links
+
+- Use relative Markdown links between documents in `docs/`:
+
+  ```markdown
+  [Development Environment](./development-environment.md)
+  [Build CI/CD](../build-cicd/README.md)
+  ```
+
+- Link to headings with Markdown anchors:
+
+  ```markdown
+  [Pull Request Conventions](./coding-conventions.md#pull-request-conventions)
+  ```
+
+### External Links
+
+- Link directly to the external URL:
+
+  ```markdown
+  [Docusaurus](https://docusaurus.io/)
+  ```
+
+- In pages that are published to the AzDO Wiki, prefer URL tokens for repository-scoped URLs.
+
+## Development Workflow
 
 ### Local Development Server
 
-The unified documentation server starts two services:
+From the repository root:
 
 ```bash
-npm run docs
+cd docs/docusaurus
+npm install
+npm start
 ```
 
-**Services Started:**
+Docusaurus serves the site at `http://localhost:3000/edge-ai/` with:
 
-- **Docsify Server** (port 8080): Documentation site with hot reload
-- **Progress API Server** (port 3002): Backend for learning progress tracking
+- Fast refresh on Markdown and React component changes.
+- Live reload of configuration changes (restart required for some config edits).
+- Broken link and broken Markdown link warnings in the terminal.
 
-**Features:**
+Useful scripts (run from `docs/docusaurus/`):
 
-- 🔄 Hot reload for immediate preview
-- 🔀 Runtime URL replacement based on context
-- 🎯 Automatic environment detection (container, Windows, Linux/macOS)
-- 📊 Progress tracking API integration
-
-**Server Options:**
-
-```powershell
-# Start with defaults (Docsify on 8080, Progress API on 3002)
-npm run docs
-
-# Or run the PowerShell script directly with custom options
-pwsh ./scripts/Serve-Docs.ps1 -DocsPort 8080 -ProgressPort 3002
-
-# Open browser to a specific section
-pwsh ./scripts/Serve-Docs.ps1 -StartPage "learning/README"
-```
+| Script          | Purpose                             |
+|-----------------|-------------------------------------|
+| `npm start`     | Start local dev server on port 3000 |
+| `npm run build` | Produce static site under `build/`  |
+| `npm run serve` | Serve the built static site locally |
+| `npm run clear` | Clear Docusaurus caches             |
 
 ### Testing Different Contexts
 
-URL replacement is handled automatically based on the deployment environment:
+- **Local development (Docusaurus)**: run `npm start` and verify pages and navigation.
+- **GitHub Pages**: run `npm run build` then `npm run serve` to validate the static output.
+- **Azure DevOps Wiki**: run `pwsh scripts/Build-Wiki.ps1` to produce wiki output and inspect URL token replacement.
 
-- **Local Development**: URLs are replaced at runtime by the Docsify plugins
-- **GitHub Pages**: URLs are replaced at build time by the GitHub workflow
-- **Azure DevOps Wiki**: URLs are replaced at build time by the `Build-Wiki.ps1` script
+### URL Configuration (AzDO Wiki Build)
 
-To verify your documentation renders correctly, run `npm run docs` and check all links work as expected.
-
-### URL Configuration
-
-The URL replacement system is fully automated and environment-specific:
-
-- **Local Development**: The docs server generates URL config automatically based on your repository
-- **GitHub Pages**: The build workflow generates config using GitHub environment variables
-- **Azure DevOps Wiki**: The build script generates config using Azure DevOps environment variables
-
-The configuration file (`/scripts/url-config.json`) is automatically generated and should not be committed to the repository (it's in `.gitignore`).
+`scripts/Build-Wiki.ps1` and the AzDO pipeline generate `scripts/url-config.json` with the URLs used for token replacement. This file is not required for Docusaurus or GitHub Pages rendering.
 
 ### Build-Time URL Replacement
 
-URL replacement happens automatically during publishing:
-
-**GitHub Pages Workflow:**
-
-1. Generates `url-config.json` using `${{ github.* }}` variables
-2. Replaces all `{{TOKEN}}` placeholders with actual URLs
-3. Builds and deploys the documentation
-
-**Azure DevOps Wiki Build:**
-
-1. Generates `url-config.json` using `BUILD_*` and `SYSTEM_*` variables
-2. Replaces all `{{TOKEN}}` placeholders with actual URLs
-3. Copies processed files to wiki structure
+- **GitHub Pages**: Docusaurus builds static HTML from Markdown. There is no URL token replacement step; use relative links.
+- **Azure DevOps Wiki**: `scripts/Build-Wiki.ps1` reads `scripts/url-config.json` and replaces `{{TOKEN}}` occurrences during the wiki build.
 
 ### Validation and Linting
 
-```bash
-# Run all documentation linting
-npm run mdlint
+Run from the repository root:
 
-# Run specific linters
-npx markdownlint docs/**/*.md
-npx markdown-table-formatter docs/**/*.md
+```bash
+npm run mdlint                                  # Markdown linting
+npx markdownlint docs/**/*.md                   # Direct markdownlint invocation
+npx markdown-table-formatter docs/**/*.md       # Table formatting
 ```
 
 ## URL Token Reference
 
-Use these tokens in your documentation - they'll be replaced automatically:
-
-| Token               | Description             | Example                          |
-|---------------------|-------------------------|----------------------------------|
-| `{{REPO_URL}}`      | Repository home page    | GitHub repo or AzDO project      |
-| `{{REPO_BASE_URL}}` | Base URL for file links | Links to source files            |
-| `{{DOCS_BASE_URL}}` | Documentation base URL  | GitHub Pages or local server     |
-| `{{CLONE_URL}}`     | Git clone URL           | For git clone commands           |
-| `{{NEW_ISSUE_URL}}` | Create new issue URL    | Bug reports and feature requests |
+| Token               | Purpose                               | Notes                                    |
+|---------------------|---------------------------------------|------------------------------------------|
+| `{{REPO_URL}}`      | Repository base URL                   | AzDO Wiki build only                     |
+| `{{REPO_BASE_URL}}` | Repository base URL (alternate alias) | AzDO Wiki build only                     |
+| `{{DOCS_BASE_URL}}` | Documentation base URL                | AzDO Wiki build only                     |
+| `{{CLONE_URL}}`     | Git clone URL                         | For `git clone` commands in wiki content |
+| `{{NEW_ISSUE_URL}}` | New issue / work item URL             | AzDO Wiki build only                     |
 
 ## Troubleshooting
 
-### Common Issues
+### Links Not Working
 
-#### Links Not Working
+- Restart `npm start` and check the terminal for broken link warnings.
+- For AzDO Wiki content, confirm URL tokens are well-formed:
 
-The URL replacement system is automatic, but if you're having issues:
+  ```bash
+  grep -r "{{.*}}" docs/
+  ```
 
-```bash
-# Check if local docs server is running properly
-npm run docs
+### Development Server Issues
 
-# Check that your documentation uses tokens correctly
-grep -r "{{.*}}" docs/
-```
+- Clear Docusaurus caches and reinstall dependencies:
 
-#### Development Server Issues
+  ```bash
+  cd docs/docusaurus
+  npm run clear
+  rm -rf node_modules && npm install
+  npm start
+  ```
 
-```bash
-# Clear cache and restart
-rm -rf node_modules/.cache
-npm install
-npm run docs
+- Docusaurus runs on port 3000 by default. If the port is busy:
 
-# Check port conflicts
-# Docsify runs on port 8080, Progress API on port 3002
-lsof -i :8080
-lsof -i :3002
-```
+  ```bash
+  lsof -i :3000
+  ```
 
 ### Getting Help
 
-- 🐛 [Report Documentation Issues]({{NEW_ISSUE_URL}})
-- 💡 [Contributing Guidelines](../contributing/README.md)
+- File issues at [github.com/microsoft/edge-ai/issues/new](https://github.com/microsoft/edge-ai/issues/new).
+- See [Contributing Overview](../contributing/README.md) for broader contribution guidance.
 
 ## Scripts Reference
 
-### Available Scripts
+Root-level scripts (run from repo root):
 
-| Script                    | Description                                                           | Usage             |
-|---------------------------|-----------------------------------------------------------------------|-------------------|
-| `npm run docs`            | Start Docsify (8080) and Progress API (3002) servers                  | Local development |
-| `npm run progress-server` | Start only the Progress API server                                    | API development   |
-| `npm run mdlint`          | Run markdown linting                                                  | Quality assurance |
-| `npm run mdlint-fix`      | Fix markdown linting issues automatically                             | Quality assurance |
-| `scripts/Build-Wiki.ps1`  | Build Azure DevOps Wiki with URL replacement and navigation structure | CI/CD pipeline    |
+| Script                        | Purpose                                             |
+|-------------------------------|-----------------------------------------------------|
+| `npm run mdlint`              | Lint all Markdown files                             |
+| `npm run mdlint-fix`          | Auto-fix Markdown lint issues                       |
+| `pwsh scripts/Build-Wiki.ps1` | Build Azure DevOps Wiki content (token replacement) |
+
+Docusaurus scripts (run from `docs/docusaurus/`):
+
+| Script          | Purpose                                 |
+|-----------------|-----------------------------------------|
+| `npm start`     | Start Docusaurus dev server (port 3000) |
+| `npm run build` | Build the static site to `build/`       |
+| `npm run serve` | Serve the built static site locally     |
+| `npm run clear` | Clear Docusaurus build caches           |
 
 ## Configuration Files
 
 ### Essential Files
 
-- `package.json` - npm scripts and dependencies
-- `.env.example` - Environment variable templates for local development
-- `.mega-linter.yml` - Documentation linting rules
-- `.gitignore` - Excludes auto-generated configuration files
+- `package.json` — root Node scripts including `mdlint`.
+- `docs/docusaurus/package.json` — Docusaurus site scripts and dependencies.
+- `docs/docusaurus/docusaurus.config.ts` — Docusaurus site configuration.
+- `docs/docusaurus/sidebars.js` — sidebar navigation.
+- `.mega-linter.yml` — markdown and repository linting configuration.
+- `.env.example` — example environment variables.
+- `.gitignore` — repository ignore rules.
 
 ### Auto-Generated Files (Not in Git)
 
-- `scripts/url-config.json` - Environment-specific URL mapping
-- `docsify-url-config.js` - Runtime URL configuration for docs server
-- `docs/_parts/*.md` - Section-specific navigation sidebars (dynamically loaded by navbar integration)
+- `scripts/url-config.json` — generated during AzDO Wiki builds for token replacement.
+- `docs/_parts/*.md` — AzDO Wiki build fragments (excluded from Docusaurus).
+- `docs/docusaurus/.docusaurus/` — Docusaurus build cache.
+- `docs/docusaurus/build/` — Docusaurus static output.
+- `docs/docusaurus/node_modules/` — installed Node dependencies.
 
 ## Azure DevOps Wiki Build Process
 
 ### PowerShell Wiki Builder
 
-The project uses `scripts/Build-Wiki.ps1` to build Azure DevOps Wiki documentation. This PowerShell script provides enhanced functionality with comprehensive content coverage across all documentation areas:
+The `scripts/Build-Wiki.ps1` PowerShell script produces AzDO-Wiki-ready content from the same Markdown sources used by Docusaurus.
 
-**Key Features:**
+Key features:
 
-- **Comprehensive Content Coverage**: Includes all documentation from multiple areas:
-  - Main documentation from `docs/` directory following section-specific sidebar navigation
-  - Blueprint documentation from `blueprints/*/README.md` files
-  - GitHub resources from `.github/prompts/`, `.github/agents/`, `.github/instructions/`
-  - AI Assistant guides from `copilot/` folder
-  - Learning platform materials from `learning/` folder
-- **Section-Specific Navigation**: Parses section-specific `docs/_parts/*.md` files to recreate hierarchical folder structure organized by documentation section (Documentation, Learning, Blueprints, Infrastructure, GitHub Copilot)
-- **Azure DevOps Integration**: Generates `.order` files for proper wiki navigation across all sections
-- **URL Token Replacement**: Automatically replaces URL tokens with Azure DevOps-specific URLs
-- **Dynamic Content Organization**: Creates dedicated wiki sections following the new navbar-based content organization
+- **Comprehensive Content Coverage**: processes documentation across multiple areas:
+  - Core documentation (`docs/`)
+  - Contributing guides
+  - Infrastructure documentation (Terraform and Bicep)
+  - Observability documentation
+  - Copilot usage guides
+  - Learning materials
+- **Section-Specific Navigation**: uses `docs/_parts/*.md` fragments to build AzDO navigation.
+- **AzDO Integration**: generates `.order` files for AzDO Wiki ordering.
+- **URL Token Replacement**: substitutes `{{TOKEN}}` values using `scripts/url-config.json`.
+- **Dynamic Content Organization**: composes the wiki structure from the current Markdown tree.
 
 ### Build Process
 
-```powershell
-# Run the wiki build locally (requires PowerShell)
+```bash
 pwsh scripts/Build-Wiki.ps1
 ```
 
-This creates a `.wiki` folder with comprehensive documentation coverage including:
+The script:
 
-- **Complete documentation** from docs/ folder following section-specific sidebar navigation
-- **Blueprint documentation** organized by framework (terraform/bicep)
-- **GitHub resources section** with prompts, agents, and instructions
-- **Copilot guides section** with AI assistant conventions and instructions
-- **Learning section** with training materials and learning resources
-- **Azure DevOps URLs** replacing all variable tokens
-- **Proper .order files** for wiki navigation at every level
+- Reads source Markdown from `docs/` and related folders.
+- Applies URL token replacement using the generated URL configuration.
+- Composes wiki pages with section-specific navigation fragments from `docs/_parts/`.
+- Produces `.order` files for AzDO Wiki ordering.
+- Organizes content into an AzDO Wiki directory layout.
+- Preserves relative links and references inside the wiki.
+- Writes the resulting wiki tree for publication by the pipeline.
 
 ### Wiki Structure
 
-The generated wiki organizes content as follows:
-
 ```text
 .wiki/
-├── .order                           # Root navigation order
-├── overview.md                      # Main README
-├── contributing-guide.md            # Contributing guidelines
-├── getting-started-*.md             # Getting started content
-├── project-planning-*.md            # All project planning docs
-├── build-cicd-*.md                  # Build and CI/CD docs
-├── observability/                   # Observability section
-│   ├── .order                      # Section navigation
-│   └── *.md                        # All observability docs
-├── infrastructure/                  # Infrastructure content
-│   ├── .order                      # Infrastructure navigation
-│   ├── terraform/                  # All terraform docs
-│   ├── bicep/                      # All bicep docs
-│   └── *.md                        # Other infrastructure docs
-├── copilot-guides/                  # AI Assistant guides
-│   ├── .order                      # Copilot navigation
-│   └── *.md                        # Copilot conventions and instructions
-├── learning/                      # Learning platform
-│   ├── .order                      # Learning navigation
-│   └── *.md                        # Training materials and resources
-└── github-resources/                # GitHub resources
-    ├── .order                      # GitHub resources navigation
-    └── *.md                        # Prompts, agents, instructions
+├── .order
+├── overview.md
+├── contributing-guide.md
+├── observability/
+├── infrastructure/
+│   ├── terraform/
+│   └── bicep/
+├── copilot-guides/
+├── learning/
+└── github-resources/
 ```
 
 ### Integration with Azure Pipelines
 
-The build process is integrated with Azure DevOps pipelines via `.azdo/templates/wiki-update-template.yml`, which:
+The wiki publishing pipeline (`.azdo/templates/wiki-update-template.yml`) performs a four-step process:
 
-1. Checks out both main and wiki repositories
-1. Runs `pwsh scripts/Build-Wiki.ps1` to generate wiki content
-1. Copies generated content to the wiki repository
-1. Commits and pushes changes to the wiki branch
+1. Checkout `main` and the target wiki repository.
+2. Run `pwsh scripts/Build-Wiki.ps1` to produce wiki content.
+3. Copy the generated wiki tree into the wiki repository working copy.
+4. Commit and push the updated wiki content.
 
 ## Contributing to Documentation
 
 ### How to Contribute
 
-1. **Fork the repository** and create a feature branch
-1. **Use the development environment** with `npm run docs`
-1. **Follow writing guidelines** and use URL tokens
-1. **Test locally** - URL replacement is automatic in all contexts
-1. **Run linting** with `npm run mdlint`
-
----
+1. Fork the repository and create a feature branch.
+2. Start the local Docusaurus dev server with `cd docs/docusaurus && npm start`.
+3. Follow the writing guidelines above and use URL tokens only in content destined for the AzDO Wiki.
+4. Verify changes locally — note that URL token replacement only occurs during the AzDO Wiki build, not in Docusaurus or GitHub Pages output.
+5. Run `npm run mdlint` from the repo root and address any findings before submitting a pull request.
 
 <!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
+*🤖 Crafted with precision by ✨Copilot following brilliant human instruction, then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->

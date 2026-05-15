@@ -5,14 +5,13 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azurerm   | >= 4.51.0       |
-| local     | >= 2.5.0        |
-| msgraph   | >= 0.2.0        |
-| random    | >= 3.6.0        |
-| tls       | >= 4.0.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azurerm   | >= 4.51.0        |
+| local     | >= 2.5.0         |
+| random    | >= 3.6.0         |
+| tls       | >= 4.0.0         |
 
 ## Providers
 
@@ -20,21 +19,20 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 |---------|-----------|
 | azurerm | >= 4.51.0 |
 | local   | >= 2.5.0  |
-| msgraph | >= 0.2.0  |
 | random  | >= 3.6.0  |
 | tls     | >= 4.0.0  |
 
 ## Resources
 
-| Name                                                                                                                                                         | Type     |
-|--------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
-| [azurerm_role_assignment.vm_admin_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                    | resource |
-| [azurerm_role_assignment.vm_user_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                     | resource |
-| [azurerm_virtual_machine_extension.aad_ssh_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension) | resource |
-| [local_sensitive_file.private_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file)                             | resource |
-| [msgraph_resource_action.current_user](https://registry.terraform.io/providers/microsoft/msgraph/latest/docs/resources/resource_action)                      | resource |
-| [random_password.vm_admin](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password)                                          | resource |
-| [tls_private_key.ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key)                                               | resource |
+| Name                                                                                                                                                         | Type        |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [azurerm_role_assignment.vm_admin_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                    | resource    |
+| [azurerm_role_assignment.vm_user_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)                     | resource    |
+| [azurerm_virtual_machine_extension.aad_ssh_login](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_extension) | resource    |
+| [local_sensitive_file.private_key](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file)                             | resource    |
+| [random_password.vm_admin](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password)                                          | resource    |
+| [tls_private_key.ssh](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key)                                               | resource    |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config)                            | data source |
 
 ## Modules
 
@@ -54,6 +52,8 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | arc\_onboarding\_identity                | The Principal ID for the identity that will be used for onboarding the cluster to Arc                                                                                                                                                    | ```object({ id = string })```               | `null`              |    no    |
 | host\_machine\_count                     | The number of host VMs to create if a multi-node cluster is needed                                                                                                                                                                       | `number`                                    | `1`                 |    no    |
 | instance                                 | Instance identifier for naming resources: 001, 002, etc                                                                                                                                                                                  | `string`                                    | `"001"`             |    no    |
+| os\_disk\_size\_gb                       | Size of the OS disk in GB. Defaults to the image default size                                                                                                                                                                            | `number`                                    | `null`              |    no    |
+| os\_disk\_type                           | Storage account type for the OS disk                                                                                                                                                                                                     | `string`                                    | `"Standard_LRS"`    |    no    |
 | should\_assign\_current\_user\_vm\_admin | Whether to assign the current Azure AD user the Virtual Machine Administrator Login role (sudo access). Requires Microsoft Graph provider permissions                                                                                    | `bool`                                      | `true`              |    no    |
 | should\_create\_public\_ip               | Create public IP address for VM. Set to false for private VNet scenarios using Azure Bastion or VPN connectivity.                                                                                                                        | `bool`                                      | `true`              |    no    |
 | should\_create\_ssh\_key                 | Generate SSH key pair for VM fallback access. Defaults to true to ensure emergency access when Azure AD authentication is unavailable.                                                                                                   | `bool`                                      | `true`              |    no    |
@@ -62,7 +62,7 @@ Deploys one or more Linux VMs for Arc-connected K3s cluster
 | vm\_eviction\_policy                     | Eviction policy for Spot VMs: Deallocate (VM stopped, disk retained, can restart) or Delete (VM and disks removed, no storage charges). Only used when vm\_priority is Spot                                                              | `string`                                    | `"Delete"`          |    no    |
 | vm\_max\_bid\_price                      | Maximum price per hour in USD for Spot VM. Set to -1 (default) for no price-based eviction - VM will not be evicted for price reasons. Custom values support up to 5 decimal places (e.g., 0.98765). Only used when vm\_priority is Spot | `number`                                    | `-1`                |    no    |
 | vm\_priority                             | VM priority: Regular (production, guaranteed capacity) or Spot (cost-optimized, can be evicted with 30s notice). Spot VMs offer up to 90% cost savings                                                                                   | `string`                                    | `"Regular"`         |    no    |
-| vm\_sku\_size                            | Size of the VM                                                                                                                                                                                                                           | `string`                                    | `"Standard_D8s_v3"` |    no    |
+| vm\_sku\_size                            | Size of the VM                                                                                                                                                                                                                           | `string`                                    | `"Standard_D8s_v6"` |    no    |
 | vm\_user\_principals                     | Map of Azure AD principals for Virtual Machine User Login role (standard access). Keys are descriptive identifiers (e.g., `user@company.com`), values are principal object IDs.                                                          | `map(string)`                               | `{}`                |    no    |
 | vm\_username                             | Username for the VM admin account                                                                                                                                                                                                        | `string`                                    | `null`              |    no    |
 

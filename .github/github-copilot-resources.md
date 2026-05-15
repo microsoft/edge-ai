@@ -14,7 +14,7 @@ Reusable prompt templates for specific development tasks including deployment, t
 
 ### 💬 [Custom Agents](agents/)
 
-Custom agent configurations for specialized AI assistance patterns including kata coaching, code reviews, and technical guidance. General-purpose agents (prompt-builder, task-planner, TDD) are loaded from hve-core.
+Custom agent configurations for specialized AI assistance patterns including code reviews and technical guidance. General-purpose agents (prompt-builder, task-planner, TDD) are loaded from hve-core.
 
 ### 📋 [Instructions](instructions/)
 
@@ -33,7 +33,7 @@ GitHub Actions workflows with AI assistance integration.
 ## Key Features
 
 - **Standardized Prompts**: Consistent, tested prompts for common development tasks
-- **Specialized Custom Agents**: Tailored AI interactions for specific use cases like kata coaching
+- **Specialized Custom Agents**: Tailored AI interactions for specific use cases
 - **Development Guidelines**: Clear instructions for AI-assisted engineering workflows
 - **Integration Ready**: Designed to work seamlessly with GitHub Copilot and other AI tools
 

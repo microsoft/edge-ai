@@ -5,7 +5,7 @@ terraform {
       version = ">= 3.5.1"
     }
   }
-  required_version = ">= 1.9.8, < 2.0"
+  required_version = ">= 1.12.0, < 2.0"
 }
 
 locals {
@@ -49,7 +49,7 @@ output "arc_onboarding_user_assigned_identity" {
 
 output "vm_expected_values" {
   value = {
-    default_vm_size        = "Standard_D8s_v3"
+    default_vm_size        = "Standard_D8s_v6"
     default_admin_username = local.resource_prefix
     os_disk_type           = "Standard_LRS"
     vm_publisher           = "Canonical"

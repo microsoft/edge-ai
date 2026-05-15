@@ -1,0 +1,9 @@
+[advisories]
+# instant 0.1.13 - unmaintained transitive via notify-types -> notify-debouncer-full
+# -> azure_iot_operations_mqtt 0.9.0. Cannot drop without an upstream SDK release.
+# rand 0.8.5 - unsound transitive via tokio-retry -> azure_iot_operations_mqtt 0.9.0.
+# Cannot drop without an upstream SDK release.
+ignore = [
+  "RUSTSEC-2024-0384",
+  "RUSTSEC-2026-0097",
+]

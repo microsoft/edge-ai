@@ -52,7 +52,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 | **Requirement**    | **Specification**          | **Validation Method**      | **Business Impact**               |
 |--------------------|----------------------------|----------------------------|-----------------------------------|
 | **Azure CLI**      | Latest version (≥2.64.0)   | `az --version`             | Azure resource management         |
-| **Terraform**      | Version ≥1.9.8             | `terraform version`        | Infrastructure as Code deployment |
+| **Terraform**      | Version ≥1.12.0            | `terraform version`        | Infrastructure as Code deployment |
 | **Kubernetes CLI** | Latest stable kubectl      | `kubectl version --client` | Edge cluster management           |
 | **Git**            | Version control system     | `git --version`            | Source code management            |
 | **IDE**            | VS Code with DevContainers | Code editor availability   | Development productivity          |
@@ -86,7 +86,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 |--------------------|---------------------------------------------------|------------------------|------------------------|
 | **OPC UA Sensors** | Industrial-grade temperature, vibration, pressure | OPC UA protocol        | 100-1000 points/sec    |
 | **Simulator**      | OPC UA server for testing                         | Container deployment   | Configurable rates     |
-| **Data Quality**   | 99.9% availability, <100ms latency                | Monitoring dashboard   | Real-time validation   |
+| **Data Quality**   | 99.9% availability, \<100ms latency               | Monitoring dashboard   | Real-time validation   |
 | **Protocols**      | OPC UA, MQTT, HTTP                                | Protocol gateway       | Multi-protocol support |
 
 #### 🧠 Machine Learning Infrastructure

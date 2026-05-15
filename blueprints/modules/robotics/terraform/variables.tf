@@ -109,8 +109,8 @@ variable "node_count" {
 
 variable "node_vm_size" {
   type        = string
-  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v5."
-  default     = "Standard_D8ds_v5"
+  description = "VM size for the agent pool in the AKS cluster. Default is Standard_D8ds_v6."
+  default     = "Standard_D8ds_v6"
 }
 
 variable "subnet_address_prefixes_aks" {
@@ -201,6 +201,12 @@ variable "azureml_workspace_name" {
 variable "should_enable_public_network_access" {
   type        = bool
   description = "Whether to enable public network access to the Azure ML workspace"
+  default     = false
+}
+
+variable "should_enable_key_vault_purge_protection" {
+  type        = bool
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
   default     = false
 }
 
@@ -737,6 +743,12 @@ variable "acr_data_endpoint_enabled" {
   default     = true
 }
 
+variable "acr_export_policy_enabled" {
+  type        = bool
+  description = "Whether to allow container image export from the ACR. Requires acr_public_network_access_enabled to be true when enabled"
+  default     = false
+}
+
 variable "acr_public_network_access_enabled" {
   type        = bool
   description = "Whether to enable the ACR public endpoint alongside private connectivity"
@@ -765,8 +777,8 @@ variable "vm_host_count" {
 
 variable "vm_sku_size" {
   type        = string
-  description = "VM SKU size for the host. Examples: Standard_D8s_v3 (general purpose), Standard_NV36ads_A10_v5 (GPU workload)"
-  default     = "Standard_D8s_v3"
+  description = "VM SKU size for the host. Examples: Standard_D8s_v6 (general purpose), Standard_NV36ads_A10_v5 (GPU workload)"
+  default     = "Standard_D8s_v6"
 }
 
 variable "vm_priority" {

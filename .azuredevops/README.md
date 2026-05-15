@@ -29,8 +29,7 @@ The `.azuredevops/` directory houses all release automation infrastructure separ
 ├── README.md           # This file - overview and quick start
 ├── pipelines/          # Release automation pipeline YAML files
 │   ├── README.md       # Pipeline inventory and detailed documentation
-│   ├── main-to-dev-sync.yml
-│   └── release-branch-create.yml
+│   └── main-to-dev-sync.yml
 ├── templates/          # Reusable pipeline templates for GitHub integration
 │   ├── README.md       # Template documentation and integration patterns
 │   ├── github-auth.yml
@@ -40,18 +39,14 @@ The `.azuredevops/` directory houses all release automation infrastructure separ
 │   └── release-validation.yml
 └── docs/               # Pipeline operator documentation
     ├── README.md       # Documentation index
-    ├── main-to-dev-sync.md
-    ├── release-branch-create.md
-    ├── release-workflows.md
-    └── intelligent-sync-gaps.md
+    └── main-to-dev-sync.md
 ```
 
 ## Pipeline Inventory
 
-| Pipeline Name             | File                        | Purpose                                    | Templates Used                                     | Documentation                           | Triggers                      |
-|---------------------------|-----------------------------|--------------------------------------------|----------------------------------------------------|-----------------------------------------|-------------------------------|
-| **Main to Dev Sync**      | `main-to-dev-sync.yml`      | Intelligent synchronization of main to dev | None                                               | [Docs](./docs/main-to-dev-sync.md)      | Schedule (03:00 UTC), Chained |
-| **Release Branch Create** | `release-branch-create.yml` | Create release branches from main          | github-auth, github-branch-operations, pr-creation | [Docs](./docs/release-branch-create.md) | Manual                        |
+| Pipeline Name        | File                   | Purpose                                    | Templates Used | Documentation                      | Triggers                      |
+|----------------------|------------------------|--------------------------------------------|----------------|------------------------------------|-------------------------------|
+| **Main to Dev Sync** | `main-to-dev-sync.yml` | Intelligent synchronization of main to dev | None           | [Docs](./docs/main-to-dev-sync.md) | Schedule (03:00 UTC), Chained |
 
 ## Authentication and Configuration
 
@@ -104,7 +99,6 @@ Secrets are stored in Azure Key Vault and accessed via the `ai-on-edge-service-c
 2. Review job logs for detailed failure information
 3. Verify Key Vault secrets are current and accessible
 4. Check service connection permissions and validity
-5. See [Troubleshooting Guide](./docs/intelligent-sync-gaps.md#troubleshooting) for common issues
 
 ## Development Workflow
 
@@ -159,8 +153,6 @@ Release automation pipelines depend on PowerShell scripts in `scripts/github/`:
 
 ## Related Documentation
 
-* [Release Workflows Overview](./docs/release-workflows.md) - End-to-end release process
-* [Intelligent Sync Gaps Analysis](./docs/intelligent-sync-gaps.md) - Gap analysis and implementations
 * [Pipeline Inventory](./pipelines/README.md) - Detailed pipeline documentation
 * [Build CI/CD Documentation](../docs/build-cicd/README.md) - Developer build and test pipelines
 

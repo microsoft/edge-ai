@@ -130,11 +130,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
 permissions:
-  contents: read          # Read repository contents for checkout
-  packages: write         # Push container images to registry
-  id-token: write         # Generate OIDC tokens for secure registry auth
-  actions: read           # Read workflow run information
-  security-events: write  # Write SLSA security bundles and attestations
+  contents: read
 
 env:
   REGISTRY: ${{ inputs.registryName || 'local' }}
@@ -149,6 +145,8 @@ jobs:
   # configuration as JSON objects and outputting individual values for downstream jobs.
   parse-configuration:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       registryName: ${{ steps.parse.outputs.registryName }}
       buildEnvironment: ${{ steps.parse.outputs.buildEnvironment }}
@@ -256,6 +254,8 @@ jobs:
   prepare-builds:
     needs: parse-configuration
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.parse-matrix.outputs.matrix }}
       buildId: ${{ steps.generate-id.outputs.buildId }}
@@ -310,6 +310,11 @@ jobs:
   build-applications:
     needs: [parse-configuration, prepare-builds]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
     strategy:
       matrix: ${{ fromJson(needs.prepare-builds.outputs.matrix) }}
       fail-fast: false
@@ -332,23 +337,38 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq curl
 
-          # Install pinned Docker Compose CLI plugin
+          # Install pinned Docker Compose CLI plugin (verified via sibling .sha256 from release)
           COMPOSE_VERSION="${DOCKER_COMPOSE_VERSION}"
           if [ -z "$COMPOSE_VERSION" ]; then
             echo "Docker Compose version input is empty"
             exit 1
           fi
 
+          COMPOSE_TMP="$(mktemp -d)"
+          curl -sSfL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
+            -o "${COMPOSE_TMP}/docker-compose"
+          curl -sSfL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64.sha256" \
+            -o "${COMPOSE_TMP}/docker-compose.sha256"
+          (cd "${COMPOSE_TMP}" && awk '{print $1"  docker-compose"}' docker-compose.sha256 | sha256sum -c -)
           sudo mkdir -p /usr/libexec/docker/cli-plugins
-          sudo curl -sSL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
-            -o /usr/libexec/docker/cli-plugins/docker-compose
-          sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
+          sudo install -m 0755 "${COMPOSE_TMP}/docker-compose" /usr/libexec/docker/cli-plugins/docker-compose
+          rm -rf "${COMPOSE_TMP}"
 
           docker compose version
 
-          # Install Grype vulnerability scanner
-          echo "Installing Grype vulnerability scanner..."
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          # Install Grype vulnerability scanner pinned to a release tag with checksum verification
+          GRYPE_VERSION="v0.86.1"
+          GRYPE_VER="${GRYPE_VERSION#v}"
+          GRYPE_TARBALL="grype_${GRYPE_VER}_linux_amd64.tar.gz"
+          GRYPE_TMP="$(mktemp -d)"
+          echo "Installing Grype ${GRYPE_VERSION}..."
+          curl -sSfL -o "${GRYPE_TMP}/${GRYPE_TARBALL}" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/${GRYPE_TARBALL}"
+          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
+          (cd "${GRYPE_TMP}" && grep " ${GRYPE_TARBALL}$" grype_checksums.txt | sha256sum -c -)
+          sudo tar -xzf "${GRYPE_TMP}/${GRYPE_TARBALL}" -C /usr/local/bin grype
+          rm -rf "${GRYPE_TMP}"
 
           echo "Verifying Grype installation..."
           grype version
@@ -556,7 +576,7 @@ jobs:
           }
 
       - name: Upload Compressed Security Reports
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: security-reports-${{ matrix.applicationName }}
@@ -568,7 +588,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports
@@ -579,6 +599,8 @@ jobs:
   summarize-builds:
     needs: [parse-configuration, prepare-builds, build-applications]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: always()
     outputs:
       buildResults: ${{ steps.summarize.outputs.buildResults }}
@@ -635,6 +657,7 @@ jobs:
             # Extract and compress security reports for final upload
             mkdir -p final-security-reports
             find collected-build-artifacts -name "*security-reports*" -type d -exec cp -r {} final-security-reports/ \;
+          fi
 
           # This would collect actual results from matrix jobs in a real implementation
           BUILD_SUMMARY="{
@@ -658,7 +681,7 @@ jobs:
           echo "securityScanResults=${SECURITY_SUMMARY}" >> $GITHUB_OUTPUT
 
       - name: Upload consolidated build summary
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: build-summary-${{ needs.prepare-builds.outputs.buildId }}

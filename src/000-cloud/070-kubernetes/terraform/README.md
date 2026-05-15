@@ -5,26 +5,25 @@ Deploys Azure Kubernetes Service resources
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| archive   | >= 2.5.0        |
-| azapi     | >= 2.3.0        |
-| azurerm   | >= 4.51.0       |
-| msgraph   | >= 0.2.0        |
-| random    | >= 3.5.1        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| archive   | >= 2.5.0         |
+| azapi     | >= 2.3.0         |
+| azurerm   | >= 4.51.0        |
+| random    | >= 3.5.1         |
 
 ## Providers
 
-| Name    | Version  |
-|---------|----------|
-| msgraph | >= 0.2.0 |
+| Name    | Version   |
+|---------|-----------|
+| azurerm | >= 4.51.0 |
 
 ## Resources
 
-| Name                                                                                                                                    | Type     |
-|-----------------------------------------------------------------------------------------------------------------------------------------|----------|
-| [msgraph_resource_action.current_user](https://registry.terraform.io/providers/microsoft/msgraph/latest/docs/resources/resource_action) | resource |
+| Name                                                                                                                              | Type        |
+|-----------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
 ## Modules
 
@@ -63,7 +62,7 @@ Deploys Azure Kubernetes Service resources
 | nat\_gateway                                   | NAT gateway object from networking component for managed outbound access                                                                                                                                                                             | ```object({ id = string name = string })```                                                                                                                                                                                                                                                                                                                                                                                                                                               | `null`                  |    no    |
 | node\_count                                    | Number of nodes for the agent pool in the AKS cluster.                                                                                                                                                                                               | `number`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `1`                     |    no    |
 | node\_pools                                    | Additional node pools for the AKS cluster. Map key is used as the node pool name.                                                                                                                                                                    | ```map(object({ node_count = optional(number, null) vm_size = string subnet_address_prefixes = list(string) pod_subnet_address_prefixes = list(string) node_taints = optional(list(string), []) enable_auto_scaling = optional(bool, false) min_count = optional(number, null) max_count = optional(number, null) priority = optional(string, "Regular") zones = optional(list(string), null) eviction_policy = optional(string, "Deallocate") gpu_driver = optional(string, null) }))``` | `{}`                    |    no    |
-| node\_vm\_size                                 | VM size for the agent pool in the AKS cluster. Default is Standard\_D8ds\_v5.                                                                                                                                                                        | `string`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `"Standard_D8ds_v5"`    |    no    |
+| node\_vm\_size                                 | VM size for the agent pool in the AKS cluster. Default is Standard\_D8ds\_v6.                                                                                                                                                                        | `string`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `"Standard_D8ds_v6"`    |    no    |
 | private\_dns\_zone\_id                         | ID of the private DNS zone for the private cluster. Use 'system' to have AKS manage it, 'none' for no private DNS zone, or a resource ID for custom zone                                                                                             | `string`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `null`                  |    no    |
 | private\_endpoint\_subnet\_id                  | The ID of the subnet where the private endpoint will be created                                                                                                                                                                                      | `string`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `null`                  |    no    |
 | should\_add\_current\_user\_cluster\_admin     | Whether to assign the current logged in user Azure Kubernetes Cluster Admin Role permissions on the cluster when 'cluster\_admin\_oid' is not provided.                                                                                              | `bool`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `true`                  |    no    |

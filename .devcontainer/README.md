@@ -77,7 +77,7 @@ To fix basic linting issues, run the following:
 npm run lint-fix-devcontainer
 ```
 
-For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and available linters, please refer to our [MegaLinter documentation](../.azdo/templates/megalinter-template.md).
+For detailed information about our CI/CD lint configuration and available linters, see the [Azure Pipelines documentation](../docs/build-cicd/azure-pipelines/README.md).
 
 ### Markdown linting
 

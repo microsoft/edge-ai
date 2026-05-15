@@ -1,14 +1,17 @@
-FROM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:1b978ce8a21fa7d698ea844d3ad4b2b69452c29be163395aca614d5f2ea44a94
+FROM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Upgrade base image packages to pull in latest CVE patches
+RUN tdnf upgrade -y && tdnf clean all
+
 # Install runtime dependencies and create application user
 RUN tdnf install -y \
-        ca-certificates-3.0.0-13.azl3 \
-        shadow-utils-4.14.3-2.azl3 \
+        ca-certificates \
+        shadow-utils \
         libxml2 \
         libxslt \
     && tdnf clean all \
@@ -17,7 +20,7 @@ RUN tdnf install -y \
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 # Copy application code
 COPY onvif_camera.py .

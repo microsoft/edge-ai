@@ -5,7 +5,7 @@ terraform {
       version = ">= 3.5.1"
     }
   }
-  required_version = ">= 1.9.8, < 2.0"
+  required_version = ">= 1.12.0, < 2.0"
 }
 
 resource "random_string" "prefix" {

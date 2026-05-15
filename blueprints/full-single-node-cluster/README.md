@@ -1,6 +1,6 @@
 ---
 title: Full Single Cluster Blueprint
-description: Complete end-to-end deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster with all components from VM creation to AIO installation
+description: Complete end-to-end deployment of an Arc-enabled Kubernetes cluster with optional Azure IoT Operations on a single node, including all components from VM creation to cluster setup
 author: Edge AI Team
 ms.date: 2026-02-17
 ms.topic: reference
@@ -21,7 +21,7 @@ estimated_reading_time: 5
 
 ## Full Single Cluster Blueprint
 
-This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a single-node, Arc-enabled Kubernetes cluster. It deploys all necessary components from VM creation to AIO installation, resulting in a fully functional edge computing environment that integrates with Azure cloud services.
+This blueprint provides a complete end-to-end deployment of an Arc-enabled Kubernetes cluster on a single node, with optional Azure IoT Operations (AIO). It deploys all necessary components from VM creation to cluster setup, resulting in a fully functional edge computing environment that integrates with Azure cloud services. Set `should_deploy_aio = false` to deploy an Arc-connected cluster without AIO.
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
 
 ## Architecture
@@ -31,9 +31,9 @@ This blueprint deploys:
 1. A Linux VM host in Azure
 2. A K3s Kubernetes cluster on the VM
 3. Azure Arc connection for the cluster
-4. Cloud resources required by AIO (Key Vault, Storage, etc.)
-5. Azure IoT Operations components (MQTT Broker, Data Processor, etc.)
-6. Schema registry with versioned message schemas
+4. Cloud resources (Key Vault, Storage, Observability, Messaging, ACR)
+5. Azure IoT Operations components (optional, controlled by `should_deploy_aio`)
+6. Schema registry with versioned message schemas (when AIO is enabled)
 7. Optional messaging and observability components
 8. Optional dataflow graphs for WASM-based data processing pipelines (in Terraform only)
 9. Optional Preview Connectors for asset discovery (in Terraform only)
@@ -87,6 +87,7 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                    |
 | `should_get_custom_locations_oid`         | Auto-retrieve Custom Locations OID | `true`   | Set to false when providing custom_locations_oid            |
 | `custom_locations_oid`                    | Custom Locations SP Object ID      | `null`   | Required for Arc custom locations                           |
+| `should_deploy_aio`                       | Deploy Azure IoT Operations        | `true`   | Set to false for Arc-only deployment without AIO            |
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production                |
 | `should_create_aks`                       | Create Azure Kubernetes Service    | `false`  | When true, deploys AKS in addition to the K3s cluster       |
 | `should_create_acr_private_endpoint`      | Enable ACR private endpoint        | `false`  | Creates a private endpoint for the Azure Container Registry |

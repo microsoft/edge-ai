@@ -1,5 +1,6 @@
 ---
 title: GitHub Actions workflows
+slug: github-actions-workflows
 description: Essential guide to GitHub Actions workflows used in the Edge AI Accelerator project for CI/CD automation, validation, and deployment
 author: Edge AI Team
 ms.date: 2025-06-06
@@ -78,7 +79,6 @@ Reusable workflow components for consistent CI/CD processes:
 
 | Template                            | Purpose                                      |
 |-------------------------------------|----------------------------------------------|
-| `megalinter.yml`                    | Code quality and security validation         |
 | `docs-check-terraform.yml`          | Terraform documentation validation           |
 | `docs-check-bicep.yml`              | Bicep documentation validation               |
 | `variable-compliance-terraform.yml` | Terraform variable compliance checking       |

@@ -20,7 +20,7 @@ estimated_reading_time: 3
 
 ## Full Multi-node Cluster Blueprint
 
-This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a multi-node, Arc-enabled Kubernetes cluster. It deploys all necessary components from VM creation to AIO installation, resulting in a production-grade edge computing environment with high availability that integrates with Azure cloud services.
+This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a multi-node, Arc-enabled Kubernetes cluster. It deploys all necessary components from VM creation to AIO installation, resulting in a production-grade edge computing environment with high availability that integrates with Azure cloud services. AIO deployment is optional — set `should_deploy_aio = false` to deploy only the Arc-connected cluster with extensions and observability.
 Please follow general blueprint deployment and recommendations from blueprints [README.md](../README.md).
 
 ## Architecture
@@ -100,6 +100,7 @@ Beyond the basic required variables, this blueprint supports advanced customizat
 | `onboard_identity_type`                   | Identity for Arc onboarding           | `"id"`   | Use "skip" for Arc servers                    |
 | `custom_locations_oid`                    | Custom Locations object ID            | `null`   | Retrieved via Azure CLI if not provided       |
 | `should_create_anonymous_broker_listener` | Enable anonymous MQTT broker listener | `false`  | For testing only - insecure                   |
+| `should_deploy_aio`                       | Deploy Azure IoT Operations           | `true`   | Set false for Arc-only cluster without AIO    |
 | `should_create_aks`                       | Deploy Azure Kubernetes Service       | `false`  | Optional alternative to K3s                   |
 | `should_enable_private_endpoints`         | Use private endpoints for ACR         | `false`  | Enhanced security option                      |
 | `aio_features`                            | AIO feature configurations            | `null`   | Configure Azure IoT Operations features       |

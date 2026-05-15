@@ -17,7 +17,7 @@ resource "azurerm_key_vault" "new" {
   resource_group_name           = var.resource_group.name
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   sku_name                      = "standard"
-  purge_protection_enabled      = false
+  purge_protection_enabled      = var.should_enable_purge_protection
   rbac_authorization_enabled    = true
   public_network_access_enabled = var.should_enable_public_network_access
 }
@@ -44,6 +44,26 @@ resource "terraform_data" "defer" {
     }
   }
   depends_on = [azurerm_role_assignment.user_key_vault_secrets_officer]
+}
+
+/*
+ * Diagnostic Settings
+ */
+
+resource "azurerm_monitor_diagnostic_setting" "key_vault" {
+  count = var.should_enable_diagnostic_settings ? 1 : 0
+
+  name                       = "diag-${azurerm_key_vault.new.name}"
+  target_resource_id         = azurerm_key_vault.new.id
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+
+  enabled_log {
+    category = "AuditEvent"
+  }
+
+  enabled_metric {
+    category = "AllMetrics"
+  }
 }
 
 /*

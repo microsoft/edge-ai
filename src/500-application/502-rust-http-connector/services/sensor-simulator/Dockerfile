@@ -7,16 +7,16 @@
 # =============================================================================
 
 # STAGE 1: Builder - Builds Python wheels for dependencies
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809 AS builder
 
 WORKDIR /app
 
 # Build Python wheels for faster installation in runtime stage
 COPY src/requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --require-hashes --wheel-dir /wheels -r requirements.txt
 
 # STAGE 2: Runtime - Creates the minimal production image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS runtime
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8798301c18bf675d2a4c6fe45f01aa2fe8ab469f05e571a07579f63f865a4809 AS runtime
 
 # Upgrade all packages to latest versions to fix vulnerabilities
 RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY && \
@@ -27,8 +27,10 @@ WORKDIR /app
 
 # Install Python dependencies from pre-built wheels
 COPY --from=builder /wheels /wheels
-RUN pip install --no-cache-dir --no-index --find-links=/wheels/ Flask \
-    && rm -rf /wheels
+COPY --from=builder /app/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir --no-index --require-hashes \
+      --find-links=/wheels/ -r /tmp/requirements.txt \
+    && rm -rf /wheels /tmp/requirements.txt
 
 # Copy application source code
 COPY src/ .

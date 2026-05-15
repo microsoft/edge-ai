@@ -1,0 +1,16 @@
+# cargo-audit allow-list (loaded via `cargo audit -c .github/audit.toml`)
+#
+# Each entry below is an unmaintained or unsound transitive that cannot be
+# dropped without an upstream release of a direct dependency. Re-evaluate
+# whenever direct dependencies are bumped.
+
+[advisories]
+ignore = [
+  "RUSTSEC-2024-0384", # instant: unmaintained; pulled by parking_lot 0.11 chain via legacy deps
+  "RUSTSEC-2024-0436", # paste: unmaintained; pulled by ONNX / candle stack
+  "RUSTSEC-2025-0134", # rustls-pemfile: unmaintained 1.x; pulled by hyper-rustls transitive
+  "RUSTSEC-2026-0097", # rand: unsound with custom logger; awaiting upstream release
+]
+
+[yanked]
+enabled = false

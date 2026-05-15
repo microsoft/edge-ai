@@ -7,7 +7,12 @@ default-catalogers:
   - "javascript"
   - "python"
   - "go"
-  - "rust-cargo"
+  - "rust"
+
+dependency-snapshot: true
+include-dev-dependencies: true
+search-remote-licenses: true
+npm-base-url: "https://registry.npmjs.org"
 
 file:
   metadata:

@@ -251,7 +251,7 @@ keywords:
 The core integration pattern follows a real-time pipeline architecture:
 
 1. **Image Capture:** High-resolution cameras capture product images at inspection stations
-2. **Edge Processing:** AI inference engines process images locally with <100ms latency
+2. **Edge Processing:** AI inference engines process images locally with \<100ms latency
 3. **Result Classification:** Defects are classified and severity scored in real-time
 4. **Immediate Action:** Critical defects trigger immediate production line alerts
 5. **Data Synchronization:** Results and images sync to cloud for analysis and training

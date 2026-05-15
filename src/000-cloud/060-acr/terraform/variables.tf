@@ -56,6 +56,28 @@ variable "should_enable_data_endpoints" {
   default     = true
 }
 
+variable "should_enable_export_policy" {
+  type        = bool
+  description = "Whether to allow container image export from the registry. Requires public_network_access_enabled to be true when enabled"
+  default     = false
+}
+
+/*
+ * Diagnostic Settings - Optional
+ */
+
+variable "log_analytics_workspace_id" {
+  type        = string
+  description = "The ID of the Log Analytics workspace for diagnostic settings. If null, diagnostics are not enabled"
+  default     = null
+}
+
+variable "should_enable_diagnostic_settings" {
+  type        = bool
+  description = "Whether to enable diagnostic settings for ACR"
+  default     = false
+}
+
 /*
  * Outbound Access Controls - Optional
  */

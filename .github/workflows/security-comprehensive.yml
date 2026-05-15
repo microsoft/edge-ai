@@ -33,11 +33,6 @@ name: Security Comprehensive Monitoring
         required: false
         type: number
         default: 85.0
-      dashboard-theme:
-        description: 'Theme for security dashboard'
-        required: false
-        type: string
-        default: 'auto'
       fail-on-critical:
         description: 'Whether to fail workflow on critical security issues'
         required: false
@@ -87,15 +82,6 @@ name: Security Comprehensive Monitoring
         required: false
         type: number
         default: 85.0
-      dashboard-theme:
-        description: 'Theme for security dashboard (light, dark, auto)'
-        required: false
-        type: choice
-        options:
-          - auto
-          - light
-          - dark
-        default: 'auto'
       fail-on-critical:
         description: 'Fail workflow on critical security issues'
         required: false
@@ -108,7 +94,6 @@ name: Security Comprehensive Monitoring
 
 permissions:
   contents: read
-  security-events: write
   actions: read
 
 jobs:
@@ -185,7 +170,7 @@ jobs:
 
       - name: Upload staleness results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dependency-staleness-results
           path: stale-dependencies.json
@@ -197,6 +182,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: security-hardening
     timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     outputs:
       score: ${{ steps.scorecard-check.outputs.score }}
       threshold-failed: ${{ steps.scorecard-check.outputs.threshold-failed }}
@@ -232,7 +221,7 @@ jobs:
 
       - name: Upload OSSF Scorecard results
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ossf-scorecard-results
           path: scorecard-results.sarif
@@ -240,7 +229,7 @@ jobs:
 
       - name: Upload SARIF results to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
         with:
           sarif_file: scorecard-results.sarif
 
@@ -262,46 +251,25 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install --require-hashes -r requirements.txt
 
       - name: Run AIO version check
         id: aio-check
         run: |
           python scripts/aio-version-checker.py \
             --iac-type ${{ inputs.iac-types }} \
-            --output-format json \
-            --output-path aio-version-check-results.json
-
-          # Parse results for outputs
-          if [[ -f "aio-version-check-results.json" ]]; then
-            issues=$(jq '.issues | length' aio-version-check-results.json 2>/dev/null || echo "0")
-            echo "issues=$issues" >> $GITHUB_OUTPUT
-            echo "AIO version check completed with $issues issues"
-          else
-            echo "issues=0" >> $GITHUB_OUTPUT
-            echo "AIO version check completed (no results file)"
-          fi
-
-      - name: Upload AIO version results
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: aio-version-check-results
-          path: aio-version-check-results.json
-          retention-days: 30
+            --error-on-mismatch \
+            --verbose
 
   # Comprehensive dependency pinning analysis
   security-analysis:
-    name: Security Analysis & Dashboard
+    name: Security Analysis
     runs-on: ubuntu-latest
     needs: [security-hardening, dependency-staleness, ossf-scorecard, aio-version-check]
     timeout-minutes: 25
     outputs:
       pinning-compliance: ${{ steps.pinning-analysis.outputs.compliance }}
       pinning-threshold-failed: ${{ steps.pinning-analysis.outputs.threshold-failed }}
-      dashboard-path: ${{ steps.dashboard-generation.outputs.dashboard-path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -357,43 +325,13 @@ jobs:
               exit 1
           }
 
-      - name: Generate comprehensive security dashboard
-        id: dashboard-generation
-        shell: pwsh
-        run: |
-          $dashboardScript = Join-Path $env:GITHUB_WORKSPACE "scripts/security/New-SecurityDashboard.ps1"
-
-          Write-Host "Generating comprehensive security dashboard..."
-          & $dashboardScript `
-            -DataPath "." `
-            -OutputFormat "html" `
-            -OutputPath "./comprehensive-security-dashboard.html" `
-            -ThemeMode "${{ inputs.dashboard-theme }}" `
-            -RefreshInterval 0
-
-          # Generate additional formats
-          & $dashboardScript `
-            -DataPath "." `
-            -OutputFormat "markdown" `
-            -OutputPath "./comprehensive-security-dashboard.md"
-
-          & $dashboardScript `
-            -DataPath "." `
-            -OutputFormat "json" `
-            -OutputPath "./comprehensive-security-dashboard.json"
-
-          "dashboard-path=./comprehensive-security-dashboard.html" >> $env:GITHUB_OUTPUT
-
       - name: Upload security analysis results
         if: inputs.publish-artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: comprehensive-security-analysis
           path: |
             ./dependency-pinning-report.json
-            ./comprehensive-security-dashboard.html
-            ./comprehensive-security-dashboard.md
-            ./comprehensive-security-dashboard.json
           retention-days: 30
 
   # Comprehensive security validation summary
@@ -471,7 +409,7 @@ jobs:
 
           if [[ "$overall_status" == "Critical" ]]; then
             echo "❌ Comprehensive security validation failed with $critical_issues critical issues"
-            echo "Review the comprehensive security dashboard and address all critical issues before proceeding."
+            echo "Review the comprehensive security report and address all critical issues before proceeding."
             exit 1
           else
             echo "✅ Comprehensive security validation passed (Status: $overall_status)"
@@ -479,7 +417,7 @@ jobs:
 
       - name: Upload comprehensive security summary
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: comprehensive-security-summary
           path: comprehensive-security-summary.md

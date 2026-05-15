@@ -15,8 +15,8 @@ keywords:
 
 We're developing comprehensive learning content for edge AI development. Check back soon for updates on katas, training labs, and community content.
 
-Visit [Learning](learning/README.md) to explore what's currently available.
+Visit Learning to explore what's currently available.
 
 ---
 
-*Return to [Learning Home](learning/README.md)*
+Return to Learning Home.

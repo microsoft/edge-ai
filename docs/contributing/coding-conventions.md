@@ -19,7 +19,7 @@ keywords:
 
 This document outlines the coding conventions and standards for this repository. Following these conventions ensures
 consistency across the codebase and makes it easier for contributors to collaborate effectively. For information about
-the overall contribution process, please refer to our [Contributing Guide](contributing.md).
+the overall contribution process, please refer to our [Contributing Guide](../contributions.md).
 
 This document uses terminology as defined in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) where the keywords "
 MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" are to
@@ -190,18 +190,18 @@ GitHub workflows SHOULD follow these principles:
 
 ## Linting and Code Quality
 
-We use [MegaLinter](https://megalinter.github.io/) as our comprehensive linting solution to ensure code quality across
-all languages and file types in the repository.
+The CI/CD pipeline enforces code quality through dedicated lint jobs covering shell scripts, YAML, Terraform, Bicep,
+PowerShell, Python, Markdown, and general code quality checks.
 
-For detailed information about our MegaLinter configuration, integration with our CI/CD pipeline, and how to use it in
-your development workflow, please refer to our [MegaLinter documentation](./build-cicd/azure-pipelines/templates/megalinter-template.md).
+For detailed information about the linting configuration and CI/CD integration, see the
+[Azure Pipelines lint templates documentation](../build-cicd/azure-pipelines/README.md).
 
-This includes:
+Key capabilities:
 
-- How to run MegaLinter locally
-- Available linters and configuration options
-- CI/CD integration details
-- Pipeline optimization with caching
+- Individual lint jobs per language and framework
+- Configurable break-build behavior per linter
+- Security scanning with Checkov and credential detection
+- Documentation validation for Terraform and Bicep
 
 ## Infrastructure as Code
 
@@ -454,7 +454,7 @@ The wiki update process:
 3. Pushes the updated content to the wiki repository
 
 For detailed information about the wiki auto-publishing system, configuration, and how it works, see
-the [Wiki Update documentation](./build-cicd/azure-pipelines/templates/wiki-update-template.md).
+the [Wiki Update documentation](../build-cicd/azure-pipelines/templates/wiki-update-template.md).
 
 ## Security and Compliance Standards
 
@@ -624,7 +624,7 @@ All contributions MUST undergo thorough code review:
 - [Development Environment Setup](development-environment.md) - Dev Container configuration and tooling
 - [AI-Assisted Engineering](ai-assisted-engineering.md) - GitHub Copilot integration and best practices
 - [Testing and Validation](testing-validation.md) - Comprehensive testing strategies
-- [Contributing Guidelines](contributing.md) - Contribution process and requirements
+- [Contributing Guidelines](https://github.com/microsoft/edge-ai/blob/main/CONTRIBUTING.md) - Contribution process and requirements
 - [Troubleshooting Guide](troubleshooting.md) - Common issues and solutions
 
 For questions about coding conventions, see our [troubleshooting guide](troubleshooting.md) or reach out through repository discussions.

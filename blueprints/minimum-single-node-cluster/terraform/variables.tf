@@ -66,6 +66,12 @@ variable "should_add_current_user_cluster_admin" {
   default     = true
 }
 
+variable "cluster_admin_group_oid" {
+  type        = string
+  description = "The Entra ID group Object ID that will be given cluster-admin permissions and Azure Arc RBAC access for 'az connectedk8s proxy'"
+  default     = null
+}
+
 variable "should_enable_private_endpoints" {
   type        = bool
   description = "Whether to enable private endpoints for Key Vault and Storage Account"
@@ -75,6 +81,12 @@ variable "should_enable_private_endpoints" {
 /*
  * Optional Variables
  */
+
+variable "should_deploy_aio" {
+  type        = bool
+  description = "Whether to deploy Azure IoT Operations and its dependent edge components (assets). When false, deploys Arc-connected cluster with extensions only"
+  default     = true
+}
 
 variable "should_create_anonymous_broker_listener" {
   type        = bool
@@ -86,7 +98,7 @@ variable "vm_sku_size" {
   type = string
   // Minimize resource usage - set smaller VM size
   description = "Size of the VM"
-  default     = "Standard_D4_v4"
+  default     = "Standard_D4s_v6"
 }
 
 variable "namespaced_devices" {
@@ -243,3 +255,14 @@ variable "namespaced_assets" {
   }
 }
 
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}

@@ -235,7 +235,7 @@ resource sseIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
   name: sseIdentityName
 }
 
-resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2025-10-01' existing = if (!empty(adrNamespaceName)) {
+resource adrNamespace 'Microsoft.DeviceRegistry/namespaces@2026-04-01' existing = if (!empty(adrNamespaceName)) {
   name: adrNamespaceName!
 }
 

@@ -101,7 +101,7 @@ variable "azure_local_control_plane_vm_size" {
 variable "azure_local_node_pool_vm_size" {
   type        = string
   description = "VM size for worker nodes in Azure Local cluster"
-  default     = "Standard_D8s_v3"
+  default     = "Standard_D8s_v6"
 }
 
 variable "azure_local_pod_cidr" {
@@ -138,6 +138,12 @@ variable "should_enable_key_vault_public_network_access" {
   type        = bool
   description = "Whether to enable public network access for the Key Vault"
   default     = true
+}
+
+variable "should_enable_key_vault_purge_protection" {
+  type        = bool
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
+  default     = false
 }
 
 variable "should_enable_storage_public_network_access" {
@@ -262,3 +268,14 @@ variable "should_enable_opc_ua_simulator" {
 
 
 
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}

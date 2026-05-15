@@ -7,11 +7,11 @@ via Kafka-compatible interface with managed identity authentication.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azapi     | >= 2.0.1        |
-| fabric    | >= 1.3.0        |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.0.1         |
+| fabric    | >= 1.3.0         |
 
 ## Providers
 

@@ -752,9 +752,9 @@ edge-ai/{business_unit}/{facility}/{gateway_id}/ai/metrics
 
 ### Technical Documentation
 
-- [Application Instructions](../../.github/instructions/application.instructions.md) - Component structure standards
-- [507-ai-inference README](../../src/500-application/507-ai-inference/README.md) - Service documentation
-- [Docker Compose Configuration](../../src/500-application/507-ai-inference/docker-compose.yaml) - Local development setup
+- [Application Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/instructions/application.instructions.md) - Component structure standards
+- [507-ai-inference README](https://github.com/microsoft/edge-ai/blob/main/src/500-application/507-ai-inference/README.md) - Service documentation
+- [Docker Compose Configuration](https://github.com/microsoft/edge-ai/blob/main/src/500-application/507-ai-inference/docker-compose.yaml) - Local development setup
 
 ### External References
 

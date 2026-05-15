@@ -1,0 +1,5 @@
+# Python dependencies for variable-compliance-terraform.yml
+# Note: jq CLI is pre-installed on GitHub Actions ubuntu-latest runners; the
+# Python `jq` binding is not used by scripts/tf-vars-compliance-check.py and
+# is therefore intentionally omitted.
+pyyaml

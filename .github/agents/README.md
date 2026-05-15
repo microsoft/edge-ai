@@ -14,31 +14,13 @@ keywords:
   - prompt engineering
 ---
 
-This directory contains specialized GitHub Copilot custom agent configurations designed to provide enhanced AI assistance for specific development workflows and learning scenarios.
+This directory contains specialized GitHub Copilot custom agent configurations designed to provide enhanced AI assistance for specific development workflows.
 
 ## Overview
 
 Custom agents are advanced AI assistant configurations that enable specialized coaching, planning, and development support. Each agent is tailored for specific workflows and includes comprehensive tool access for deep project integration.
 
 ## Available Custom Agents
-
-### [Learning Kata Coach](learning-kata-coach.agent.md)
-
-Interactive AI coaching for focused practice exercises with progress tracking and resumption capabilities.
-
-- **Purpose**: Guide learners through hands-on discovery using OpenHack-style methodology
-- **Capabilities**: Socratic questioning, progress tracking, agent transition guidance
-- **Best For**: Skill-building exercises, practice scenarios, iterative learning
-- **Philosophy**: Teach a person to fish - discovery over direct answers
-
-### [Learning Lab Coach](learning-lab-coach.agent.md)
-
-Complex training lab coaching for multi-component systems and comprehensive scenarios.
-
-- **Purpose**: Support learners through complex, multi-step laboratory exercises
-- **Capabilities**: Multi-component guidance, system integration coaching, troubleshooting
-- **Best For**: Advanced labs, system deployments, complex integrations
-- **Philosophy**: Structured guidance for comprehensive real-world scenarios
 
 ### [Task Researcher](task-researcher.agent.md)
 
@@ -71,11 +53,9 @@ Expert security architect for creating comprehensive cloud security plans with t
 
 ### Selecting the Right Agent
 
-1. **Learning and Skill Building**: Use Learning Kata Coach for focused practice
-2. **Complex System Work**: Use Learning Lab Coach for multi-component scenarios
-3. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
-4. **Architecture Documentation**: Use ADR Creation for collaborative decision records
-5. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+1. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
+2. **Architecture Documentation**: Use ADR Creation for collaborative decision records
+3. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
 
 > **Note**: Additional agents for task planning and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 

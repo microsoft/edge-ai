@@ -109,6 +109,15 @@ dataflow_graphs = [
                   ]
                 }
               EOF
+            },
+            {
+              // Optional: declare the wire format of Avro messages from Kafka.
+              // "auto"      — (default) try raw Avro first, retry with Confluent prefix stripping
+              // "confluent" — always strip 5-byte Confluent Schema Registry prefix before parsing
+              // "raw"       — parse directly with no prefix handling
+              // Set to "confluent" when your Kafka producer uses Confluent serializers.
+              key   = "wireFormat"
+              value = "confluent"
             }
           ]
         }

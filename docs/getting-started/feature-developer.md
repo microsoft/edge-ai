@@ -167,10 +167,10 @@ npm run link-lang-fix          # Fix language-specific links
 
 The Dev Container includes comprehensive linting and quality tools:
 
-1. **MegaLinter**: Comprehensive multi-language linting
-   - Configuration: `.mega-linter.yml`
+1. **Dedicated Lint Jobs**: Individual CI/CD lint jobs per language and framework
+   - Shell, YAML, Terraform, Bicep, PowerShell, Python, Markdown, and code quality
    - Runs automatically in CI/CD
-   - Documentation: `docs/build-cicd/azure-pipelines/templates/megalinter-template.md`
+   - Documentation: `docs/build-cicd/azure-pipelines/README.md`
 
 2. **Terraform Tools**:
    - `terraform fmt` - Code formatting
@@ -297,7 +297,7 @@ Before coding, define:
    # src/000-cloud/{next-number}-{component-name}/terraform/main.tf
 
    terraform {
-     required_version = ">= 1.0"
+     required_version = ">= 1.12.0, < 2.0"
      required_providers {
        azurerm = {
          source  = "hashicorp/azurerm"
@@ -752,8 +752,8 @@ After contributing your first component:
 ## Additional Resources
 
 - **[Blueprint Developer Guide](blueprint-developer.md)** - Create deployment scenarios
-- **[Coding Conventions](../coding-conventions.md)** - Detailed coding standards
-- **[AI-Assisted Engineering](../ai-assisted-engineering.md)** - Using GitHub Copilot effectively
+- **[Coding Conventions](../contributing/coding-conventions.md)** - Detailed coding standards
+- **[AI-Assisted Engineering](../contributing/ai-assisted-engineering.md)** - Using GitHub Copilot effectively
 - **[Terraform Documentation][terraform-docs]** - Official Terraform guides
 - **[Bicep Documentation][bicep-docs]** - Official Bicep guides
 - **[Azure IoT Operations Documentation][iot-ops-docs]** - Platform documentation
@@ -765,7 +765,7 @@ After contributing your first component:
 [terraform-docs]: https://www.terraform.io/docs
 [bicep-docs]: https://docs.microsoft.com/azure/azure-resource-manager/bicep/
 [iot-ops-docs]: https://learn.microsoft.com/azure/iot-operations/
-[project-repo]: {{REPO_URL}}
+[project-repo]: https://github.com/microsoft/edge-ai
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

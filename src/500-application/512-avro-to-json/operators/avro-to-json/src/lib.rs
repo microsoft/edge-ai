@@ -17,6 +17,19 @@ use wasm_graph_sdk::macros::map_operator;
 
 static AVRO_SCHEMA: OnceLock<Option<Schema>> = OnceLock::new();
 
+/// Wire format of incoming Avro messages.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum WireFormat {
+    /// Auto-detect: try raw Avro first, retry with Confluent prefix stripping on failure.
+    Auto,
+    /// Confluent Schema Registry: always strip 5-byte prefix before parsing.
+    Confluent,
+    /// Raw Avro binary: parse directly, no prefix handling.
+    Raw,
+}
+
+static WIRE_FORMAT: OnceLock<WireFormat> = OnceLock::new();
+
 /// Converts an Avro value to a JSON value recursively
 fn avro_to_json(avro_value: &AvroValue) -> JsonValue {
     match avro_value {
@@ -153,28 +166,58 @@ fn strip_confluent_header(data: &[u8]) -> Option<&[u8]> {
     }
 }
 
-/// Attempts to parse Avro data with the provided schema.
-/// Tries raw data first; on failure, retries after stripping a Confluent
-/// Schema Registry wire format prefix (magic byte 0x00 + 4-byte schema ID).
-fn parse_with_schema(data: &[u8], schema: &Schema) -> Result<AvroValue, String> {
-    let mut cursor = data;
-    match from_avro_datum(schema, &mut cursor, None) {
-        Ok(value) => Ok(value),
-        Err(first_err) => {
-            if let Some(stripped) = strip_confluent_header(data) {
-                let mut cursor2 = stripped;
-                from_avro_datum(schema, &mut cursor2, None).map_err(|e| {
-                    format!(
-                        "Failed to parse Avro with schema (also tried stripping \
-                         Confluent wire format prefix): {}",
-                        e
-                    )
-                })
-            } else {
-                Err(format!("Failed to parse Avro with schema: {}", first_err))
+/// Parses Avro data using the specified wire format and schema.
+fn parse_with_schema_inner(
+    data: &[u8],
+    schema: &Schema,
+    wire_format: WireFormat,
+) -> Result<AvroValue, String> {
+    match wire_format {
+        WireFormat::Raw => {
+            let mut cursor = data;
+            from_avro_datum(schema, &mut cursor, None)
+                .map_err(|e| format!("Failed to parse raw Avro with schema: {}", e))
+        }
+        WireFormat::Confluent => {
+            let stripped = strip_confluent_header(data).ok_or_else(|| {
+                format!(
+                    "wireFormat is 'confluent' but payload does not have the expected \
+                     5-byte prefix (0x00 + 4-byte schema ID). Payload size: {} bytes.",
+                    data.len()
+                )
+            })?;
+            let mut cursor = stripped;
+            from_avro_datum(schema, &mut cursor, None)
+                .map_err(|e| format!("Failed to parse Confluent-prefixed Avro with schema: {}", e))
+        }
+        WireFormat::Auto => {
+            let mut cursor = data;
+            match from_avro_datum(schema, &mut cursor, None) {
+                Ok(value) => Ok(value),
+                Err(first_err) => {
+                    if let Some(stripped) = strip_confluent_header(data) {
+                        let mut cursor2 = stripped;
+                        from_avro_datum(schema, &mut cursor2, None).map_err(|e| {
+                            format!(
+                                "Failed to parse Avro with schema (also tried stripping \
+                                 Confluent wire format prefix): {}",
+                                e
+                            )
+                        })
+                    } else {
+                        Err(format!("Failed to parse Avro with schema: {}", first_err))
+                    }
+                }
             }
         }
     }
+}
+
+/// Attempts to parse Avro data with the provided schema.
+/// Dispatches to the appropriate parsing strategy based on the configured wire format.
+fn parse_with_schema(data: &[u8], schema: &Schema) -> Result<AvroValue, String> {
+    let wire_format = WIRE_FORMAT.get().copied().unwrap_or(WireFormat::Auto);
+    parse_with_schema_inner(data, schema, wire_format)
 }
 
 /// Attempts to detect and parse single-object encoded Avro
@@ -240,6 +283,23 @@ fn unwrap_schema_value(raw: &str) -> std::borrow::Cow<'_, str> {
     }
 }
 
+/// Resolves a wire format configuration value to a `WireFormat` variant.
+///
+/// Applies trimming and case-insensitive matching. Unknown values default to `Auto`.
+/// Returns `(WireFormat, Option<String>)` where the second element is the unknown
+/// value if defaulting occurred, enabling the caller to log a warning.
+fn resolve_wire_format(value: Option<&str>) -> (WireFormat, Option<String>) {
+    match value {
+        Some(v) => match v.trim().to_lowercase().as_str() {
+            "confluent" => (WireFormat::Confluent, None),
+            "raw" => (WireFormat::Raw, None),
+            "auto" => (WireFormat::Auto, None),
+            _ => (WireFormat::Auto, Some(v.to_string())),
+        },
+        None => (WireFormat::Auto, None),
+    }
+}
+
 /// Initialize the operator with optional schema configuration
 fn avro_init(configuration: ModuleConfiguration) -> bool {
     logger::log(
@@ -256,6 +316,34 @@ fn avro_init(configuration: ModuleConfiguration) -> bool {
             &format!("Configuration property received: {}", key),
         );
     }
+
+    let wire_format_value = configuration
+        .properties
+        .iter()
+        .find(|(k, _)| k == "wireFormat")
+        .map(|(_, v)| v.as_str());
+
+    let (wire_format, unknown) = resolve_wire_format(wire_format_value);
+
+    if let Some(unknown_value) = &unknown {
+        logger::log(
+            Level::Warn,
+            "avro-to-json",
+            &format!(
+                "Unknown wireFormat '{}', defaulting to 'auto'. \
+                 Supported values: auto, confluent, raw.",
+                unknown_value
+            ),
+        );
+    }
+
+    logger::log(
+        Level::Info,
+        "avro-to-json",
+        &format!("Wire format: {:?}", wire_format),
+    );
+
+    let _ = WIRE_FORMAT.set(wire_format);
 
     let schema_result = configuration
         .properties
@@ -816,5 +904,169 @@ mod tests {
         let json = avro_to_json(&result.unwrap());
         assert_eq!(json["a"], "v1");
         assert_eq!(json["e"], "v5");
+    }
+
+    // --- wireFormat tests ---
+
+    #[test]
+    fn parse_inner_raw_mode_succeeds_on_raw_data() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"},{"name":"b","type":"string"},
+            {"name":"c","type":"string"},{"name":"d","type":"string"},
+            {"name":"e","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let mut record = apache_avro::types::Record::new(&schema).unwrap();
+        record.put("a", AvroValue::String("v1".into()));
+        record.put("b", AvroValue::String("v2".into()));
+        record.put("c", AvroValue::String("v3".into()));
+        record.put("d", AvroValue::String("v4".into()));
+        record.put("e", AvroValue::String("v5".into()));
+        let raw = apache_avro::to_avro_datum(&schema, record).unwrap();
+        let result = parse_with_schema_inner(&raw, &schema, WireFormat::Raw);
+        assert!(result.is_ok());
+        let json = avro_to_json(&result.unwrap());
+        assert_eq!(json["a"], "v1");
+    }
+
+    #[test]
+    fn parse_inner_raw_mode_fails_on_confluent_data() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"},{"name":"b","type":"string"},
+            {"name":"c","type":"string"},{"name":"d","type":"string"},
+            {"name":"e","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let mut record = apache_avro::types::Record::new(&schema).unwrap();
+        record.put("a", AvroValue::String("v1".into()));
+        record.put("b", AvroValue::String("v2".into()));
+        record.put("c", AvroValue::String("v3".into()));
+        record.put("d", AvroValue::String("v4".into()));
+        record.put("e", AvroValue::String("v5".into()));
+        let raw = apache_avro::to_avro_datum(&schema, record).unwrap();
+        let mut confluent = vec![0x00, 0x00, 0x00, 0x00, 0x07];
+        confluent.extend_from_slice(&raw);
+        let result = parse_with_schema_inner(&confluent, &schema, WireFormat::Raw);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn parse_inner_confluent_mode_succeeds_on_confluent_data() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let mut record = apache_avro::types::Record::new(&schema).unwrap();
+        record.put("a", AvroValue::String("v1".into()));
+        let raw = apache_avro::to_avro_datum(&schema, record).unwrap();
+        let mut confluent = vec![0x00, 0x00, 0x00, 0x00, 0x07];
+        confluent.extend_from_slice(&raw);
+        let result = parse_with_schema_inner(&confluent, &schema, WireFormat::Confluent);
+        assert!(result.is_ok());
+        let json = avro_to_json(&result.unwrap());
+        assert_eq!(json["a"], "v1");
+    }
+
+    #[test]
+    fn parse_inner_confluent_mode_fails_on_raw_data_no_prefix() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let mut record = apache_avro::types::Record::new(&schema).unwrap();
+        record.put("a", AvroValue::String("v1".into()));
+        let raw = apache_avro::to_avro_datum(&schema, record).unwrap();
+        if raw.first() != Some(&0x00) || raw.len() <= 5 {
+            let result = parse_with_schema_inner(&raw, &schema, WireFormat::Confluent);
+            assert!(result.is_err());
+            assert!(result.unwrap_err().contains("does not have the expected"));
+        }
+    }
+
+    #[test]
+    fn parse_inner_auto_mode_succeeds_on_raw_data() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let mut record = apache_avro::types::Record::new(&schema).unwrap();
+        record.put("a", AvroValue::String("v1".into()));
+        let raw = apache_avro::to_avro_datum(&schema, record).unwrap();
+        let result = parse_with_schema_inner(&raw, &schema, WireFormat::Auto);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn parse_inner_auto_mode_succeeds_on_confluent_data() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let mut record = apache_avro::types::Record::new(&schema).unwrap();
+        record.put("a", AvroValue::String("v1".into()));
+        let raw = apache_avro::to_avro_datum(&schema, record).unwrap();
+        let mut confluent = vec![0x00, 0x00, 0x00, 0x00, 0x07];
+        confluent.extend_from_slice(&raw);
+        let result = parse_with_schema_inner(&confluent, &schema, WireFormat::Auto);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn parse_inner_confluent_mode_short_payload_fails() {
+        let schema_json = r#"{"type":"record","name":"Msg","fields":[
+            {"name":"a","type":"string"}
+        ]}"#;
+        let schema = Schema::parse_str(schema_json).unwrap();
+        let short = vec![0x00, 0x01, 0x02];
+        let result = parse_with_schema_inner(&short, &schema, WireFormat::Confluent);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("does not have the expected"));
+    }
+
+    // --- resolve_wire_format tests ---
+
+    #[test]
+    fn resolve_wire_format_lowercase_confluent() {
+        assert_eq!(resolve_wire_format(Some("confluent")), (WireFormat::Confluent, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_uppercase_confluent() {
+        assert_eq!(resolve_wire_format(Some("CONFLUENT")), (WireFormat::Confluent, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_mixed_case_confluent() {
+        assert_eq!(resolve_wire_format(Some("Confluent")), (WireFormat::Confluent, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_trimmed_raw() {
+        assert_eq!(resolve_wire_format(Some("  raw  ")), (WireFormat::Raw, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_unknown_defaults_to_auto() {
+        let (format, unknown) = resolve_wire_format(Some("invalid"));
+        assert_eq!(format, WireFormat::Auto);
+        assert_eq!(unknown, Some("invalid".to_string()));
+    }
+
+    #[test]
+    fn resolve_wire_format_missing_defaults_to_auto() {
+        assert_eq!(resolve_wire_format(None), (WireFormat::Auto, None));
+    }
+
+    #[test]
+    fn resolve_wire_format_auto_explicit() {
+        assert_eq!(resolve_wire_format(Some("auto")), (WireFormat::Auto, None));
+    }
+
+    #[test]
+    fn oncelock_second_set_is_silently_ignored() {
+        let lock = std::sync::OnceLock::new();
+        assert!(lock.set(WireFormat::Raw).is_ok());
+        assert!(lock.set(WireFormat::Confluent).is_err());
+        assert_eq!(*lock.get().unwrap(), WireFormat::Raw);
     }
 }

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:1b978ce8a21fa7d698ea844d3ad4b2b69452c29be163395aca614d5f2ea44a94
+FROM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -6,17 +6,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install runtime dependencies and create application user
-# Security: Run as non-root user to minimize attack surface
-RUN tdnf install -y \
-        ca-certificates-3.0.0-13.azl3 \
-        shadow-utils-4.14.3-2.azl3 \
+# Security: Upgrade base packages to pick up latest CVE fixes; run as non-root user
+RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY \
+    && tdnf upgrade -y \
+    && tdnf install -y ca-certificates shadow-utils \
     && tdnf clean all \
     && groupadd -r appuser \
     && useradd -r -g appuser appuser
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 # Copy application code
 COPY connector_client.py .

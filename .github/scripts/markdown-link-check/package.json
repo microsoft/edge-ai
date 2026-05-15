@@ -1,0 +1,8 @@
+{
+  "name": "edge-ai-docs-link-check",
+  "private": true,
+  "description": "Pinned dependency wrapper so `npm ci` in docs-automation.yml satisfies the OSSF Scorecard npmCommand check.",
+  "dependencies": {
+    "markdown-link-check": "3.14.2"
+  }
+}

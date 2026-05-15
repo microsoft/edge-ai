@@ -15,7 +15,11 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # ONNX Runtime for AI inference (optional)
+<<<<<<< HEAD
 ort = { version = "2.0.0-rc.10", optional = true, default-features = false }
+=======
+ort = { version = "2.0.0-rc.10", optional = true }
+>>>>>>> origin/main
 ndarray = { version = "0.15", optional = true }
 
 # Core utilities

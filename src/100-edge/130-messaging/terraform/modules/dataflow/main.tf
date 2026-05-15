@@ -8,7 +8,7 @@
 resource "azapi_resource" "dataflow" {
   for_each = { for df in var.dataflows : df.name => df }
 
-  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2025-10-01"
+  type      = "Microsoft.IoTOperations/instances/dataflowProfiles/dataflows@2026-03-01"
   name      = each.value.name
   parent_id = var.aio_dataflow_profile.id
 

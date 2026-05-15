@@ -130,7 +130,6 @@ Common issues and their solutions:
 
 - Docs Check Bicep: [YAML](/.github/workflows/docs-check-bicep.yml) | [Documentation](./docs-check-bicep.md) - Also ensures documentation quality
 - Docs Check Terraform: [YAML](/.github/workflows/docs-check-terraform.yml) | [Documentation](./docs-check-terraform.md) - Also ensures documentation quality
-- MegaLinter: [YAML](/.github/workflows/megalinter.yml) | [Documentation](./megalinter.md) - Provides broader code quality checks
 
 ## Learn More
 

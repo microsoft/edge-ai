@@ -8,7 +8,8 @@ export default [
       '.copilot-tracking/**',
       'node_modules/**',
       'dist/**',
-      'build/**'
+      'build/**',
+      'docs/assets/js/temp-*.js'
     ]
   },
   {
@@ -29,7 +30,12 @@ export default [
         setInterval: 'readonly',
         clearInterval: 'readonly',
         setImmediate: 'readonly',
-        clearImmediate: 'readonly'
+        clearImmediate: 'readonly',
+
+        // Node.js 18+ globals
+        URL: 'readonly',
+        fetch: 'readonly',
+        AbortSignal: 'readonly'
       }
     },
     rules: {
@@ -123,15 +129,15 @@ export default [
         FormData: 'readonly',
         Storage: 'readonly',
         StorageEvent: 'readonly',
+        EventSource: 'readonly',
+        btoa: 'readonly',
+        atob: 'readonly',
+        screen: 'readonly',
 
         // Browser dialogs (should be avoided in production)
         alert: 'readonly',
         confirm: 'readonly',
         prompt: 'readonly',
-
-        // Docsify globals
-        Docsify: 'readonly',
-        $docsify: 'readonly',
 
         // Common libraries
         marked: 'readonly',
@@ -148,18 +154,6 @@ export default [
         'varsIgnorePattern': '^_',
         'caughtErrorsIgnorePattern': '^_'
       }]
-    }
-  },
-  {
-    // Server-specific configuration
-    files: ['docs/_server/**/*.js'],
-    languageOptions: {
-      globals: {
-        // Additional Node.js server globals if needed
-      }
-    },
-    rules: {
-      'no-console': 'off' // Allow console in server
     }
   },
   {
@@ -238,6 +232,10 @@ export default [
         FormData: 'readonly',
         Storage: 'readonly',
         StorageEvent: 'readonly',
+        EventSource: 'readonly',
+        btoa: 'readonly',
+        atob: 'readonly',
+        screen: 'readonly',
 
         // Browser dialogs for tests
         alert: 'readonly',

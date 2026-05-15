@@ -1,2 +1,67 @@
 ---
 fail-on-severity: high
+ignore:
+  # atty crate - LOW severity
+  # Justification: Crate is unmaintained but functional with no known exploits.
+  # The atty crate is used transitively and does not pose an active security risk.
+  # References: GHSA-g98v-hv3f-hcfr, RUSTSEC-2021-0145
+  - vulnerability: GHSA-g98v-hv3f-hcfr
+  - vulnerability: RUSTSEC-2021-0145
+
+  # rustls-webpki 0.102.8 - MEDIUM severity (transitive Rust crate)
+  # Justification: Pulled in by azure_iot_operations_mqtt SDK's private fork of
+  # rumqttc 0.24.0-fork.4 → rustls 0.22 → rustls-webpki 0.102.8. Cannot be
+  # updated without an upstream AIO SDK release.
+  # Reference: GHSA-pwjx-qhcg-rvj4
+  - vulnerability: GHSA-pwjx-qhcg-rvj4
+
+  # rand 0.8.5 / 0.9.2 - LOW severity, no fix available
+  # Justification: Advisory published after PR #411 opened. Affects transitive `rand`
+  # pulled via multiple upstream SDKs (azure_iot_operations_mqtt, candle, etc.).
+  # Cannot be remediated without upstream releases. Pre-existing on main; out of scope
+  # for PR #411 (Issue #362 PowerShell security-gate naming fix).
+  # Reference: GHSA-cq8v-f236-94qc
+  - vulnerability: GHSA-cq8v-f236-94qc
+
+  # ffmpeg 8.0.1 bundled in opencv-python-headless 4.13.0.92
+  # Justification: No newer opencv-python-headless release available. The ffmpeg
+  # binary is statically bundled in the PyPI wheel and cannot be patched independently.
+  # Will be resolved when opencv releases a new wheel with ffmpeg >= 8.1.
+  # References: CVE-2026-40962 (Critical), CVE-2026-30997 (High), CVE-2026-30998 (High),
+  #   CVE-2026-30999 (High), CVE-2025-12343 (Medium), CVE-2025-22921 (Medium),
+  #   CVE-2025-69693 (Medium)
+  - vulnerability: CVE-2026-40962
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2026-30997
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2026-30998
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2026-30999
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2025-12343
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2025-22921
+    package:
+      type: binary
+      name: ffmpeg
+  - vulnerability: CVE-2025-69693
+    package:
+      type: binary
+      name: ffmpeg
+
+  # GHSA-rp8m-h266-53jh - grype v0.86.1 pep440 parser bug
+  # Justification: syft scan dir:/ captures Debian dpkg version 1.9.0ubuntu1.2
+  # which grype 0.86.1 mis-routes into the pypi ecosystem, triggering a pep440
+  # inflate error (exit 16). Upstream grype bug; remove when upgrading past 0.86.1
+  # with the fix included.
+  - vulnerability: GHSA-rp8m-h266-53jh

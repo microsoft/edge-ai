@@ -65,9 +65,12 @@ parking_lot = "0.12"
 crossbeam = "0.8"
 rayon = "1.8"
 
+# Rate limiting
+governor = "0.8"
+
 # File system operations
 walkdir = "2.4"
-notify = "7.0"
+notify = "8"
 
 [dev-dependencies]
 serial_test = "3.0"

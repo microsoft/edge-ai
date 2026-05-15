@@ -25,7 +25,7 @@ The Learning Kata Coach is available as a GitHub Copilot Custom Agent in VS Code
 
 If you have GitHub Copilot installed, you can also reference the agent directly:
 
-**Custom Agent File**: [`.github/agents/learning-kata-coach.agent.md`](../../.github/agents/learning-kata-coach.agent.md)
+**Custom Agent File**: [`.github/agents/learning-kata-coach.agent.md`](https://github.com/microsoft/edge-ai/blob/main/.github/agents/learning-kata-coach.agent.md)
 
 ## 🎯 What the Kata Coach Can Help With
 
@@ -174,7 +174,7 @@ Saves assessment results and learning path recommendations.
 
 - [Learning Dashboard](../learning/)
 - [Skill Assessment](../learning/skill-assessment.html)
-- [All Custom Agents](../.github/agents/README.md)
+- [All Custom Agents](https://github.com/microsoft/edge-ai/blob/main/.github/agents/README.md)
 - [Learning Paths](../learning/paths/)
 
 ---

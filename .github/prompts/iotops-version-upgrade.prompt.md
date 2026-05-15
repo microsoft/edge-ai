@@ -185,7 +185,7 @@ curl -L -o ".copilot-tracking/iotops/{current_date}/specifications/deviceregistr
 ## 3. Create the Plan
 
 Create or update a plan file named `iotops-update-plan.md` in the `.copilot-tracking/iotops/{current_date}/` directory.
-Include `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` markdown files are NOT required to pass `.mega-linter.yml` rules.
+Include `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` markdown files are EXEMPT from linting rules.
 
 **IMPORTANT**: If a plan file for the current date already exists and contains the text "Finished adding all details needed for updating azure iot operations throughout the workspace.", and the user asks you to implement the plan, skip to Phase 3, step 16.
 

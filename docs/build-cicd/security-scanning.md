@@ -9,7 +9,6 @@ keywords:
   - supply chain security
   - sha pinning
   - checkov
-  - megalinter
   - terraform security
   - bicep security
   - vulnerability assessment
@@ -90,7 +89,7 @@ src/500-application/
 - **Targeted CI/CD**: Change detection and rebuilds only for affected services
 - **Component-level SBOM**: Each deployable artifact has exact dependency manifest
 
-See [Cargo Workspace Removal ADR](../../.copilot-tracking/decisions/cargo-workspace-removal-rationale.md) for architectural rationale.
+See Cargo Workspace Removal ADR for architectural rationale.
 
 **Registry-Aware Build Strategy**:
 
@@ -371,18 +370,6 @@ checkov -f src/000-cloud/010-security-identity/terraform/main.tf
 ./scripts/security/Invoke-SecurityGate.ps1 -ReportOnly
 ```
 
-### MegaLinter - Code Quality & Security
-
-**Tool**: [MegaLinter][megalinter-tool] for comprehensive validation
-**Workflow**: `.github/workflows/megalinter.yml`
-
-#### Security Features
-
-- **Secret Detection**: Prevents accidental secret exposure
-- **Dependency Scanning**: Package vulnerability assessment
-- **SAST**: Static application security testing
-- **Configuration Security**: YAML, JSON validation
-
 ## CI/CD Security Integration
 
 ### Matrix Build Integration
@@ -636,7 +623,6 @@ Security reports follow optimized retention policies:
 <!-- Reference Links -->
 [grype-tool]: https://github.com/anchore/grype
 [checkov-tool]: https://www.checkov.io/
-[megalinter-tool]: https://megalinter.io/
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

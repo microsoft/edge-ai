@@ -1,19 +1,22 @@
 ##############################
 # Builder Stage              #
 ##############################
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2 AS builder
 
 WORKDIR /build
+
+# Upgrade base image packages to latest patched versions to clear CVEs
+RUN tdnf upgrade -y && tdnf clean all
 
 COPY ./services/sensor-simulator/requirements.txt ./requirements.txt
 
 # Build dependency wheels for reproducible installs in runtime stage
-RUN pip wheel --no-cache-dir --wheel-dir /tmp/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --require-hashes --wheel-dir /tmp/wheels -r requirements.txt
 
 ##############################
 # Runtime Stage              #
 ##############################
-FROM --platform=$TARGETPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12.9-4-azl3.0.20250910@sha256:4033c29d6a292bd24a68cf0c42b650222a1f1a40474486461accaf9ae51a5ca2 AS runtime
+FROM --platform=$TARGETPLATFORM mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2 AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -21,11 +24,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Install runtime dependencies and create application user
-# Security: Run as non-root user to minimize attack surface
-RUN tdnf install -y \
-        ca-certificates-3.0.0-13.azl3 \
-        shadow-utils-4.14.3-2.azl3 \
+# Upgrade base image packages to latest patched versions to clear CVEs,
+# then install runtime dependencies and create application user.
+# Security: Run as non-root user to minimize attack surface.
+RUN tdnf upgrade -y \
+    && tdnf install -y ca-certificates shadow-utils \
     && tdnf clean all \
     && groupadd -r appuser \
     && useradd -r -g appuser appuser
@@ -33,7 +36,8 @@ RUN tdnf install -y \
 # Install Python dependencies from pre-built wheels
 COPY --from=builder /tmp/wheels /wheels
 COPY --from=builder /build/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir --no-index --find-links=/wheels -r /tmp/requirements.txt \
+RUN pip install --no-cache-dir --no-index --require-hashes \
+      --find-links=/wheels -r /tmp/requirements.txt \
     && rm -rf /wheels /tmp/requirements.txt
 
 # Copy application source and default configuration

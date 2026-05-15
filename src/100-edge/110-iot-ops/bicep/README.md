@@ -296,13 +296,13 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 | aioSyncRule                           | `Microsoft.ExtendedLocation/customLocations/resourceSyncRules`                  | 2021-08-31-preview |
 | adrSyncRule                           | `Microsoft.ExtendedLocation/customLocations/resourceSyncRules`                  | 2021-08-31-preview |
 | defaultSecretSyncSecretProviderClass  | `Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`             | 2024-08-21-preview |
-| aioInstance                           | `Microsoft.IoTOperations/instances`                                             | 2025-10-01         |
-| broker                                | `Microsoft.IoTOperations/instances/brokers`                                     | 2025-10-01         |
-| brokerAuthn                           | `Microsoft.IoTOperations/instances/brokers/authentications`                     | 2025-10-01         |
-| brokerListener                        | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2025-10-01         |
-| brokerListenerAnonymous               | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2025-10-01         |
-| dataFlowProfile                       | `Microsoft.IoTOperations/instances/dataflowProfiles`                            | 2025-10-01         |
-| dataFlowEndpoint                      | `Microsoft.IoTOperations/instances/dataflowEndpoints`                           | 2025-10-01         |
+| aioInstance                           | `Microsoft.IoTOperations/instances`                                             | 2026-03-01         |
+| broker                                | `Microsoft.IoTOperations/instances/brokers`                                     | 2026-03-01         |
+| brokerAuthn                           | `Microsoft.IoTOperations/instances/brokers/authentications`                     | 2026-03-01         |
+| brokerListener                        | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2026-03-01         |
+| brokerListenerAnonymous               | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2026-03-01         |
+| dataFlowProfile                       | `Microsoft.IoTOperations/instances/dataflowProfiles`                            | 2026-03-01         |
+| dataFlowEndpoint                      | `Microsoft.IoTOperations/instances/dataflowEndpoints`                           | 2026-03-01         |
 
 #### Outputs for iotOpsInstance
 
@@ -349,7 +349,7 @@ Deploys multiple Azure IoT Operations Akri Connector Templates as part of the Io
 
 | Name              | Type                                                       | API Version |
 |:------------------|:-----------------------------------------------------------|:------------|
-| connectorTemplate | `Microsoft.IoTOperations/instances/akriConnectorTemplates` | 2025-10-01  |
+| connectorTemplate | `Microsoft.IoTOperations/instances/akriConnectorTemplates` | 2026-03-01  |
 
 #### Outputs for akriConnectors
 
@@ -375,8 +375,8 @@ Manages container registry endpoints for Azure IoT Operations, including the def
 
 | Name                   | Type                                                  | API Version |
 |:-----------------------|:------------------------------------------------------|:------------|
-| mcrEndpoint            | `Microsoft.IoTOperations/instances/registryEndpoints` | 2025-10-01  |
-| customEndpoints        | `Microsoft.IoTOperations/instances/registryEndpoints` | 2025-10-01  |
+| mcrEndpoint            | `Microsoft.IoTOperations/instances/registryEndpoints` | 2026-03-01  |
+| customEndpoints        | `Microsoft.IoTOperations/instances/registryEndpoints` | 2026-03-01  |
 | acrPullRoleAssignments | `Microsoft.Authorization/roleAssignments`             | 2022-04-01  |
 
 #### Outputs for registryEndpointsModule
@@ -491,20 +491,23 @@ AIO Instance features.
 
 The settings for the Azure IoT Operations MQ Broker.
 
-| Property                  | Type                                          | Description                                                          |
-|:--------------------------|:----------------------------------------------|:---------------------------------------------------------------------|
-| brokerListenerServiceName | `string`                                      | The service name for the broker listener.                            |
-| brokerListenerPort        | `int`                                         | The port for the broker listener.                                    |
-| serviceAccountAudience    | `string`                                      | The audience for the service account.                                |
-| frontendReplicas          | `int`                                         | The number of frontend replicas for the broker.                      |
-| frontendWorkers           | `int`                                         | The number of frontend workers for the broker.                       |
-| backendRedundancyFactor   | `int`                                         | The redundancy factor for the backend of the broker.                 |
-| backendWorkers            | `int`                                         | The number of backend workers for the broker.                        |
-| backendPartitions         | `int`                                         | The number of partitions for the backend of the broker.              |
-| memoryProfile             | `string`                                      | The memory profile for the broker (Low, Medium, High).               |
-| serviceType               | `string`                                      | The service type for the broker (ClusterIP, LoadBalancer, NodePort). |
-| logsLevel                 | `string`                                      | The log level for broker diagnostics (info, debug, trace).           |
-| persistence               | `[_1.BrokerPersistence](#user-defined-types)` | Broker persistence configuration for disk-backed message storage.    |
+| Property                  | Type                                                | Description                                                          |
+|:--------------------------|:----------------------------------------------------|:---------------------------------------------------------------------|
+| brokerListenerServiceName | `string`                                            | The service name for the broker listener.                            |
+| brokerListenerPort        | `int`                                               | The port for the broker listener.                                    |
+| serviceAccountAudience    | `string`                                            | The audience for the service account.                                |
+| frontendReplicas          | `int`                                               | The number of frontend replicas for the broker.                      |
+| frontendWorkers           | `int`                                               | The number of frontend workers for the broker.                       |
+| backendRedundancyFactor   | `int`                                               | The redundancy factor for the backend of the broker.                 |
+| backendWorkers            | `int`                                               | The number of backend workers for the broker.                        |
+| backendPartitions         | `int`                                               | The number of partitions for the backend of the broker.              |
+| memoryProfile             | `string`                                            | The memory profile for the broker (Low, Medium, High).               |
+| serviceType               | `string`                                            | The service type for the broker (ClusterIP, LoadBalancer, NodePort). |
+| logsLevel                 | `string`                                            | The log level for broker diagnostics (info, debug, trace).           |
+| persistence               | `[_1.BrokerPersistence](#user-defined-types)`       | Broker persistence configuration for disk-backed message storage.    |
+| advanced                  | `[_1.BrokerAdvancedConfig](#user-defined-types)`    | Advanced broker settings.                                            |
+| diskBackedMessageBuffer   | `[_1.BrokerDiskBufferConfig](#user-defined-types)`  | Disk-backed message buffer configuration.                            |
+| diagnosticsConfig         | `[_1.BrokerDiagnosticsConfig](#user-defined-types)` | Extended diagnostics configuration (metrics, self-check, traces).    |
 
 ### `_1.AioMqBrokerAnonymous`
 
@@ -589,20 +592,48 @@ Authentication settings for Artifact Pull Secret.
 |:----------|:---------|:--------------------------------------------------------------------------|
 | secretRef | `string` | The name of the kubernetes secret that contains the artifact pull secret. |
 
+### `_1.BrokerAdvancedConfig`
+
+Advanced broker settings for client limits, internal traffic encryption, and internal certificate configuration.
+
+| Property               | Type     | Description                                           |
+|:-----------------------|:---------|:------------------------------------------------------|
+| encryptInternalTraffic | `string` | Encrypt internal broker traffic. Defaults to Enabled. |
+| internalCerts          | `object` | Internal certificate configuration.                   |
+| clients                | `object` | Client configuration for MQTT sessions.               |
+
+### `_1.BrokerDiagnosticsConfig`
+
+Extended broker diagnostics configuration for metrics, self-check, and distributed tracing.
+
+| Property  | Type     | Description                          |
+|:----------|:---------|:-------------------------------------|
+| metrics   | `object` | Metrics configuration.               |
+| selfCheck | `object` | Self-check diagnostic configuration. |
+| traces    | `object` | Distributed tracing configuration.   |
+
+### `_1.BrokerDiskBufferConfig`
+
+Disk-backed message buffer configuration for broker in-memory overflow to disk.
+
+| Property                  | Type     | Description                                                         |
+|:--------------------------|:---------|:--------------------------------------------------------------------|
+| maxSize                   | `string` | Maximum buffer size (e.g. "500M", "1G"). Pattern: ^[0-9]+[KMGTPE]$. |
+| ephemeralVolumeClaimSpec  | `object` | Ephemeral volume claim spec for message buffer (preferred).         |
+| persistentVolumeClaimSpec | `object` | Persistent volume claim spec for message buffer.                    |
+
 ### `_1.BrokerPersistence`
 
 Broker persistence configuration for disk-backed message storage.
 
-| Property                  | Type     | Description                                                          |
-|:--------------------------|:---------|:---------------------------------------------------------------------|
-| enabled                   | `bool`   | Whether persistence is enabled.                                      |
-| maxSize                   | `string` | Maximum size of the message buffer on disk (e.g., "500M", "1G").     |
-| encryption                | `object` | Encryption configuration for the persistence database.               |
-| dynamicSettings           | `object` | Dynamic settings for MQTTv5 user property-based persistence control. |
-| retain                    | `object` | Controls which retained messages should be persisted to disk.        |
-| stateStore                | `object` | Controls which state store keys should be persisted to disk.         |
-| subscriberQueue           | `object` | Controls which subscriber queues should be persisted to disk.        |
-| persistentVolumeClaimSpec | `object` | Persistent volume claim specification for storage.                   |
+| Property                  | Type     | Description                                                      |
+|:--------------------------|:---------|:-----------------------------------------------------------------|
+| maxSize                   | `string` | Maximum size of the message buffer on disk (e.g., "500M", "1G"). |
+| encryption                | `object` | Encryption configuration for the persistence database.           |
+| retain                    | `object` | Controls which retained messages should be persisted to disk.    |
+| stateStore                | `object` | Controls which state store keys should be persisted to disk.     |
+| subscriberQueue           | `object` | Controls which subscriber queues should be persisted to disk.    |
+| persistentVolumeClaimSpec | `object` | Persistent volume claim specification for storage.               |
 
 ### `_1.CustomerManagedByoIssuerConfig`
 

@@ -48,7 +48,7 @@ A research effort is successful when ALL are true:
   * Evaluated alternatives with a single selected approach and rationale
   * Complete examples (code/config) and references to repo files with approximate line numbers
   * Actionable next steps for implementation planning
-* The document uses `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` files are EXEMPT from `.mega-linter.yml` rules per repository policy.
+* The document uses `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` files are EXEMPT from linting rules per repository policy.
 * Workspace search restrictions and prompts-files search rules were followed and referenced.
 
 ## Information Management Requirements
@@ -108,7 +108,7 @@ You MUST reference and link to project conventions:
 
 * `copilot/` - Technical standards and language-specific conventions
 * `.github/instructions/` - Project instructions and rules
-* Workspace configuration files - Linting/build configurations (e.g., `.mega-linter.yml`, `package.json` scripts)
+* Workspace configuration files - Linting/build configurations (e.g., `.yamllint.yml`, `ruff.toml`, `.tflint.hcl`, `package.json` scripts)
 
 Naming:
 
@@ -303,7 +303,7 @@ You will NEVER proceed to implementation or scaffolding.
 
 Continually ensure the following:
 
-* The document follows the template. Include `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` markdown files are NOT required to pass `.mega-linter.yml` rules.
+* The document follows the template. Include `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` markdown files are EXEMPT from linting rules.
 * Outdated information is removed and replaced with current, authoritative findings.
 * Only one recommended approach remains per scenario; alternatives are summarized and removed.
 * Redundancy is eliminated; information is consolidated and focused.

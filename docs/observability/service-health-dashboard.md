@@ -85,7 +85,7 @@ It is designed to help operators quickly identify and diagnose issues by visuali
 - **Thresholds**:
   - Blue: >98%
   - Yellow: 80-98%
-  - Red: <80%
+  - Red: &lt;80%
 
 #### **Broker Subscribe/Unsubscribe/Publish Health**
 
@@ -97,7 +97,7 @@ It is designed to help operators quickly identify and diagnose issues by visuali
 - **Thresholds**:
   - Blue: >98%
   - Yellow: 80-98%
-  - Red: <80%
+  - Red: &lt;80%
 
 #### **AIO Broker Connected Sessions**
 
@@ -116,7 +116,7 @@ It is designed to help operators quickly identify and diagnose issues by visuali
 - **Thresholds**:
   - Blue: >98%
   - Yellow: 80-98%
-  - Red: <80%
+  - Red: &lt;80%
 
 #### **Dataflows Messages Sent by EndPointType and DataflowId**
 

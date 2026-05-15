@@ -11,29 +11,29 @@ This section provides access to GitHub Copilot configuration files, prompts, cus
 
 ## Quick Access Links
 
-### 📋 [Core Instructions](../.github/copilot-instructions.md)
+### 📋 [Core Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/copilot-instructions.md)
 
 Essential GitHub Copilot instructions for Edge AI development workflows and coding standards.
 
-### 📝 [Prompt Library](../.github/prompts/README.md)
+### 📝 [Prompt Library](https://github.com/microsoft/edge-ai/blob/main/.github/prompts/README.md)
 
 Reusable prompt templates for specific development tasks including ADR creation, deployment, testing, and project planning.
 
-### 💬 [Custom Agents](../.github/agents/README.md)
+### 💬 [Custom Agents](https://github.com/microsoft/edge-ai/blob/main/.github/agents/README.md)
 
 Specialized AI assistance modes for enhanced development workflows including task planning, learning coaching, and security planning.
 
-### 🛠️ [Development Instructions](../.github/instructions/README.md)
+### 🛠️ [Development Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/instructions/README.md)
 
 Context-specific development instructions for systematic AI-assisted implementation across different technologies and frameworks.
 
-### 📚 [GitHub Resources Overview](../.github/github-copilot-resources.md)
+### 📚 [GitHub Resources Overview](https://github.com/microsoft/edge-ai/blob/main/.github/github-copilot-resources.md)
 
 Complete overview of the GitHub Copilot resources directory structure and available tools.
 
 ## Integration with Learning Platform
 
-These GitHub Copilot resources are designed to work seamlessly with the [Learning Platform](../learning/README.md), providing AI-assisted guidance for:
+These GitHub Copilot resources are designed to work seamlessly with the [Learning Platform](https://github.com/microsoft/edge-ai/blob/main/learning/README.md), providing AI-assisted guidance for:
 
 - **Kata Practice**: Enhanced prompts for deliberate practice exercises
 - **Project Planning**: AI-assisted project envisioning and task planning
@@ -42,10 +42,10 @@ These GitHub Copilot resources are designed to work seamlessly with the [Learnin
 
 ## Getting Started
 
-1. **Review [Core Instructions](../.github/copilot-instructions.md)** for foundational guidance
-2. **Explore [Custom Agents](../.github/agents/README.md)** for specialized assistance
-3. **Use [Prompt Library](../.github/prompts/README.md)** for specific development tasks
-4. **Apply [Development Instructions](../.github/instructions/README.md)** for technology-specific guidance
+1. **Review [Core Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/copilot-instructions.md)** for foundational guidance
+2. **Explore [Custom Agents](https://github.com/microsoft/edge-ai/blob/main/.github/agents/README.md)** for specialized assistance
+3. **Use [Prompt Library](https://github.com/microsoft/edge-ai/blob/main/.github/prompts/README.md)** for specific development tasks
+4. **Apply [Development Instructions](https://github.com/microsoft/edge-ai/blob/main/.github/instructions/README.md)** for technology-specific guidance
 
 ## Contributing
 

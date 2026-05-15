@@ -793,10 +793,10 @@ Deploys Kubernetes asset definitions to a connected cluster using the namespaced
 
 | Name                   | Type                                             | API Version |
 |:-----------------------|:-------------------------------------------------|:------------|
-| namespacedDevice       | `Microsoft.DeviceRegistry/namespaces/devices`    | 2025-10-01  |
-| namespacedAsset        | `Microsoft.DeviceRegistry/namespaces/assets`     | 2025-10-01  |
-| assetEndpointProfile   | `Microsoft.DeviceRegistry/assetEndpointProfiles` | 2025-10-01  |
-| legacyAsset            | `Microsoft.DeviceRegistry/assets`                | 2025-10-01  |
+| namespacedDevice       | `Microsoft.DeviceRegistry/namespaces/devices`    | 2026-04-01  |
+| namespacedAsset        | `Microsoft.DeviceRegistry/namespaces/assets`     | 2026-04-01  |
+| assetEndpointProfile   | `Microsoft.DeviceRegistry/assetEndpointProfiles` | 2026-04-01  |
+| legacyAsset            | `Microsoft.DeviceRegistry/assets`                | 2026-04-01  |
 | k8BridgeRoleAssignment | `Microsoft.Resources/deployments`                | 2025-04-01  |
 
 #### Outputs for edgeAssets
@@ -1037,20 +1037,23 @@ AIO Instance features.
 
 The settings for the Azure IoT Operations MQ Broker.
 
-| Property                  | Type                                          | Description                                                          |
-|:--------------------------|:----------------------------------------------|:---------------------------------------------------------------------|
-| brokerListenerServiceName | `string`                                      | The service name for the broker listener.                            |
-| brokerListenerPort        | `int`                                         | The port for the broker listener.                                    |
-| serviceAccountAudience    | `string`                                      | The audience for the service account.                                |
-| frontendReplicas          | `int`                                         | The number of frontend replicas for the broker.                      |
-| frontendWorkers           | `int`                                         | The number of frontend workers for the broker.                       |
-| backendRedundancyFactor   | `int`                                         | The redundancy factor for the backend of the broker.                 |
-| backendWorkers            | `int`                                         | The number of backend workers for the broker.                        |
-| backendPartitions         | `int`                                         | The number of partitions for the backend of the broker.              |
-| memoryProfile             | `string`                                      | The memory profile for the broker (Low, Medium, High).               |
-| serviceType               | `string`                                      | The service type for the broker (ClusterIP, LoadBalancer, NodePort). |
-| logsLevel                 | `string`                                      | The log level for broker diagnostics (info, debug, trace).           |
-| persistence               | `[_3.BrokerPersistence](#user-defined-types)` | Broker persistence configuration for disk-backed message storage.    |
+| Property                  | Type                                                | Description                                                          |
+|:--------------------------|:----------------------------------------------------|:---------------------------------------------------------------------|
+| brokerListenerServiceName | `string`                                            | The service name for the broker listener.                            |
+| brokerListenerPort        | `int`                                               | The port for the broker listener.                                    |
+| serviceAccountAudience    | `string`                                            | The audience for the service account.                                |
+| frontendReplicas          | `int`                                               | The number of frontend replicas for the broker.                      |
+| frontendWorkers           | `int`                                               | The number of frontend workers for the broker.                       |
+| backendRedundancyFactor   | `int`                                               | The redundancy factor for the backend of the broker.                 |
+| backendWorkers            | `int`                                               | The number of backend workers for the broker.                        |
+| backendPartitions         | `int`                                               | The number of partitions for the backend of the broker.              |
+| memoryProfile             | `string`                                            | The memory profile for the broker (Low, Medium, High).               |
+| serviceType               | `string`                                            | The service type for the broker (ClusterIP, LoadBalancer, NodePort). |
+| logsLevel                 | `string`                                            | The log level for broker diagnostics (info, debug, trace).           |
+| persistence               | `[_3.BrokerPersistence](#user-defined-types)`       | Broker persistence configuration for disk-backed message storage.    |
+| advanced                  | `[_3.BrokerAdvancedConfig](#user-defined-types)`    | Advanced broker settings.                                            |
+| diskBackedMessageBuffer   | `[_3.BrokerDiskBufferConfig](#user-defined-types)`  | Disk-backed message buffer configuration.                            |
+| diagnosticsConfig         | `[_3.BrokerDiagnosticsConfig](#user-defined-types)` | Extended diagnostics configuration (metrics, self-check, traces).    |
 
 ### `_3.AioMqBrokerAnonymous`
 
@@ -1135,20 +1138,48 @@ Authentication settings for Artifact Pull Secret.
 |:----------|:---------|:--------------------------------------------------------------------------|
 | secretRef | `string` | The name of the kubernetes secret that contains the artifact pull secret. |
 
+### `_3.BrokerAdvancedConfig`
+
+Advanced broker settings for client limits, internal traffic encryption, and internal certificate configuration.
+
+| Property               | Type     | Description                                           |
+|:-----------------------|:---------|:------------------------------------------------------|
+| encryptInternalTraffic | `string` | Encrypt internal broker traffic. Defaults to Enabled. |
+| internalCerts          | `object` | Internal certificate configuration.                   |
+| clients                | `object` | Client configuration for MQTT sessions.               |
+
+### `_3.BrokerDiagnosticsConfig`
+
+Extended broker diagnostics configuration for metrics, self-check, and distributed tracing.
+
+| Property  | Type     | Description                          |
+|:----------|:---------|:-------------------------------------|
+| metrics   | `object` | Metrics configuration.               |
+| selfCheck | `object` | Self-check diagnostic configuration. |
+| traces    | `object` | Distributed tracing configuration.   |
+
+### `_3.BrokerDiskBufferConfig`
+
+Disk-backed message buffer configuration for broker in-memory overflow to disk.
+
+| Property                  | Type     | Description                                                         |
+|:--------------------------|:---------|:--------------------------------------------------------------------|
+| maxSize                   | `string` | Maximum buffer size (e.g. "500M", "1G"). Pattern: ^[0-9]+[KMGTPE]$. |
+| ephemeralVolumeClaimSpec  | `object` | Ephemeral volume claim spec for message buffer (preferred).         |
+| persistentVolumeClaimSpec | `object` | Persistent volume claim spec for message buffer.                    |
+
 ### `_3.BrokerPersistence`
 
 Broker persistence configuration for disk-backed message storage.
 
-| Property                  | Type     | Description                                                          |
-|:--------------------------|:---------|:---------------------------------------------------------------------|
-| enabled                   | `bool`   | Whether persistence is enabled.                                      |
-| maxSize                   | `string` | Maximum size of the message buffer on disk (e.g., "500M", "1G").     |
-| encryption                | `object` | Encryption configuration for the persistence database.               |
-| dynamicSettings           | `object` | Dynamic settings for MQTTv5 user property-based persistence control. |
-| retain                    | `object` | Controls which retained messages should be persisted to disk.        |
-| stateStore                | `object` | Controls which state store keys should be persisted to disk.         |
-| subscriberQueue           | `object` | Controls which subscriber queues should be persisted to disk.        |
-| persistentVolumeClaimSpec | `object` | Persistent volume claim specification for storage.                   |
+| Property                  | Type     | Description                                                      |
+|:--------------------------|:---------|:-----------------------------------------------------------------|
+| maxSize                   | `string` | Maximum size of the message buffer on disk (e.g., "500M", "1G"). |
+| encryption                | `object` | Encryption configuration for the persistence database.           |
+| retain                    | `object` | Controls which retained messages should be persisted to disk.    |
+| stateStore                | `object` | Controls which state store keys should be persisted to disk.     |
+| subscriberQueue           | `object` | Controls which subscriber queues should be persisted to disk.    |
+| persistentVolumeClaimSpec | `object` | Persistent volume claim specification for storage.               |
 
 ### `_3.CustomerManagedByoIssuerConfig`
 

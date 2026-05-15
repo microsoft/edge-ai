@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "edge-ai",
+      "draft": true,
+      "include-v-in-tag": true,
+      "include-component-in-tag": false,
+      "bump-minor-pre-major": true,
+      "release-search-depth": 800,
+      "commit-search-depth": 1000,
+      "changelog-path": "CHANGELOG.md",
+      "changelog-sections": [
+        { "type": "feat", "section": "Features", "hidden": false },
+        { "type": "fix", "section": "Bug Fixes", "hidden": false },
+        { "type": "perf", "section": "Performance Improvements", "hidden": false },
+        { "type": "deps", "section": "Dependencies", "hidden": false },
+        { "type": "docs", "section": "Documentation", "hidden": false },
+        { "type": "build", "section": "Build System", "hidden": false },
+        { "type": "refactor", "section": "Code Refactoring", "hidden": false },
+        { "type": "chore", "section": "Miscellaneous Chores", "hidden": false },
+        { "type": "ops", "section": "Operations", "hidden": false }
+      ]
+    }
+  }
+}

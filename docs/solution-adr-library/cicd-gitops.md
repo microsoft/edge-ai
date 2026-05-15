@@ -90,7 +90,7 @@ The *deploy* workflow takes Helm manifest templates from the source repository b
 It generates Kubernetes manifests by applying configuration values from the *Config* repository, using the branch corresponding to the current environment (e.g., *dev*).
 Once the manifests are generated, the workflow creates a PR to the GitOps repository on the relevant environment branch (e.g., *dev*).
 
-The workflow updates the Git commit with the status *{env} Promoted*, specifying that the change has been promoted to the environment.
+The workflow updates the Git commit with the status *\{env\} Promoted*, specifying that the change has been promoted to the environment.
 
 ![Deploy commit status](./media/gitops-deploy-commit-status.png)
 
@@ -115,7 +115,7 @@ This workflow polls Azure Resource Graph, waiting until all registered GitOps co
 
 If one of the clusters reports a failure, the workflow fails. It updates the Git commit status in the source repository as failed and the whole promotion flow stops.
 
-Once all configurations are compliant, the workflow updates the source commit id with *{env} Deployed {GitOps commitid}* status.
+Once all configurations are compliant, the workflow updates the source commit id with *\{env\} Deployed \{GitOps commitid\}* status.
 
 The workflow checks if the change that started the CD should be promoted (e.g. originated in *main*) to the next environment and if the next environment is configured.
 It starts a new cycle by triggering the deploy workflow for the next environment.

@@ -19,10 +19,10 @@ locals {
 module "cluster_a_cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
+  tags = merge(var.tags, {
     blueprint = "dual-peered-single-cluster"
     cluster   = local.cluster_a_name
-  }
+  })
   environment     = var.environment
   location        = var.location
   resource_prefix = "${var.resource_prefix}${local.cluster_a_name}"
@@ -187,6 +187,7 @@ module "cluster_a_edge_cncf_cluster" {
   should_deploy_arc_machines      = false
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
+  cluster_admin_group_oid         = var.cluster_admin_group_oid
 
   // Key Vault for script retrieval
   key_vault = module.cluster_a_cloud_security_identity.key_vault
@@ -273,10 +274,10 @@ module "cluster_a_edge_messaging" {
 module "cluster_b_cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
+  tags = merge(var.tags, {
     blueprint = "dual-peered-single-cluster"
     cluster   = local.cluster_b_name
-  }
+  })
   environment     = var.environment
   location        = var.location
   resource_prefix = "${var.resource_prefix}${local.cluster_b_name}"
@@ -440,6 +441,7 @@ module "cluster_b_edge_cncf_cluster" {
   should_deploy_arc_machines      = false
   should_get_custom_locations_oid = var.should_get_custom_locations_oid
   custom_locations_oid            = var.custom_locations_oid
+  cluster_admin_group_oid         = var.cluster_admin_group_oid
 
   // Key Vault for script retrieval
   key_vault = module.cluster_b_cloud_security_identity.key_vault

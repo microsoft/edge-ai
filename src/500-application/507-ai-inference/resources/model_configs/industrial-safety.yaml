@@ -26,7 +26,7 @@ input:
 output:
   tensors:
     - name: "detections"
-      shape: [1, 25200, 15]  # 15 classes
+      shape: [1, 25200, 16]  # 16 classes
       dtype: "float32"
       semantic: "detections"
   postprocess_type: "yolo"
@@ -44,6 +44,7 @@ output:
     - "leak"
     - "smoke"
     - "flame"
+    - "gas_plume"
     - "vehicle"
     - "equipment"
     - "unauthorized_person"
@@ -68,7 +69,7 @@ preprocessing:
 postprocessing:
   postprocess_type: "yolo"
   parameters:
-    priority_classes: ["person_without_hardhat", "person_without_vest", "spill", "leak", "smoke", "flame"]
+    priority_classes: ["person_without_hardhat", "person_without_vest", "spill", "leak", "gas_plume", "smoke", "flame"]
     alert_threshold: 0.8
     multi_class_nms: true
   output_format: "detection"

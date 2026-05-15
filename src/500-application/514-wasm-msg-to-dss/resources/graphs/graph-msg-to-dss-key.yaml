@@ -1,0 +1,47 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "Message to DSS Key Writer"
+  description: "Writes any JSON message to the AIO Distributed State Store under a configurable key with configurable TTL, passing the message through unchanged"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: msg_to_dss_key
+    parameters:
+      keyPath:
+        name: keyPath
+        description: "JSON Pointer (RFC 6901) path to extract the state store key value. Examples: /id, /data/record_id, /items/0/id"
+      keyPrefix:
+        name: keyPrefix
+        description: "Optional prefix prepended to the extracted key for namespace isolation. Example: device: produces key device:abc123"
+      ttlSeconds:
+        name: ttlSeconds
+        description: "Time-to-live in seconds for state store entries. Use 0 for no expiration."
+      onMissing:
+        name: onMissing
+        description: "Behavior when keyPath is not found in the message: skip (default, passthrough with warning) or error (return error, drops message)"
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "msg_to_dss_key"
+    module: "msg-to-dss-key:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "msg_to_dss_key"
+  - from:
+      name: "msg_to_dss_key"
+    to:
+      name: "sink"

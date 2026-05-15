@@ -173,7 +173,7 @@ Creates an Azure Device Registry (ADR) Namespace for organizing assets and devic
 
 | Name         | Type                                  | API Version |
 |:-------------|:--------------------------------------|:------------|
-| adrNamespace | `Microsoft.DeviceRegistry/namespaces` | 2025-10-01  |
+| adrNamespace | `Microsoft.DeviceRegistry/namespaces` | 2026-04-01  |
 
 #### Outputs for adrNamespace
 

@@ -99,13 +99,35 @@ variable "function_cors_support_credentials" {
 }
 
 variable "function_node_version" {
-  description = "The version of Node.js to use."
+  description = "The version of Node.js to use"
   type        = string
-  default     = "18"
+  default     = "20"
+}
+
+variable "function_python_version" {
+  description = "The version of Python to use."
+  type        = string
+  default     = null
 }
 
 variable "tags" {
   type        = map(string)
   description = "Tags to apply to all resources"
   default     = {}
+}
+
+/*
+ * Diagnostic Settings - Optional
+ */
+
+variable "log_analytics_workspace_id" {
+  type        = string
+  description = "The ID of the Log Analytics workspace for diagnostic settings. If null, diagnostics are not enabled"
+  default     = null
+}
+
+variable "should_enable_diagnostic_settings" {
+  type        = bool
+  description = "Whether to enable diagnostic settings for Event Grid and Event Hubs"
+  default     = false
 }

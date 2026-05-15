@@ -97,7 +97,20 @@ if ! command -v "az" &>/dev/null; then
     log "Installing Azure CLI"
     case "$OS_TYPE" in
       ubuntu)
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
+        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
+        sudo apt-get update
+        sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
+        sudo mkdir -p /etc/apt/keyrings
+        curl -sLS https://packages.microsoft.com/keys/microsoft.asc \
+          | gpg --dearmor \
+          | sudo tee /etc/apt/keyrings/microsoft.gpg >/dev/null
+        sudo chmod go+r /etc/apt/keyrings/microsoft.gpg
+        AZ_REPO=$(lsb_release -cs)
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_REPO} main" \
+          | sudo tee /etc/apt/sources.list.d/azure-cli.list >/dev/null
+        sudo apt-get update
+        sudo apt-get install -y "azure-cli=${AZ_CLI_INSTALL_VER}-1~${AZ_REPO}"
         ;;
       *)
         err "'az' command missing and not able to install Azure CLI. Please install Azure CLI before running this script."
@@ -112,7 +125,7 @@ fi
 if [ -z "$SKIP_AZ_LOGIN" ]; then
   if [ -n "$CLIENT_ID" ]; then
     log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
-    if ! az login --identity --client-id "$CLIENT_ID"; then
+    if ! az login --identity --username "$CLIENT_ID"; then
       err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
     fi
   else
@@ -121,6 +134,7 @@ if [ -z "$SKIP_AZ_LOGIN" ]; then
       err "Failed to login with managed identity. If the VM has multiple identities, provide CLIENT_ID to specify which one to use"
     fi
   fi
+
 fi
 
 ####
@@ -142,10 +156,21 @@ trap 'rm "$SCRIPT_PATH"' EXIT
 
 log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --file $SCRIPT_PATH"
 
-# Download the script from Key Vault
-if ! az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"; then
-  log "First attempt to download script failed... Retrying..."
-  az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH"
+# Download the script from Key Vault. Retry with backoff to handle RBAC
+# propagation delay when using system-assigned managed identity.
+KV_OK=false
+for attempt in $(seq 1 10); do
+  if az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH" 2>&1; then
+    KV_OK=true
+    break
+  fi
+  log "Key Vault download attempt $attempt/10 failed, retrying in 30s..."
+  rm -f "$SCRIPT_PATH"
+  sleep 30
+done
+
+if [ "$KV_OK" != true ]; then
+  err "Failed to download script from Key Vault after 10 attempts"
 fi
 
 # Make the script executable

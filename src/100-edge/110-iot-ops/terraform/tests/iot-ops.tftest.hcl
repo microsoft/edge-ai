@@ -332,15 +332,8 @@ run "create_with_valid_persistence_config" {
     adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     mqtt_broker_persistence_config = {
-      enabled            = true
       max_size           = "10G"
       encryption_enabled = true
-
-      # Dynamic Settings
-      dynamic_settings = {
-        user_property_key   = "aio-persistence"
-        user_property_value = "true"
-      }
 
       # Retention Policy - All mode
       retain_policy = {
@@ -370,7 +363,6 @@ run "create_with_valid_persistence_config" {
         mode = "Custom"
         custom_settings = {
           subscriber_client_ids = ["factory-client-*", "sensor-gateway-01"]
-          topics                = ["sensor/#", "alerts/+"]
           dynamic_enabled       = true
         }
       }
@@ -393,11 +385,6 @@ run "create_with_valid_persistence_config" {
   }
 
   # Verify that persistence configuration is correctly passed
-  assert {
-    condition     = var.mqtt_broker_persistence_config.enabled == true
-    error_message = "MQTT broker persistence should be enabled"
-  }
-
   assert {
     condition     = var.mqtt_broker_persistence_config.max_size == "10G"
     error_message = "MQTT broker persistence max_size should be 10G"
@@ -441,7 +428,6 @@ run "create_with_edge_case_persistence_config" {
     adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     mqtt_broker_persistence_config = {
-      enabled            = false  # Disabled persistence
       max_size           = "100M" # Minimum viable size
       encryption_enabled = false
 
@@ -460,7 +446,7 @@ run "create_with_edge_case_persistence_config" {
 
       # Minimal PVC specification
       persistent_volume_claim_spec = {
-        access_modes = ["ReadWriteOnce"] # Different access mode
+        access_modes = ["ReadWriteOncePod"] # Only valid access mode for persistence
         resources = {
           requests = {
             storage = "100M"
@@ -471,11 +457,6 @@ run "create_with_edge_case_persistence_config" {
   }
 
   # Verify edge case configuration is accepted
-  assert {
-    condition     = var.mqtt_broker_persistence_config.enabled == false
-    error_message = "MQTT broker persistence should be disabled in this test"
-  }
-
   assert {
     condition     = var.mqtt_broker_persistence_config.retain_policy.mode == "None"
     error_message = "Retain policy mode should be None"
@@ -504,17 +485,11 @@ run "create_with_minimal_persistence_config" {
     adr_namespace         = run.setup_tests.adr_namespace
     arc_connected_cluster = run.setup_tests.arc_connected_cluster
     mqtt_broker_persistence_config = {
-      enabled  = true
       max_size = "1G" # Only required fields specified
     }
   }
 
   # Verify minimal configuration is accepted
-  assert {
-    condition     = var.mqtt_broker_persistence_config.enabled == true
-    error_message = "MQTT broker persistence should be enabled"
-  }
-
   assert {
     condition     = var.mqtt_broker_persistence_config.max_size == "1G"
     error_message = "Max size should be 1G"

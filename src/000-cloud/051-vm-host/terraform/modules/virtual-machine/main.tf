@@ -60,15 +60,17 @@ resource "azurerm_linux_virtual_machine" "aio_edge" {
   ]
 
   source_image_reference {
-    offer     = "0001-com-ubuntu-server-jammy"
     publisher = "Canonical"
-    sku       = "22_04-lts-gen2"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server"
     version   = "latest"
   }
 
   os_disk {
+    name                 = "osdisk-${var.label_prefix}-${var.vm_index}"
     caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+    storage_account_type = var.os_disk_type
+    disk_size_gb         = var.os_disk_size_gb
   }
 
   // Always enable system-assigned identity for Azure AD SSH

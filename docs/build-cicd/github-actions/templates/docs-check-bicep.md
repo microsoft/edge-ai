@@ -128,7 +128,6 @@ To enhance this workflow:
 ## Related Workflows
 
 - [docs-check-terraform.yml](./docs-check-terraform.md): Similar workflow for Terraform documentation validation
-- [megalinter.yml](./megalinter.md): General linting workflow that includes markdown validation
 
 ## Security Considerations
 

@@ -36,7 +36,7 @@
     for this repository to reduce noise:
     .git, .github, .vscode, .devcontainer, .idea, .azure, .cargo, .terraform, node_modules,
     dist, out, build, bin, obj, target, vendor, .venv, venv, env, __pycache__, .pytest_cache,
-    coverage, megalinter-reports, checkov-results.
+    coverage, checkov-results.
     Note: A path-segment filter is applied so these directories are skipped during recursion
     regardless of provider-side include/exclude behavior.
 
@@ -107,7 +107,7 @@ param(
         '.git', '.idea', '.azure', '.cargo', '.terraform',
         'node_modules', 'dist', 'out', 'build', 'bin', 'obj',
         '.venv', 'venv', 'env', 'vendor', '__pycache__', '.pytest_cache', 'coverage',
-        'megalinter-reports', 'checkov-results'
+        'checkov-results'
     ),
 
     [Parameter()]

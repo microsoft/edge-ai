@@ -51,7 +51,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 | **Requirement**    | **Specification**          | **Validation Method**      | **Business Impact**               |
 |--------------------|----------------------------|----------------------------|-----------------------------------|
 | **Azure CLI**      | Latest version (≥2.64.0)   | `az --version`             | Azure resource management         |
-| **Terraform**      | Version ≥1.9.8             | `terraform version`        | Infrastructure as Code deployment |
+| **Terraform**      | Version ≥1.12.0            | `terraform version`        | Infrastructure as Code deployment |
 | **Kubernetes CLI** | Latest stable kubectl      | `kubectl version --client` | Edge cluster management           |
 | **Git**            | Version control system     | `git --version`            | Source code management            |
 | **IDE**            | VS Code with DevContainers | Code editor availability   | Development productivity          |
@@ -93,7 +93,7 @@ This document provides a comprehensive framework for all prerequisites needed to
 | **Requirement**            | **Specification**                       | **Validation Method**     | **Business Impact**          |
 |----------------------------|-----------------------------------------|---------------------------|------------------------------|
 | **Computer Vision Models** | Defect detection, classification models | Model accuracy test       | Quality detection capability |
-| **Edge Inference**         | Real-time inference <100ms              | Inference speed benchmark | Production line integration  |
+| **Edge Inference**         | Real-time inference \<100ms             | Inference speed benchmark | Production line integration  |
 | **Model Training**         | Cloud-based training infrastructure     | Training pipeline test    | Continuous improvement       |
 | **Image Storage**          | High-speed local and cloud storage      | Storage performance test  | Image data management        |
 

@@ -11,12 +11,24 @@ variable "host_machine_count" {
 variable "vm_sku_size" {
   type        = string
   description = "Size of the VM"
-  default     = "Standard_D8s_v3"
+  default     = "Standard_D8s_v6"
 }
 
 variable "vm_username" {
   type        = string
   description = "Username for the VM admin account"
+  default     = null
+}
+
+variable "os_disk_type" {
+  type        = string
+  description = "Storage account type for the OS disk"
+  default     = "Standard_LRS"
+}
+
+variable "os_disk_size_gb" {
+  type        = number
+  description = "Size of the OS disk in GB. Defaults to the image default size"
   default     = null
 }
 

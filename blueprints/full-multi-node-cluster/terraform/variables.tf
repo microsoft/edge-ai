@@ -95,6 +95,12 @@ variable "should_add_current_user_cluster_admin" {
   default     = true
 }
 
+variable "cluster_admin_group_oid" {
+  type        = string
+  description = "The Entra ID group Object ID that will be given cluster-admin permissions and Azure Arc RBAC access for 'az connectedk8s proxy'"
+  default     = null
+}
+
 variable "should_get_custom_locations_oid" {
   type        = bool
   description = <<-EOT
@@ -136,6 +142,12 @@ variable "cluster_server_ip" {
 /*
  * Azure IoT Operations Parameters
  */
+
+variable "should_deploy_aio" {
+  type        = bool
+  description = "Whether to deploy Azure IoT Operations and its dependent edge components (assets, edge messaging). When false, deploys Arc-connected cluster with extensions and observability only"
+  default     = true
+}
 
 variable "aio_features" {
   description = "AIO instance features with mode ('Stable', 'Preview', 'Disabled') and settings ('Enabled', 'Disabled')"
@@ -396,7 +408,7 @@ variable "node_count" {
 variable "node_vm_size" {
   type        = string
   description = "VM size for the agent pool in the AKS cluster"
-  default     = "Standard_D8ds_v5"
+  default     = "Standard_D8ds_v6"
 }
 
 variable "enable_auto_scaling" {
@@ -570,6 +582,12 @@ variable "acr_data_endpoint_enabled" {
   default     = true
 }
 
+variable "acr_export_policy_enabled" {
+  type        = bool
+  description = "Whether to allow container image export from the ACR. Requires acr_public_network_access_enabled to be true when enabled"
+  default     = false
+}
+
 variable "acr_public_network_access_enabled" {
   type        = bool
   description = "Whether to enable the ACR public endpoint alongside private connectivity"
@@ -609,6 +627,12 @@ variable "should_enable_key_vault_public_network_access" {
   type        = bool
   description = "Whether to enable public network access for the Key Vault"
   default     = true
+}
+
+variable "should_enable_key_vault_purge_protection" {
+  type        = bool
+  description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
+  default     = false
 }
 
 /*
@@ -1666,4 +1690,15 @@ variable "dataflow_endpoints" {
     ])
     error_message = "Each endpoint must include the settings object matching its endpointType (e.g., kafkaSettings for Kafka, mqttSettings for Mqtt)."
   }
+}
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
 }

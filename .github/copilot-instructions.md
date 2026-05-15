@@ -342,13 +342,11 @@ edge-ai/
 ├── .gitattributes                             # Git attributes configuration
 ├── .gitignore                                 # Git ignore patterns
 ├── .markdownlint.json                         # Markdown linting rules and configuration
-├── .mega-linter.yml                           # Multi-language linter configuration
 ├── .npmrc                                     # NPM package manager configuration
 ├── .terraform-docs.yml                        # Terraform documentation generation configuration
 ├── .terrascan.toml                            # Infrastructure security scanning configuration
 ├── bicepconfig.json                           # Bicep configuration for Azure Resource Manager templates
 ├── Cargo.toml                                 # Rust workspace configuration
-├── GitVersion.yml                             # Versioning configuration
 ├── package.json                               # NPM scripts for lint fixing, README.md (docs) generation, file formatting, validation
 ├── package-lock.json                          # NPM dependency lock file
 ├── PSScriptAnalyzerSettings.psd1              # PowerShell script analysis configuration
@@ -386,8 +384,7 @@ edge-ai/
 ├── copilot/                                   # GitHub Copilot instruction files for different technologies
 ├── docs/                                      # Comprehensive project documentation
 ├── project-adrs/                              # Architecture Decision Records
-├── project-security-plans/                    # Security planning templates and examples
-└── praxisworx/                                # Training materials and skill assessments
+└── project-security-plans/                    # Security planning templates and examples
 ```
 
 ### Core Infrastructure Components (src/)
