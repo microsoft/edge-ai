@@ -16,6 +16,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      CARGO_REGISTRIES_AIO_SDKS_TOKEN: ${{ secrets.CARGO_REGISTRIES_AIO_SDKS_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -169,7 +171,7 @@ jobs:
 
       - name: Generate Cobertura coverage
         working-directory: ${{ matrix.crate }}
-        run: cargo llvm-cov --cobertura --output-path coverage.xml
+        run: cargo llvm-cov --locked --cobertura --output-path coverage.xml
 
       - name: Upload to Codecov
         if: success()
