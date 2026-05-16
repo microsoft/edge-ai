@@ -64,6 +64,11 @@
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "github.copilot.chat.agent.thinkingTool": true,
   "github.copilot.chat.codesearch.enabled": true,
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": "./.github/instructions/commit-message.instructions.md"
+    }
+  ],
   "github.copilot.chat.advanced.workspace.prototypeAdoCodeSearchEnabled": true,
   "github.copilot.chat.advanced.multiReplaceString.enabled": true,
   "github.copilot.chat.customInstructionsInSystemMessage": true,
