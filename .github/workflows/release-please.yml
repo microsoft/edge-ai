@@ -85,7 +85,10 @@ jobs:
           TAG: ${{ steps.release.outputs.tag_name }}
         run: |
           set -euo pipefail
-          git tag -v "${TAG}"
+          gitsign verify-tag \
+            --certificate-identity 'https://github.com/microsoft/edge-ai/.github/workflows/release-please.yml@refs/heads/main' \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            "${TAG}"
 
   generate-dependency-sbom:
     needs: release-please
