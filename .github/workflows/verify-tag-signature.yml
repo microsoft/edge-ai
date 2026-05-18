@@ -41,6 +41,11 @@ jobs:
             echo "Tag ${TAG_NAME} not found in repository." >&2
             exit 1
           fi
+          tag_type=$(git cat-file -t "refs/tags/${TAG_NAME}")
+          if [[ "${tag_type}" != "tag" ]]; then
+            echo "Expected annotated tag object for ${TAG_NAME}, found ${tag_type}." >&2
+            exit 1
+          fi
           gitsign verify-tag \
             --certificate-identity 'https://github.com/microsoft/edge-ai/.github/workflows/release-please.yml@refs/heads/main' \
             --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
