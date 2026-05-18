@@ -416,29 +416,43 @@ terraform apply -var-file="onvif-connector-assets.tfvars"
 Configuration example in `onvif-connector-assets.tfvars.example`:
 
 ```hcl
-onvif_connector_devices = [
+namespaced_assets = [
   {
-    name        = "warehouse-camera-01"
-    endpoint    = "https://192.168.1.100/onvif/device_service"
-    # username    = "admin"
-    # password    = "secure-password"
+    name         = "warehouse-ptz-control"
+    display_name = "Warehouse PTZ Camera System"
+    enabled      = true
+    device_ref = {
+      device_name   = "warehouse-camera-01"
+      endpoint_name = "warehouse-camera-endpoint"
+    }
+    description = "ONVIF PTZ camera for warehouse monitoring with motion detection"
 
-    assets = [
+    // PTZ control via management_groups
+    management_groups = [
       {
-        name = "warehouse-ptz-control"
-
-        commands = [
+        name = "ptz-controls"
+        actions = [
           {
-            name    = "pan_right"
-            topic   = "cameras/warehouse/ptz/pan"
-            payload = jsonencode({direction = "right", speed = 0.5})
+            name                 = "pan_right"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "right"
+              speed     = 0.5
+            })
           }
         ]
+      }
+    ]
 
+    // Camera events via event_groups
+    event_groups = [
+      {
+        name = "camera-events"
         events = [
           {
-            name           = "MOTION_DETECTED"
-            event_notifier = "motion"
+            name        = "motion-detected"
+            data_source = "motion"
             destinations = [
               {
                 target = "Mqtt"
@@ -451,6 +465,8 @@ onvif_connector_devices = [
         ]
       }
     ]
+
+    datasets = []
   }
 ]
 ```
@@ -466,7 +482,7 @@ The ONVIF Connector leverages the Akri connector module:
 
 ### Configuration Variables
 
-Terraform variables in `src/100-edge/110-iot-ops/terraform/variables.akri.tf`:
+Terraform variables in `src/100-edge/111-assets/terraform/variables.tf`:
 
 ```terraform
 variable "should_enable_akri_onvif_connector" {
@@ -475,33 +491,45 @@ variable "should_enable_akri_onvif_connector" {
   description = "Deploy Akri ONVIF Connector template"
 }
 
-variable "onvif_connector_devices" {
+variable "namespaced_assets" {
   type = list(object({
-    name        = string
-    description = optional(string)
-    endpoint    = string
-    username    = optional(string)
-    password    = optional(string)
-    assets      = list(object({
-      name        = string
-      description = optional(string)
-      commands    = optional(list(object({
-        name    = string
-        topic   = string
-        payload = string
-      })))
-      events      = optional(list(object({
-        name           = string
-        event_notifier = string
-        destinations   = list(object({
-          target        = string
-          configuration = map(string)
-        }))
-      })))
+    name         = string
+    display_name = optional(string)
+    device_ref = optional(object({
+      device_name   = string
+      endpoint_name = string
     }))
+    enabled     = optional(bool, true)
+    description = optional(string)
+    attributes  = optional(map(string), {})
+    datasets    = optional(list(object({...})), [])
+    event_groups = optional(list(object({
+      name = string
+      events = list(object({
+        name        = string
+        data_source = string
+        destinations = optional(list(object({
+          target = string
+          configuration = object({
+            topic  = optional(string)
+            retain = optional(string)
+            qos    = optional(string)
+          })
+        })), [])
+      }))
+    })), [])
+    management_groups = optional(list(object({
+      name = string
+      actions = list(object({
+        name                 = string
+        action_type          = string
+        target_uri           = string
+        action_configuration = optional(string)
+      }))
+    })), [])
   }))
   default     = []
-  description = "ONVIF camera devices and assets"
+  description = "List of namespaced assets with enhanced configuration support"
 }
 ```
 

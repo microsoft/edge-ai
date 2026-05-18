@@ -6,8 +6,8 @@
  *
  * The ONVIF connector enables standardized IP camera integration with support for:
  * - Device discovery and capability introspection (Profile S/T)
- * - PTZ (Pan-Tilt-Zoom) control via MQTT commands
- * - Event monitoring (motion detection, tampering alerts)
+ * - PTZ (Pan-Tilt-Zoom) control via management_groups with actions
+ * - Event monitoring (motion detection, tampering alerts) via event_groups
  * - Media stream URI retrieval (H.264, JPEG, H.265)
  *
  * Usage:
@@ -111,11 +111,11 @@ namespaced_devices = [
  * ONVIF Connector Assets
  *
  * Defines the actual assets that reference the devices above and configure:
- * - PTZ commands for camera control (via MQTT topics)
- * - Event subscriptions (motion detection, tampering alerts)
+ * - PTZ control via management_groups with actions (ONVIF PTZ service calls)
+ * - Event subscriptions via event_groups (motion detection, tampering alerts)
  * - Media profile configurations
  *
- * ONVIF assets support both commands (PTZ control) and events (camera notifications).
+ * ONVIF assets support both management_groups (PTZ control) and event_groups (camera notifications).
  */
 namespaced_assets = [
   // Warehouse Camera Asset - Full PTZ Control + Events
@@ -146,110 +146,128 @@ namespaced_assets = [
       max_resolution    = "1920x1080"
     }
 
-    // PTZ Commands - Control camera movement via MQTT
-    commands = [
+    // PTZ management groups - Control camera movement via ONVIF PTZ service
+    management_groups = [
       {
-        name        = "pan_right"
-        display_name = "Pan Camera Right"
-        description  = "Pan camera to the right"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/pan"
-        payload      = jsonencode({
-          direction = "right"
-          speed     = 0.5
-        })
-      },
-      {
-        name        = "pan_left"
-        display_name = "Pan Camera Left"
-        description  = "Pan camera to the left"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/pan"
-        payload      = jsonencode({
-          direction = "left"
-          speed     = 0.5
-        })
-      },
-      {
-        name        = "tilt_up"
-        display_name = "Tilt Camera Up"
-        description  = "Tilt camera upward"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/tilt"
-        payload      = jsonencode({
-          direction = "up"
-          speed     = 0.5
-        })
-      },
-      {
-        name        = "tilt_down"
-        display_name = "Tilt Camera Down"
-        description  = "Tilt camera downward"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/tilt"
-        payload      = jsonencode({
-          direction = "down"
-          speed     = 0.5
-        })
-      },
-      {
-        name        = "zoom_in"
-        display_name = "Zoom In"
-        description  = "Zoom camera in"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/zoom"
-        payload      = jsonencode({
-          direction = "in"
-          speed     = 0.3
-        })
-      },
-      {
-        name        = "zoom_out"
-        display_name = "Zoom Out"
-        description  = "Zoom camera out"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/zoom"
-        payload      = jsonencode({
-          direction = "out"
-          speed     = 0.3
-        })
-      },
-      {
-        name        = "goto_home"
-        display_name = "Return to Home Position"
-        description  = "Move camera to preset home position"
-        topic        = "cameras/company/cloud/region/environment/warehouse-01/ptz/home"
-        payload      = jsonencode({})
-      }
-    ]
-
-    // ONVIF Events - Camera notifications (motion, tampering)
-    events = [
-      {
-        name           = "MOTION_DETECTED"
-        event_notifier = "motion"
-        destinations = [
+        name        = "ptz-controls"
+        data_source = "ptz"
+        actions = [
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "cameras/company/cloud/region/environment/warehouse-01/events/motion"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "TAMPERING_ALERT"
-        event_notifier = "tampering"
-        destinations = [
+            name                 = "pan_right"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "right"
+              speed     = 0.5
+            })
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "cameras/company/cloud/region/environment/warehouse-01/events/tampering"
-              retain = "Never"
-              qos    = "Qos1"
-            }
+            name                 = "pan_left"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "left"
+              speed     = 0.5
+            })
+          },
+          {
+            name                 = "tilt_up"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "up"
+              speed     = 0.5
+            })
+          },
+          {
+            name                 = "tilt_down"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "down"
+              speed     = 0.5
+            })
+          },
+          {
+            name                 = "zoom_in"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "in"
+              speed     = 0.3
+            })
+          },
+          {
+            name                 = "zoom_out"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
+            action_configuration = jsonencode({
+              direction = "out"
+              speed     = 0.3
+            })
+          },
+          {
+            name                 = "stop"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/Stop"
+            action_configuration = jsonencode({})
+          },
+          {
+            name                 = "goto_home"
+            action_type          = "Call"
+            target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/GotoHomePosition"
+            action_configuration = jsonencode({})
           }
         ]
       }
     ]
 
-    // No datasets for ONVIF connectors - use events and commands
+    // ONVIF event groups - Camera notifications (motion, tampering)
+    event_groups = [
+      {
+        name = "camera-events"
+        events = [
+          {
+            name        = "motion-detected"
+            data_source = "motion"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoAnalytics/MotionDetection"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "cameras/company/cloud/region/environment/warehouse-01/events/motion"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
+          {
+            name        = "tampering-alert"
+            data_source = "tampering"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoSource/Tampering"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "cameras/company/cloud/region/environment/warehouse-01/events/tampering"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+
+    // No datasets for ONVIF connectors - use event_groups and management_groups
     datasets = []
 
     default_events_configuration = "{\"publishingInterval\":5000,\"samplingInterval\":5000,\"queueSize\":10}"
@@ -278,35 +296,48 @@ namespaced_assets = [
       max_resolution = "2688x1520"
     }
 
-    // No PTZ commands for fixed cameras
-    commands = []
+    // No PTZ management groups for fixed cameras
+    management_groups = []
 
-    events = [
+    event_groups = [
       {
-        name           = "MOTION_DETECTED"
-        event_notifier = "motion"
-        destinations = [
+        name = "camera-events"
+        events = [
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "cameras/company/cloud/region/environment/perimeter-02/events/motion"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "TAMPERING_ALERT"
-        event_notifier = "tampering"
-        destinations = [
+            name        = "motion-detected"
+            data_source = "motion"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoAnalytics/MotionDetection"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "cameras/company/cloud/region/environment/perimeter-02/events/motion"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "cameras/company/cloud/region/environment/perimeter-02/events/tampering"
-              retain = "Never"
-              qos    = "Qos1"
-            }
+            name        = "tampering-alert"
+            data_source = "tampering"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoSource/Tampering"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "cameras/company/cloud/region/environment/perimeter-02/events/tampering"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
           }
         ]
       }
@@ -339,20 +370,29 @@ namespaced_assets = [
       max_resolution = "3840x2160"
     }
 
-    commands = []
+    management_groups = []
 
-    events = [
+    event_groups = [
       {
-        name           = "MOTION_DETECTED"
-        event_notifier = "motion"
-        destinations = [
+        name = "camera-events"
+        events = [
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "cameras/company/cloud/region/environment/assembly-03/events/motion"
-              retain = "Never"
-              qos    = "Qos1"
-            }
+            name        = "motion-detected"
+            data_source = "motion"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoAnalytics/MotionDetection"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "cameras/company/cloud/region/environment/assembly-03/events/motion"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
           }
         ]
       }
@@ -375,12 +415,14 @@ namespaced_assets = [
  *    - UsernamePassword: HTTP Digest Auth (most common)
  *    - X509Certificate: Client certificate auth (most secure)
  *
- * 3. PTZ Commands:
- *    - Only include PTZ commands for cameras with PTZ capabilities
- *    - Speed values range from 0.0 (slowest) to 1.0 (fastest)
+ * 3. PTZ Management Groups:
+ *    - Only include management_groups with PTZ actions for cameras with PTZ capabilities
+ *    - Each action requires action_type ("Call", "Read", or "Write") and target_uri
+ *    - Speed values in action_configuration range from 0.0 (slowest) to 1.0 (fastest)
  *    - Direction values: pan (left/right), tilt (up/down), zoom (in/out)
  *
- * 4. Event Types:
+ * 4. Event Groups:
+ *    - Each event requires a data_source matching the ONVIF event source
  *    - motion: Motion detection events from camera analytics
  *    - tampering: Camera tampering/obstruction alerts
  *    - Custom events may vary by camera manufacturer
@@ -405,5 +447,5 @@ namespaced_assets = [
  * 8. Testing:
  *    - Use local Docker Compose environment first (src/500-application/510-onvif-connector)
  *    - Verify ONVIF compliance with ONVIF Device Test Tool
- *    - Test PTZ commands with mosquitto_pub before production deployment
+ *    - Test PTZ actions with mosquitto_pub before production deployment
  */
