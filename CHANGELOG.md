@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.2](https://github.com/microsoft/edge-ai/compare/v4.0.1...v4.0.2) (2026-05-19)
+
+
+### Miscellaneous Chores
+
+* **deps:** bump brace-expansion from 5.0.5 to 5.0.6 ([#525](https://github.com/microsoft/edge-ai/issues/525)) ([6b0f6c6](https://github.com/microsoft/edge-ai/commit/6b0f6c618c712925b5ba18a47ae9f4d3e27d9a6d))
+* **deps:** bump nicegui from 3.10.0 to 3.12.0 in /src/500-application/510-onvif-connector/services/camera-dashboard ([#527](https://github.com/microsoft/edge-ai/issues/527)) ([2e6a4e0](https://github.com/microsoft/edge-ai/commit/2e6a4e024a785e4b6ffe329d11c0b7863130c3b2))
+* **deps:** bump the npm group across 2 directories with 4 updates ([#529](https://github.com/microsoft/edge-ai/issues/529)) ([4b4b03c](https://github.com/microsoft/edge-ai/commit/4b4b03cc73a2aae4d6f99bc5fdb8ab50d64830ea))
+
 ## [4.0.1](https://github.com/microsoft/edge-ai/compare/v4.0.0...v4.0.1) (2026-05-19)
 
 
