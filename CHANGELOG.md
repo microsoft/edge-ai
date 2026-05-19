@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/microsoft/edge-ai/compare/v4.0.0...v4.0.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* **ci:** sign release tags and pin repo context ([#526](https://github.com/microsoft/edge-ai/issues/526)) ([3182d3e](https://github.com/microsoft/edge-ai/commit/3182d3e7a3fa161156cac0ac91cee7a2562c7bba))
+
 ## [4.0.0](https://github.com/microsoft/edge-ai/compare/v3.0.0...v4.0.0) (2026-05-15)
 
 
