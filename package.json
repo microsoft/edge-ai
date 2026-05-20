@@ -56,7 +56,7 @@
     "@eslint/js": "10.0.1",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "markdown-link-check": "3.14.2",
-    "marked": "^18.0.3",
+    "marked": "^18.0.4",
     "secretlint": "13.0.2",
     "tftest-to-junitxml": "0.2.0"
   },
