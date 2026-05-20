@@ -276,7 +276,7 @@ jobs:
             --clobber
           gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" \
             --json body --jq .body > existing-body.md
-          if grep -Fq "${start_marker}" existing-body.md; then
+          if grep -Fxq "${start_marker}" existing-body.md; then
             awk -v start="${start_marker}" -v end="${end_marker}" '
               BEGIN { skipping = 0; inserted = 0 }
               $0 == start {
