@@ -250,7 +250,10 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
+          start_marker='<!-- edge-ai-release-verification:start -->'
+          end_marker='<!-- edge-ai-release-verification:end -->'
           {
+            printf '%s\n\n' "${start_marker}"
             printf '## Verification\n\n'
             printf 'Verify the signed tag:\n\n'
             printf '```sh\n'
@@ -265,13 +268,51 @@ jobs:
             printf 'gh attestation verify <artifact> --owner %s --bundle <artifact>.intoto.jsonl\n' "${OWNER}"
             printf '```\n\n'
             printf '### SBOM diff (vs previous release)\n\n'
-            printf '```diff\n'
-            cat sbom-diff/sbom-diff.txt
-            printf '```\n'
+            printf 'Full SBOM diff evidence is attached to this release as `sbom-diff.txt`.\n\n'
+            printf '%s\n' "${end_marker}"
           } > notes-appendix.md
+          gh release upload "${TAG}" sbom-diff/sbom-diff.txt \
+            --repo "${GITHUB_REPOSITORY}" \
+            --clobber
           gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" \
-            --json body --jq .body > existing-body.md || true
-          cat existing-body.md notes-appendix.md > merged-body.md
+            --json body --jq .body > existing-body.md
+          if grep -Fxq "${start_marker}" existing-body.md; then
+            awk -v start="${start_marker}" -v end="${end_marker}" '
+              BEGIN { skipping = 0; inserted = 0 }
+              $0 == start {
+                while ((getline line < "notes-appendix.md") > 0) {
+                  print line
+                }
+                close("notes-appendix.md")
+                skipping = 1
+                inserted = 1
+                next
+              }
+              skipping && $0 == end { skipping = 0; next }
+              !skipping { print }
+              END {
+                if (skipping) {
+                  exit 1
+                }
+                if (!inserted) {
+                  exit 2
+                }
+              }
+            ' existing-body.md > merged-body.md
+          else
+            cat existing-body.md > merged-body.md
+            if [[ -s merged-body.md ]]; then
+              printf '\n\n' >> merged-body.md
+            fi
+            cat notes-appendix.md >> merged-body.md
+          fi
+          body_size=$(wc -m < merged-body.md | tr -d '[:space:]')
+          max_body_size=110000
+          if (( body_size > max_body_size )); then
+            printf 'Release body is %s characters, which exceeds the %s character guard.\n' \
+              "${body_size}" "${max_body_size}" >&2
+            exit 1
+          fi
           gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" \
             --notes-file merged-body.md
 

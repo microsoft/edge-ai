@@ -12,8 +12,8 @@
 #     PRs and are NOT subject to the weekly grouping window.
 #   * open-pull-requests-limit is 5 per ecosystem (concurrent non-security
 #     PRs); the weekly grouping keeps steady-state at 1 per ecosystem.
-#   * Commit prefix "chore(deps)" with scope matches existing PR history
-#     (e.g. #394, #395, #397) and the project's commit-message convention.
+#   * Commit prefix "chore" with scope produces valid conventional commits
+#     such as "chore(deps): ..." for Release Please parsing.
 version: 2
 updates:
   # GitHub Actions
@@ -25,7 +25,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -52,7 +52,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -79,7 +79,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -106,7 +106,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -133,7 +133,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -159,7 +159,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
@@ -187,7 +187,7 @@ updates:
       time: "09:00"
       timezone: "US/Pacific"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     labels:
       - "dependencies"
