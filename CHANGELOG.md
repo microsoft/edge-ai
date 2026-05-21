@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.0.3](https://github.com/microsoft/edge-ai/compare/v4.0.2...v4.0.3) (2026-05-21)
+
+
+### Bug Fixes
+
+* **dependabot:** generate parseable dependency commits ([#540](https://github.com/microsoft/edge-ai/issues/540)) ([a9c6e01](https://github.com/microsoft/edge-ai/commit/a9c6e01500e13ec7960ea6b6d08c41bcb9adb771))
+* **release:** guard release body size ([#547](https://github.com/microsoft/edge-ai/issues/547)) ([0db91cd](https://github.com/microsoft/edge-ai/commit/0db91cd600d4f1f54b815f1c8911b2e1dbef837d))
+
+
+### Miscellaneous Chores
+
+* **deps:** bump the pip group across 2 directories with 3 updates ([#530](https://github.com/microsoft/edge-ai/issues/530)) ([7814530](https://github.com/microsoft/edge-ai/commit/7814530fcfacf4a7d1e64f5a9ccdd6536952a3f9))
+
 ## [4.0.2](https://github.com/microsoft/edge-ai/compare/v4.0.1...v4.0.2) (2026-05-19)
 
 
