@@ -1,0 +1,82 @@
+# Industrial Safety Detection Model
+# Generic model for detecting PPE and safety violations
+---
+model:
+  name: "default-placeholder"
+  version: "1.0.0"
+  model_type: "placeholder"
+  description: "Placeholder model for development and testing"
+  path: "models/default.onnx"
+  size_mb: 0.001
+  backends: ["onnx"]
+  performance:
+    avg_inference_ms: 75.0
+    memory_usage_mb: 45.0
+    accuracy: 0.85
+    target_hardware: "cpu"
+
+input:
+  shape: [1, 3, 640, 640]
+  dtype: "float32"
+  format: "NCHW"
+  value_range: [0.0, 1.0]
+  color_space: "RGB"
+  input_type: "image"
+
+output:
+  tensors:
+    - name: "detections"
+      shape: [1, 25200, 15]  # 15 classes
+      dtype: "float32"
+      semantic: "detections"
+  postprocess_type: "yolo"
+  confidence_threshold: 0.6
+  nms_threshold: 0.45
+  max_detections: 50
+  class_labels:
+    - "person_with_hardhat"
+    - "person_without_hardhat"
+    - "person_with_vest"
+    - "person_without_vest"
+    - "fire_extinguisher"
+    - "safety_sign"
+    - "spill"
+    - "leak"
+    - "smoke"
+    - "flame"
+    - "vehicle"
+    - "equipment"
+    - "unauthorized_person"
+    - "blocked_exit"
+    - "confined_space_entry"
+
+preprocessing:
+  resize_strategy: "letterbox"
+  target_size: [640, 640]
+  normalization:
+    mean: [0.0, 0.0, 0.0]
+    std: [1.0, 1.0, 1.0]
+    scale_to_unit: true
+  steps:
+    - step_type: "contrast_enhancement"
+      parameters:
+        factor: 1.2
+    - step_type: "denoising"
+      parameters:
+        strength: 0.1
+
+postprocessing:
+  postprocess_type: "yolo"
+  parameters:
+    priority_classes: ["person_without_hardhat", "person_without_vest", "spill", "leak", "smoke", "flame"]
+    alert_threshold: 0.8
+    multi_class_nms: true
+  output_format: "detection"
+
+# Industrial facility parameters
+parameters:
+  safety_critical: true
+  alert_webhook: "https://api.example.com/safety/alerts"
+  site_context: "industrial_facility"
+  regulatory_compliance: "OSHA_1910"
+  priority_escalation: true

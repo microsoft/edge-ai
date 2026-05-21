@@ -1,63 +1,45 @@
-# Single-platform ACR build for ai-edge-inference (amd64 only)
-# Build with: az acr build --registry <acr> --image ai-edge-inference:latest --file ai-edge-inference/Dockerfile.acr --build-arg BACKEND=onnx .
+# Multi-stage build for ai-edge-inference with configurable backend support
+# Build with: docker build --build-arg BACKEND=onnx|candle .
 
-ARG BUILDPLATFORM=linux/amd64
-ARG TARGETPLATFORM=linux/amd64
+# Build stage
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS build
 
-# Build stage (force amd64; this Dockerfile is single-platform by design)
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS build
-
+# Install build dependencies including Rust and cross-compilation tools
 RUN tdnf install -y \
     openssl-devel \
     gcc \
     make \
     binutils \
     glibc-devel \
-    kernel-headers \
     curl \
     ca-certificates \
     clang \
     pkgconf-pkg-config \
     protobuf-devel \
+    wget \
     tar \
     && tdnf clean all
 
+# Set shell options for better error handling with pipes
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install Rust via rustup-init with sha256 verification (OSSF Pinned-Dependencies)
-ARG RUST_TOOLCHAIN=1.90.0
-RUN set -eux; \
-    case "$(uname -m)" in \
-        x86_64)  RUSTUP_ARCH="x86_64-unknown-linux-gnu" ;; \
-        aarch64) RUSTUP_ARCH="aarch64-unknown-linux-gnu" ;; \
-        *) echo "unsupported arch: $(uname -m)" >&2; exit 1 ;; \
-    esac; \
-    RUSTUP_DIR="$(mktemp -d)"; \
-    RUSTUP_INIT="${RUSTUP_DIR}/rustup-init"; \
-    RUSTUP_HASH="$(mktemp)"; \
-    RUSTUP_URL="https://static.rust-lang.org/rustup/dist/${RUSTUP_ARCH}/rustup-init"; \
-    curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}"        -o "${RUSTUP_INIT}"; \
-    curl --proto '=https' --tlsv1.2 -sSf "${RUSTUP_URL}.sha256" -o "${RUSTUP_HASH}"; \
-    echo "$(cut -d ' ' -f 1 "${RUSTUP_HASH}")  ${RUSTUP_INIT}" | sha256sum -c -; \
-    chmod +x "${RUSTUP_INIT}"; \
-    "${RUSTUP_INIT}" -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --component rustc,cargo,rust-std,rustfmt; \
-    rm -rf "${RUSTUP_DIR}" "${RUSTUP_HASH}"
+# Install Rust manually (needed for Rust 1.88+ for ort crate and Azure IoT Operations crates)
+RUN wget -q https://sh.rustup.rs -O /tmp/rustup.sh && \
+    bash /tmp/rustup.sh -y --profile minimal --default-toolchain 1.88.0 --component rustc,cargo,rust-std,rustfmt && \
+    rm /tmp/rustup.sh
 
+# Add Rust binaries to PATH for subsequent RUN commands
 ENV PATH="/root/.cargo/bin:${PATH}"
-
-ARG CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
-ARG CARGO_PROFILE_RELEASE_STRIP=none
-ENV CARGO_PROFILE_RELEASE_DEBUG=$CARGO_PROFILE_RELEASE_DEBUG
-ENV CARGO_PROFILE_RELEASE_STRIP=$CARGO_PROFILE_RELEASE_STRIP
 
 ARG BACKEND=onnx
 
+# Create minimal installation root for Azure Linux runtime
 RUN mkdir -p /installroot/usr/local/bin /build/bin /installroot/bin \
     /installroot/opt/onnxruntime /installroot/etc /installroot/lib64 \
     /installroot/usr/lib64 /installroot/tmp
 
-RUN ld_linux_path="$(find /lib /lib64 /usr/lib /usr/lib64 -maxdepth 1 -name 'ld-linux-*.so.*' | head -n 1)" && \
-    test -n "${ld_linux_path}" && cp -a "${ld_linux_path}" /installroot/lib64/ && \
+# Copy essential libraries for runtime
+RUN cp -a /lib64/ld-linux-x86-64.so.* /installroot/lib64/ && \
     cp -a /usr/lib64/libssl.so.* /installroot/usr/lib64/ && \
     cp -a /usr/lib64/libcrypto.so.* /installroot/usr/lib64/ && \
     cp -a /lib64/libc.so.* /installroot/lib64/ && \
@@ -67,21 +49,25 @@ RUN ld_linux_path="$(find /lib /lib64 /usr/lib /usr/lib64 -maxdepth 1 -name 'ld-
     cp -a /lib64/librt.so.* /installroot/lib64/ && \
     cp -a /usr/lib64/libz.so.* /installroot/usr/lib64/
 
+# Conditionally install ONNX Runtime dependencies (only for ONNX backend)
 WORKDIR /tmp
 RUN if [ "$BACKEND" = "onnx" ]; then \
         mkdir -p /opt/onnxruntime && \
-    curl --proto '=https' --tlsv1.2 -fsSL -o "onnxruntime-linux-x64-1.24.4.tgz" "https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-linux-x64-1.24.4.tgz" && \
-    tar -xzf "onnxruntime-linux-x64-1.24.4.tgz" && \
-    cp -r onnxruntime-linux-x64-1.24.4/* /opt/onnxruntime/ && \
-    rm -rf onnxruntime-linux-x64-1.24.4.tgz onnxruntime-linux-x64-1.24.4 && \
+        # Use amd64 as default, can be enhanced for multi-arch later
+        wget -q "https://github.com/microsoft/onnxruntime/releases/download/v1.17.0/onnxruntime-linux-x64-1.17.0.tgz" && \
+        tar -xzf "onnxruntime-linux-x64-1.17.0.tgz" && \
+        cp -r onnxruntime-linux-x64-1.17.0/* /opt/onnxruntime/ && \
+        rm -rf onnxruntime-linux-x64-1.17.0.tgz onnxruntime-linux-x64-1.17.0 && \
         mkdir -p /installroot/opt/onnxruntime && \
         cp -r /opt/onnxruntime/* /installroot/opt/onnxruntime/; \
     fi
 
 WORKDIR /app
 
+# Define a build argument to control whether to use replace-with (default to false for local builds)
 ARG USE_REPLACE_WITH=false
 
+# Create .cargo directory and config file for Azure IoT Operations SDK access
 RUN mkdir -p .cargo && \
     echo '[registries]' > .cargo/config.toml && \
     echo 'aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }' >> .cargo/config.toml && \
@@ -96,17 +82,16 @@ RUN mkdir -p .cargo && \
       echo '# For local development: not using replace-with to avoid authentication issues' >> .cargo/config.toml; \
     fi
 
+# Copy the ai-edge-inference-crate dependency to the correct relative path
 COPY ./ai-edge-inference-crate ../ai-edge-inference-crate
 
+# Copy source code, lock file, and configuration
 COPY ./ai-edge-inference/src ./src
 COPY ./ai-edge-inference/Cargo.toml ./Cargo.toml
 COPY ./ai-edge-inference/Cargo.lock ./Cargo.lock
 COPY ./ai-edge-inference/.cargo ./.cargo
 
-ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"
-ENV ORT_PREFER_DYNAMIC_LINK="1"
-ENV ORT_STRATEGY="system"
-
+# Build the application with backend-specific features
 RUN if [ "$BACKEND" = "candle" ]; then \
         cargo build --release --features candle --no-default-features; \
     elif [ "$BACKEND" = "onnx" ]; then \
@@ -115,48 +100,61 @@ RUN if [ "$BACKEND" = "candle" ]; then \
         echo "Invalid BACKEND: $BACKEND. Use 'onnx' or 'candle'" && exit 1; \
     fi
 
+# Create a build info file for runtime verification
 RUN echo "backend=${BACKEND}" > /app/build-info.txt && \
     echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/build-info.txt
 
-# Runtime stage (force amd64 to match build stage)
-FROM --platform=$TARGETPLATFORM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS runtime
+# Conditional runtime stage based on backend
+FROM mcr.microsoft.com/cbl-mariner/base/core:2.0 AS runtime
 ARG BACKEND=onnx
 
-RUN tdnf upgrade -y && tdnf clean all
-
+# Install runtime dependencies and create non-root user
 RUN tdnf install -y \
     ca-certificates \
-    ncurses-libs \
     shadow-utils \
+    wget \
     tar \
     && tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
+# Conditionally copy ONNX Runtime (only for ONNX backend)
 RUN if [ "$BACKEND" = "onnx" ]; then \
         mkdir -p /opt/onnxruntime; \
     fi
 
+# Copy ONNX Runtime from build stage if needed
 COPY --from=build /opt/onnxruntime /opt/onnxruntime
+
+# Copy application binary and build info
 COPY --from=build /app/target/release/ai-edge-mqtt-publisher /usr/local/bin/ai-edge-mqtt-publisher
 COPY --from=build /app/build-info.txt /app/build-info.txt
 
+# Set proper ownership and permissions
 RUN chown -R appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher /app && \
     chmod +x /usr/local/bin/ai-edge-mqtt-publisher
 
+# Set environment variables
 ENV RUST_LOG=info
 ENV MODEL_DIRECTORY=/models
 ENV METRICS_PORT=8080
 ENV HEALTH_PORT=8081
+
+# Set ONNX Runtime environment variables (will be ignored for Candle)
 ENV LD_LIBRARY_PATH="/opt/onnxruntime/lib"
 ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"
 
+# Use the non-root user for better security
 USER appuser
 
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD ["/usr/local/bin/ai-edge-mqtt-publisher", "--health-check"]
 
+# Default entrypoint
 ENTRYPOINT ["/usr/local/bin/ai-edge-mqtt-publisher"]
 
+# Labels for build metadata
+ARG BACKEND
 LABEL ai.edge.inference.backend="${BACKEND}"
 LABEL ai.edge.inference.version="0.2.0"
 LABEL maintainer="Edge AI Team"

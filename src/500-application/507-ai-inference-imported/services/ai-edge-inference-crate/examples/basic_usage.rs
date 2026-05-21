@@ -2,7 +2,6 @@ use ai_edge_inference_crate::{
     InferenceEngine, InferenceConfig, InferenceRequest,
     ModelsConfig, HardwareConfig, SiteContext
 };
-use base64::{Engine as _, engine::general_purpose};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -19,7 +18,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Initialize the inference engine
     println!("📦 Initializing inference engine...");
-    let mut engine = InferenceEngine::new(config).await?;
+    let engine = InferenceEngine::new(config);
     
     // Initialize and load models
     match engine.initialize().await {
@@ -72,9 +71,12 @@ fn create_industrial_config() -> InferenceConfig {
             region: Some("Demo Region".to_string()),
             environmental_data: {
                 let mut env = HashMap::new();
-                env.insert("temperature_c".to_string(), serde_json::json!(22.5));
-                env.insert("humidity_percent".to_string(), serde_json::json!(45.0));
-                env.insert("pressure_kpa".to_string(), serde_json::json!(101.3));
+                env.insert("temperature_c".to_string(), 
+                    serde_json::Value::Number(22.5.into()));
+                env.insert("humidity_percent".to_string(), 
+                    serde_json::Value::Number(45.0.into()));
+                env.insert("pressure_kpa".to_string(), 
+                    serde_json::Value::Number(101.3.into()));
                 env
             },
             equipment_mapping: {
@@ -92,25 +94,36 @@ fn create_industrial_config() -> InferenceConfig {
 async fn demonstrate_model_management(engine: &InferenceEngine) -> Result<(), Box<dyn std::error::Error>> {
     println!("\n🔧 Model Management Demonstration");
     println!("=================================");
-
+    
+    let registry = engine.get_model_registry();
+    
     // List currently loaded models
-    let models = engine.get_loaded_models().await;
+    let models = registry.list_models().await;
     println!("📋 Currently loaded models: {}", models.len());
-
-    for model_name in &models {
-        println!("  • {}", model_name);
+    
+    for model in &models {
+        println!("  • {} v{} ({})", 
+            model.name, 
+            model.version, 
+            format!("{:?}", model.model_type)
+        );
+        println!("    File: {:?}", model.file_path);
+        println!("    Size: {:.2} MB", model.file_size_bytes as f64 / (1024.0 * 1024.0));
+        println!("    Loaded: {}", model.loaded_at.format("%Y-%m-%d %H:%M:%S UTC"));
     }
-
-    let model_summaries = engine.get_model_summaries();
-    for summary in &model_summaries {
-        println!("    Summary: {} ({})", summary.name, summary.model_type);
-    }
-
+    
     if models.is_empty() {
         println!("  ℹ️  No models loaded (models directory may be empty)");
         println!("     In production, models would be deployed via GitOps or container updates");
     }
-
+    
+    // Show model statistics
+    let stats = registry.get_model_stats().await;
+    if let Some(memory_mb) = stats.get("estimated_memory_mb") {
+        println!("📊 Total estimated memory usage: {:.2} MB", 
+            memory_mb.as_f64().unwrap_or(0.0));
+    }
+    
     Ok(())
 }
 
@@ -123,7 +136,7 @@ async fn demonstrate_inference(engine: &InferenceEngine) -> Result<(), Box<dyn s
     
     println!("📤 Sending inference request:");
     println!("  Request ID: {}", request.request_id);
-    println!("  Model: {:?}", request.model_name);
+    println!("  Model: {}", request.model_name);
     println!("  Input Type: {}", request.input_type);
     println!("  Data Size: {} bytes", request.input_data.len());
     
@@ -134,16 +147,21 @@ async fn demonstrate_inference(engine: &InferenceEngine) -> Result<(), Box<dyn s
             
             // Display results in a structured way
             println!("📊 Results:");
-            println!("  Processing Time: {:.2}ms", result.inference_time_ms);
-            println!("  Confidence: {:.3}", result.confidence);
-
-            for (j, prediction) in result.predictions.iter().enumerate() {
-                println!("    Prediction {}: {} (confidence: {:.3})",
-                    j + 1, prediction.class, prediction.confidence);
-
-                if let Some(bbox) = &prediction.bbox {
-                    println!("      Bounding Box: [{:.3}, {:.3}, {:.3}, {:.3}]",
-                        bbox[0], bbox[1], bbox[2], bbox[3]);
+            println!("  Processing Time: {}ms", result.processing_time_ms);
+            println!("  Confidence Threshold: {}", result.confidence_threshold);
+            println!("  Timestamp: {}", result.timestamp.format("%Y-%m-%d %H:%M:%S UTC"));
+            
+            for (i, output) in result.outputs.iter().enumerate() {
+                println!("  Output {}: {} predictions", i + 1, output.predictions.len());
+                
+                for (j, prediction) in output.predictions.iter().enumerate() {
+                    println!("    Prediction {}: {} (confidence: {:.3})", 
+                        j + 1, prediction.class_name, prediction.confidence);
+                    
+                    if let Some(bbox) = &prediction.bounding_box {
+                        println!("      Bounding Box: [{:.3}, {:.3}, {:.3}, {:.3}]", 
+                            bbox[0], bbox[1], bbox[2], bbox[3]);
+                    }
                 }
             }
             
@@ -158,11 +176,11 @@ async fn demonstrate_inference(engine: &InferenceEngine) -> Result<(), Box<dyn s
             
             // Show error handling approach
             match e {
-                ai_edge_inference_crate::InferenceError::Model { message } => {
-                    println!("🔄 Recovery suggestion: Deploy model or use fallback ({})", message);
+                ai_edge_inference_crate::InferenceError::ModelNotFound(model_name) => {
+                    println!("🔄 Recovery suggestion: Deploy model '{}' or use fallback", model_name);
                 }
-                ai_edge_inference_crate::InferenceError::Configuration { message } => {
-                    println!("⚙️  Configuration issue: {}", message);
+                ai_edge_inference_crate::InferenceError::ConfigurationError(details) => {
+                    println!("⚙️  Configuration issue: {}", details);
                 }
                 _ => {
                     println!("🛠️  General error handling would go here");
@@ -220,11 +238,11 @@ fn create_mock_inference_request() -> InferenceRequest {
         255, 216, 255, 224, 0, 16, 74, 70, 73, 70, 0, 1, 1, 1, 0, 72, 0, 72, 0, 0, 255, 219, 0, 67, 0, 8, 6, 6, 7, 6, 5, 8, 7, 7, 7, 9, 9, 8, 10, 12, 20, 13, 12, 11, 11, 12, 25, 18, 19, 15, 20, 29, 26, 31, 30, 29, 26, 28, 28, 32, 36, 46, 39, 32, 34, 44, 35, 28, 28, 40, 55, 41, 44, 48, 49, 52, 52, 52, 31, 39, 57, 61, 56, 50, 60, 46, 51, 52, 50, 255, 192, 0, 17, 8, 0, 1, 0, 1, 1, 1, 17, 0, 2, 17, 1, 3, 17, 1, 255, 196, 0, 20, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 255, 196, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 218, 0, 12, 3, 1, 0, 2, 17, 3, 17, 0, 63, 0, 146, 255, 217
     ];
     
-    let base64_data = general_purpose::STANDARD.encode(&mock_image_bytes);
+    let base64_data = base64::encode(&mock_image_bytes);
     
     InferenceRequest {
         request_id: format!("demo-{}", uuid::Uuid::new_v4()),
-        model_name: Some("industrial-safety-vision".to_string()),
+        model_name: "industrial-safety-vision".to_string(),
         input_data: base64_data,
         input_type: "image/jpeg".to_string(),
         metadata: {

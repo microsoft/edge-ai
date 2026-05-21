@@ -12,7 +12,6 @@ use ai_edge_inference_crate::{
 
 mod config;
 mod mqtt;
-mod rate_limiter;
 mod topic_router;
 mod health_simple;
 
@@ -49,7 +48,7 @@ async fn main() -> Result<()> {
     // Initialize AI inference engine using the crate library
     let inference_config = config.create_inference_config();
     let mut inference_engine = InferenceEngine::new(inference_config).await?;
-    
+
     // Initialize the inference engine and load models
     if let Err(e) = inference_engine.initialize().await {
         error!("Failed to initialize inference engine: {}", e);
@@ -57,6 +56,7 @@ async fn main() -> Result<()> {
     }
     info!("AI inference engine initialized successfully");
 
+    // Initialize YAML config system
     let models_dir = PathBuf::from(
         std::env::var("MODELS_DIRECTORY").unwrap_or_else(|_| "/models".to_string()),
     );
@@ -64,13 +64,14 @@ async fn main() -> Result<()> {
         warn!("Failed to initialize YAML config system: {}", e);
     }
 
+    // Load model from YAML config if MODEL_CONFIG_PATH is set
     if let Ok(config_path) = std::env::var("MODEL_CONFIG_PATH") {
         match inference_engine.load_model_from_yaml(&config_path).await {
             Ok(model_name) => info!("Loaded model '{}' from YAML config", model_name),
             Err(e) => warn!("Failed to load model from YAML config: {}", e),
         }
     }
-    
+
     // Wrap in Arc after initialization
     let inference_engine = Arc::new(inference_engine);
 
@@ -81,17 +82,10 @@ async fn main() -> Result<()> {
     // Initialize MQTT publisher with inference engine
     let mut mqtt_publisher = MqttPublisher::new(config.mqtt.clone(), Arc::clone(&inference_engine)).await?;
     mqtt_publisher.set_topic_router(Arc::clone(&topic_router));
-
-    // Extract the MQTT session — its event loop must run concurrently for the connection to work
-    let mqtt_session = mqtt_publisher.take_session()
-        .expect("MQTT session must be available");
-
-    #[allow(clippy::arc_with_non_send_sync)]
     let mqtt_publisher = Arc::new(mqtt_publisher);
     info!("MQTT publisher initialized");
 
     // Initialize health service
-    #[allow(clippy::arc_with_non_send_sync)]
     let health_service = Arc::new(
         HealthService::new(
             Arc::clone(&inference_engine),
@@ -112,9 +106,6 @@ async fn main() -> Result<()> {
 
     // Wait for any task to complete or shutdown signal
     tokio::select! {
-        _ = mqtt_session.run() => {
-            warn!("MQTT session event loop exited");
-        }
         result = health_service_clone.start_server() => {
             if let Err(e) = result {
                 error!("Health server error: {}", e);
@@ -131,10 +122,10 @@ async fn main() -> Result<()> {
     }
 
     info!("AI Edge MQTT Publisher Service shutting down gracefully");
-    
+
     // Perform cleanup
     cleanup_resources().await;
-    
+
     info!("Shutdown complete");
     Ok(())
 }
@@ -142,14 +133,14 @@ async fn main() -> Result<()> {
 /// Perform cleanup before shutdown
 async fn cleanup_resources() {
     info!("Cleaning up resources...");
-    
+
     // Add any necessary cleanup logic here
     // For example:
     // - Flush pending metrics
     // - Close database connections
     // - Save state to disk
     // - Gracefully disconnect from MQTT broker
-    
+
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     info!("Resource cleanup completed");
 }

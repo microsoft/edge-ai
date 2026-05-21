@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
-use tracing::{debug, info};
+use tracing::{info, warn, debug, error};
 use async_trait::async_trait;
 
 use crate::backend::{
@@ -104,7 +104,7 @@ impl OnnxRuntimeBackend {
         let mut confidence_threshold = model_config.confidence_threshold.unwrap_or(0.5);
         let mut nms_threshold = 0.4f32;
         let mut postprocess_type = "classification".to_string();
-        let num_classes;
+        let mut num_classes = 0usize;
 
         if let Some(post) = &model_config.postprocessing {
             if let Some(pt) = post.get("postprocess_type").and_then(|v| v.as_str()) {
@@ -428,8 +428,8 @@ impl InferenceBackend for OnnxRuntimeBackend {
             .map_err(|e| BackendError::ModelLoadFailed(format!("Failed to load ONNX model '{}': {}", model_config.model_path, e)))?;
 
         // Extract input/output names from session metadata
-        let input_name = session.inputs().first()
-            .map(|i| i.name().to_string())
+        let input_name = session.inputs.first()
+            .map(|i| i.name.clone())
             .unwrap_or_else(|| "images".to_string());
         info!("Model input name: '{}'", input_name);
 
