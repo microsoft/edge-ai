@@ -70,9 +70,10 @@ resource "azurerm_key_vault_secret" "admin_username" {
 resource "azurerm_key_vault_secret" "admin_password" {
   count = var.should_store_credentials_in_key_vault ? 1 : 0
 
-  name         = "psql-${var.resource_prefix}-${var.environment}-${var.instance}-admin-password"
-  value        = local.admin_password_resolved
-  key_vault_id = var.key_vault.id
+  name             = "psql-${var.resource_prefix}-${var.environment}-${var.instance}-admin-password"
+  value_wo         = local.admin_password_resolved
+  value_wo_version = var.admin_password_wo_version
+  key_vault_id     = var.key_vault.id
 }
 
 module "postgresql_server" {
@@ -91,8 +92,9 @@ module "postgresql_server" {
   delegated_subnet_id = local.delegated_subnet_id
   private_dns_zone_id = local.private_dns_zone_id
 
-  admin_username = var.admin_username
-  admin_password = local.admin_password_resolved
+  admin_username            = var.admin_username
+  admin_password            = local.admin_password_resolved
+  admin_password_wo_version = var.admin_password_wo_version
 
   databases = local.databases
 
