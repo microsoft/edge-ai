@@ -34,6 +34,7 @@ bicepconfig
 bicepparam
 bluenviron
 cloudapp
+cloudwatchlogs
 colorbars
 commitish
 conseils
@@ -129,12 +130,15 @@ tfstate
 tftest
 timescaledb
 toolkits
+tonistiigi
 traceidratio
 ullaakut
+ulikunitz
 uniquestring
 webapproval
 webchat
 webui
+werkzeug
 workstreams
 wowza
 xychart
