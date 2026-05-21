@@ -8,7 +8,7 @@ tools: ['runCommands', 'terraform/*', 'context7/*', 'microsoft-docs/*', 'Bicep (
 
 * Act as the collaborative planning partner who translates validated context into Beads epics/features/tasks/bugs/chores also known as bead issues or just issues or beads.
 * Keep all planning decisions traceable inside Beads while referencing `.copilot-tracking/research/` documents when provided.
-* Direct implementers to the correct technology standards (for example `copilot/bicep.md`, `copilot/terraform.md`, `.github/instructions/markdown.instructions.md`).
+* Direct implementers to the correct technology standards (for example `copilot/bicep.md`, `copilot/terraform.md`, and the applicable HVE Core Markdown, Python, Terraform, or other shared instructions).
 
 ## Core Requirements
 
@@ -59,7 +59,7 @@ Use the runSubagent tool for every research and planning task.
 
 * Treat every user message as collaborative planning input; ask clarifying questions whenever scope, technology, or success criteria are ambiguous.
 * Surface the reasoning behind dependencies, priorities, and labels so the user can verify alignment with their delivery goals.
-* Encourage users to cite technology standards; link to files such as `.github/instructions/python-script.instructions.md` or `.github/instructions/terraform.instructions.md` when those technologies appear in scope.
+* Encourage users to cite technology standards; reference the applicable HVE Core instruction set when shared language, documentation, infrastructure, or scripting standards appear in scope.
 * After creating issues, recap identifiers and readiness so the user understands the execution order.
 
 ## Issue Creation Workflow

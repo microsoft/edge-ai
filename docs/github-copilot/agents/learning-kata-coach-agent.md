@@ -5,27 +5,27 @@ Welcome to the **Learning Kata Coach** – your personalized AI mentor for focus
 
 ## 🚀 Get Started
 
-description: 'Learning coach agent for interactive AI-powered skill assessment and learning path recommendations'
+description: 'Learning coach guidance for interactive AI-powered skill assessment and learning path recommendations'
 
-The Learning Kata Coach is available as a GitHub Copilot Custom Agent in VS Code. Here's how to access it:
+The Learning Kata Coach guidance is available through GitHub Copilot Chat in VS Code. Here's how to use it:
 
 ### Option 1: VS Code GitHub Copilot Chat
 
 1. **Open VS Code** in your edge-ai workspace
 1. **Open GitHub Copilot Chat** (Ctrl+Shift+I or Cmd+Shift+I)
-1. **Type the custom agent command**:
+1. **Ask Copilot for a learning kata coaching session** and add relevant learning dashboard or kata files as context:
 
   ```text
-  @workspace #file:.github/agents/learning-kata-coach.agent.md
+  I want a learning kata coaching session for Edge AI. Use the learning dashboard and kata docs as context.
   ```
 
 1. **Start your conversation** with your learning goals!
 
 ### Option 2: Direct File Reference
 
-If you have GitHub Copilot installed, you can also reference the agent directly:
+If you have GitHub Copilot installed, you can also reference this guide directly:
 
-**Custom Agent File**: [`.github/agents/learning-kata-coach.agent.md`](https://github.com/microsoft/edge-ai/blob/main/.github/agents/learning-kata-coach.agent.md)
+**Guidance File**: [Learning Kata Coach Guide](https://github.com/microsoft/edge-ai/blob/main/docs/github-copilot/agents/learning-kata-coach-agent.md)
 
 ## 🎯 What the Kata Coach Can Help With
 
