@@ -26,13 +26,13 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app-token
         with:
           client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: chainguard-dev/actions/setup-gitsign@0cda751b114eb55c388e88f7479292668165602a # v1.0.2
+      - uses: chainguard-dev/actions/setup-gitsign@c69a264ec2a5934c3186c618f368fc1c86f16cff # v1.6.19
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
@@ -40,24 +40,55 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           config-file: release-please-config.json
           manifest-file: release-please-manifest.json
+          skip-github-pull-request: ${{ github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(main)') }}
 
-      - name: Create git tag for draft release
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        if: steps.release.outputs.release_created == 'true'
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Create signed git tag for draft release
         if: steps.release.outputs.release_created == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TAG: ${{ steps.release.outputs.tag_name }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if ! gh api "/repos/$REPO/git/refs/tags/$TAG" --silent 2>/dev/null; then
-            gh api "/repos/$REPO/git/refs" \
-              -f "ref=refs/tags/$TAG" \
-              -f "sha=$SHA"
-            echo "Created git tag $TAG -> $SHA"
-          else
-            echo "Git tag $TAG already exists"
+
+          git config --global gpg.format x509
+          git config --global gpg.x509.program gitsign
+          git config --global tag.gpgSign true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch --tags --force
+
+          if git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1; then
+            tag_type=$(git cat-file -t "refs/tags/${TAG}")
+            if [[ "${tag_type}" != "tag" ]]; then
+              echo "Expected annotated tag object for ${TAG}, found ${tag_type}." >&2
+              exit 1
+            fi
+            echo "Git tag ${TAG} already exists"
+            exit 0
           fi
+
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git tag -s "${TAG}" "${GITHUB_SHA}" -m "Release ${TAG}"
+          git push origin "refs/tags/${TAG}"
+          echo "Created signed git tag ${TAG} -> ${GITHUB_SHA}"
+
+      - name: Verify signed git tag
+        if: steps.release.outputs.release_created == 'true'
+        env:
+          TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+          gitsign verify-tag \
+            --certificate-identity 'https://github.com/microsoft/edge-ai/.github/workflows/release-please.yml@refs/heads/main' \
+            --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+            "${TAG}"
 
   generate-dependency-sbom:
     needs: release-please
@@ -106,7 +137,9 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "${{ needs.release-please.outputs.tag_name }}" \
-            dep-sbom.spdx.json dep-sbom.spdx.json.intoto.jsonl --clobber
+            dep-sbom.spdx.json dep-sbom.spdx.json.intoto.jsonl \
+            --repo "${GITHUB_REPOSITORY}" \
+            --clobber
 
   attest-release:
     needs: release-please
@@ -151,6 +184,7 @@ jobs:
           gh release upload "${TAG}" \
             "release-artifacts/source-${TAG}.tar.gz" \
             "release-artifacts/source-${TAG}.tar.gz.intoto.jsonl" \
+            --repo "${GITHUB_REPOSITORY}" \
             --clobber
 
   sbom-diff:
@@ -172,10 +206,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p previous-sbom
-          prev=$(gh release list --limit 10 --json tagName \
-            --jq "[.[] | select(.tagName != \"${TAG}\")][0].tagName // empty")
+          prev=$(gh release list --repo "${GITHUB_REPOSITORY}" --limit 10 \
+            --json tagName,isDraft \
+            --jq '[.[] | select(.tagName != env.TAG and .isDraft == false)] | first | .tagName // empty')
           if [[ -n "${prev}" ]]; then
-            gh release download "${prev}" --pattern 'dep-sbom.spdx.json' \
+            gh release download "${prev}" --repo "${GITHUB_REPOSITORY}" \
+              --pattern 'dep-sbom.spdx.json' \
               --dir previous-sbom || true
           fi
 
@@ -214,7 +250,10 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           set -euo pipefail
+          start_marker='<!-- edge-ai-release-verification:start -->'
+          end_marker='<!-- edge-ai-release-verification:end -->'
           {
+            printf '%s\n\n' "${start_marker}"
             printf '## Verification\n\n'
             printf 'Verify the signed tag:\n\n'
             printf '```sh\n'
@@ -229,13 +268,53 @@ jobs:
             printf 'gh attestation verify <artifact> --owner %s --bundle <artifact>.intoto.jsonl\n' "${OWNER}"
             printf '```\n\n'
             printf '### SBOM diff (vs previous release)\n\n'
-            printf '```diff\n'
-            cat sbom-diff/sbom-diff.txt
-            printf '```\n'
+            printf 'Full SBOM diff evidence is attached to this release as `sbom-diff.txt`.\n\n'
+            printf '%s\n' "${end_marker}"
           } > notes-appendix.md
-          gh release view "${TAG}" --json body --jq .body > existing-body.md || true
-          cat existing-body.md notes-appendix.md > merged-body.md
-          gh release edit "${TAG}" --notes-file merged-body.md
+          gh release upload "${TAG}" sbom-diff/sbom-diff.txt \
+            --repo "${GITHUB_REPOSITORY}" \
+            --clobber
+          gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" \
+            --json body --jq .body > existing-body.md
+          if grep -Fxq "${start_marker}" existing-body.md; then
+            awk -v start="${start_marker}" -v end="${end_marker}" '
+              BEGIN { skipping = 0; inserted = 0 }
+              $0 == start {
+                while ((getline line < "notes-appendix.md") > 0) {
+                  print line
+                }
+                close("notes-appendix.md")
+                skipping = 1
+                inserted = 1
+                next
+              }
+              skipping && $0 == end { skipping = 0; next }
+              !skipping { print }
+              END {
+                if (skipping) {
+                  exit 1
+                }
+                if (!inserted) {
+                  exit 2
+                }
+              }
+            ' existing-body.md > merged-body.md
+          else
+            cat existing-body.md > merged-body.md
+            if [[ -s merged-body.md ]]; then
+              printf '\n\n' >> merged-body.md
+            fi
+            cat notes-appendix.md >> merged-body.md
+          fi
+          body_size=$(wc -m < merged-body.md | tr -d '[:space:]')
+          max_body_size=110000
+          if (( body_size > max_body_size )); then
+            printf 'Release body is %s characters, which exceeds the %s character guard.\n' \
+              "${body_size}" "${max_body_size}" >&2
+            exit 1
+          fi
+          gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" \
+            --notes-file merged-body.md
 
   publish-release:
     needs: [release-please, attest-release, sbom-diff, append-verification-notes]
@@ -250,7 +329,7 @@ jobs:
           TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           set -euo pipefail
-          gh release edit "${TAG}" --draft=false
+          gh release edit "${TAG}" --repo "${GITHUB_REPOSITORY}" --draft=false
 
   close-milestone:
     needs: [release-please, publish-release]
