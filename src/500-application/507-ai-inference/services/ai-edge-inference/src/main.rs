@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
     // Initialize AI inference engine using the crate library
     let inference_config = config.create_inference_config();
     let mut inference_engine = InferenceEngine::new(inference_config).await?;
-    
+
     // Initialize the inference engine and load models
     if let Err(e) = inference_engine.initialize().await {
         error!("Failed to initialize inference engine: {}", e);
@@ -70,7 +70,7 @@ async fn main() -> Result<()> {
             Err(e) => warn!("Failed to load model from YAML config: {}", e),
         }
     }
-    
+
     // Wrap in Arc after initialization
     let inference_engine = Arc::new(inference_engine);
 
@@ -131,10 +131,10 @@ async fn main() -> Result<()> {
     }
 
     info!("AI Edge MQTT Publisher Service shutting down gracefully");
-    
+
     // Perform cleanup
     cleanup_resources().await;
-    
+
     info!("Shutdown complete");
     Ok(())
 }
@@ -142,14 +142,14 @@ async fn main() -> Result<()> {
 /// Perform cleanup before shutdown
 async fn cleanup_resources() {
     info!("Cleaning up resources...");
-    
+
     // Add any necessary cleanup logic here
     // For example:
     // - Flush pending metrics
     // - Close database connections
     // - Save state to disk
     // - Gracefully disconnect from MQTT broker
-    
+
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     info!("Resource cleanup completed");
 }

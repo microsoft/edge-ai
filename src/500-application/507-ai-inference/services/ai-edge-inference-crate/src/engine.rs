@@ -181,10 +181,17 @@ impl InferenceEngine {
         let inference_result = match result {
             Ok(mut result) => {
                 // Update result with request metadata
-                result.metadata.as_object_mut().unwrap().insert(
-                    "request_id".to_string(),
-                    serde_json::Value::String(request_id.clone())
-                );
+                if let Some(metadata) = result.metadata.as_object_mut() {
+                    metadata.insert(
+                        "request_id".to_string(),
+                        serde_json::Value::String(request_id.clone()),
+                    );
+                } else {
+                    debug!(
+                        request_id = %request_id,
+                        "Skipping request_id metadata enrichment because backend metadata is not an object"
+                    );
+                }
 
                 self.update_success_metrics(&result.model_name, start_time).await;
                 Ok(result)

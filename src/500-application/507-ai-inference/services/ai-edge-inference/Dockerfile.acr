@@ -52,30 +52,13 @@ ENV CARGO_PROFILE_RELEASE_STRIP=$CARGO_PROFILE_RELEASE_STRIP
 
 ARG BACKEND=onnx
 
-RUN mkdir -p /installroot/usr/local/bin /build/bin /installroot/bin \
-    /installroot/opt/onnxruntime /installroot/etc /installroot/lib64 \
-    /installroot/usr/lib64 /installroot/tmp
-
-RUN ld_linux_path="$(find /lib /lib64 /usr/lib /usr/lib64 -maxdepth 1 -name 'ld-linux-*.so.*' | head -n 1)" && \
-    test -n "${ld_linux_path}" && cp -a "${ld_linux_path}" /installroot/lib64/ && \
-    cp -a /usr/lib64/libssl.so.* /installroot/usr/lib64/ && \
-    cp -a /usr/lib64/libcrypto.so.* /installroot/usr/lib64/ && \
-    cp -a /lib64/libc.so.* /installroot/lib64/ && \
-    cp -a /lib64/libdl.so.* /installroot/lib64/ && \
-    cp -a /lib64/libpthread.so.* /installroot/lib64/ && \
-    cp -a /lib64/libm.so.* /installroot/lib64/ && \
-    cp -a /lib64/librt.so.* /installroot/lib64/ && \
-    cp -a /usr/lib64/libz.so.* /installroot/usr/lib64/
-
 WORKDIR /tmp
 RUN if [ "$BACKEND" = "onnx" ]; then \
         mkdir -p /opt/onnxruntime && \
     curl --proto '=https' --tlsv1.2 -fsSL -o "onnxruntime-linux-x64-1.24.4.tgz" "https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-linux-x64-1.24.4.tgz" && \
     tar -xzf "onnxruntime-linux-x64-1.24.4.tgz" && \
     cp -r onnxruntime-linux-x64-1.24.4/* /opt/onnxruntime/ && \
-    rm -rf onnxruntime-linux-x64-1.24.4.tgz onnxruntime-linux-x64-1.24.4 && \
-        mkdir -p /installroot/opt/onnxruntime && \
-        cp -r /opt/onnxruntime/* /installroot/opt/onnxruntime/; \
+    rm -rf onnxruntime-linux-x64-1.24.4.tgz onnxruntime-linux-x64-1.24.4; \
     fi
 
 WORKDIR /app
