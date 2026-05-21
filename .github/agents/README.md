@@ -14,50 +14,30 @@ keywords:
   - prompt engineering
 ---
 
-This directory contains specialized GitHub Copilot custom agent configurations designed to provide enhanced AI assistance for specific development workflows.
+This directory contains repository-specific GitHub Copilot custom agent configurations for Edge AI development workflows.
 
 ## Overview
 
-Custom agents are advanced AI assistant configurations that enable specialized coaching, planning, and development support. Each agent is tailored for specific workflows and includes comprehensive tool access for deep project integration.
+Custom agents are advanced AI assistant configurations that enable specialized coaching, planning, and development support. Local agents in this directory are tailored to Edge AI workflows. Shared planning, research, review, ADR, security planning, workback planning, and implementation agents are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ## Available Custom Agents
 
-### [Task Researcher](task-researcher.agent.md)
+### [WASM Operator Builder](wasm-operator-builder.agent.md)
 
-Specialized research-only assistant for comprehensive project analysis and documentation.
+Specialized implementation assistant for Rust-based WebAssembly operators in Azure IoT Operations dataflow graphs.
 
-- **Purpose**: Perform deep, comprehensive analysis for task planning through evidence-based discovery
-- **Capabilities**: Multi-source analysis, evidence documentation, technical investigation
-- **Best For**: Research phases, information gathering, technical analysis
-- **Philosophy**: Research-only operations with evidence-based findings
-
-### [ADR Creation](adr-creation.agent.md)
-
-Interactive architectural decision record creation with comprehensive research and analysis capabilities.
-
-- **Purpose**: Guide users through collaborative ADR creation using solution library templates
-- **Capabilities**: Real-time document building, research integration, decision analysis, template compliance
-- **Best For**: Architecture decisions, technical documentation, collaborative analysis
-- **Philosophy**: Interactive markdown collaboration with progressive content development
-
-### [Security Plan Creator](security-plan-creator.agent.md)
-
-Expert security architect for creating comprehensive cloud security plans with threat modeling and risk assessment.
-
-- **Purpose**: Analyze blueprint architectures and create actionable security plans with specific threat mitigations
-- **Capabilities**: Blueprint analysis, threat assessment, operational data flow modeling, security documentation
-- **Best For**: Security planning, threat modeling, compliance documentation, risk assessment
-- **Philosophy**: Component-specific analysis with actionable, implementable security measures
+* **Purpose**: Build and integrate WASM operator modules for Edge AI application workloads
+* **Capabilities**: Rust operator implementation, graph schema updates, Terraform integration, validation guidance
+* **Best For**: WASM map, filter, accumulate, and ONNX operator development
+* **Philosophy**: Follow established operator templates and deployment conventions
 
 ## Usage Guidelines
 
 ### Selecting the Right Agent
 
-1. **Research and Analysis**: Use Task Researcher for comprehensive project investigation
-2. **Architecture Documentation**: Use ADR Creation for collaborative decision records
-3. **Security Planning**: Use Security Plan Creator for threat analysis and security documentation
+1. **WASM Operator Development**: Use WASM Operator Builder for Rust-based operator implementation
 
-> **Note**: Additional agents for task planning and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
+> **Note**: Shared agents for ADR creation, task planning, task research, PR review, security planning, workback planning, implementation support, and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ### Activation
 
@@ -67,16 +47,16 @@ Custom agents are activated through GitHub Copilot's interface by selecting the 
 
 All custom agents are designed to integrate with the broader project ecosystem:
 
-- Reference project standards and conventions
-- Utilize comprehensive tool access for file operations
-- Connect to documentation and guidance resources
-- Support transitions between different assistance agents
+* Reference project standards and conventions
+* Utilize comprehensive tool access for file operations
+* Connect to documentation and guidance resources
+* Support transitions between local agents and shared HVE Core agents
 
 ## Related Resources
 
-- **[Instructions](../instructions/README.md)**: Context-specific development instructions
-- **[Prompts](../prompts/README.md)**: Reusable prompts for specific tasks
-- **[AI-Assisted Engineering Guide](../../docs/contributing/ai-assisted-engineering.md)**: Comprehensive AI assistance documentation
+* **[Instructions](../instructions/README.md)**: Context-specific development instructions
+* **[Prompts](../prompts/README.md)**: Reusable prompts for specific tasks
+* **[AI-Assisted Engineering Guide](../../docs/contributing/ai-assisted-engineering.md)**: Comprehensive AI assistance documentation
 
 ---
 

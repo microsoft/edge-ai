@@ -39,6 +39,7 @@ bicepparam
 bluenviron
 chipsets
 cloudapp
+cloudwatchlogs
 colorbars
 commitish
 conseils
@@ -141,12 +142,15 @@ tftest
 timescaledb
 tinyyolov
 toolkits
+tonistiigi
 traceidratio
 ullaakut
+ulikunitz
 uniquestring
 webapproval
 webchat
 webui
+werkzeug
 workstreams
 wowza
 xychart
