@@ -41,6 +41,11 @@ RUN set -eux; \
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+ARG CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+ARG CARGO_PROFILE_RELEASE_STRIP=none
+ENV CARGO_PROFILE_RELEASE_DEBUG=$CARGO_PROFILE_RELEASE_DEBUG
+ENV CARGO_PROFILE_RELEASE_STRIP=$CARGO_PROFILE_RELEASE_STRIP
+
 ARG BACKEND=onnx
 
 RUN mkdir -p /installroot/usr/local/bin /build/bin /installroot/bin \

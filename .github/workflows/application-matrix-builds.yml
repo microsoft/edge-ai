@@ -199,7 +199,7 @@ jobs:
             BASE_IMAGE_TAG="${{ github.run_number }}"
           fi
 
-          DOCKER_BUILD_ARGS=$(echo "$BUILD_CONFIG" | jq -r '.dockerBuildArgs // empty')
+          DOCKER_BUILD_ARGS=$(echo "$BUILD_CONFIG" | jq -c '.dockerBuildArgs // empty')
           if [ -z "$DOCKER_BUILD_ARGS" ] || [ "$DOCKER_BUILD_ARGS" = "null" ]; then
             DOCKER_BUILD_ARGS=""
           fi
@@ -449,6 +449,10 @@ jobs:
           if ([bool]::Parse("${{ needs.parse-configuration.outputs.enableSecurityScan }}")) {
             $builderArgs += "-EnableSecurityScan"
             $builderArgs += "-SecurityThreshold", "${{ needs.parse-configuration.outputs.securityThreshold }}"
+          }
+
+          if (-not [string]::IsNullOrWhiteSpace('${{ needs.parse-configuration.outputs.dockerBuildArgs }}')) {
+            $builderArgs += "-DockerBuildArgs", '${{ needs.parse-configuration.outputs.dockerBuildArgs }}'
           }
 
           Write-Host "Executing: pwsh ${{ github.workspace }}/scripts/build/Application-Builder.ps1 $($builderArgs -join ' ')"

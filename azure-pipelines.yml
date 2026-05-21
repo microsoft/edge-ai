@@ -487,6 +487,7 @@ stages:
           displayName: "Application Matrix Build"
           condition: or(eq(dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changesInApplications'], 'true'), eq(variables.includeAllApplications, 'True'))
           matrixVariable: dependencies.ComponentChangesFolderCheck.outputs['matrixBuildFolderCheckTask.changedApplicationFolders']
+          dockerBuildArgs: '{"CARGO_PROFILE_RELEASE_DEBUG":"line-tables-only","CARGO_PROFILE_RELEASE_STRIP":"none"}'
           breakBuild: true
           agentPool:
             name: $(poolName)
