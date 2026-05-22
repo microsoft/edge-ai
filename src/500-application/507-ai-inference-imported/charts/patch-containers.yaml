@@ -1,6 +1,0 @@
-- op: replace
-  path: /spec/template/spec/containers/0/image
-  value: acrleakvldev001.azurecr.io/ai-edge-inference:latest
-- op: replace
-  path: /metadata/namespace
-  value: azure-iot-operations
