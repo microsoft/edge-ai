@@ -45,7 +45,7 @@
 #     uses: ./.github/workflows/cluster-test-terraform.yml
 #     with:
 #       working-directory: 'blueprints/full-single-cluster/terraform'
-#       terraform-version: '1.9.8'
+#       terraform-version: '1.12.2'
 #       terraform-vars-file: './test.tfvars'
 #       backend-key: 'custom-state.tfstate'
 # ```
@@ -65,7 +65,7 @@ on:  # yamllint disable-line rule:truthy
       terraform-version:
         description: 'Version of Terraform to use'
         required: false
-        default: '1.9.8'
+        default: '1.12.2'
         type: string
       backend-config:
         description: 'Optional backend configuration parameters (JSON format)'
@@ -190,7 +190,7 @@ jobs:
         if: inputs.keyvault-name != ''
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: ${{ inputs.terraform-version }}
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}

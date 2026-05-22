@@ -155,3 +155,14 @@ variable "should_create_azure_functions" {
   description = "Whether to create the Azure Functions resources including App Service Plan"
   default     = false
 }
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
+}

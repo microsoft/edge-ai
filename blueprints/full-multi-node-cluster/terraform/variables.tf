@@ -704,6 +704,12 @@ variable "postgresql_admin_password" {
   default     = null
 }
 
+variable "postgresql_admin_password_wo_version" {
+  description = "Version used to trigger updates for write-only PostgreSQL administrator password arguments. Increment this value when rotating the administrator password."
+  type        = number
+  default     = 1
+}
+
 variable "postgresql_should_generate_admin_password" {
   type        = bool
   description = "Whether to auto-generate PostgreSQL admin password."
@@ -1690,4 +1696,15 @@ variable "dataflow_endpoints" {
     ])
     error_message = "Each endpoint must include the settings object matching its endpointType (e.g., kafkaSettings for Kafka, mqttSettings for Mqtt)."
   }
+}
+
+/*
+ * Tags
+ */
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
 }

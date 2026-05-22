@@ -12,7 +12,9 @@
     "ghcr.io/devcontainers/features/azure-cli:1": {
       "extensions": "connectedk8s,k8s-extension,azure-iot-ops,amg,eventgrid"
     },
-    "ghcr.io/devcontainers/features/dotnet:2": {},
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "9.0"
+    },
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers-extra/features/pipx-package:1": {},
     "ghcr.io/devcontainers-extra/features/pre-commit:2": {},

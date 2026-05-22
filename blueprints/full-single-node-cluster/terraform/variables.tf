@@ -39,7 +39,7 @@ variable "resource_group_name" {
 
 variable "use_existing_resource_group" {
   type        = bool
-  description = "Whether to use an existing resource group with the provided or computed name instead of creating a new one"
+  description = "Whether to use an existing resource group instead of creating a new one. When true, the component will look up a resource group with the specified or generated name instead of creating it."
   default     = false
 }
 
@@ -351,6 +351,64 @@ variable "function_app_settings" {
 }
 
 /*
+ * Notification Parameters (045-notification)
+ */
+
+variable "should_deploy_notification" {
+  type        = bool
+  description = "Whether to deploy the 045-notification Logic App for alert deduplication and Teams posting"
+  default     = false
+}
+
+variable "closure_message_template" {
+  type        = string
+  description = "HTML message body for session-closure Teams notifications. Supports Logic App expression syntax for dynamic fields"
+  default     = "<p>Session closed for event.</p>"
+}
+
+variable "notification_event_schema" {
+  type        = any
+  description = "JSON schema object for parsing Event Hub events in the Logic App Parse_Event action"
+  default     = {}
+}
+
+variable "notification_message_template" {
+  type        = string
+  description = "HTML template for new-event Teams notifications. Supports Terraform template variable: close_session_url. Supports Logic App expression syntax for dynamic event fields"
+  default     = "<p>New alert event detected.</p>"
+}
+
+variable "notification_partition_key_field" {
+  type        = string
+  description = "Caller's event schema field name to use as the Table Storage partition key for session-state deduplication lookups (e.g. \"event_id\", \"asset_id\"). Must be set by the scenario tfvars."
+  default     = "event_id"
+}
+
+variable "teams_recipient_id" {
+  type        = string
+  description = "Teams chat or channel thread ID for posting event notifications"
+  sensitive   = true
+  default     = null
+}
+
+variable "teams_group_id" {
+  type        = string
+  description = "Microsoft 365 Group ID (Team ID) for posting to a Teams channel. Required when teams_post_location is 'Channel'"
+  default     = null
+}
+
+variable "teams_post_location" {
+  type        = string
+  description = "Teams posting location type for the notification message: 'Channel' for a Teams channel or 'Group chat' for a group chat"
+  default     = "Channel"
+
+  validation {
+    condition     = contains(["Channel", "Group chat"], var.teams_post_location)
+    error_message = "teams_post_location must be 'Channel' or 'Group chat'"
+  }
+}
+
+/*
  * Azure Kubernetes Service Parameters
  */
 
@@ -620,6 +678,12 @@ variable "postgresql_admin_password" {
   description = "Administrator password for PostgreSQL server. (Otherwise, generated when postgresql_should_generate_admin_password is true)."
   sensitive   = true
   default     = null
+}
+
+variable "postgresql_admin_password_wo_version" {
+  description = "Version used to trigger updates for write-only PostgreSQL administrator password arguments. Increment this value when rotating the administrator password."
+  type        = number
+  default     = 1
 }
 
 variable "postgresql_should_generate_admin_password" {
@@ -1149,7 +1213,8 @@ variable "ai_foundry_rai_policies" {
 variable "tags" {
   type        = map(string)
   default     = {}
-  description = "Tags to apply to all resources in this blueprint"
+  nullable    = false
+  description = "Tags to apply to all resources that support tags in this blueprint"
 }
 
 /*

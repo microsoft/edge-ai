@@ -1,0 +1,315 @@
+# Changelog
+
+## [4.0.3](https://github.com/microsoft/edge-ai/compare/v4.0.2...v4.0.3) (2026-05-21)
+
+
+### Bug Fixes
+
+* **dependabot:** generate parseable dependency commits ([#540](https://github.com/microsoft/edge-ai/issues/540)) ([a9c6e01](https://github.com/microsoft/edge-ai/commit/a9c6e01500e13ec7960ea6b6d08c41bcb9adb771))
+* **release:** guard release body size ([#547](https://github.com/microsoft/edge-ai/issues/547)) ([0db91cd](https://github.com/microsoft/edge-ai/commit/0db91cd600d4f1f54b815f1c8911b2e1dbef837d))
+
+
+### Miscellaneous Chores
+
+* **deps:** bump the pip group across 2 directories with 3 updates ([#530](https://github.com/microsoft/edge-ai/issues/530)) ([7814530](https://github.com/microsoft/edge-ai/commit/7814530fcfacf4a7d1e64f5a9ccdd6536952a3f9))
+
+## [4.0.2](https://github.com/microsoft/edge-ai/compare/v4.0.1...v4.0.2) (2026-05-19)
+
+
+### Miscellaneous Chores
+
+* **deps:** bump brace-expansion from 5.0.5 to 5.0.6 ([#525](https://github.com/microsoft/edge-ai/issues/525)) ([6b0f6c6](https://github.com/microsoft/edge-ai/commit/6b0f6c618c712925b5ba18a47ae9f4d3e27d9a6d))
+* **deps:** bump nicegui from 3.10.0 to 3.12.0 in /src/500-application/510-onvif-connector/services/camera-dashboard ([#527](https://github.com/microsoft/edge-ai/issues/527)) ([2e6a4e0](https://github.com/microsoft/edge-ai/commit/2e6a4e024a785e4b6ffe329d11c0b7863130c3b2))
+* **deps:** bump the npm group across 2 directories with 4 updates ([#529](https://github.com/microsoft/edge-ai/issues/529)) ([4b4b03c](https://github.com/microsoft/edge-ai/commit/4b4b03cc73a2aae4d6f99bc5fdb8ab50d64830ea))
+
+## [4.0.1](https://github.com/microsoft/edge-ai/compare/v4.0.0...v4.0.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* **ci:** sign release tags and pin repo context ([#526](https://github.com/microsoft/edge-ai/issues/526)) ([3182d3e](https://github.com/microsoft/edge-ai/commit/3182d3e7a3fa161156cac0ac91cee7a2562c7bba))
+
+## [4.0.0](https://github.com/microsoft/edge-ai/compare/v3.0.0...v4.0.0) (2026-05-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **terraform:** upgrade required_version floor from 1.9.8 to 1.12.0 ([#487](https://github.com/microsoft/edge-ai/issues/487))
+
+### Features
+
+* **500-application:** add 514-wasm-msg-to-dss WASM map operator with DSS enrichment pattern ([#356](https://github.com/microsoft/edge-ai/issues/356)) ([db882a5](https://github.com/microsoft/edge-ai/commit/db882a572928e47df9c7a8d0bbf952d1dfb0c7fe))
+* add tags support to all blueprints and remove deprecated federated identity reference ([#483](https://github.com/microsoft/edge-ai/issues/483)) ([c9c8967](https://github.com/microsoft/edge-ai/commit/c9c8967dd4c7ad5e9f6a19e80aeb6eea291b9ff2))
+* Add Terraform modules for Azure Kubernetes Service (AKS) and Azure Container Registry (ACR) ([e92f3f7](https://github.com/microsoft/edge-ai/commit/e92f3f71b5f55348944ee7b71e06c98e305bb5f6))
+* add unit tests for application services (Rust + Python) ([#372](https://github.com/microsoft/edge-ai/issues/372)) ([220ab28](https://github.com/microsoft/edge-ai/commit/220ab2895d503fe5fd1d2221a612a37e4756abea))
+* adopt hve-core PowerShell CI infrastructure ([#312](https://github.com/microsoft/edge-ai/issues/312)) ([9745d2b](https://github.com/microsoft/edge-ai/commit/9745d2b9e40161d6cecce94c753b9da2aef215d9))
+* **application:** add WASM operator for Avro-to-JSON transformation ([#212](https://github.com/microsoft/edge-ai/issues/212)) ([1e032eb](https://github.com/microsoft/edge-ai/commit/1e032eb688cf510836440d0b09af3e4e0ff11663))
+* **avro-to-json:** add unit tests for wire format config parsing ([#368](https://github.com/microsoft/edge-ai/issues/368)) ([65bc924](https://github.com/microsoft/edge-ai/commit/65bc9247b76bb881a7c4663ba0d368b30623a03c))
+* **avro-to-json:** add wireFormat configuration parameter ([#357](https://github.com/microsoft/edge-ai/issues/357)) ([e5d1833](https://github.com/microsoft/edge-ai/commit/e5d1833079aa94dbab4366bc8b11322151be15da))
+* **bicep:** implement AKS and ACR deployment components ([903cbee](https://github.com/microsoft/edge-ai/commit/903cbee6a8d806ac05521c57080f11a407d1fc84))
+* **blueprints:** update blueprint metadata and add Terraform files ([e075d19](https://github.com/microsoft/edge-ai/commit/e075d19346492e7e78b38daa2599708f63b173b3))
+* **build:** add multi-language fuzzing infra (CFLite + Codecov flags) ([#453](https://github.com/microsoft/edge-ai/issues/453)) ([7407230](https://github.com/microsoft/edge-ai/commit/7407230cb18238ce143cfbf7531032160bf9651e))
+* **build:** add root .hadolint.yaml and centralize Dockerfile linting config ([#133](https://github.com/microsoft/edge-ai/issues/133)) ([45e0d04](https://github.com/microsoft/edge-ai/commit/45e0d048c3c0d4f6e5dff406db5d1c5e3bcb6a9f))
+* **build:** Add Security Scan Results for Edge AI Infrastructure Components - Merged PR 266 ([a5a6b61](https://github.com/microsoft/edge-ai/commit/a5a6b61de9e0935f574677ff2e51ce52ba737293))
+* **build:** Update azure-pipelines.yml for internal-eng branch: Merged PR 326 ([d8beaa2](https://github.com/microsoft/edge-ai/commit/d8beaa2057f36b40da43a20c2917bccf4ce92686))
+* **chatmode:** update phase and task stop conditions for user review ([a9fb653](https://github.com/microsoft/edge-ai/commit/a9fb653851f148ed2f2a9f8dafffeb83c19fdd8f))
+* **ci:** add docker cleanup to megalinter template ([9cd020a](https://github.com/microsoft/edge-ai/commit/9cd020a2ecf354815f7e6fc3b3fb84b11c7a1cda))
+* **ci:** enforce rust crate registration in codecov coverage ([#155](https://github.com/microsoft/edge-ai/issues/155)) ([#449](https://github.com/microsoft/edge-ai/issues/449)) ([9b33d69](https://github.com/microsoft/edge-ai/commit/9b33d69fdf39cf4c77eb95453048977b30b46462))
+* **ci:** upgrade CodeQL actions and enhance GitHub Pages deployment ([56087d4](https://github.com/microsoft/edge-ai/commit/56087d418abb16c08c534cd143f7cbc6dc889299))
+* **community:** add community data processing and reporting markdown - Merged PR 239 ([7221d45](https://github.com/microsoft/edge-ai/commit/7221d4510247699ded787783a4221a64d05f0ef1))
+* **dependency:** minor fix for the dependency scan for main branch builds ([b1f22bf](https://github.com/microsoft/edge-ai/commit/b1f22bf540e1081b6686d16cb544d0243c77b732))
+* **dev:** add markdown table formatter for all folders to package.json - Merged PR 264 ([eef006d](https://github.com/microsoft/edge-ai/commit/eef006dd643f5c1162bcb4e04b35ff83bd4e859f))
+* **docs:** add CODEOWNERS file for repository ownership management ([2d0de94](https://github.com/microsoft/edge-ai/commit/2d0de94765ac074e33c9522637354836e8e069b7))
+* **docs:** enhance dev container and prerequisites and setup instructions in source README ([dd0dd42](https://github.com/microsoft/edge-ai/commit/dd0dd42664809822de249677c20064505521e026))
+* **docs:** migrate from Docsify to Docusaurus ([#399](https://github.com/microsoft/edge-ai/issues/399)) ([ca06002](https://github.com/microsoft/edge-ai/commit/ca060022c4a2a81dda97d488bbc56e9baa0d1c91))
+* **iot-ops:** upgrade AIO 2604 release (1.3.70), harden schema-registry RBAC ([#471](https://github.com/microsoft/edge-ai/issues/471)) ([e772b74](https://github.com/microsoft/edge-ai/commit/e772b74a968efdfa76854383886ca61fa9eb273f))
+* **mcp:** add terraform-mcp-server ([9797ced](https://github.com/microsoft/edge-ai/commit/9797ced59ba7609bc878524b822fcb0b48c21325))
+* **networking:** add Terraform and bicep module for Azure virtual network with subnets and NSGs, removed from VM-Host ([35eb221](https://github.com/microsoft/edge-ai/commit/35eb221f779679fdded8ae6c73b3c2c4d9eefe5b))
+* **pipeline:** add pre-release stage and update conditions for PR builds ([ace7192](https://github.com/microsoft/edge-ai/commit/ace7192f980879bed2df2212c5e5645a09ddd393))
+* **pipelines:** add internalGitHub parameter for repository access ([93a7c86](https://github.com/microsoft/edge-ai/commit/93a7c867a9a0319f64b2ef6556e0f30918f2b969))
+* **release-please:** implement PAI 1+6 jobs DAG with binary integrity and tag signature verification ([#501](https://github.com/microsoft/edge-ai/issues/501)) ([dc58f10](https://github.com/microsoft/edge-ai/commit/dc58f10995f1d4662b3d4fd4315a977828ca6e17))
+* **reporting:** add scenario to capability to feature mapping graphic - Merged PR 292 ([7eb24d4](https://github.com/microsoft/edge-ai/commit/7eb24d46204eca855e02132967051f6c4d27e9fd))
+* **security-identity:** add security review gate via CODEOWNERS, PR template, and label ([#333](https://github.com/microsoft/edge-ai/issues/333)) ([dcb6d57](https://github.com/microsoft/edge-ai/commit/dcb6d57f7a5e45973ab071fbb3d9e2504d7e008e))
+* **settings:** add GitHub HTTP MCP server configuration ([#197](https://github.com/microsoft/edge-ai/issues/197)) ([6a70b61](https://github.com/microsoft/edge-ai/commit/6a70b61df142ed211a68034db886bd8aeb6c9081))
+* **settings:** add initial Jekyll configuration file ([350603d](https://github.com/microsoft/edge-ai/commit/350603defd3f1637baa4636d23e74787aa2f6b53))
+* **settings:** add v8r schema validation configuration ([#219](https://github.com/microsoft/edge-ai/issues/219)) ([2e5e261](https://github.com/microsoft/edge-ai/commit/2e5e26128662538ebc0aeb88d19d7857400650bd))
+* **terraform:** add should_create_aks variable and update AKS module logic ([fb3f0ff](https://github.com/microsoft/edge-ai/commit/fb3f0ff7be37dd7b162f085a6c3a706814db3c54))
+* **terraform:** upgrade required_version floor from 1.9.8 to 1.12.0 ([#487](https://github.com/microsoft/edge-ai/issues/487)) ([49229da](https://github.com/microsoft/edge-ai/commit/49229daf1df9bdac9049b00b79af3f6ef8283a86))
+* **tools:** add .shellcheckrc for ShellCheck configuration ([#124](https://github.com/microsoft/edge-ai/issues/124)) ([6441eb9](https://github.com/microsoft/edge-ai/commit/6441eb95b5bc782a1fc15d61231dd31081d9c9ec))
+
+
+### Bug Fixes
+
+* **ai-edge-inference:** bump notify 7 to 8 (partial RUSTSEC-2024-0384) ([#469](https://github.com/microsoft/edge-ai/issues/469)) ([f548586](https://github.com/microsoft/edge-ai/commit/f548586af63f42f138541a4bdb0531b8c524f56c))
+* **application:** avro-to-json handle JSON-string-encoded schema and Confluent wire format prefix ([#336](https://github.com/microsoft/edge-ai/issues/336)) ([e2ac755](https://github.com/microsoft/edge-ai/commit/e2ac755f454bec64e8d3bcf5263ae0b8d0f77e68))
+* **application:** update trigger topics for video capture ([2795b3b](https://github.com/microsoft/edge-ai/commit/2795b3bcf0d85209cecf4d0d1e78bedb99a15ac1))
+* **build:** add granular grype-soft-fail for PR validation ([#313](https://github.com/microsoft/edge-ai/issues/313)) ([2169b99](https://github.com/microsoft/edge-ai/commit/2169b99209d1d199ea290cef25abb0346a75bfd3))
+* **build:** format markdown tables for MD060 compliance ([#102](https://github.com/microsoft/edge-ai/issues/102)) ([2875957](https://github.com/microsoft/edge-ai/commit/2875957227ceb6b852d733a2d9c6008398d6202d))
+* **build:** narrow mega linter diff fetch scope ([f4b07e1](https://github.com/microsoft/edge-ai/commit/f4b07e1e0422a2cf1e6b59abb82b6c33aa4e4632))
+* **build:** pin all dependencies for OSSF Scorecard ([#402](https://github.com/microsoft/edge-ai/issues/402)) ([79e6971](https://github.com/microsoft/edge-ai/commit/79e6971628287bce6439a6459445ab715ba17a87))
+* **build:** remediate script injection in create-release workflow ([#351](https://github.com/microsoft/edge-ai/issues/351)) ([0ffddb7](https://github.com/microsoft/edge-ai/commit/0ffddb7131f9a02fb3d364e298da73fb0a747e0b))
+* **build:** resolve all 4 main branch CI lint failures ([#365](https://github.com/microsoft/edge-ai/issues/365)) ([f90ad6f](https://github.com/microsoft/edge-ai/commit/f90ad6f2815ba05d90fad1e632d812385c9ba972))
+* **build:** resolve npm vulnerabilities and merge release 2.0.0 ([#61](https://github.com/microsoft/edge-ai/issues/61)) ([349c30e](https://github.com/microsoft/edge-ai/commit/349c30e667ca31a45be03d939bc4c85e3ad07d31))
+* **build:** resolve npm vulnerabilities and sidebar generation ([5bb66cd](https://github.com/microsoft/edge-ai/commit/5bb66cd8b7e9e0aa3f2250f0ab9257f555c00452))
+* **build:** the addition of bicep documents check to the GH workflows was missing for PR Validation. ([9e23bf8](https://github.com/microsoft/edge-ai/commit/9e23bf8aa292cbf182a621ee4cebc4027c594043))
+* **build:** update stale GitHub Action SHAs and npm dependencies ([#103](https://github.com/microsoft/edge-ai/issues/103)) ([e0d5731](https://github.com/microsoft/edge-ai/commit/e0d5731d002afe4d158b6f4311baa6dcf58a0f6e))
+* **build:** update working directory for resource provider scripts - noticed an inconsistency since the refactor of the folder names under /src/ ([1ef1f27](https://github.com/microsoft/edge-ai/commit/1ef1f27ea1609a3b0d5bad3943c99ca89d4d0994))
+* **build:** use valid 'rust' cataloger tag for Syft v1.42.3+ ([#423](https://github.com/microsoft/edge-ai/issues/423)) ([f168e56](https://github.com/microsoft/edge-ai/commit/f168e56a9477fb8f05a73a4fdd8355af842e8982))
+* **deps:** bump openssl to 0.10.79 across remaining Rust services ([#480](https://github.com/microsoft/edge-ai/issues/480)) ([14e6f16](https://github.com/microsoft/edge-ai/commit/14e6f16c767e907d9ef313756d1c557083805696))
+* **docker:** replace awk with cut for hash verification in Dockerfiles and templates ([#493](https://github.com/microsoft/edge-ai/issues/493)) ([80e97fd](https://github.com/microsoft/edge-ai/commit/80e97fd177ce4210d4b09cffbe438ecaf70c1c3e))
+* **docs:** blueprint links ([#27](https://github.com/microsoft/edge-ai/issues/27)) ([46b51a0](https://github.com/microsoft/edge-ai/commit/46b51a0bc1d278ced61ef7e5756552de5e0908dc))
+* **docs:** clean up docs - Merged PR 285 ([1be28fd](https://github.com/microsoft/edge-ai/commit/1be28fd04bee84dee4618061be7650465937e145))
+* **docs:** clean up project security plans folder - Merged PR 265 ([19a4489](https://github.com/microsoft/edge-ai/commit/19a4489e31ddff1b29d8dcaf26c399d11ef0de6b))
+* **docs:** remove ignoreDeprecations in tsconfig.json ([#488](https://github.com/microsoft/edge-ai/issues/488)) ([1b4af53](https://github.com/microsoft/edge-ai/commit/1b4af53d9a35d9f9c14ec152041d98eb65fd5d9f))
+* **docs:** silence TS5101 baseUrl deprecation in docusaurus tsconfig ([#475](https://github.com/microsoft/edge-ai/issues/475)) ([ff9d53f](https://github.com/microsoft/edge-ai/commit/ff9d53f86da41a979b714f9918f3867339b3a348))
+* **instructions:** use prompt refactor prompt to update csharp instructions ([bff1893](https://github.com/microsoft/edge-ai/commit/bff1893c83629d15bcf812a34ac7f9f0e78b2205))
+* **iot-ops:** add dependency for azurerm_arc_kubernetes_cluster_extension in instance resource ([aafcfe7](https://github.com/microsoft/edge-ai/commit/aafcfe7f5a8052c789f94b420f4e7b0a924cff49))
+* **iot-ops:** change type of should_create_anonymous_broker_listener to bool ([27efdbc](https://github.com/microsoft/edge-ai/commit/27efdbc955451dca538111d47db63f230df39ef9))
+* **iot-ops:** correct user assigned identity naming format ([71cd557](https://github.com/microsoft/edge-ai/commit/71cd55726b9fd7222d9705045b0ed12f3177843d))
+* **linting:** address linting issues on main branch - Merged PR 231 ([29e0bbf](https://github.com/microsoft/edge-ai/commit/29e0bbff1e9698b69e9e8b665b5407d8964bf521))
+* **mega-linter:** add `permissions > statuses: write` for main.yml GH ([f5374b9](https://github.com/microsoft/edge-ai/commit/f5374b9a2eeaa47fbfb7319bd1e8fa75597e6825))
+* **pr-validation:** update job dependencies for matrix changes ([1d858ee](https://github.com/microsoft/edge-ai/commit/1d858eeef5b1c0f6d92d09efca359ea478602c10))
+* **release-please:** use client-id instead of deprecated app-id ([#491](https://github.com/microsoft/edge-ai/issues/491)) ([aff623c](https://github.com/microsoft/edge-ai/commit/aff623c0e4f7e1505aeb63e6ce4b98bcf601f22a))
+* **scripts:** align Grype writer/reader naming so security gate fails closed ([#362](https://github.com/microsoft/edge-ai/issues/362)) ([#411](https://github.com/microsoft/edge-ai/issues/411)) ([64b3db3](https://github.com/microsoft/edge-ai/commit/64b3db30c81e2cc01ea775946fdd5e59d0844a26))
+* **settings:** update kubectl-helm-minikube version to avoid outages ([51384e9](https://github.com/microsoft/edge-ai/commit/51384e9b7f5e416d36c28b755918d069c20ff6e4))
+* **settings:** update YAML lint filter regex for templates ([a39adbb](https://github.com/microsoft/edge-ai/commit/a39adbb4f0eeea42c38a173f45220d1ba2005fbb))
+* **terraform:** correct subnet address prefix in virtual network configuration ([10674fb](https://github.com/microsoft/edge-ai/commit/10674fb7c4bdfbae9617b76944941157ec50672c))
+* **terraform:** resourceSyncRules fixes in resource definition ([1da54d2](https://github.com/microsoft/edge-ai/commit/1da54d2b90c9778ad550272903bfc8213d20bb62))
+* update stale hashes for checkov and requests in requirements.txt ([#516](https://github.com/microsoft/edge-ai/issues/516)) ([fa3c57f](https://github.com/microsoft/edge-ai/commit/fa3c57f88745ae2b81537a4e8b1423f15a2fb0c9))
+* **workflows:** create git tag for draft releases ([#521](https://github.com/microsoft/edge-ai/issues/521)) ([d9ceaf9](https://github.com/microsoft/edge-ai/commit/d9ceaf97ce303b174ce44fc13c6b5a88f3a61459))
+* **workflows:** harden CI workflows to fail-fast on lint, security, and doc-gen errors ([#393](https://github.com/microsoft/edge-ai/issues/393)) ([4669835](https://github.com/microsoft/edge-ai/commit/4669835bc57f7862b99c61388472754045a7b8e5))
+
+
+### Documentation
+
+* **500-application:** remove duplicate section and pre-release app from README ([8a19340](https://github.com/microsoft/edge-ai/commit/8a193407f884d4ae95467cf2ec5cabbf276ea6e5))
+* add OpenSSF Scorecard badge to README ([#371](https://github.com/microsoft/edge-ai/issues/371)) ([917851b](https://github.com/microsoft/edge-ai/commit/917851bc5a3db1136490f5d61d126c7f872ab3b1))
+* **adrs:** document .terraform.lock.hcl exclusion rationale ([#505](https://github.com/microsoft/edge-ai/issues/505)) ([7c7185b](https://github.com/microsoft/edge-ai/commit/7c7185b341f251cf31cb40d4fb5efa0e232599ea))
+* **contribute:** replace Azure DevOps references with GitHub equivalents ([#198](https://github.com/microsoft/edge-ai/issues/198)) ([9c96219](https://github.com/microsoft/edge-ai/commit/9c96219aa064c636dabf5f84ea3bb23f955a75fb))
+* **governance:** add GOVERNANCE.md ([#160](https://github.com/microsoft/edge-ai/issues/160)) ([#503](https://github.com/microsoft/edge-ai/issues/503)) ([76d1cfe](https://github.com/microsoft/edge-ai/commit/76d1cfeaf83ef5f22ec48988a5f88db5e593ab6b))
+* **pr-template:** add regression test checkbox for bug fixes ([#187](https://github.com/microsoft/edge-ai/issues/187)) ([bf9af5a](https://github.com/microsoft/edge-ai/commit/bf9af5aa020593b009222078b533fa3730e1fb59))
+* **readme:** add OpenSSF Best Practices badge ([#290](https://github.com/microsoft/edge-ai/issues/290)) ([9b119a6](https://github.com/microsoft/edge-ai/commit/9b119a614fd74c44f8a64cda42e4ab876d80c51f))
+* regenerate module README files for MD060 table compliance ([45bef8d](https://github.com/microsoft/edge-ai/commit/45bef8dcc8967fb4835ea81c1c84f48d47f4d15f))
+* **security:** add vulnerability response timeline to SECURITY.md ([#193](https://github.com/microsoft/edge-ai/issues/193)) ([966cb42](https://github.com/microsoft/edge-ai/commit/966cb426225b4dd2ba9adbc209f8e3ed381c7975))
+* **testing:** add formal test policy and requirements ([#190](https://github.com/microsoft/edge-ai/issues/190)) ([cdd6446](https://github.com/microsoft/edge-ai/commit/cdd6446edf73e919edaffc9af3411ff38b6a408f))
+
+
+### Build System
+
+* **build:** add clippy lint configuration and CI integration ([#231](https://github.com/microsoft/edge-ai/issues/231)) ([dadeaa9](https://github.com/microsoft/edge-ai/commit/dadeaa9153f037a9e6091222631e89f747a2acd6))
+* **build:** add integrity verification for third-party GitHub Actions ([#269](https://github.com/microsoft/edge-ai/issues/269)) ([4d68f68](https://github.com/microsoft/edge-ai/commit/4d68f687f2b407edf33ad0362177817f7ecb32a7))
+* **build:** add prettier configuration for JSON formatting ([#217](https://github.com/microsoft/edge-ai/issues/217)) ([7766d33](https://github.com/microsoft/edge-ai/commit/7766d337284f187d2f977bec84a1ec42e6c8fe32))
+* **build:** replace SLSA attestation with actions/attest ([#332](https://github.com/microsoft/edge-ai/issues/332)) ([6ec9952](https://github.com/microsoft/edge-ai/commit/6ec9952ca9d8c2e0f081609538f5966666424632))
+* **ci:** replace MegaLinter with per-tool GitHub Actions lint workflows ([#240](https://github.com/microsoft/edge-ai/issues/240)) ([022a1a1](https://github.com/microsoft/edge-ai/commit/022a1a1c7796d210429f21703d2c6ffe96d1dde0))
+* **deps:** bump Rust and Python deps to clear CI security gates ([#444](https://github.com/microsoft/edge-ai/issues/444)) ([2c05d82](https://github.com/microsoft/edge-ai/commit/2c05d822f60058221b323695e19d04a4b7e046dc))
+* **deps:** use ga release of the fabric terraform ([b27b9c5](https://github.com/microsoft/edge-ai/commit/b27b9c59a6b10910c856da4c2b4a9a49854abfa1))
+* **scripts:** add EditorConfig and enable shfmt in MegaLinter ([#136](https://github.com/microsoft/edge-ai/issues/136)) ([2a496d2](https://github.com/microsoft/edge-ai/commit/2a496d27506e64c07446422b9ce4627b9e3e3c2d))
+* **scripts:** pin tonistiigi/xx to versioned SHA256 digest ([#260](https://github.com/microsoft/edge-ai/issues/260)) ([a14084a](https://github.com/microsoft/edge-ai/commit/a14084a9910424e1e6263ced9b8d4ac1b51257ab))
+* **security-identity:** add standalone OSSF Scorecard workflow ([#307](https://github.com/microsoft/edge-ai/issues/307)) ([51611e8](https://github.com/microsoft/edge-ai/commit/51611e87c77291bdbaa592c878d102e0a1feee38))
+
+
+### Code Refactoring
+
+* **build:** consolidate workflow inputs for GitHub 10-input limit ([#63](https://github.com/microsoft/edge-ai/issues/63)) ([2d6500b](https://github.com/microsoft/edge-ai/commit/2d6500b88dabaa00aef1e6d5c7dccaae86aa2652))
+* **terraform:** remove site MQTT endpoint and clean secret-provider-class ([8d3f695](https://github.com/microsoft/edge-ai/commit/8d3f695de77e75abb19e8467ae8875052eb14e74))
+* **vm-host:** simplify subnet handling in Terraform configuration ([927e0fa](https://github.com/microsoft/edge-ai/commit/927e0fa54f426b8e2ecb5c39b2aeb301ee5ceacd))
+
+
+### Miscellaneous Chores
+
+* **build:** expand dependabot to cover all dependency ecosystems ([#261](https://github.com/microsoft/edge-ai/issues/261)) ([04f3b23](https://github.com/microsoft/edge-ai/commit/04f3b23829553d84722dcdad65d34879a7374607))
+* **build:** migrate node toolchain to v24 (closes [#458](https://github.com/microsoft/edge-ai/issues/458)) ([#460](https://github.com/microsoft/edge-ai/issues/460)) ([7a7648c](https://github.com/microsoft/edge-ai/commit/7a7648cc1f078b0ba44e95994f30a3de3983d04f))
+* **build:** pin pip and CI tool installs for Scorecard ([#464](https://github.com/microsoft/edge-ai/issues/464)) ([1a57e67](https://github.com/microsoft/edge-ai/commit/1a57e670736cd8dd3fecadb3cbc0b87e67f04a9d))
+* **build:** upgrade tf-docs to v 0.19.0 - Merged PR 232 ([fa75196](https://github.com/microsoft/edge-ai/commit/fa7519657337a36683e5b138b8f1e6dfa64ac559))
+* **ci:** Remove redundant PowerShell installation from GitHub Actions workflow ([#86](https://github.com/microsoft/edge-ai/issues/86)) ([5918632](https://github.com/microsoft/edge-ai/commit/59186326f37bffb54b33958099c3e26f900f6d3d))
+* **codeowners:** add missing directory paths ([#256](https://github.com/microsoft/edge-ai/issues/256)) ([7e8b559](https://github.com/microsoft/edge-ai/commit/7e8b55964cbf746657ff4145f171111c7df5dd59))
+* **deps-dev:** bump minimatch from 3.1.2 to 3.1.5 in /docs/_server ([#229](https://github.com/microsoft/edge-ai/issues/229)) ([24a38d6](https://github.com/microsoft/edge-ai/commit/24a38d6d60d8b53e511f94f2fba0d13a47b99478))
+* **deps-dev:** bump rollup from 4.53.3 to 4.59.0 in /docs/_server ([#228](https://github.com/microsoft/edge-ai/issues/228)) ([e6c3740](https://github.com/microsoft/edge-ai/commit/e6c3740f144391c46c347833401f2595e05f076f))
+* **deps-dev:** bump undici from 7.22.0 to 7.24.1 ([#252](https://github.com/microsoft/edge-ai/issues/252)) ([6b967ac](https://github.com/microsoft/edge-ai/commit/6b967acaba34d17fd27081ec4aaf3fad037431cf))
+* **deps:** batch security and dependency updates ([#216](https://github.com/microsoft/edge-ai/issues/216)) ([d19c605](https://github.com/microsoft/edge-ai/commit/d19c6059627b6d74b8067218bac200db6bb9e91f))
+* **deps:** bump @isaacs/brace-expansion from 5.0.0 to 5.0.1 ([#132](https://github.com/microsoft/edge-ai/issues/132)) ([b836cfd](https://github.com/microsoft/edge-ai/commit/b836cfdcd6db6f4b1b208c030a701f4af6a09314))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/501-rust-telemetry/services/receiver ([#184](https://github.com/microsoft/edge-ai/issues/184)) ([2534de9](https://github.com/microsoft/edge-ai/commit/2534de9040c26924a4e6e99cd70a658c5bf6658c))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/501-rust-telemetry/services/sender ([#181](https://github.com/microsoft/edge-ai/issues/181)) ([5672cb9](https://github.com/microsoft/edge-ai/commit/5672cb96096f6a686823fbd5947a601937083822))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/502-rust-http-connector/services/broker ([#183](https://github.com/microsoft/edge-ai/issues/183)) ([695c16d](https://github.com/microsoft/edge-ai/commit/695c16dbf0d001c7ef2508581ed6273623b78d5c))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/503-media-capture-service/services/media-capture-service ([#131](https://github.com/microsoft/edge-ai/issues/131)) ([76cad0b](https://github.com/microsoft/edge-ai/commit/76cad0b63609a371a1660a7081c87cac433ac09c))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter ([#138](https://github.com/microsoft/edge-ai/issues/138)) ([2cc0c8d](https://github.com/microsoft/edge-ai/commit/2cc0c8d3f2e451a5e5329bf70fcbd01b1ba7014c))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/507-ai-inference/services/ai-edge-inference ([#129](https://github.com/microsoft/edge-ai/issues/129)) ([d2a83f5](https://github.com/microsoft/edge-ai/commit/d2a83f586a2b8ccb3ce51b8159550a4e5d62fe60))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate ([#236](https://github.com/microsoft/edge-ai/issues/236)) ([a13417f](https://github.com/microsoft/edge-ai/commit/a13417fb4328ff7be8f760094dd4cb7583739bc0))
+* **deps:** bump bytes from 1.10.1 to 1.11.1 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate/tests/no-features-test ([#130](https://github.com/microsoft/edge-ai/issues/130)) ([5d4f2ce](https://github.com/microsoft/edge-ai/commit/5d4f2ceb2f26b0b66e694a37a4b66c489a9386df))
+* **deps:** bump express from 4.21.2 to 4.22.1 in /docs/_server ([#68](https://github.com/microsoft/edge-ai/issues/68)) ([a0e7e0b](https://github.com/microsoft/edge-ai/commit/a0e7e0b50dab95861edd169fa04e2dc5d0b1111d))
+* **deps:** bump flask from 3.0.3 to 3.1.3 in /src/500-application/505-akri-rest-http-connector/services/sensor-simulator ([#202](https://github.com/microsoft/edge-ai/issues/202)) ([02ad24c](https://github.com/microsoft/edge-ai/commit/02ad24c8e18dddffc401a1c20c02b61930fe4dad))
+* **deps:** bump flask from 3.0.3 to 3.1.3 in /src/500-application/506-ros2-connector/services ([#227](https://github.com/microsoft/edge-ai/issues/227)) ([97c54ca](https://github.com/microsoft/edge-ai/commit/97c54caeeee0b3b467c01a4754b46741ce14c2a2))
+* **deps:** bump flask from 3.1.2 to 3.1.3 in /src/500-application/502-rust-http-connector/services/sensor-simulator/src ([#209](https://github.com/microsoft/edge-ai/issues/209)) ([7544fbe](https://github.com/microsoft/edge-ai/commit/7544fbed7fc6828b0109bc6093318e28d3c34f1a))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs from 1.44.0 to 1.65.0 in /blueprints/full-single-node-cluster/tests ([#363](https://github.com/microsoft/edge-ai/issues/363)) ([52e807a](https://github.com/microsoft/edge-ai/commit/52e807a02c8269d14e85919b15a1d6614f7ec56f))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.69.0 to 1.88.5 in /blueprints/full-single-node-cluster/tests ([#364](https://github.com/microsoft/edge-ai/issues/364)) ([ca8a5a2](https://github.com/microsoft/edge-ai/commit/ca8a5a247f7dcf8f6205642f372a009d4e06353f))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/s3 from 1.69.0 to 1.97.3 in /blueprints/full-single-node-cluster/tests ([#366](https://github.com/microsoft/edge-ai/issues/366)) ([5de38e9](https://github.com/microsoft/edge-ai/commit/5de38e9e338770cdaeb68e93d3df62ab7dca9ab6))
+* **deps:** bump github.com/jackc/pgx/v5 from 5.7.1 to 5.9.0 in /blueprints/full-single-node-cluster/tests ([#397](https://github.com/microsoft/edge-ai/issues/397)) ([57caa75](https://github.com/microsoft/edge-ai/commit/57caa75caf511d49d12fb7c43e545bb06a0a6e7c))
+* **deps:** bump github.com/microsoft/kiota-http-go from 1.5.4 to 1.5.5 in /blueprints/full-single-node-cluster/tests ([#485](https://github.com/microsoft/edge-ai/issues/485)) ([f080a5e](https://github.com/microsoft/edge-ai/commit/f080a5e14afc70100a9807788d08c2358d7441b0))
+* **deps:** bump github.com/moby/spdystream from 0.5.0 to 0.5.1 in /blueprints/full-single-node-cluster/tests ([#396](https://github.com/microsoft/edge-ai/issues/396)) ([a45f051](https://github.com/microsoft/edge-ai/commit/a45f051e40183af02805d811cb96b978d5fe6e02))
+* **deps:** bump github.com/ulikunitz/xz from 0.5.10 to 0.5.14 in /blueprints/full-single-node-cluster/tests ([#139](https://github.com/microsoft/edge-ai/issues/139)) ([43c6a1b](https://github.com/microsoft/edge-ai/commit/43c6a1bfd2f0919cbd38fbc57872627957268f4d))
+* **deps:** bump github.com/ulikunitz/xz from 0.5.10 to 0.5.14 in /src/900-tools-utilities/904-test-utilities ([#180](https://github.com/microsoft/edge-ai/issues/180)) ([3c83f8b](https://github.com/microsoft/edge-ai/commit/3c83f8bf5a7c4104e8dde4fe8958cc8785dbcbdc))
+* **deps:** bump lodash-es from 4.17.22 to 4.17.23 ([#113](https://github.com/microsoft/edge-ai/issues/113)) ([fb12deb](https://github.com/microsoft/edge-ai/commit/fb12deb3c99675b2d5e483d92628cf6a85f8efb9))
+* **deps:** bump openssl from 0.10.78 to 0.10.79 in /src/500-application/507-ai-inference/services/ai-edge-inference ([#477](https://github.com/microsoft/edge-ai/issues/477)) ([8326a97](https://github.com/microsoft/edge-ai/commit/8326a97e10f9b6784d4ba65d53e81f43e7345e1a))
+* **deps:** bump openssl from 0.10.78 to 0.10.79 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate ([#476](https://github.com/microsoft/edge-ai/issues/476)) ([8b7536e](https://github.com/microsoft/edge-ai/commit/8b7536e3d3cf2ed711fa8944fa18a707676ff5d5))
+* **deps:** bump pillow from 10.4.0 to 12.1.1 in /src/500-application/506-ros2-connector/services ([#192](https://github.com/microsoft/edge-ai/issues/192)) ([6511fa3](https://github.com/microsoft/edge-ai/commit/6511fa380ce901fc7683d7e3235bba3ad4fb9be9))
+* **deps:** bump pytest from 9.0.2 to 9.0.3 in /src/500-application/506-ros2-connector/services ([#394](https://github.com/microsoft/edge-ai/issues/394)) ([14828e7](https://github.com/microsoft/edge-ai/commit/14828e72c91f9d39b28b20e31547947a9199afc8))
+* **deps:** bump rand from 0.9.2 to 0.9.4 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate ([#395](https://github.com/microsoft/edge-ai/issues/395)) ([3cac305](https://github.com/microsoft/edge-ai/commit/3cac3050d1f7881b71230bccd6f5954a31224d13))
+* **deps:** bump requests from 2.32.3 to 2.32.4 in /src/500-application/505-akri-rest-http-connector/services/sensor-simulator ([#64](https://github.com/microsoft/edge-ai/issues/64)) ([a5e1735](https://github.com/microsoft/edge-ai/commit/a5e17351646d44b7019e9feaafbd8e4c6ca9f905))
+* **deps:** bump requests from 2.32.4 to 2.33.0 in /src/500-application/505-akri-rest-http-connector/services/sensor-simulator ([#304](https://github.com/microsoft/edge-ai/issues/304)) ([eff3240](https://github.com/microsoft/edge-ai/commit/eff32405543f0a2008fb76951e1eaa4c9b710ec4))
+* **deps:** bump tar from 7.5.10 to 7.5.11 ([#241](https://github.com/microsoft/edge-ai/issues/241)) ([78bc60d](https://github.com/microsoft/edge-ai/commit/78bc60d3398c92877364ec75e0e201873b4a03c7))
+* **deps:** bump tar from 7.5.3 to 7.5.7 ([#115](https://github.com/microsoft/edge-ai/issues/115)) ([31a41a9](https://github.com/microsoft/edge-ai/commit/31a41a9a152c72615e8d523d241d365c2490bd27))
+* **deps:** bump tar from 7.5.7 to 7.5.9 ([#200](https://github.com/microsoft/edge-ai/issues/200)) ([3d19470](https://github.com/microsoft/edge-ai/commit/3d194701950c792571d06b440acb951916eb4fcb))
+* **deps:** bump tar from 7.5.9 to 7.5.10 ([#230](https://github.com/microsoft/edge-ai/issues/230)) ([f785f97](https://github.com/microsoft/edge-ai/commit/f785f9705d84d4e8ac3dcc371b1da3383ac54085))
+* **deps:** bump urllib3 from 2.6.3 to 2.7.0 and consolidate dependencies ([#509](https://github.com/microsoft/edge-ai/issues/509)) ([40c1ef6](https://github.com/microsoft/edge-ai/commit/40c1ef6ec773642994dfbcd060598fe60ff83109))
+* **deps:** bump werkzeug from 3.0.6 to 3.1.4 in /src/500-application/506-ros2-connector/services ([#74](https://github.com/microsoft/edge-ai/issues/74)) ([c6b4d15](https://github.com/microsoft/edge-ai/commit/c6b4d15793a3b5814243d2afe10ea4e3f9fd7314))
+* **deps:** bump werkzeug from 3.1.5 to 3.1.6 in /src/500-application/502-rust-http-connector/services/sensor-simulator/src ([#210](https://github.com/microsoft/edge-ai/issues/210)) ([6e82c78](https://github.com/microsoft/edge-ai/commit/6e82c78833790d42c6b051baa0c8e50df0a1b25e))
+* **deps:** bump werkzeug from 3.1.5 to 3.1.6 in /src/500-application/506-ros2-connector/services ([#203](https://github.com/microsoft/edge-ai/issues/203)) ([90ae904](https://github.com/microsoft/edge-ai/commit/90ae904e5e16256961978ae57cc65c94b69ed902))
+* **deps:** bundle Dependabot security fixes for flatted, cors, and grype config ([#292](https://github.com/microsoft/edge-ai/issues/292)) ([bb13625](https://github.com/microsoft/edge-ai/commit/bb13625292ea6f81a01d15555b13d32897e04757))
+* **deps:** consolidate 16 dependabot PRs with eslint v10, vitest v4, and cspell v9 ([#297](https://github.com/microsoft/edge-ai/issues/297)) ([e6ecdb4](https://github.com/microsoft/edge-ai/commit/e6ecdb4c7dff7a82747a964185cfa9031e3fac7a))
+* **deps:** consolidate Dependabot updates into one weekly PR per ecosystem ([#410](https://github.com/microsoft/edge-ai/issues/410)) ([37de2b4](https://github.com/microsoft/edge-ai/commit/37de2b4fd1f84e93dd4f869565cd3e37fee3810f))
+* **deps:** regenerate package-lock.json after merge ([683a29a](https://github.com/microsoft/edge-ai/commit/683a29af0801e45b1b612d630ae429d18e6abde5))
+* **deps:** remediate Grype/OSSF vulnerabilities ([#451](https://github.com/microsoft/edge-ai/issues/451)) ([#450](https://github.com/microsoft/edge-ai/issues/450)) ([b5d0753](https://github.com/microsoft/edge-ai/commit/b5d07536f4370961d4d168c796b342be425a82e9))
+* **devcontainer:** pin .NET SDK to 9.0 ([#517](https://github.com/microsoft/edge-ai/issues/517)) ([77adefd](https://github.com/microsoft/edge-ai/commit/77adefd80ef3bbd9055ba2f4ebfec039eb68a0f6))
+* **docs:** clean up localization - Merged PR 233 ([86fd6d0](https://github.com/microsoft/edge-ai/commit/86fd6d07ad8adcc9547398a803a36d28d0c9e46f))
+* **docs:** regenerate sidebar for new wasm provider component ([3ad039d](https://github.com/microsoft/edge-ai/commit/3ad039dfaab54e34b764bf8a5a2625a9eec9b3d0))
+* integrate changes from main ([da6eaa7](https://github.com/microsoft/edge-ai/commit/da6eaa7106de42e08ae8d39368ca56491c5f684d))
+* integrate changes from main ([a3d7b1a](https://github.com/microsoft/edge-ai/commit/a3d7b1ae84527310f61add4b7c411c17838fcff0))
+* integrate changes from main ([31e850a](https://github.com/microsoft/edge-ai/commit/31e850a8d86b8287f5c4dce550363f8fe05fc80c))
+* integrate changes from main ([4c2c55f](https://github.com/microsoft/edge-ai/commit/4c2c55f6e2a025d403d22eed73e7ffb731a40345))
+* integrate changes from main ([de2103c](https://github.com/microsoft/edge-ai/commit/de2103c2fb187b8ff3a96272a9b5739cfcf57d23))
+* integrate changes from main ([0b69506](https://github.com/microsoft/edge-ai/commit/0b695065a9c875f30cded5c3cde0f85def87e9f5))
+* integrate changes from main ([7f6758f](https://github.com/microsoft/edge-ai/commit/7f6758f8887b4ed754dda8b33ee9c28485b7872b))
+* integrate changes from main ([cbf26d8](https://github.com/microsoft/edge-ai/commit/cbf26d81deeb96a16c6b9d020fbe5a19105b3ab1))
+* integrate changes from main ([161e8bc](https://github.com/microsoft/edge-ai/commit/161e8bc83a0561b15bb43270994ef12665dff344))
+* integrate changes from main ([8a4dfeb](https://github.com/microsoft/edge-ai/commit/8a4dfebdb8d9f96a919ba10ec3e0c1a403d884df))
+* integrate changes from main ([54ecd23](https://github.com/microsoft/edge-ai/commit/54ecd236df6c60fe7077a91e882757ceb67b158d))
+* integrate changes from main ([8abef9d](https://github.com/microsoft/edge-ai/commit/8abef9dfbd00ce21d672ee7c8491c1133ec7265f))
+* integrate changes from main ([5e621d0](https://github.com/microsoft/edge-ai/commit/5e621d093b62b936ca71100ef3f6746da9e549c3))
+* integrate changes from main ([19b27d2](https://github.com/microsoft/edge-ai/commit/19b27d28eb968d67588a5cf515aeda6ae5c986c7))
+* integrate changes from main ([498f342](https://github.com/microsoft/edge-ai/commit/498f3425a1c6419edcad286170b9bb9dc84e5b5b))
+* integrate changes from main ([4eac1e9](https://github.com/microsoft/edge-ai/commit/4eac1e9c70ca226a21eddfe60f595236e92bb0e3))
+* integrate changes from main ([01baf3a](https://github.com/microsoft/edge-ai/commit/01baf3a8d28de0efdd8f0698495df2bed33b25d2))
+* integrate changes from main ([97f0c7f](https://github.com/microsoft/edge-ai/commit/97f0c7f97e3738b40b174da74b6ac3039085c254))
+* integrate changes from main ([93f2215](https://github.com/microsoft/edge-ai/commit/93f221564d956c08fb4f122c15dc018593afa01b))
+* **main:** release 3.0.0 ([#489](https://github.com/microsoft/edge-ai/issues/489)) ([c42703d](https://github.com/microsoft/edge-ai/commit/c42703d56db2f608dfd755ae37100ebe03616d48))
+* merge github/main into release/2.0.0 ([88365e6](https://github.com/microsoft/edge-ai/commit/88365e690cac28bf0b85180a73b81dbb83c25ef8))
+* migrate from GitVersion to release-please ([#446](https://github.com/microsoft/edge-ai/issues/446)) ([d2ced15](https://github.com/microsoft/edge-ai/commit/d2ced159eae1e90cd51e0fbc47a08d8e04bfe4fd))
+* migrate prompt engineering artifacts to hve-core ([#182](https://github.com/microsoft/edge-ai/issues/182)) ([718d21c](https://github.com/microsoft/edge-ai/commit/718d21cc66f075485ae8c233ed6365a01ecc72e9))
+* resolve merge conflicts from main sync ([c6f6d1d](https://github.com/microsoft/edge-ai/commit/c6f6d1d6de5b02a77d829d8b27aa0514467c31d7))
+* **rust:** standardize strip = true across release profiles ([#189](https://github.com/microsoft/edge-ai/issues/189)) ([945ea28](https://github.com/microsoft/edge-ai/commit/945ea28b7a8f45be6998a4e74c70fdddf05a8bad))
+* **security:** pin remaining unpinned dependencies (OSSF Scorecard) ([#497](https://github.com/microsoft/edge-ai/issues/497)) ([39d385a](https://github.com/microsoft/edge-ai/commit/39d385a0fb633e64e3862960d3a7be20cde27e2a))
+* **security:** remediate OSSF Scorecard vulnerability advisories ([#502](https://github.com/microsoft/edge-ai/issues/502)) ([ba570c4](https://github.com/microsoft/edge-ai/commit/ba570c44f8e2c6a5edc542537a78de66e30db8f7))
+* **shellcheck:** remove redundant SC1091 directives ([#220](https://github.com/microsoft/edge-ai/issues/220)) ([d8d3b04](https://github.com/microsoft/edge-ai/commit/d8d3b043eea8679616f8569497d42bc84bb06651))
+* simplify CODEOWNERS to use team-based ownership ([#137](https://github.com/microsoft/edge-ai/issues/137)) ([ce8722a](https://github.com/microsoft/edge-ai/commit/ce8722a7b15fab45c9b12818aace164ce626793f))
+* **template:** modernize github issue templates to YML format ([#213](https://github.com/microsoft/edge-ai/issues/213)) ([2e18b1b](https://github.com/microsoft/edge-ai/commit/2e18b1b65746a1ab545f6c65e025a006f60c821d))
+* **tools:** add secretlint config ([#128](https://github.com/microsoft/edge-ai/issues/128)) ([e3bd668](https://github.com/microsoft/edge-ai/commit/e3bd6686952dc55f80a1175d0ae30ca2467d9047))
+* vulnerability remediation ([#409](https://github.com/microsoft/edge-ai/issues/409) phases A-G), OSSF hardening, and Docusaurus migration completion ([#408](https://github.com/microsoft/edge-ai/issues/408)) ([b6a3f08](https://github.com/microsoft/edge-ai/commit/b6a3f08ad44c6f7fd37afab3aec606a58339de82))
+
+## [3.0.0](https://github.com/microsoft/edge-ai/compare/v2.8.0...v3.0.0) (2026-05-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **terraform:** upgrade required_version floor from 1.9.8 to 1.12.0 ([#487](https://github.com/microsoft/edge-ai/issues/487))
+
+### Features
+
+* **500-application:** add 514-wasm-msg-to-dss WASM map operator with DSS enrichment pattern ([#356](https://github.com/microsoft/edge-ai/issues/356)) ([db882a5](https://github.com/microsoft/edge-ai/commit/db882a572928e47df9c7a8d0bbf952d1dfb0c7fe))
+* add tags support to all blueprints and remove deprecated federated identity reference ([#483](https://github.com/microsoft/edge-ai/issues/483)) ([c9c8967](https://github.com/microsoft/edge-ai/commit/c9c8967dd4c7ad5e9f6a19e80aeb6eea291b9ff2))
+* add unit tests for application services (Rust + Python) ([#372](https://github.com/microsoft/edge-ai/issues/372)) ([220ab28](https://github.com/microsoft/edge-ai/commit/220ab2895d503fe5fd1d2221a612a37e4756abea))
+* **avro-to-json:** add unit tests for wire format config parsing ([#368](https://github.com/microsoft/edge-ai/issues/368)) ([65bc924](https://github.com/microsoft/edge-ai/commit/65bc9247b76bb881a7c4663ba0d368b30623a03c))
+* **build:** add multi-language fuzzing infra (CFLite + Codecov flags) ([#453](https://github.com/microsoft/edge-ai/issues/453)) ([7407230](https://github.com/microsoft/edge-ai/commit/7407230cb18238ce143cfbf7531032160bf9651e))
+* **ci:** enforce rust crate registration in codecov coverage ([#155](https://github.com/microsoft/edge-ai/issues/155)) ([#449](https://github.com/microsoft/edge-ai/issues/449)) ([9b33d69](https://github.com/microsoft/edge-ai/commit/9b33d69fdf39cf4c77eb95453048977b30b46462))
+* **docs:** migrate from Docsify to Docusaurus ([#399](https://github.com/microsoft/edge-ai/issues/399)) ([ca06002](https://github.com/microsoft/edge-ai/commit/ca060022c4a2a81dda97d488bbc56e9baa0d1c91))
+* **iot-ops:** upgrade AIO 2604 release (1.3.70), harden schema-registry RBAC ([#471](https://github.com/microsoft/edge-ai/issues/471)) ([e772b74](https://github.com/microsoft/edge-ai/commit/e772b74a968efdfa76854383886ca61fa9eb273f))
+* **release-please:** implement PAI 1+6 jobs DAG with binary integrity and tag signature verification ([#501](https://github.com/microsoft/edge-ai/issues/501)) ([dc58f10](https://github.com/microsoft/edge-ai/commit/dc58f10995f1d4662b3d4fd4315a977828ca6e17))
+* **terraform:** upgrade required_version floor from 1.9.8 to 1.12.0 ([#487](https://github.com/microsoft/edge-ai/issues/487)) ([49229da](https://github.com/microsoft/edge-ai/commit/49229daf1df9bdac9049b00b79af3f6ef8283a86))
+
+
+### Bug Fixes
+
+* **ai-edge-inference:** bump notify 7 to 8 (partial RUSTSEC-2024-0384) ([#469](https://github.com/microsoft/edge-ai/issues/469)) ([f548586](https://github.com/microsoft/edge-ai/commit/f548586af63f42f138541a4bdb0531b8c524f56c))
+* **build:** pin all dependencies for OSSF Scorecard ([#402](https://github.com/microsoft/edge-ai/issues/402)) ([79e6971](https://github.com/microsoft/edge-ai/commit/79e6971628287bce6439a6459445ab715ba17a87))
+* **build:** resolve all 4 main branch CI lint failures ([#365](https://github.com/microsoft/edge-ai/issues/365)) ([f90ad6f](https://github.com/microsoft/edge-ai/commit/f90ad6f2815ba05d90fad1e632d812385c9ba972))
+* **build:** use valid 'rust' cataloger tag for Syft v1.42.3+ ([#423](https://github.com/microsoft/edge-ai/issues/423)) ([f168e56](https://github.com/microsoft/edge-ai/commit/f168e56a9477fb8f05a73a4fdd8355af842e8982))
+* **deps:** bump openssl to 0.10.79 across remaining Rust services ([#480](https://github.com/microsoft/edge-ai/issues/480)) ([14e6f16](https://github.com/microsoft/edge-ai/commit/14e6f16c767e907d9ef313756d1c557083805696))
+* **docker:** replace awk with cut for hash verification in Dockerfiles and templates ([#493](https://github.com/microsoft/edge-ai/issues/493)) ([80e97fd](https://github.com/microsoft/edge-ai/commit/80e97fd177ce4210d4b09cffbe438ecaf70c1c3e))
+* **docs:** remove ignoreDeprecations in tsconfig.json ([#488](https://github.com/microsoft/edge-ai/issues/488)) ([1b4af53](https://github.com/microsoft/edge-ai/commit/1b4af53d9a35d9f9c14ec152041d98eb65fd5d9f))
+* **docs:** silence TS5101 baseUrl deprecation in docusaurus tsconfig ([#475](https://github.com/microsoft/edge-ai/issues/475)) ([ff9d53f](https://github.com/microsoft/edge-ai/commit/ff9d53f86da41a979b714f9918f3867339b3a348))
+* **release-please:** use client-id instead of deprecated app-id ([#491](https://github.com/microsoft/edge-ai/issues/491)) ([aff623c](https://github.com/microsoft/edge-ai/commit/aff623c0e4f7e1505aeb63e6ce4b98bcf601f22a))
+* **scripts:** align Grype writer/reader naming so security gate fails closed ([#362](https://github.com/microsoft/edge-ai/issues/362)) ([#411](https://github.com/microsoft/edge-ai/issues/411)) ([64b3db3](https://github.com/microsoft/edge-ai/commit/64b3db30c81e2cc01ea775946fdd5e59d0844a26))
+* update stale hashes for checkov and requests in requirements.txt ([#516](https://github.com/microsoft/edge-ai/issues/516)) ([fa3c57f](https://github.com/microsoft/edge-ai/commit/fa3c57f88745ae2b81537a4e8b1423f15a2fb0c9))
+* **workflows:** harden CI workflows to fail-fast on lint, security, and doc-gen errors ([#393](https://github.com/microsoft/edge-ai/issues/393)) ([4669835](https://github.com/microsoft/edge-ai/commit/4669835bc57f7862b99c61388472754045a7b8e5))
+
+
+### Documentation
+
+* add OpenSSF Scorecard badge to README ([#371](https://github.com/microsoft/edge-ai/issues/371)) ([917851b](https://github.com/microsoft/edge-ai/commit/917851bc5a3db1136490f5d61d126c7f872ab3b1))
+* **adrs:** document .terraform.lock.hcl exclusion rationale ([#505](https://github.com/microsoft/edge-ai/issues/505)) ([7c7185b](https://github.com/microsoft/edge-ai/commit/7c7185b341f251cf31cb40d4fb5efa0e232599ea))
+* **governance:** add GOVERNANCE.md ([#160](https://github.com/microsoft/edge-ai/issues/160)) ([#503](https://github.com/microsoft/edge-ai/issues/503)) ([76d1cfe](https://github.com/microsoft/edge-ai/commit/76d1cfeaf83ef5f22ec48988a5f88db5e593ab6b))
+
+
+### Build System
+
+* **deps:** bump Rust and Python deps to clear CI security gates ([#444](https://github.com/microsoft/edge-ai/issues/444)) ([2c05d82](https://github.com/microsoft/edge-ai/commit/2c05d822f60058221b323695e19d04a4b7e046dc))
+
+
+### Miscellaneous Chores
+
+* **build:** migrate node toolchain to v24 (closes [#458](https://github.com/microsoft/edge-ai/issues/458)) ([#460](https://github.com/microsoft/edge-ai/issues/460)) ([7a7648c](https://github.com/microsoft/edge-ai/commit/7a7648cc1f078b0ba44e95994f30a3de3983d04f))
+* **build:** pin pip and CI tool installs for Scorecard ([#464](https://github.com/microsoft/edge-ai/issues/464)) ([1a57e67](https://github.com/microsoft/edge-ai/commit/1a57e670736cd8dd3fecadb3cbc0b87e67f04a9d))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/lambda from 1.69.0 to 1.88.5 in /blueprints/full-single-node-cluster/tests ([#364](https://github.com/microsoft/edge-ai/issues/364)) ([ca8a5a2](https://github.com/microsoft/edge-ai/commit/ca8a5a247f7dcf8f6205642f372a009d4e06353f))
+* **deps:** bump github.com/jackc/pgx/v5 from 5.7.1 to 5.9.0 in /blueprints/full-single-node-cluster/tests ([#397](https://github.com/microsoft/edge-ai/issues/397)) ([57caa75](https://github.com/microsoft/edge-ai/commit/57caa75caf511d49d12fb7c43e545bb06a0a6e7c))
+* **deps:** bump github.com/microsoft/kiota-http-go from 1.5.4 to 1.5.5 in /blueprints/full-single-node-cluster/tests ([#485](https://github.com/microsoft/edge-ai/issues/485)) ([f080a5e](https://github.com/microsoft/edge-ai/commit/f080a5e14afc70100a9807788d08c2358d7441b0))
+* **deps:** bump github.com/moby/spdystream from 0.5.0 to 0.5.1 in /blueprints/full-single-node-cluster/tests ([#396](https://github.com/microsoft/edge-ai/issues/396)) ([a45f051](https://github.com/microsoft/edge-ai/commit/a45f051e40183af02805d811cb96b978d5fe6e02))
+* **deps:** bump openssl from 0.10.78 to 0.10.79 in /src/500-application/507-ai-inference/services/ai-edge-inference ([#477](https://github.com/microsoft/edge-ai/issues/477)) ([8326a97](https://github.com/microsoft/edge-ai/commit/8326a97e10f9b6784d4ba65d53e81f43e7345e1a))
+* **deps:** bump openssl from 0.10.78 to 0.10.79 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate ([#476](https://github.com/microsoft/edge-ai/issues/476)) ([8b7536e](https://github.com/microsoft/edge-ai/commit/8b7536e3d3cf2ed711fa8944fa18a707676ff5d5))
+* **deps:** bump pytest from 9.0.2 to 9.0.3 in /src/500-application/506-ros2-connector/services ([#394](https://github.com/microsoft/edge-ai/issues/394)) ([14828e7](https://github.com/microsoft/edge-ai/commit/14828e72c91f9d39b28b20e31547947a9199afc8))
+* **deps:** bump rand from 0.9.2 to 0.9.4 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate ([#395](https://github.com/microsoft/edge-ai/issues/395)) ([3cac305](https://github.com/microsoft/edge-ai/commit/3cac3050d1f7881b71230bccd6f5954a31224d13))
+* **deps:** bump urllib3 from 2.6.3 to 2.7.0 and consolidate dependencies ([#509](https://github.com/microsoft/edge-ai/issues/509)) ([40c1ef6](https://github.com/microsoft/edge-ai/commit/40c1ef6ec773642994dfbcd060598fe60ff83109))
+* **deps:** consolidate Dependabot updates into one weekly PR per ecosystem ([#410](https://github.com/microsoft/edge-ai/issues/410)) ([37de2b4](https://github.com/microsoft/edge-ai/commit/37de2b4fd1f84e93dd4f869565cd3e37fee3810f))
+* **deps:** remediate Grype/OSSF vulnerabilities ([#451](https://github.com/microsoft/edge-ai/issues/451)) ([#450](https://github.com/microsoft/edge-ai/issues/450)) ([b5d0753](https://github.com/microsoft/edge-ai/commit/b5d07536f4370961d4d168c796b342be425a82e9))
+* migrate from GitVersion to release-please ([#446](https://github.com/microsoft/edge-ai/issues/446)) ([d2ced15](https://github.com/microsoft/edge-ai/commit/d2ced159eae1e90cd51e0fbc47a08d8e04bfe4fd))
+* **security:** pin remaining unpinned dependencies (OSSF Scorecard) ([#497](https://github.com/microsoft/edge-ai/issues/497)) ([39d385a](https://github.com/microsoft/edge-ai/commit/39d385a0fb633e64e3862960d3a7be20cde27e2a))
+* **security:** remediate OSSF Scorecard vulnerability advisories ([#502](https://github.com/microsoft/edge-ai/issues/502)) ([ba570c4](https://github.com/microsoft/edge-ai/commit/ba570c44f8e2c6a5edc542537a78de66e30db8f7))
+* vulnerability remediation ([#409](https://github.com/microsoft/edge-ai/issues/409) phases A-G), OSSF hardening, and Docusaurus migration completion ([#408](https://github.com/microsoft/edge-ai/issues/408)) ([b6a3f08](https://github.com/microsoft/edge-ai/commit/b6a3f08ad44c6f7fd37afab3aec606a58339de82))

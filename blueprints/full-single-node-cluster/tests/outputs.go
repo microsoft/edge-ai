@@ -21,6 +21,7 @@ type BlueprintOutputs struct {
 	DataStorage         map[string]any `output:"data_storage"`
 	ContainerRegistry   map[string]any `output:"container_registry"`
 	Messaging           map[string]any `output:"messaging"`
+	Notification        map[string]any `output:"notification"`
 	VmHost              any            `output:"vm_host"`
 	ArcConnectedCluster map[string]any `output:"arc_connected_cluster"`
 	ClusterConnection   map[string]any `output:"cluster_connection"`

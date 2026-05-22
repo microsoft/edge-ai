@@ -19,6 +19,7 @@ locals {
   function_app_computed_settings = var.should_create_azure_functions ? {
     "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
     "EventHubConnection__credential"              = "managedidentity"
+    "EventHubConnection__clientId"                = module.cloud_messaging.function_identity.client_id
     "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
     "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
   } : {}
@@ -42,9 +43,7 @@ locals {
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags = {
-    blueprint = "full-single-cluster"
-  }
+  tags            = merge(var.tags, { blueprint = "full-single-node-cluster" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -129,6 +128,7 @@ module "cloud_vpn_gateway" {
 module "cloud_observability" {
   source = "../../../src/000-cloud/020-observability/terraform"
 
+  tags            = merge(var.tags, { blueprint = "full-single-node-cluster" })
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -188,6 +188,7 @@ module "cloud_postgresql" {
 
   admin_username                        = var.postgresql_admin_username
   admin_password                        = var.postgresql_admin_password
+  admin_password_wo_version             = var.postgresql_admin_password_wo_version
   should_generate_admin_password        = var.postgresql_should_generate_admin_password
   should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
 
@@ -233,6 +234,7 @@ module "cloud_managed_redis" {
 module "cloud_messaging" {
   source = "../../../src/000-cloud/040-messaging/terraform"
 
+  tags            = merge(var.tags, { blueprint = "full-single-node-cluster" })
   resource_group  = module.cloud_resource_group.resource_group
   aio_identity    = module.cloud_security_identity.aio_identity
   environment     = var.environment
@@ -248,6 +250,32 @@ module "cloud_messaging" {
 
   log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
   should_enable_diagnostic_settings = true
+}
+
+module "cloud_notification" {
+  count  = var.should_deploy_notification ? 1 : 0
+  source = "../../../src/000-cloud/045-notification/terraform"
+
+  depends_on = [module.cloud_messaging]
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  eventhub_namespace = module.cloud_messaging.eventhub_namespace
+  eventhub_name      = local.alert_eventhub_name
+  storage_account    = module.cloud_data.storage_account
+
+  event_schema                  = var.notification_event_schema
+  notification_message_template = var.notification_message_template
+  closure_message_template      = var.closure_message_template
+  partition_key_field           = var.notification_partition_key_field
+  teams_recipient_id            = var.teams_recipient_id
+  teams_group_id                = var.teams_group_id
+  teams_post_location           = var.teams_post_location
 }
 
 module "cloud_vm_host" {

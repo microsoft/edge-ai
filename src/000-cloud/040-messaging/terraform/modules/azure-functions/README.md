@@ -6,9 +6,9 @@ This module creates the Function App with necessary configuration for messaging 
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
 
 ## Providers
 
@@ -47,8 +47,9 @@ This module creates the Function App with necessary configuration for messaging 
 
 ## Outputs
 
-| Name             | Description                                   |
-|------------------|-----------------------------------------------|
-| function\_app    | The Function App resource object.             |
-| storage\_account | The Storage Account used by the Function App. |
+| Name               | Description                                                  |
+|--------------------|--------------------------------------------------------------|
+| function\_app      | The Function App resource object.                            |
+| function\_identity | The User Assigned Managed Identity used by the Function App. |
+| storage\_account   | The Storage Account used by the Function App.                |
 <!-- END_TF_DOCS -->

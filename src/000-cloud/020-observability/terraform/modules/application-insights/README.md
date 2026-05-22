@@ -8,10 +8,10 @@ performance tracking, and diagnostic insights.
 
 ## Requirements
 
-| Name      | Version         |
-|-----------|-----------------|
-| terraform | >= 1.9.8, < 2.0 |
-| azurerm   | >= 4.51.0       |
+| Name      | Version          |
+|-----------|------------------|
+| terraform | >= 1.12.0, < 2.0 |
+| azurerm   | >= 4.51.0        |
 
 ## Providers
 

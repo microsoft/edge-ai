@@ -9,6 +9,12 @@ variable "admin_password" {
   default     = null
 }
 
+variable "admin_password_wo_version" {
+  description = "Version used to trigger updates for write-only administrator password arguments. Increment this value when rotating the administrator password."
+  type        = number
+  default     = 1
+}
+
 variable "admin_username" {
   description = "Administrator username for PostgreSQL server."
   type        = string

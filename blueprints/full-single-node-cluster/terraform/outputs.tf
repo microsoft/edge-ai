@@ -159,6 +159,31 @@ output "function_app" {
   value       = try(module.cloud_messaging.function_app, null)
 }
 
+output "messaging" {
+  description = "Cloud messaging resources (aggregate, mirrors bicep/main.bicep `messaging` output for cross-IaC contract parity)."
+  value = {
+    event_grid_topic_endpoint = try(module.cloud_messaging.eventgrid.endpoint, "Not deployed")
+    event_grid_topic_name     = try(module.cloud_messaging.eventgrid.topic_name, "Not deployed")
+    eventhub_name             = try(module.cloud_messaging.eventhubs[0].eventhub_name, "Not deployed")
+    eventhub_namespace_name   = try(module.cloud_messaging.eventhubs[0].namespace_name, "Not deployed")
+  }
+}
+
+/*
+ * Notification Outputs
+ */
+
+output "notification" {
+  description = "Alert notification pipeline resources."
+  value = {
+    logic_app              = try(module.cloud_notification[0].logic_app, null)
+    close_logic_app        = try(module.cloud_notification[0].close_logic_app, null)
+    close_session_endpoint = try(module.cloud_notification[0].close_session_endpoint, null)
+    storage_account        = try(module.cloud_notification[0].storage_account, null)
+  }
+  sensitive = true
+}
+
 /*
  * Dataflow Outputs
  */

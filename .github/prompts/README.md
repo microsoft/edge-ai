@@ -2,7 +2,7 @@
 title: GitHub Copilot Prompts
 description: Coaching and guidance prompts for specific development tasks that provide step-by-step assistance and context-aware support
 author: Edge AI Team
-ms.date: 2026-02-08
+ms.date: 2026-05-15
 ms.topic: hub-page
 estimated_reading_time: 3
 keywords:
@@ -18,7 +18,7 @@ keywords:
 
 This directory contains **coaching and guidance prompts** designed to provide step-by-step assistance for specific development tasks. Unlike instructions that focus on systematic implementation, prompts offer educational guidance and context-aware coaching to help you learn and apply best practices. Prompts are organized by workflow focus areas: onboarding & planning, implementation & delivery, process & documentation, work tracking, and prompt engineering.
 
-> **Note:** General-purpose prompts (task planning, ADR creation, prompt engineering, work item handoff) are provided by [hve-core](https://github.com/microsoft/hve-core) and loaded automatically via `.vscode/settings.json`. This directory contains only edge-ai-specific prompts.
+> **Note:** General-purpose prompts (task planning, ADR creation, prompt engineering, work item discovery and handoff, RPI implementation) are provided by [hve-core](https://github.com/microsoft/hve-core). This directory contains only edge-ai-specific prompts.
 
 ## How to Use Prompts
 
@@ -43,11 +43,6 @@ Prompts can be invoked in GitHub Copilot Chat using `/prompt-name` syntax (e.g.,
 - **[Terraform from Blueprint](./terraform-from-blueprint.prompt.md)** - Converting blueprints to Terraform
 - **[Terraform Variable Consistency Manager](./tf-variable-consistency-manager.prompt.md)** - Terraform variable standardization and consistency management
 - **[IoT Operations Version Upgrade](./iotops-version-upgrade.prompt.md)** - Azure IoT Operations component upgrade workflow and implementation
-- **[WASM Build and Deploy](./wasm-build-deploy.prompt.md)** - Build, push to ACR, and test WASM operator modules for dataflow graphs
-
-### Azure DevOps Integration
-
-- **[ADO Work Item Discovery](./ado-wit-discovery.prompt.md)** - Discovers and plans Azure DevOps User Stories and Bugs from research or changes
 
 ## Prompts vs Instructions vs Custom Agents
 

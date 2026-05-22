@@ -85,5 +85,5 @@ module "assets" {
 ## Requirements
 
 * Azure Arc-enabled Kubernetes cluster
-* Terraform >= 1.9.8
+* Terraform >= 1.12.0
 * Azure CLI with `connectedk8s` extension

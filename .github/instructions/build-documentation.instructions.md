@@ -512,4 +512,4 @@ Before finalizing any build documentation, ensure:
 - **Comprehensive example**: `docs/build-cicd/security-scanning.md` - Demonstrates YAML frontmatter, H2/H3 hierarchy, code examples, and troubleshooting patterns
 - **Section ordering example**: `docs/build-cicd/github-actions.md` - Shows "In this guide" navigation, prerequisites, and reference tables
 - **Additional examples**: `docs/build-cicd/build-scripts.md`, `docs/build-cicd/troubleshooting-builds.md`
-- **Baseline standards**: `.github/instructions/markdown.instructions.md` - General markdown formatting conventions
+- **Baseline standards**: HVE Core Markdown instructions - General markdown formatting conventions

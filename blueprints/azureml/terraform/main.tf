@@ -63,6 +63,7 @@ module "robotics" {
   should_deploy_postgresql                         = var.should_deploy_postgresql
   postgresql_admin_username                        = var.postgresql_admin_username
   postgresql_admin_password                        = var.postgresql_admin_password
+  postgresql_admin_password_wo_version             = var.postgresql_admin_password_wo_version
   postgresql_should_generate_admin_password        = var.postgresql_should_generate_admin_password
   postgresql_should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
   postgresql_delegated_subnet_id                   = var.postgresql_delegated_subnet_id

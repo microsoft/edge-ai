@@ -2,7 +2,7 @@
 title: Cloud Notification Component
 description: Generic Event Hub to Microsoft Teams notification with Table Storage session deduplication, deployed as consumption-tier Azure Logic Apps with managed identity authentication
 author: Edge AI Team
-ms.date: 2026-02-27
+ms.date: 2026-05-12
 ms.topic: reference
 keywords:
   - notification
@@ -87,16 +87,16 @@ Both API connections require manual authorization in the Azure Portal after Terr
 
 ### Required Dependencies
 
-| Variable                        | Type     | Description                                                                        |
-|---------------------------------|----------|------------------------------------------------------------------------------------|
-| `closure_message_template`      | `string` | HTML template for the Teams closure summary message                                |
-| `event_schema`                  | `any`    | JSON schema object for parsing Event Hub event payloads                            |
-| `eventhub_name`                 | `string` | Name of the Event Hub to subscribe to for events                                   |
-| `eventhub_namespace`            | `object` | Event Hub namespace with `id` and `name` attributes                                |
-| `notification_message_template` | `string` | HTML template for Teams notification (supports `${close_session_url}` placeholder) |
-| `partition_key_field`           | `string` | JSON field name from parsed event used as the Table Storage PartitionKey           |
-| `resource_group`                | `object` | Resource group with `name`, `id`, and `location` attributes                        |
-| `teams_recipient_id`            | `string` | Teams chat or channel thread ID for posting notifications                          |
+| Variable                        | Type     | Description                                                                                                  |
+|---------------------------------|----------|--------------------------------------------------------------------------------------------------------------|
+| `closure_message_template`      | `string` | HTML template for the Teams closure summary message                                                          |
+| `event_schema`                  | `any`    | JSON schema object for parsing Event Hub event payloads                                                      |
+| `eventhub_name`                 | `string` | Name of the Event Hub to subscribe to for events                                                             |
+| `eventhub_namespace`            | `object` | Event Hub namespace with `id` and `name` attributes                                                          |
+| `notification_message_template` | `string` | HTML template for Teams notification (supports `$${close_session_url}` placeholder, with Terraform escaping) |
+| `partition_key_field`           | `string` | JSON field name from parsed event used as the Table Storage PartitionKey                                     |
+| `resource_group`                | `object` | Resource group with `name`, `id`, and `location` attributes                                                  |
+| `teams_recipient_id`            | `string` | Teams chat or channel thread ID for posting notifications                                                    |
 
 ### Optional Configuration
 
@@ -182,7 +182,7 @@ module "notification" {
 |-------------|-----------|
 | `azurerm`   | >= 4.51.0 |
 | `azapi`     | >= 2.3.0  |
-| `terraform` | >= 1.9.8  |
+| `terraform` | >= 1.12.0 |
 
 ## Deployment Options
 

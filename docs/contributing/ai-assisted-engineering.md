@@ -2,7 +2,7 @@
 title: AI-Assisted Engineering
 description: Guide for using AI-powered tools like GitHub Copilot when working with the AI on Edge Flagship Accelerator
 author: Edge AI Team
-ms.date: 2025-07-18
+ms.date: 2026-05-15
 ms.topic: how-to
 estimated_reading_time: 5
 keywords:
@@ -48,41 +48,43 @@ Comprehensive guidance files referenced by the main copilot instructions:
 
 - **`deploy.md`** - Deployment guidance and best practices
 - **`getting-started.md`** - Getting started guidance for new contributors
-- **`bicep/bicep.md`** - Bicep development guidance and standards
-- **`bicep/bicep-standards.md`** - Bicep coding standards and best practices
-- **`terraform/terraform.md`** - Terraform development guidance and standards
-- **`terraform/terraform-standards.md`** - Terraform coding standards and best practices
+- **`bicep/bicep.md`** - Edge AI Bicep deployment guidance
+- **`bicep/bicep-standards.md`** - Edge AI Bicep patterns and best practices
+- **`terraform/terraform.md`** - Edge AI Terraform deployment guidance
+- **`terraform/terraform-standards.md`** - Edge AI Terraform patterns and best practices
 
-> **Note**: Comprehensive guidance for Python scripting, Bash, and C# conventions are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension and loaded automatically when installed.
+> **Note**: Shared coding standards for Bash, Bicep, C#, commit messages, Markdown, Python scripting, Rust, and Terraform are provided by the [hve-core](https://github.com/microsoft/hve-core) VS Code extension and loaded automatically when installed.
 
 ### Context Instructions (`/.github/instructions/`)
 
 Instruction files designed to be attached to Copilot context using **Add Context > Instructions**:
 
-| File Name                               | Context/Language     | Description                                                                             |
-|-----------------------------------------|----------------------|-----------------------------------------------------------------------------------------|
-| `bash.instructions.md`                  | Bash/Shell Scripting | Comprehensive guidance for bash script development and shell command execution          |
-| `bicep.instructions.md`                 | Azure Bicep          | Infrastructure as Code implementation guidance for Azure Bicep development              |
-| `commit-message.instructions.md`        | Git/Version Control  | Standardized commit message formatting using Conventional Commit patterns               |
-| `csharp.instructions.md`                | C#/.NET              | Development standards and practices for C# code implementation                          |
-| `learning-coach-schema.instructions.md` | Learning             | Instructions for AI coaches managing learner progress tracking in the Learning platform |
-| `python-script.instructions.md`         | Python               | Python scripting standards and conventions for automation and tooling                   |
-| `shell.instructions.md`                 | Shell Environments   | General shell environment and command-line interface guidance                           |
-| `task-implementation.instructions.md`   | Task Management      | Systematic process for implementing comprehensive task plans and tracking progress      |
-| `terraform.instructions.md`             | Terraform            | Infrastructure as Code implementation guidance for HashiCorp Terraform development      |
+| File Name                                         | Context/Language     | Description                                                                   |
+|---------------------------------------------------|----------------------|-------------------------------------------------------------------------------|
+| `application.instructions.md`                     | Edge applications    | Edge application creation, import, and management guidance                    |
+| `build-documentation.instructions.md`             | Build documentation  | Build and CI/CD documentation requirements                                    |
+| `css.instructions.md`                             | Documentation CSS    | Modular CSS architecture and documentation site styling standards             |
+| `javascript.instructions.md`                      | JavaScript           | Edge AI JavaScript guidance for backend, frontend, and utility code           |
+| `rust-crate-registration.instructions.md`         | Rust CI registration | Rust crate registration requirements for CI test, coverage, and Codecov       |
+| `tf-variable-consistency-manager.instructions.md` | Terraform governance | Terraform variable validation and standardization workflow                    |
+| `wasm-build-deploy.instructions.md`               | WASM operators       | WASM operator build, deploy, graph schema, and validation standards           |
+| `wasm-operator-templates.instructions.md`         | WASM operators       | Rust-based WASM operator templates                                            |
+| `wasm-sdk-reference.instructions.md`              | WASM operators       | WASM SDK reference patterns for Azure IoT Operations dataflow graph operators |
+
+> **Note**: Shared task implementation, task research, task review, and learning coaching workflows are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ### Reusable Prompts (`/.github/prompts/`)
 
 Prompt files for specific tasks that can be invoked using `/prompt-name` in Copilot chat:
 
-| Prompt Name                          | Invocation                  | Description                                   | Use Case                                             |
-|--------------------------------------|-----------------------------|-----------------------------------------------|------------------------------------------------------|
-| `csharp-tests.prompt.md`             | `/csharp-tests`             | C# test development guidance                  | Creating unit and integration tests                  |
-| `deploy.prompt.md`                   | `/deploy`                   | Deployment workflows and best practices       | Infrastructure deployment assistance                 |
-| `getting-started.prompt.md`          | `/getting-started`          | Project onboarding and initial setup guidance | New contributor onboarding                           |
-| `iotops-version-upgrade.prompt.md`   | `/iotops-version-upgrade`   | Azure IoT Operations version upgrade process  | Updating IoT Ops components to latest versions       |
-| `python-script.prompt.md`            | `/python-script`            | Python scripting standards and patterns       | Python automation and scripting                      |
-| `terraform-from-blueprint.prompt.md` | `/terraform-from-blueprint` | Converting blueprints to Terraform            | Translating blueprint designs to infrastructure code |
+| Prompt Name                                 | Invocation                         | Description                                   | Use Case                                             |
+|---------------------------------------------|------------------------------------|-----------------------------------------------|------------------------------------------------------|
+| `deploy.prompt.md`                          | `/deploy`                          | Deployment workflows and best practices       | Infrastructure deployment assistance                 |
+| `getting-started.prompt.md`                 | `/getting-started`                 | Project onboarding and initial setup guidance | New contributor onboarding                           |
+| `edge-ai-project-planning.prompt.md`        | `/edge-ai-project-planning`        | Edge AI project discovery and planning        | Scoping edge AI scenarios and solution capabilities  |
+| `iotops-version-upgrade.prompt.md`          | `/iotops-version-upgrade`          | Azure IoT Operations version upgrade process  | Updating IoT Ops components to latest versions       |
+| `terraform-from-blueprint.prompt.md`        | `/terraform-from-blueprint`        | Converting blueprints to Terraform            | Translating blueprint designs to infrastructure code |
+| `tf-variable-consistency-manager.prompt.md` | `/tf-variable-consistency-manager` | Terraform variable consistency workflow       | Standardizing Terraform variables across components  |
 
 > **Note**: Additional prompts for ADR creation and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
@@ -90,13 +92,11 @@ Prompt files for specific tasks that can be invoked using `/prompt-name` in Copi
 
 Advanced agent files with comprehensive tool access for specialized coaching and workflow assistance:
 
-- **`adr-creation.agent.md`** - Interactive architectural decision record creation with comprehensive research and analysis capabilities
-- **`edge-ai-project-planner.agent.md`** - Edge AI project planning and solution architecture guidance
-- **`learning-kata-coach.agent.md`** - Interactive kata coaching with enhanced tool access
-- **`learning-lab-coach.agent.md`** - Complex training lab coaching for multi-component systems
-- **`security-plan-creator.agent.md`** - Security planning and assessment guidance for project implementations
+- **`wasm-operator-builder.agent.md`** - Rust-based WebAssembly operator implementation for Azure IoT Operations dataflow graphs
 
-> **Note**: Task planning and prompt engineering agents are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
+Use the [Edge AI Project Planning prompt](../../.github/prompts/edge-ai-project-planning.prompt.md) for project discovery, scoping, and solution framing.
+
+> **Note**: Shared agents for ADR creation, task planning, task research, PR review, security planning, workback planning, implementation support, and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ## Using Repository AI Resources
 
@@ -118,15 +118,9 @@ Advanced agent files with comprehensive tool access for specialized coaching and
 Custom agents provide specialized AI coaching with enhanced tool access, changing the system prompt in addition to the instructions:
 
 1. **Reference Custom Agents**: Use the agent drop-down in Copilot Chat to select a custom agent
-
-1. **Learning Coaching**:
-
-- **Kata Coach**: `#file:/.github/agents/learning-kata-coach.agent.md` for focused practice exercises
-- **Lab Coach**: `#file:/.github/agents/learning-lab-coach.agent.md` for complex training labs
-
+1. **Choose Local Edge AI Resources**: Select repository agents for WASM operator development or the project planning prompt for project scoping
+1. **Use Shared HVE Core Agents**: Use the [hve-core](https://github.com/microsoft/hve-core) extension for ADR creation, task planning, task research, PR review, security planning, workback planning, implementation support, and prompt engineering
 1. **Enhanced Capabilities**: Custom agents have comprehensive tool access for research, file editing, and system interaction
-
-1. **Coaching Methodology**: Follows OpenHack-style discovery-based learning with systematic guidance
 
 #### Task Planning and Implementation
 
@@ -135,11 +129,11 @@ Custom agents provide specialized AI coaching with enhanced tool access, changin
   - Performs research to gather context for comprehensive planning
   - Generates documentation in `./.copilot-tracking/plans/` (excluded from git)
 
-- **Task Implementation Instructions**: Enhance implementation with `task-implementation.instructions.md` context instructions
+- **Task Implementor Agent**: Access implementation workflows through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
   - Provides guidance for executing plans and tracking progress
   - Works with task planning outputs for coordinated development flow
   - Follows standardized workflows for consistent implementation practices
-  - When you select a file in the `.copilot-tracking/plans/` directory, Copilot will automatically apply the task implementation instructions context
+  - Uses `.copilot-tracking/plans/`, `.copilot-tracking/details/`, and `.copilot-tracking/changes/` artifacts for implementation tracking
 
 ### Learning AI Coaching Integration
 
@@ -147,19 +141,19 @@ Explore advanced AI-assisted engineering practices through our **[Learning Platf
 
 #### Interactive Learning Support
 
-- **✅ Task Check-offs**: Mark progress and track learning automatically
-- **🆘 Coaching Hints**: Get contextual help when stuck on exercises
-- **🧭 Smart Guidance**: Personalized coaching based on your development patterns
-- **📊 Skill Assessment**: AI-powered recommendations for your next learning steps
+- **Task Check-offs**: Mark progress and track learning automatically
+- **Coaching Hints**: Get contextual help when stuck on exercises
+- **Smart Guidance**: Personalized coaching based on your development patterns
+- **Skill Assessment**: AI-powered recommendations for your next learning steps
 
 #### Getting Started with AI Coaching
 
 1. **Launch Training Mode**: Run `npm run docs` to access the learning platform
-2. **Select Coaching Mode**: Choose "Learning Kata Coach" in GitHub Copilot Chat
+2. **Select Coaching Mode**: Use the learning platform guidance to choose the appropriate coaching flow
 3. **Start Learning**: Say "I'm working on learning and want interactive coaching"
 4. **Get Personalized Path**: Take the skill assessment for customized kata recommendations
 
-All Learning coaching modes are pre-configured and ready to use immediately in this repository. All advanced agent prompts can be easily copied into your own project for immediate AI-assisted engineering acceleration.
+Learning coaching resources are pre-configured and ready to use in this repository. Shared advanced agents are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
 ## Essential Project Prompts
 
@@ -173,7 +167,7 @@ All Learning coaching modes are pre-configured and ready to use immediately in t
 
 - **Task Planner**: Available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
 - Files stored in `./.copilot-tracking/` (excluded from git)
-- Works with the `task-implementation.instructions.md` for enhanced guidance
+- Works with the HVE Core Task Implementor agent for tracked implementation
 
 ### Deployment Assistance (`/deploy`)
 
@@ -182,7 +176,7 @@ All Learning coaching modes are pre-configured and ready to use immediately in t
 
 ### Architecture Decision Records
 
-- Guided ADR creation using the `adr-creation` custom agent
+- Guided ADR creation is available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension
 - Ensures proper documentation of architectural decisions
 
 ## Project Structure Integration

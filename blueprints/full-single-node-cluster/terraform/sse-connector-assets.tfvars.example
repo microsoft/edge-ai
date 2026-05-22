@@ -105,81 +105,86 @@ namespaced_assets = [
       analytics_type = "leak-detection"
     }
 
-    // SSE Connectors use Events instead of Datasets for real-time streaming
-    events = [
+    // SSE Connectors use event_groups instead of datasets for real-time streaming
+    event_groups = [
       {
-        name           = "HEARTBEAT"
-        event_notifier = "HEARTBEAT"
-        destinations = [
+        name = "sse-events"
+        events = [
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/analytics-camera-01/heartbeat"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "ALERT"
-        event_notifier = "ALERT"
-        destinations = [
+            name        = "heartbeat"
+            data_source = "HEARTBEAT"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/analytics-camera-01/heartbeat"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/analytics-camera-01/alert"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "ALERT_DLQC"
-        event_notifier = "ALERT_DLQC"
-        destinations = [
+            name        = "alert"
+            data_source = "ALERT"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/analytics-camera-01/alert"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/analytics-camera-01/alert-dlqc"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "ANALYTICS_ENABLED"
-        event_notifier = "ANALYTICS_ENABLED"
-        destinations = [
+            name        = "alert-dlqc"
+            data_source = "ALERT_DLQC"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/analytics-camera-01/alert-dlqc"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/analytics-camera-01/analytics-enabled"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "ANALYTICS_DISABLED"
-        event_notifier = "ANALYTICS_DISABLED"
-        destinations = [
+            name        = "analytics-enabled"
+            data_source = "ANALYTICS_ENABLED"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/analytics-camera-01/analytics-enabled"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/analytics-camera-01/analytics-disabled"
-              retain = "Never"
-              qos    = "Qos1"
-            }
+            name        = "analytics-disabled"
+            data_source = "ANALYTICS_DISABLED"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/analytics-camera-01/analytics-disabled"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
           }
         ]
       }
     ]
 
-    // No datasets for SSE connectors - use events instead
+    // No datasets for SSE connectors - use event_groups instead
     datasets = []
 
     default_events_configuration = "{\"publishingInterval\":1000,\"samplingInterval\":1000,\"queueSize\":10}"
@@ -203,32 +208,37 @@ namespaced_assets = [
       location   = "datacenter-1"
     }
 
-    events = [
+    event_groups = [
       {
-        name           = "notification"
-        event_notifier = "notification"
-        destinations = [
+        name = "sse-events"
+        events = [
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/generic-sse/notifications"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      },
-      {
-        name           = "status-change"
-        event_notifier = "status"
-        destinations = [
+            name        = "notification"
+            data_source = "notification"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/generic-sse/notifications"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
+          },
           {
-            target = "Mqtt"
-            configuration = {
-              topic  = "events/company/cloud/region/environment/generic-sse/status-changes"
-              retain = "Never"
-              qos    = "Qos1"
-            }
+            name        = "status-change"
+            data_source = "status"
+            destinations = [
+              {
+                target = "Mqtt"
+                configuration = {
+                  topic  = "events/company/cloud/region/environment/generic-sse/status-changes"
+                  retain = "Never"
+                  qos    = "Qos1"
+                }
+              }
+            ]
           }
         ]
       }
