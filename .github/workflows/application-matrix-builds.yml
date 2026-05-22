@@ -79,7 +79,7 @@ on:  # yamllint disable-line rule:truthy
         default: 'local'
         type: string
       buildConfig:
-        description: 'JSON object with build configuration: {"baseImageTag":"value","dockerBuildArgs":"value","buildEnvironment":"dev|staging|prod","dockerComposeVersion":"2.24.5"}'
+        description: 'JSON object with build configuration: {"baseImageTag":"value","dockerBuildArgs":{"KEY":"value"},"buildEnvironment":"dev|staging|prod","dockerComposeVersion":"2.24.5"}'
         required: false
         default: '{}'
         type: string
@@ -119,7 +119,7 @@ on:  # yamllint disable-line rule:truthy
         default: 'local'
         type: string
       buildConfig:
-        description: 'JSON: {"baseImageTag":"manual","dockerBuildArgs":"","buildEnvironment":"dev","dockerComposeVersion":"2.24.5"}'
+        description: 'JSON: {"baseImageTag":"manual","dockerBuildArgs":{"KEY":"value"},"buildEnvironment":"dev","dockerComposeVersion":"2.24.5"}'
         required: false
         default: '{"baseImageTag":"manual"}'
         type: string
