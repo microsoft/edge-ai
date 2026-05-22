@@ -70,5 +70,6 @@ Azure IoT Operations Dataflow to send and receive data from edge to cloud.
 | eventhub\_namespace        | Event Hub namespace configuration                          |
 | eventhubs                  | Event Hub(s) configuration                                 |
 | function\_app              | Function App configuration and details.                    |
+| function\_identity         | User Assigned Managed Identity used by the Function App.   |
 | function\_storage\_account | Storage Account used by the Function App.                  |
 <!-- END_TF_DOCS -->

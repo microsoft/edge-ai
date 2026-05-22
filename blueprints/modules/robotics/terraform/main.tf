@@ -243,6 +243,7 @@ module "cloud_postgresql" {
   // Credential configuration
   admin_username                        = var.postgresql_admin_username
   admin_password                        = var.postgresql_admin_password
+  admin_password_wo_version             = var.postgresql_admin_password_wo_version
   should_generate_admin_password        = var.postgresql_should_generate_admin_password
   should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
 

@@ -1,4 +1,5 @@
 ---
+description: 'JavaScript implementation standards for Edge AI backend, frontend, and utility code - Brought to you by microsoft/edge-ai'
 applyTo: '**/*.js'
 ---
 # JavaScript Instructions

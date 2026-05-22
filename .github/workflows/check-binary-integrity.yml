@@ -11,8 +11,7 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: check-binary-integrity-${{ github.ref }}

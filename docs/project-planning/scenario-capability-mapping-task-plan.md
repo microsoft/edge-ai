@@ -691,7 +691,7 @@ With **Phases 1-7 completed**, the scenario-capability mapping project has achie
 4. **Interactive Planning Tool Enhancement** (✅ Complete)
    - ✅ **Template Cleanup**: Removed duplicate/unused template files and created comprehensive template inventory
    - ✅ **Prompt Migration**: Migrated `edge-ai-project-planning.prompt.md` to interactive agent format
-   - ✅ **Enhanced Planning Workflow**: Created `edge-ai-project-planner.agent.md` with scenario selection, capability mapping, and documentation generation
+   - ✅ **Enhanced Planning Workflow**: Created an Edge AI Project Planning prompt workflow with scenario selection, capability mapping, and documentation generation
    - ✅ **Copilot-Tracking Integration**: Configured agent to output structured project plans to `./.copilot-tracking/` directory
    - ✅ **User Experience Optimization**: Implemented focused, step-by-step interaction flow to avoid overwhelming users
 

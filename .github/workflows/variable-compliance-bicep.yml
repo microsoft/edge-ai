@@ -51,8 +51,7 @@ name: Bicep Variable Compliance
       mismatches_found:
         description: 'Indicates if any parameter inconsistencies were found'
         value: ${{ jobs.variable-compliance.outputs.mismatches_found }}
-permissions:
-  contents: read
+permissions: {}
 concurrency:
   group: ${{ github.ref }}-bicep-var-compliance
   cancel-in-progress: true
@@ -60,6 +59,8 @@ jobs:
   variable-compliance:
     name: Check Bicep Parameter Consistency
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       mismatches_found: ${{ steps.var-check.outputs.mismatches_found }}
     steps:
