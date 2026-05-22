@@ -129,8 +129,7 @@ on:  # yamllint disable-line rule:truthy
         default: '{}'
         type: string
 
-permissions:
-  contents: read
+permissions: {}
 
 env:
   REGISTRY: ${{ inputs.registryName || 'local' }}
@@ -588,7 +587,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        uses: github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
         if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports

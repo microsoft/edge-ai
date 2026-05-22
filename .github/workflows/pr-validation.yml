@@ -26,8 +26,7 @@
 ---
 name: PR Validation
 
-permissions:
-  contents: read
+permissions: {}
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
@@ -70,16 +69,16 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        uses: github/codeql-action/init@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        uses: github/codeql-action/autobuild@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        uses: github/codeql-action/analyze@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
         with:
           category: "/language:${{matrix.language}}"
 
@@ -158,6 +157,16 @@ jobs:
     uses: ./.github/workflows/security-scan.yml
     with:
       grype-soft-fail: false
+
+  # Workflow permissions deny-all scan
+  permissions-scan:
+    name: Workflow Permissions Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/workflow-permissions-scan.yml
+    with:
+      require-deny-all: true
 
   # YAML and container linting
   yaml-lint:

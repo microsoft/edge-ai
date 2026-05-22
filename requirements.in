@@ -6,12 +6,14 @@ python-hcl2~=8.1.2               # HCL2 (Terraform) configuration parser
 jinja2~=3.1.6                    # Template engine for configuration generation
 
 # Security and Compliance Scanning
-checkov~=3.2.528                   # Infrastructure security and compliance scanner
+checkov~=3.2.529                   # Infrastructure security and compliance scanner
 
 # Security-Critical Dependencies (Version Pinned for CVE Remediation)
 asteval>=1.0.6                   # Safe mathematical expression evaluator
                                  # Pinned >=1.0.6 to resolve CVE-2021-11025 (RCE) and CVE-2021-11026 (DoS)
 urllib3>=2.7.0                   # HTTP client library
                                  # Pinned >=2.5.0 to resolve CVE-2024-37891 (SSRF vulnerability)
-requests>=2.33.0                 # HTTP client library
+requests>=2.34.2                 # HTTP client library
                                  # Pinned >=2.33.0 to resolve CVE-2025-47083 (content-type header injection)
+gitpython>=3.1.50                # Git repository interaction (transitive via checkov)
+                                 # Pinned >=3.1.50 to resolve GHSA-mv93-w799-cj2w

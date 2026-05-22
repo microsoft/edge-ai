@@ -189,20 +189,22 @@ Include `<!-- markdownlint-disable-file -->` at the top; `.copilot-tracking/**` 
 
 **IMPORTANT**: If a plan file for the current date already exists and contains the text "Finished adding all details needed for updating azure iot operations throughout the workspace.", and the user asks you to implement the plan, skip to Phase 3, step 16.
 
-**SECOND CRITICAL PREREQUISITE**: Before creating any plan entries for Terraform or Bicep changes, read and follow ALL instructions from:
-1. Read `.github/instructions/terraform.instructions.md` (for Terraform-related planning)
-2. Read `.github/instructions/bicep.instructions.md` (for Bicep-related planning)
-3. Ensure your planned changes comply with the coding standards specified in these files
+**SECOND CRITICAL PREREQUISITE**: Before creating any plan entries for Terraform or Bicep changes, read and follow the HVE Core Terraform or Bicep instructions that apply to the planned files.
+
+1. Read the HVE Core Terraform instructions for Terraform-related planning
+2. Read the HVE Core Bicep instructions for Bicep-related planning
+3. Ensure your planned changes comply with the coding standards specified in these instructions
 4. Reference these instruction files when determining appropriate change approaches
 
 Outline all necessary code changes in the plan file. Prefix each item requiring a code change with a markdown checkbox `[ ]`.
 
 ## 4. Core IoT Operations Component Analysis (110-iot-ops) - EXECUTE IMMEDIATELY
 
-**CRITICAL PREREQUISITE**: Before creating any plan entries for Terraform or Bicep changes, read and follow ALL instructions from:
-1. Read `.github/instructions/terraform.instructions.md` (for Terraform-related planning)
-2. Read `.github/instructions/bicep.instructions.md` (for Bicep-related planning)
-3. Ensure your planned changes comply with the coding standards specified in these files
+**CRITICAL PREREQUISITE**: Before creating any plan entries for Terraform or Bicep changes, read and follow the HVE Core Terraform or Bicep instructions that apply to the planned files.
+
+1. Read the HVE Core Terraform instructions for Terraform-related planning
+2. Read the HVE Core Bicep instructions for Bicep-related planning
+3. Ensure your planned changes comply with the coding standards specified in these instructions
 4. Reference these instruction files when determining appropriate change approaches
 
 **EXECUTE IMMEDIATELY**: Analyze the downloaded JSON files and the existing 110-iot-ops codebase to identify necessary `apiVersion` updates and structural changes.
@@ -745,11 +747,12 @@ This phase contains the actual implementation of the approved plan. **Only proce
 
 When the user tells you to "implement the plan" or gives similar instruction, perform the changes outlined in `iotops-update-plan.md`.
 
-**CRITICAL PREREQUISITE**: Before making ANY changes to Terraform or Bicep files, read and understand ALL instructions from:
-1. Read `.github/instructions/terraform.instructions.md` (for any Terraform changes)
-2. Read `.github/instructions/bicep.instructions.md` (for any Bicep changes)
-3. Follow ALL guidelines specified in these instruction files during implementation
-4. Ensure your changes comply with the coding standards and conventions specified
+**CRITICAL PREREQUISITE**: Before making ANY changes to Terraform or Bicep files, read and understand the HVE Core Terraform or Bicep instructions that apply to the files you will edit.
+
+1. Read the HVE Core Terraform instructions for Terraform changes
+2. Read the HVE Core Bicep instructions for Bicep changes
+3. Follow all applicable guidelines from these instruction files during implementation
+4. Ensure your changes comply with the specified coding standards and conventions
 
 **Implementation Process**:
 1. **Read instruction files**: Load the appropriate instruction files based on the types of changes in the plan

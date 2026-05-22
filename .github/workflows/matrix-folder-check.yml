@@ -151,13 +151,13 @@ on:  # yamllint disable-line rule:truthy
         description: 'Whether any Rust-relevant files have changed (gates rust-tests)'
         value: ${{ jobs.map-outputs.outputs.changesInRust }}
 
-permissions:
-  contents: read          # Read repository contents and git history for change detection
-  actions: read           # Read workflow run information
+permissions: {}
 
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       shellChanges: ${{ steps.detect.outputs.shellChanges }}
       powershellChanges: ${{ steps.detect.outputs.powershellChanges }}
@@ -255,6 +255,7 @@ jobs:
   map-outputs:
     runs-on: ubuntu-latest
     needs: detect-changes
+    permissions: {}
     outputs:
       changesInRpEnablementShell: ${{ needs.detect-changes.outputs.shellChanges }}
       changesInRpEnablementPwsh: ${{ needs.detect-changes.outputs.powershellChanges }}

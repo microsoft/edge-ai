@@ -1,0 +1,132 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+# Vendored from microsoft/hve-core@e158d88237e6b5e0fb57cb707dfc82410aa86702
+
+name: Workflow Permissions Scan
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: 'Path to scan for workflow YAML files'
+        required: false
+        type: string
+        default: '.github/workflows'
+      recurse:
+        description: 'Recursively scan path'
+        required: false
+        type: boolean
+        default: true
+      fail-on-violation:
+        description: 'Fail the job when violations are found'
+        required: false
+        type: boolean
+        default: true
+      output-format:
+        description: 'Output format (sarif or json) for the primary report-path output'
+        required: false
+        type: string
+        default: 'sarif'
+      upload-sarif:
+        description: 'Upload SARIF results to the GitHub Security tab (gated by event/fork)'
+        required: false
+        type: boolean
+        default: true
+      require-deny-all:
+        description: 'Require deny-all top-level permissions block'
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      violations-count:
+        description: 'Number of permissions violations found'
+        value: ${{ jobs.permissions-check.outputs.violations-count }}
+      compliance-score:
+        description: 'Compliance score percentage'
+        value: ${{ jobs.permissions-check.outputs.compliance-score }}
+      report-path:
+        description: 'Path to the generated primary report file'
+        value: ${{ jobs.permissions-check.outputs.report-path }}
+  schedule:
+    - cron: '0 7 * * *'
+
+permissions: {}
+
+jobs:
+  permissions-check:
+    name: Workflow Permissions Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    outputs:
+      violations-count: ${{ steps.permissions.outputs.violations-count }}
+      compliance-score: ${{ steps.permissions.outputs.compliance-score }}
+      report-path: ${{ steps.permissions.outputs.report-path }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run workflow permissions validation
+        id: permissions
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          $pathInput  = if ('${{ inputs.path }}') { '${{ inputs.path }}' } else { '.github/workflows' }
+          $format     = if ('${{ inputs.output-format }}') { '${{ inputs.output-format }}' } else { 'sarif' }
+          $sarifPath  = 'logs/workflow-permissions-results.sarif'
+          $jsonPath   = 'logs/workflow-permissions-results.json'
+          $reportPath = "logs/workflow-permissions-results.$format"
+
+          # Always produce SARIF (for Security-tab upload) and JSON (for metrics extraction).
+          # FailOnViolation is enforced after metrics capture so outputs are always set.
+          ./scripts/security/Test-WorkflowPermissions.ps1 `
+            -Path $pathInput `
+            -Format 'sarif' `
+            -OutputPath $sarifPath `
+            -Recurse:$${{ inputs.recurse != false && 'true' || 'false' }} `
+            -RequireDenyAll:$${{ inputs.require-deny-all != false && 'true' || 'false' }}
+
+          ./scripts/security/Test-WorkflowPermissions.ps1 `
+            -Path $pathInput `
+            -Format 'json' `
+            -OutputPath $jsonPath `
+            -Recurse:$${{ inputs.recurse != false && 'true' || 'false' }} `
+            -RequireDenyAll:$${{ inputs.require-deny-all != false && 'true' || 'false' }}
+
+          $report          = Get-Content $jsonPath | ConvertFrom-Json
+          $violationsCount = if ($report.PSObject.Properties.Name -contains 'ViolationsCount') {
+            [int]$report.ViolationsCount
+          } elseif ($report.PSObject.Properties.Name -contains 'Violations') {
+            @($report.Violations).Count
+          } else { 0 }
+          $complianceScore = $report.ComplianceScore
+
+          "violations-count=$violationsCount" >> $env:GITHUB_OUTPUT
+          "compliance-score=$complianceScore" >> $env:GITHUB_OUTPUT
+          "report-path=$reportPath" >> $env:GITHUB_OUTPUT
+
+          $failOnViolation = $${{ inputs.fail-on-violation != false && 'true' || 'false' }}
+          if ($failOnViolation -and $violationsCount -gt 0) {
+            Write-Error "Found $violationsCount workflow permission violation(s)."
+            exit 1
+          }
+
+      - name: Upload SARIF results
+        if: ${{ always() && (inputs.upload-sarif != false) && ((github.event_name == 'schedule') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
+        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
+        with:
+          sarif_file: logs/workflow-permissions-results.sarif
+          category: workflow-permissions
+        continue-on-error: true
+
+      - name: Upload results artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: workflow-permissions-results
+          path: logs/workflow-permissions-results.*
+          retention-days: 90
+        continue-on-error: true

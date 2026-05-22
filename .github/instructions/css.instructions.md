@@ -1,3 +1,8 @@
+---
+description: 'CSS architecture and implementation standards for the Edge AI documentation site - Brought to you by microsoft/edge-ai'
+applyTo: '**/*.css'
+---
+
 # CSS Implementation Instructions
 
 ## File Patterns

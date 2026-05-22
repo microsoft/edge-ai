@@ -65,13 +65,14 @@ on:  # yamllint disable-line rule:truthy
         default: 'v0.20.0'
         type: string
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   docs-check-terraform:
     name: Terraform Documentation Compliance Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
 
     steps:
