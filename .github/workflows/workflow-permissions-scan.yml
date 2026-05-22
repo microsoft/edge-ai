@@ -47,10 +47,6 @@ on:
       report-path:
         description: 'Path to the generated primary report file'
         value: ${{ jobs.permissions-check.outputs.report-path }}
-  pull_request:
-    paths:
-      - '.github/workflows/**'
-      - 'scripts/security/Test-WorkflowPermissions.ps1'
   schedule:
     - cron: '0 7 * * *'
 

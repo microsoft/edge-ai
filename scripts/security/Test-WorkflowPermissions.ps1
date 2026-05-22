@@ -295,6 +295,7 @@ function Invoke-WorkflowPermissionsCheck {
 
     # Resolve scan path
     $resolvedPath = Resolve-Path -Path $Path -ErrorAction Stop
+    $scanRoot = $resolvedPath.ProviderPath
     Write-SecurityLog "Resolved path: $resolvedPath" -Level Info
 
     # Parse exclusions
@@ -334,8 +335,8 @@ function Invoke-WorkflowPermissionsCheck {
             Write-SecurityLog "  PASS: $($file.Name)" -Level Success
         }
         else {
-            # Normalize to workspace-relative path
-            $violation.File = Join-Path $Path $file.Name
+            $relativeWorkflowPath = [System.IO.Path]::GetRelativePath($scanRoot, $file.FullName)
+            $violation.File = (Join-Path $Path $relativeWorkflowPath) -replace '\\', '/'
             $report.AddViolation($violation)
             Write-SecurityLog "  FAIL: $($file.Name) - missing permissions block" -Level Error -CIAnnotation
             Write-CIAnnotation -Message $violation.Description -Level 'Error' -File $violation.File -Line 1
