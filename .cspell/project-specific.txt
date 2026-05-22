@@ -2,15 +2,19 @@ AADSTS
 Burstable
 COMMITMSG
 DCAM
+EOBS
 Fanuc
 GHCP
 Hikvision
 Keycloak
 Linfa
 Multimodal
+Obtenez
 Ollama
+Ouvrir
 RUSTSEC
 SARIF
+Standardised
 TMDL
 WIQL
 Workback
@@ -33,6 +37,7 @@ azureuser
 bicepconfig
 bicepparam
 bluenviron
+chipsets
 cloudapp
 cloudwatchlogs
 colorbars
@@ -40,6 +45,7 @@ commitish
 conseils
 corax
 curlimages
+denoising
 dimproducts
 dimstore
 dlqc
@@ -47,6 +53,7 @@ docsmcp
 docstool
 docstrings
 dorny
+easyops
 edgeai
 edgeserver
 efrecon
@@ -70,6 +77,8 @@ jointable
 jspx
 kalypso
 kiota
+leakdet
+libonnxruntime
 libopencv
 logissue
 managedidentity
@@ -77,6 +86,7 @@ mcpservers
 mediamtx
 minioadmin
 mobilenet
+mobilenetv
 mqttui
 myuniqueeventhub
 namespacing
@@ -87,6 +97,7 @@ notebookutils
 ocation
 octocat
 onelake
+optimises
 orientationmeasure
 oxsecurity
 pipx
@@ -129,6 +140,7 @@ testpassword
 tfstate
 tftest
 timescaledb
+tinyyolov
 toolkits
 tonistiigi
 traceidratio
