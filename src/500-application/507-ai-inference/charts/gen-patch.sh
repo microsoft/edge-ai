@@ -112,10 +112,10 @@ done
 cat >patch-containers.yaml <<EOF
 - op: replace
   path: /spec/template/spec/containers/0/image
-  value: ${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_VERSION}
+  value: "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_VERSION}"
 - op: replace
   path: /metadata/namespace
-  value: ${NAMESPACE}
+  value: "${NAMESPACE}"
 EOF
 
 echo "Generated patch-containers.yaml with:"

@@ -84,7 +84,7 @@ async fn main() -> Result<()> {
 
     // Extract the MQTT session — its event loop must run concurrently for the connection to work
     let mqtt_session = mqtt_publisher.take_session()
-        .expect("MQTT session must be available");
+        .ok_or_else(|| anyhow::anyhow!("MQTT session must be available"))?;
 
     #[allow(clippy::arc_with_non_send_sync)]
     let mqtt_publisher = Arc::new(mqtt_publisher);

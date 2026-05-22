@@ -155,7 +155,8 @@ impl InferenceEngine {
         }
 
         // Initialize metrics
-        let mut metrics = self.metrics.write().unwrap();
+        let mut metrics = self.metrics.write()
+            .map_err(|error| InferenceError::internal(format!("Metrics lock poisoned during initialization: {}", error)))?;
         metrics.last_reset = chrono::Utc::now();
 
         info!("AI inference engine initialized successfully with {} backend", self.backend.backend_type());
@@ -193,12 +194,24 @@ impl InferenceEngine {
                     );
                 }
 
-                self.update_success_metrics(&result.model_name, start_time).await;
+                if let Err(metrics_error) = self.update_success_metrics(&result.model_name, start_time).await {
+                    warn!(
+                        request_id = %request_id,
+                        error = %metrics_error,
+                        "Failed to update success metrics"
+                    );
+                }
                 Ok(result)
             }
             Err(e) => {
                 let inference_error = InferenceError::execution(e.to_string());
-                self.update_error_metrics(&inference_error).await;
+                if let Err(metrics_error) = self.update_error_metrics(&inference_error).await {
+                    warn!(
+                        request_id = %request_id,
+                        error = %metrics_error,
+                        "Failed to update error metrics"
+                    );
+                }
                 Err(inference_error)
             }
         };
@@ -359,8 +372,9 @@ impl InferenceEngine {
     }
 
     /// Update success metrics
-    async fn update_success_metrics(&self, model_name: &str, start_time: Instant) {
-        let mut metrics = self.metrics.write().unwrap();
+    async fn update_success_metrics(&self, model_name: &str, start_time: Instant) -> Result<(), InferenceError> {
+        let mut metrics = self.metrics.write()
+            .map_err(|error| InferenceError::internal(format!("Metrics lock poisoned during success update: {}", error)))?;
         let inference_time = start_time.elapsed().as_millis() as f64;
 
         metrics.total_inferences += 1;
@@ -369,11 +383,14 @@ impl InferenceEngine {
         metrics.average_inference_time_ms = metrics.total_inference_time_ms / metrics.total_inferences as f64;
 
         *metrics.model_usage_count.entry(model_name.to_string()).or_insert(0) += 1;
+
+        Ok(())
     }
 
     /// Update error metrics
-    async fn update_error_metrics(&self, error: &InferenceError) {
-        let mut metrics = self.metrics.write().unwrap();
+    async fn update_error_metrics(&self, error: &InferenceError) -> Result<(), InferenceError> {
+        let mut metrics = self.metrics.write()
+            .map_err(|lock_error| InferenceError::internal(format!("Metrics lock poisoned during error update: {}", lock_error)))?;
         metrics.total_inferences += 1;
         metrics.failed_inferences += 1;
 
@@ -396,18 +413,32 @@ impl InferenceEngine {
         };
 
         *metrics.error_count_by_type.entry(error_type.to_string()).or_insert(0) += 1;
+
+        Ok(())
     }
 
     /// Get current performance metrics
     pub async fn get_metrics(&self) -> InferenceMetrics {
-        self.metrics.read().unwrap().clone()
+        match self.metrics.read() {
+            Ok(metrics) => metrics.clone(),
+            Err(error) => {
+                warn!("Failed to read metrics due to poisoned lock: {}", error);
+                InferenceMetrics::default()
+            }
+        }
     }
 
     /// Reset performance metrics
     pub async fn reset_metrics(&self) {
-        let mut metrics = self.metrics.write().unwrap();
-        *metrics = InferenceMetrics::default();
-        metrics.last_reset = chrono::Utc::now();
+        match self.metrics.write() {
+            Ok(mut metrics) => {
+                *metrics = InferenceMetrics::default();
+                metrics.last_reset = chrono::Utc::now();
+            }
+            Err(error) => {
+                warn!("Failed to reset metrics due to poisoned lock: {}", error);
+            }
+        }
     }
 
     // ========= YAML Configuration System Methods =========

@@ -15,7 +15,7 @@ pub struct OnnxRuntimeBackend {
     environment_initialized: bool,
     config: Option<BackendConfig>,
     loaded_models: HashMap<String, OnnxModel>,
-    stats: BackendStats,
+    stats: Mutex<BackendStats>,
 }
 
 #[cfg(feature = "onnx-runtime")]
@@ -25,7 +25,7 @@ impl std::fmt::Debug for OnnxRuntimeBackend {
             .field("environment_initialized", &self.environment_initialized)
             .field("config", &self.config)
             .field("loaded_models", &self.loaded_models.keys().collect::<Vec<_>>())
-            .field("stats", &self.stats)
+            .field("stats", &self.stats.lock().ok().map(|stats| stats.clone()))
             .finish()
     }
 }
@@ -89,13 +89,33 @@ impl OnnxRuntimeBackend {
             environment_initialized: false,
             config: None,
             loaded_models: HashMap::new(),
-            stats: BackendStats {
+            stats: Mutex::new(BackendStats {
                 models_loaded: 0,
                 total_inferences: 0,
                 total_errors: 0,
                 average_inference_time_ms: 0.0,
-            },
+            }),
         }
+    }
+
+    fn record_inference_stats(&self, elapsed_ms: f64, successful: bool) {
+        let mut stats = match self.stats.lock() {
+            Ok(stats) => stats,
+            Err(error) => {
+                debug!("Failed to update backend stats due to poisoned lock: {}", error);
+                return;
+            }
+        };
+
+        stats.total_inferences += 1;
+
+        if !successful {
+            stats.total_errors += 1;
+        }
+
+        let count = stats.total_inferences as f64;
+        let previous = stats.average_inference_time_ms;
+        stats.average_inference_time_ms = ((previous * (count - 1.0)) + elapsed_ms) / count;
     }
 
     /// Parse postprocessing config from ModelConfig JSON
@@ -459,7 +479,14 @@ impl InferenceBackend for OnnxRuntimeBackend {
         };
 
         self.loaded_models.insert(model_name.to_string(), model);
-        self.stats.models_loaded += 1;
+        match self.stats.lock() {
+            Ok(mut stats) => {
+                stats.models_loaded += 1;
+            }
+            Err(error) => {
+                debug!("Failed to update model count after load: {}", error);
+            }
+        }
 
         info!("ONNX model '{}' loaded with real ort::Session", model_name);
         Ok(())
@@ -469,7 +496,14 @@ impl InferenceBackend for OnnxRuntimeBackend {
         info!("Unloading ONNX model: {}", model_name);
 
         if self.loaded_models.remove(model_name).is_some() {
-            self.stats.models_loaded = self.stats.models_loaded.saturating_sub(1);
+            match self.stats.lock() {
+                Ok(mut stats) => {
+                    stats.models_loaded = stats.models_loaded.saturating_sub(1);
+                }
+                Err(error) => {
+                    debug!("Failed to update model count after unload: {}", error);
+                }
+            }
             info!("ONNX model '{}' unloaded", model_name);
             Ok(())
         } else {
@@ -480,76 +514,83 @@ impl InferenceBackend for OnnxRuntimeBackend {
     async fn infer(&self, input: InferenceInput, model_name: Option<&str>) -> Result<InferenceResult, BackendError> {
         let start = std::time::Instant::now();
 
-        if !self.environment_initialized {
-            return Err(BackendError::BackendNotInitialized("Environment not initialized".to_string()));
-        }
+        let result = (|| -> Result<InferenceResult, BackendError> {
+            if !self.environment_initialized {
+                return Err(BackendError::BackendNotInitialized("Environment not initialized".to_string()));
+            }
 
-        let model_key = model_name.unwrap_or("default");
-        debug!("Running ONNX inference with model '{}'", model_key);
+            let model_key = model_name.unwrap_or("default");
+            debug!("Running ONNX inference with model '{}'", model_key);
 
-        let model = self.loaded_models.get(model_key)
-            .or_else(|| {
-                if model_key == "default" {
-                    let fallback = self.loaded_models.values().next();
-                    if let Some(m) = fallback {
-                        info!("Model 'default' not found, falling back to '{}'", m.name);
+            let model = self.loaded_models.get(model_key)
+                .or_else(|| {
+                    if model_key == "default" {
+                        let fallback = self.loaded_models.values().next();
+                        if let Some(m) = fallback {
+                            info!("Model 'default' not found, falling back to '{}'", m.name);
+                        }
+                        fallback
+                    } else {
+                        None
                     }
-                    fallback
-                } else {
-                    None
+                })
+                .ok_or_else(|| BackendError::ModelLoadFailed(format!("Model '{}' not loaded", model_key)))?;
+
+            // Extract DynamicImage from input
+            let image = match &input {
+                InferenceInput::Image { data, metadata: _ } => data,
+                InferenceInput::TimeSeries { .. } => {
+                    return Err(BackendError::InferenceFailed(
+                        "ONNX backend does not support time series input".to_string(),
+                    ));
                 }
+            };
+
+            // Prepare input tensor from image
+            let (input_shape, input_data) = self.prepare_input_from_image(image, &model.input_shape)?;
+            debug!("Input tensor shape: {:?}", input_shape);
+
+            // Run real ONNX session inference
+            let output_data = self.run_session_inference(model, input_shape, input_data)?;
+
+            // Determine output shape and route to correct postprocessor
+            let output_shape = self.infer_output_shape(output_data.len(), model);
+            debug!("Inferred output shape: {:?}, postprocess_type: {}", output_shape, model.postprocess_type);
+
+            let predictions = match model.postprocess_type.as_str() {
+                "yolov8" | "yolo" | "yolov5" => {
+                    self.process_yolov8_output(&output_data, &output_shape, model)?
+                }
+                _ => {
+                    self.process_classification_output(&output_data, model)?
+                }
+            };
+
+            let confidence = predictions.iter()
+                .map(|p| p.confidence)
+                .fold(0.0f32, f32::max);
+
+            let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+            Ok(InferenceResult {
+                model_name: model_key.to_string(),
+                model_type: "onnx".to_string(),
+                predictions,
+                confidence,
+                inference_time_ms: elapsed_ms,
+                metadata: serde_json::json!({
+                    "backend": "onnx-runtime",
+                    "model_path": model.model_path,
+                    "inference_type": "real",
+                    "request_id": uuid::Uuid::new_v4().to_string()
+                }),
             })
-            .ok_or_else(|| BackendError::ModelLoadFailed(format!("Model '{}' not loaded", model_key)))?;
-
-        // Extract DynamicImage from input
-        let image = match &input {
-            InferenceInput::Image { data, metadata: _ } => data,
-            InferenceInput::TimeSeries { .. } => {
-                return Err(BackendError::InferenceFailed(
-                    "ONNX backend does not support time series input".to_string(),
-                ));
-            }
-        };
-
-        // Prepare input tensor from image
-        let (input_shape, input_data) = self.prepare_input_from_image(image, &model.input_shape)?;
-        debug!("Input tensor shape: {:?}", input_shape);
-
-        // Run real ONNX session inference
-        let output_data = self.run_session_inference(model, input_shape, input_data)?;
-
-        // Determine output shape and route to correct postprocessor
-        let output_shape = self.infer_output_shape(output_data.len(), model);
-        debug!("Inferred output shape: {:?}, postprocess_type: {}", output_shape, model.postprocess_type);
-
-        let predictions = match model.postprocess_type.as_str() {
-            "yolov8" | "yolo" | "yolov5" => {
-                self.process_yolov8_output(&output_data, &output_shape, model)?
-            }
-            _ => {
-                self.process_classification_output(&output_data, model)?
-            }
-        };
-
-        let confidence = predictions.iter()
-            .map(|p| p.confidence)
-            .fold(0.0f32, f32::max);
+        })();
 
         let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+        self.record_inference_stats(elapsed_ms, result.is_ok());
 
-        Ok(InferenceResult {
-            model_name: model_key.to_string(),
-            model_type: "onnx".to_string(),
-            predictions,
-            confidence,
-            inference_time_ms: elapsed_ms,
-            metadata: serde_json::json!({
-                "backend": "onnx-runtime",
-                "model_path": model.model_path,
-                "inference_type": "real",
-                "request_id": uuid::Uuid::new_v4().to_string()
-            }),
-        })
+        result
     }
 
     async fn get_loaded_models(&self) -> Vec<String> {
@@ -557,6 +598,13 @@ impl InferenceBackend for OnnxRuntimeBackend {
     }
 
     async fn get_status(&self) -> BackendStatus {
+        let total_inferences = self
+            .stats
+            .lock()
+            .ok()
+            .map(|stats| stats.total_inferences)
+            .unwrap_or(0);
+
         BackendStatus {
             backend_type: BackendType::OnnxRuntime,
             initialized: self.environment_initialized,
@@ -564,7 +612,7 @@ impl InferenceBackend for OnnxRuntimeBackend {
             device_type: DeviceType::Cpu,
             memory_usage_mb: 0.0,
             last_inference_time_ms: None,
-            total_inferences: self.stats.total_inferences,
+            total_inferences,
             errors: vec![],
         }
     }
