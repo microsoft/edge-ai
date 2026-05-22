@@ -49,6 +49,9 @@ Generated\ Files/
 TestResult.xml
 nunit-*.xml
 
+# Pester/PowerShell test output (test-results/test-results.xml, test-summary.json)
+test-results/
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/

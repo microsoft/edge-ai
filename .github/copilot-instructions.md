@@ -32,7 +32,7 @@ Items in **HIGHEST PRIORITY** sections from attached instructions files override
 
 ## Repository Configuration
 
-* **Default branch**: `origin/dev` — use as the base for all new branches, comparisons, and PR targets unless explicitly overridden.
+* **Default branch**: `origin/main` — use as the base for all new branches, comparisons, and PR targets unless explicitly overridden.
 
 ### CRITICAL - Required Prompts & Instruction Compliance
 
