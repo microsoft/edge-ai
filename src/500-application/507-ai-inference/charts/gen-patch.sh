@@ -96,7 +96,7 @@ while [[ $# -gt 0 ]]; do
       NAMESPACE="${2}"
       shift 2
       ;;
-    --help|-h)
+    --help | -h)
       usage
       exit 0
       ;;
