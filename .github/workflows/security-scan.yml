@@ -45,8 +45,7 @@ on:  # yamllint disable-line rule:truthy
         type: boolean
         default: false
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   security-scan:

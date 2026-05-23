@@ -61,8 +61,7 @@ name: Terraform Variable Compliance
         required: false
         type: boolean
         default: false
-permissions:
-  contents: read
+permissions: {}
 concurrency:
   group: ${{ github.ref }}-terraform-var-compliance
   cancel-in-progress: true
@@ -70,6 +69,8 @@ jobs:
   variable-compliance:
     name: Check Terraform Variable Consistency
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

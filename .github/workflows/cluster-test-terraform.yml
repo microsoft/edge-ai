@@ -118,13 +118,15 @@ on:  # yamllint disable-line rule:truthy
         type: boolean
         default: false
 
-permissions:
-  contents: read
+permissions: {}
+
 jobs:
   # Job to validate and test Terraform configurations
   terraform-test:
     name: Terraform Configuration Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository

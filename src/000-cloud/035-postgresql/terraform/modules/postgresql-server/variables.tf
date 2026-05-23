@@ -61,6 +61,11 @@ variable "admin_password" {
   sensitive   = true
 }
 
+variable "admin_password_wo_version" {
+  description = "Version used to trigger updates for the write-only PostgreSQL administrator password. Increment this value when rotating the administrator password."
+  type        = number
+}
+
 variable "databases" {
   description = "Map of databases to create with collation and charset."
   type = map(object({

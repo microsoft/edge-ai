@@ -48,14 +48,14 @@ on: # yamllint disable-line rule:truthy
           - json
           - console
 
-permissions:
-  contents: read
-  actions: read
+permissions: {}
 
 jobs:
   security-staleness-check:
     name: 'SHA Staleness Monitoring'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: 'Checkout Repository'
