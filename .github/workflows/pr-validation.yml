@@ -122,9 +122,14 @@ jobs:
   # Bicep linting
   bicep-lint:
     name: Bicep Lint
+    needs: [matrix-changes]
+    if: github.event_name != 'pull_request' || needs.matrix-changes.outputs.changesInBicepInstall == 'true' || needs.matrix-changes.outputs.bicepFullValidationRequired == 'true'
     permissions:
       contents: read
     uses: ./.github/workflows/bicep-lint.yml
+    with:
+      full-validation: ${{ github.event_name != 'pull_request' || needs.matrix-changes.outputs.bicepFullValidationRequired == 'true' }}
+      bicep-folders-json: ${{ needs.matrix-changes.outputs.changedBicepFolders }}
 
   # Documentation linting
   docs-lint:
