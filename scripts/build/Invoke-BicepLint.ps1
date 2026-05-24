@@ -122,7 +122,7 @@ function ConvertTo-RepoRelativePath {
 
 function Get-BicepFolderPathFromJson {
     [CmdletBinding()]
-    [OutputType([string[]])]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory = $false)]
         [string]$BicepFoldersJson = '{}'
@@ -168,7 +168,7 @@ function Get-BicepFolderPathFromJson {
 
 function Get-BicepValidationFile {
     [CmdletBinding()]
-    [OutputType([string[]])]
+    [OutputType([object[]])]
     param(
         [Parameter(Mandatory = $true)]
         [string]$RepoRoot,
@@ -278,7 +278,7 @@ function Write-BicepFailure {
 }
 
 function Start-BicepLogGroup {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateSet('github', 'generic')]
@@ -287,6 +287,10 @@ function Start-BicepLogGroup {
         [Parameter(Mandatory = $true)]
         [string]$FilePath
     )
+
+    if (-not $PSCmdlet.ShouldProcess($FilePath, 'Start Bicep log group')) {
+        return
+    }
 
     if ($Platform -eq 'github') {
         Write-Output "::group::Validating: $FilePath"
@@ -297,12 +301,16 @@ function Start-BicepLogGroup {
 }
 
 function Stop-BicepLogGroup {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateSet('github', 'generic')]
         [string]$Platform
     )
+
+    if (-not $PSCmdlet.ShouldProcess($Platform, 'Stop Bicep log group')) {
+        return
+    }
 
     if ($Platform -eq 'github') {
         Write-Output '::endgroup::'
