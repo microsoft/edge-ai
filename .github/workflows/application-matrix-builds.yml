@@ -323,7 +323,7 @@ jobs:
 
       - name: Log in to Container Registry
         if: ${{ needs.parse-configuration.outputs.pushImages == 'true' }}
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.REGISTRY_USERNAME }}
@@ -587,7 +587,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
+        uses: github/codeql-action/upload-sarif@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
         if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
         with:
           sarif_file: ${{ github.workspace }}/security-reports
