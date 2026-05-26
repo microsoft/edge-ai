@@ -406,7 +406,7 @@ impl OnnxRuntimeBackend {
     }
 
     /// Greedy NMS: suppress overlapping detections
-    fn apply_nms(detections: &mut Vec<RawDetection>, nms_threshold: f32) -> Vec<RawDetection> {
+    fn apply_nms(detections: &mut [RawDetection], nms_threshold: f32) -> Vec<RawDetection> {
         detections.sort_by(|a, b| b.confidence.partial_cmp(&a.confidence).unwrap_or(std::cmp::Ordering::Equal));
         let mut keep: Vec<RawDetection> = Vec::new();
         let mut suppressed = vec![false; detections.len()];
