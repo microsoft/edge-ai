@@ -138,48 +138,6 @@
       "isBackground": false,
       "problemMatcher": [],
       "detail": "Runs scripts/az-sub-init.sh then terraform plan with required vars for testing terraform plan, in folder for current focused file"
-    },
-    {
-      "label": "Adhoc Cargo Check 507",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["check", "--manifest-path", "src/500-application/507-ai-inference/services/ai-edge-inference-crate/Cargo.toml"],
-      "isBackground": false
-    },
-    {
-      "label": "Adhoc Cargo Test 507",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["test", "--manifest-path", "src/500-application/507-ai-inference/services/ai-edge-inference-crate/Cargo.toml"],
-      "isBackground": false
-    },
-    {
-      "label": "Adhoc Kustomize Build 507",
-      "type": "shell",
-      "command": "kustomize",
-      "args": ["build", "src/500-application/507-ai-inference/charts"],
-      "isBackground": false
-    },
-    {
-      "label": "Adhoc YAML Lint",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "yaml"],
-      "isBackground": false
-    },
-    {
-      "label": "Adhoc Install Yamllint",
-      "type": "shell",
-      "command": "brew",
-      "args": ["install", "yamllint"],
-      "isBackground": false
-    },
-    {
-      "label": "Adhoc YAML Lint Retry",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "yaml"],
-      "isBackground": false
     }
   ]
 }
