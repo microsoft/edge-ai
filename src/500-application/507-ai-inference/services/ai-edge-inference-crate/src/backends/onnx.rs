@@ -41,7 +41,6 @@ struct OnnxModel {
     confidence_threshold: f32,
     nms_threshold: f32,
     postprocess_type: String,
-    num_classes: usize,
 }
 
 #[cfg(feature = "onnx-runtime")]
@@ -56,7 +55,6 @@ impl std::fmt::Debug for OnnxModel {
             .field("confidence_threshold", &self.confidence_threshold)
             .field("nms_threshold", &self.nms_threshold)
             .field("postprocess_type", &self.postprocess_type)
-            .field("num_classes", &self.num_classes)
             .finish()
     }
 }
@@ -119,12 +117,11 @@ impl OnnxRuntimeBackend {
     }
 
     /// Parse postprocessing config from ModelConfig JSON
-    fn parse_postprocessing(model_config: &ModelConfig) -> (Vec<String>, f32, f32, String, usize) {
+    fn parse_postprocessing(model_config: &ModelConfig) -> (Vec<String>, f32, f32, String) {
         let mut class_labels: Vec<String> = Vec::new();
         let mut confidence_threshold = model_config.confidence_threshold.unwrap_or(0.5);
         let mut nms_threshold = 0.4f32;
         let mut postprocess_type = "classification".to_string();
-        let num_classes;
 
         if let Some(post) = &model_config.postprocessing {
             if let Some(pt) = post.get("postprocess_type").and_then(|v| v.as_str()) {
@@ -156,9 +153,7 @@ impl OnnxRuntimeBackend {
             }
         }
 
-        num_classes = if class_labels.is_empty() { 1 } else { class_labels.len() };
-
-        (class_labels, confidence_threshold, nms_threshold, postprocess_type, num_classes)
+        (class_labels, confidence_threshold, nms_threshold, postprocess_type)
     }
 
     /// Parse input shape from ModelConfig preprocessing JSON or use defaults
@@ -273,6 +268,19 @@ impl OnnxRuntimeBackend {
             return Err(BackendError::PostprocessingFailed(
                 format!("Output has {} rows, need at least 5 (4 box + 1 class)", rows),
             ));
+        }
+
+        // Validate against configured class labels. A mismatch usually means a
+        // model+config mismatch (e.g. COCO labels paired with a single-class model)
+        // which silently produces nonsense detections, so fail loudly instead.
+        if !model.class_labels.is_empty() && model.class_labels.len() != num_classes {
+            return Err(BackendError::PostprocessingFailed(format!(
+                "Model '{}' output has {} classes but {} class labels are configured; \
+                 check that postprocessing.class_labels matches the model",
+                model.name,
+                num_classes,
+                model.class_labels.len(),
+            )));
         }
 
         debug!("Processing YOLOv8 output: {} detections, {} classes", cols, num_classes);
@@ -448,7 +456,7 @@ impl InferenceBackend for OnnxRuntimeBackend {
         info!("Model input name: '{}'", input_name);
 
         // Parse postprocessing config from ModelConfig
-        let (class_labels, confidence_threshold, nms_threshold, postprocess_type, num_classes) =
+        let (class_labels, confidence_threshold, nms_threshold, postprocess_type) =
             Self::parse_postprocessing(model_config);
 
         // Parse input shape
@@ -469,7 +477,6 @@ impl InferenceBackend for OnnxRuntimeBackend {
             confidence_threshold,
             nms_threshold,
             postprocess_type,
-            num_classes,
         };
 
         self.loaded_models.insert(model_name.to_string(), model);
