@@ -187,6 +187,12 @@ impl OnnxRuntimeBackend {
         img: &image::DynamicImage,
         input_shape: &[i64],
     ) -> Result<(Vec<i64>, Vec<f32>), BackendError> {
+        if input_shape.len() != 4 {
+            return Err(BackendError::InferenceFailed(format!(
+                "invalid input shape {:?}: expected 4D NCHW",
+                input_shape,
+            )));
+        }
         let channels = input_shape[1] as usize;
         let height = input_shape[2] as u32;
         let width = input_shape[3] as u32;
@@ -197,7 +203,7 @@ impl OnnxRuntimeBackend {
 
         let h = height as usize;
         let w = width as usize;
-        let mut tensor_data = vec![0.0f32; 1 * channels * h * w];
+        let mut tensor_data = vec![0.0f32; channels * h * w];
 
         for y in 0..h {
             for x in 0..w {
@@ -290,8 +296,8 @@ impl OnnxRuntimeBackend {
         for det_idx in 0..cols {
             // Data is laid out as [1, rows, cols] in row-major:
             // output_data[row * cols + det_idx]
-            let cx = output_data[0 * cols + det_idx];
-            let cy = output_data[1 * cols + det_idx];
+            let cx = output_data[det_idx];
+            let cy = output_data[cols + det_idx];
             let w = output_data[2 * cols + det_idx];
             let h = output_data[3 * cols + det_idx];
 
