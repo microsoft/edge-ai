@@ -341,7 +341,11 @@ jobs:
       registryName: ${{ vars.REGISTRY_NAME || 'ghcr.io' }}
       buildConfig: |
         {
-          "dockerComposeVersion": "2.24.5"
+          "dockerComposeVersion": "2.24.5",
+          "dockerBuildArgs": {
+            "CARGO_PROFILE_RELEASE_DEBUG": "line-tables-only",
+            "CARGO_PROFILE_RELEASE_STRIP": "none"
+          }
         }
       securityConfig: |
         {
