@@ -40,6 +40,7 @@ struct OnnxModel {
     class_labels: Vec<String>,
     confidence_threshold: f32,
     nms_threshold: f32,
+    top_k: usize,
     postprocess_type: String,
 }
 
@@ -54,6 +55,7 @@ impl std::fmt::Debug for OnnxModel {
             .field("class_labels", &self.class_labels)
             .field("confidence_threshold", &self.confidence_threshold)
             .field("nms_threshold", &self.nms_threshold)
+            .field("top_k", &self.top_k)
             .field("postprocess_type", &self.postprocess_type)
             .finish()
     }
@@ -117,10 +119,14 @@ impl OnnxRuntimeBackend {
     }
 
     /// Parse postprocessing config from ModelConfig JSON
-    fn parse_postprocessing(model_config: &ModelConfig) -> (Vec<String>, f32, f32, String) {
+    fn parse_postprocessing(model_config: &ModelConfig) -> (Vec<String>, f32, f32, usize, String) {
+        // Default top-K for classification outputs; overridable via postprocessing.top_k.
+        const DEFAULT_TOP_K: usize = 3;
+
         let mut class_labels: Vec<String> = Vec::new();
         let mut confidence_threshold = model_config.confidence_threshold.unwrap_or(0.5);
         let mut nms_threshold = 0.4f32;
+        let mut top_k: usize = DEFAULT_TOP_K;
         let mut postprocess_type = "classification".to_string();
 
         if let Some(post) = &model_config.postprocessing {
@@ -132,6 +138,9 @@ impl OnnxRuntimeBackend {
             }
             if let Some(nt) = post.get("nms_threshold").and_then(|v| v.as_f64()) {
                 nms_threshold = nt as f32;
+            }
+            if let Some(k) = post.get("top_k").and_then(|v| v.as_u64()) {
+                top_k = k as usize;
             }
             if let Some(labels) = post.get("class_labels").and_then(|v| v.as_array()) {
                 class_labels = labels.iter()
@@ -153,7 +162,7 @@ impl OnnxRuntimeBackend {
             }
         }
 
-        (class_labels, confidence_threshold, nms_threshold, postprocess_type)
+        (class_labels, confidence_threshold, nms_threshold, top_k, postprocess_type)
     }
 
     /// Parse input shape from ModelConfig preprocessing JSON or use defaults
@@ -368,7 +377,7 @@ impl OnnxRuntimeBackend {
         indexed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
         let predictions: Vec<crate::Prediction> = indexed.iter()
-            .take(3)
+            .take(model.top_k)
             .filter(|(_, conf)| *conf > model.confidence_threshold)
             .map(|(class_idx, confidence)| {
                 let class_name = model.class_labels.get(*class_idx)
@@ -462,15 +471,15 @@ impl InferenceBackend for OnnxRuntimeBackend {
         info!("Model input name: '{}'", input_name);
 
         // Parse postprocessing config from ModelConfig
-        let (class_labels, confidence_threshold, nms_threshold, postprocess_type) =
+        let (class_labels, confidence_threshold, nms_threshold, top_k, postprocess_type) =
             Self::parse_postprocessing(model_config);
 
         // Parse input shape
         let input_shape = Self::parse_input_shape(model_config);
 
         info!(
-            "Model '{}': postprocess={}, classes={:?}, conf_thresh={}, nms_thresh={}, input_shape={:?}",
-            model_name, postprocess_type, class_labels, confidence_threshold, nms_threshold, input_shape
+            "Model '{}': postprocess={}, classes={:?}, conf_thresh={}, nms_thresh={}, top_k={}, input_shape={:?}",
+            model_name, postprocess_type, class_labels, confidence_threshold, nms_threshold, top_k, input_shape
         );
 
         let model = OnnxModel {
@@ -482,6 +491,7 @@ impl InferenceBackend for OnnxRuntimeBackend {
             class_labels,
             confidence_threshold,
             nms_threshold,
+            top_k,
             postprocess_type,
         };
 
