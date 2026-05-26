@@ -149,19 +149,6 @@ impl OnnxRuntimeBackend {
             }
         }
 
-        // Also check output.class_labels (YAML config puts them at top level of postprocessing JSON)
-        if class_labels.is_empty() {
-            if let Some(post) = &model_config.postprocessing {
-                if let Some(output) = post.get("output") {
-                    if let Some(labels) = output.get("class_labels").and_then(|v| v.as_array()) {
-                        class_labels = labels.iter()
-                            .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                            .collect();
-                    }
-                }
-            }
-        }
-
         (class_labels, confidence_threshold, nms_threshold, top_k, postprocess_type)
     }
 
