@@ -127,7 +127,7 @@ RUN chown -R appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher /app && \
     chmod +x /usr/local/bin/ai-edge-mqtt-publisher
 
 ENV RUST_LOG=info
-ENV MODEL_DIRECTORY=/models
+ENV MODELS_DIRECTORY=/models
 ENV METRICS_PORT=8080
 ENV HEALTH_PORT=8081
 ENV LD_LIBRARY_PATH="/opt/onnxruntime/lib"

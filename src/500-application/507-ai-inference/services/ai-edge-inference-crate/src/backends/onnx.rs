@@ -217,12 +217,16 @@ impl OnnxRuntimeBackend {
     }
 
     /// Run inference through the ONNX session
+    ///
+    /// Returns the real output tensor shape reported by ORT alongside the flat data,
+    /// so postprocessing does not have to guess dimensions from `num_classes` (which
+    /// is unreliable when `class_labels` is empty).
     fn run_session_inference(
         &self,
         model: &OnnxModel,
         input_shape: Vec<i64>,
         input_data: Vec<f32>,
-    ) -> Result<Vec<f32>, BackendError> {
+    ) -> Result<(Vec<usize>, Vec<f32>), BackendError> {
         debug!("Running ONNX session inference for model '{}'", model.name);
 
         let tensor = ort::value::Tensor::from_array((input_shape, input_data))
@@ -242,18 +246,8 @@ impl OnnxRuntimeBackend {
             .map_err(|e| BackendError::InferenceFailed(format!("Failed to extract output tensor: {}", e)))?;
 
         debug!("Output tensor shape: {:?}", shape);
-        Ok(data.to_vec())
-    }
-
-    /// Determine output shape from the flat output vector and model metadata
-    fn infer_output_shape(&self, output_len: usize, model: &OnnxModel) -> Vec<usize> {
-        // YOLOv8 typical output: [1, 4+num_classes, num_detections]
-        let num_vals = 4 + model.num_classes;
-        if output_len % num_vals == 0 {
-            let num_detections = output_len / num_vals;
-            return vec![1, num_vals, num_detections];
-        }
-        vec![1, output_len]
+        let shape_vec: Vec<usize> = shape.iter().map(|&d| d as usize).collect();
+        Ok((shape_vec, data.to_vec()))
     }
 
     /// Process YOLOv8 output tensor
@@ -550,12 +544,9 @@ impl InferenceBackend for OnnxRuntimeBackend {
             let (input_shape, input_data) = self.prepare_input_from_image(image, &model.input_shape)?;
             debug!("Input tensor shape: {:?}", input_shape);
 
-            // Run real ONNX session inference
-            let output_data = self.run_session_inference(model, input_shape, input_data)?;
-
-            // Determine output shape and route to correct postprocessor
-            let output_shape = self.infer_output_shape(output_data.len(), model);
-            debug!("Inferred output shape: {:?}, postprocess_type: {}", output_shape, model.postprocess_type);
+            // Run real ONNX session inference (shape is the authoritative shape reported by ORT)
+            let (output_shape, output_data) = self.run_session_inference(model, input_shape, input_data)?;
+            debug!("Output shape: {:?}, postprocess_type: {}", output_shape, model.postprocess_type);
 
             let predictions = match model.postprocess_type.as_str() {
                 "yolov8" | "yolo" | "yolov5" => {
