@@ -7,19 +7,21 @@ ARG TARGETPLATFORM=linux/amd64
 # Build stage (force amd64; this Dockerfile is single-platform by design)
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS build
 
+# Pin package versions for reproducible builds and stable SBOMs (OSSF Pinned-Dependencies).
+# Versions resolved against the digest-pinned Azure Linux 3.0 base image above.
 RUN tdnf install -y \
-    openssl-devel \
-    gcc \
-    make \
-    binutils \
-    glibc-devel \
-    kernel-headers \
-    curl \
-    ca-certificates \
-    clang \
-    pkgconf-pkg-config \
-    protobuf-devel \
-    tar \
+    openssl-devel-3.3.5-5.azl3 \
+    gcc-13.2.0-7.azl3 \
+    make-4.4.1-2.azl3 \
+    binutils-2.41-12.azl3 \
+    glibc-devel-2.38-20.azl3 \
+    kernel-headers-6.6.139.1-1.azl3 \
+    curl-8.11.1-6.azl3 \
+    ca-certificates-3.0.0-14.azl3 \
+    clang-18.1.8-1.azl3 \
+    pkgconf-pkg-config-2.0.2-1.azl3 \
+    protobuf-devel-25.3-7.azl3 \
+    tar-1.35-2.azl3 \
     && tdnf clean all
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -107,11 +109,12 @@ ARG BACKEND=onnx
 
 RUN tdnf upgrade -y && tdnf clean all
 
+# Pin runtime package versions to match the build stage and keep SBOMs reproducible.
 RUN tdnf install -y \
-    ca-certificates \
-    ncurses-libs \
-    shadow-utils \
-    tar \
+    ca-certificates-3.0.0-14.azl3 \
+    ncurses-libs-6.4-3.azl3 \
+    shadow-utils-4.14.3-2.azl3 \
+    tar-1.35-2.azl3 \
     && tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
