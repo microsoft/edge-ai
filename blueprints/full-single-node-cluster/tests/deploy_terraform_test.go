@@ -22,7 +22,7 @@ func TestTerraformFullSingleNodeClusterDeploy(t *testing.T) {
 
 	terraformDir := "../terraform"
 
-	// Get test configuration from environment variables (set in run-deployment-tests.sh)
+	// Get test configuration from environment variables.
 	environment := os.Getenv("TEST_ENVIRONMENT")
 	require.NotEmpty(t, environment, "TEST_ENVIRONMENT environment variable must be set")
 

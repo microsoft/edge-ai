@@ -333,7 +333,7 @@ Complete test suite demonstrating:
 
 - Contract tests for both Terraform and Bicep
 - End-to-end deployment validation
-- Helper scripts for test execution
+- npm scripts for test execution
 - Output contract definitions
 
 ### Contract Testing
@@ -350,16 +350,15 @@ Complete test suite demonstrating:
 **Running Contract Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/tests
-
 # Test both frameworks
-./run-contract-tests.sh both
+npm run go-test
 
 # Test specific framework
-./run-contract-tests.sh terraform
-./run-contract-tests.sh bicep
+npm run go-test:contract:terraform
+npm run go-test:contract:bicep
 
 # Direct Go execution
+cd blueprints/full-single-node-cluster/tests
 go test -v -run Contract
 ```
 
@@ -377,16 +376,15 @@ go test -v -run Contract
 **Running Deployment Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/tests
-
 # Enable automatic cleanup
 export CLEANUP_RESOURCES=true
 
 # Test specific framework
-./run-deployment-tests.sh terraform
-./run-deployment-tests.sh bicep
+npm run go-test:deploy:terraform
+npm run go-test:deploy:bicep
 
 # Direct Go execution
+cd blueprints/full-single-node-cluster/tests
 go test -v -run TestTerraformFullSingleNodeClusterDeploy -timeout 2h
 go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 2h
 ```
@@ -411,9 +409,7 @@ blueprints/{blueprint-name}/tests/
 ├── deploy_terraform_test.go       # Terraform deployment test
 ├── deploy_bicep_test.go           # Bicep deployment test
 ├── validation.go                  # Shared validation functions
-├── setup.go                       # Post-deployment setup
-├── run-contract-tests.sh          # Contract test runner
-└── run-deployment-tests.sh        # Deployment test runner
+└── setup.go                       # Post-deployment setup
 ```
 
 ### Blueprint Integration Testing
@@ -443,7 +439,7 @@ When creating a new blueprint, add comprehensive test coverage:
 1. **Define output contract** in `tests/outputs.go` with struct tags for both frameworks
 2. **Create contract tests** for static validation
 3. **Create deployment tests** for end-to-end validation
-4. **Add helper scripts** for simplified test execution
+4. **Add package scripts** for local and CI test execution
 5. **Document test requirements** in blueprint README
 
 **See:** [Blueprint Developer Guide](../getting-started/blueprint-developer.md#testing-and-validation) for detailed instructions
