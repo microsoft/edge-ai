@@ -349,7 +349,7 @@ The tests directory contains contract tests and end-to-end deployment validation
 
 - **Contract Tests** - Fast static validation ensuring output declarations match test expectations (zero cost, no Azure resources)
 - **Deployment Tests** - Full end-to-end deployment validation with infrastructure creation and functional testing
-- **Helper Scripts** - `run-contract-tests.sh` and `run-deployment-tests.sh` for simplified test execution
+- **npm Entry Points** - Package scripts for local contract and deployment test execution
 
 **See:** [tests/README.md](tests/README.md) for complete testing documentation including setup, usage, and troubleshooting
 
@@ -359,7 +359,7 @@ When modifying this blueprint:
 
 #### Before Making Changes
 
-1. **Run contract tests** to establish baseline: `cd tests && ./run-contract-tests.sh both`
+1. **Run contract tests** to establish baseline: `npm run go-test`
 2. **Review test structure** in [tests/outputs.go](tests/outputs.go) to understand output contract
 
 #### After Making Changes
@@ -368,16 +368,16 @@ When modifying this blueprint:
    - Update struct fields in [tests/outputs.go](tests/outputs.go)
    - Update framework configurations: [terraform/outputs.tf](terraform/outputs.tf) or [bicep/main.bicep](bicep/main.bicep)
 
-2. **Run contract tests** to verify declarations: `cd tests && ./run-contract-tests.sh both`
+2. **Run contract tests** to verify declarations: `npm run go-test`
 
 3. **Update deployment tests** if changing deployment behavior:
    - Review [tests/deploy_terraform_test.go](tests/deploy_terraform_test.go) or [tests/deploy_bicep_test.go](tests/deploy_bicep_test.go)
    - Update validation logic in [tests/validation.go](tests/validation.go) if needed
 
-4. **Run deployment tests** to validate changes: `cd tests && ./run-deployment-tests.sh <framework>`
-   - Valid framework values: 'terraform', 'bicep', or 'both'
-   - Set `CLEANUP_RESOURCES=true` to auto-delete resources after testing
-   - Expected duration: 30-45 minutes for full deployment
+4. **Run deployment tests** to validate changes: `npm run go-test:deploy:<framework>`
+    - Valid framework suffixes: `terraform` or `bicep`; use `npm run go-test:deploy` for both
+    - Set `CLEANUP_RESOURCES=true` to auto-delete resources after testing
+    - Expected duration: 30-45 minutes for full deployment
 
 5. **Update documentation** if changing parameters, modules, or architecture:
    - Update this README.md with new parameters or module references

@@ -347,17 +347,16 @@ Selected blueprints include comprehensive test suites using Go and the Terratest
 
    **See:** [full-single-node-cluster/tests/deploy_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/deploy_terraform_test.go)
 
-6. **Add helper scripts**:
+6. **Add npm entry points**:
 
-   Copy and adapt `run-contract-tests.sh` and `run-deployment-tests.sh` from the reference implementation.
+   Add package scripts that run the Go contract and deployment tests for the blueprint.
 
 ### Running Tests
 
 **Contract tests** (fast, run before every commit):
 
 ```bash
-cd blueprints/my-custom-blueprint/tests
-./run-contract-tests.sh both
+npm run go-test
 ```
 
 **Deployment tests** (slow, run before PR):
@@ -367,7 +366,7 @@ cd blueprints/my-custom-blueprint/tests
 export CLEANUP_RESOURCES=true
 
 # Run tests
-./run-deployment-tests.sh terraform  # or bicep, or both
+npm run go-test:deploy:terraform
 ```
 
 **Documentation:** See [src/900-tools-utilities/904-test-utilities/README.md](https://github.com/microsoft/edge-ai/blob/main/src/900-tools-utilities/904-test-utilities/README.md) for complete testing guide and API reference

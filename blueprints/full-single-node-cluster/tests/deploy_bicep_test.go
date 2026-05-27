@@ -40,7 +40,7 @@ func TestBicepFullSingleNodeClusterDeploy(t *testing.T) {
 		deploymentName = "bicep-deployment-test"
 	}
 
-	// Get test configuration from environment variables (set in run-deployment-tests.sh)
+	// Get test configuration from environment variables.
 	resourceGroupName := os.Getenv("TEST_RESOURCE_GROUP_NAME")
 	require.NotEmpty(t, resourceGroupName, "TEST_RESOURCE_GROUP_NAME environment variable must be set")
 

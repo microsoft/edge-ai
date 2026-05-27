@@ -6,16 +6,16 @@ This directory contains comprehensive integration and contract tests for the [Fu
 
 ```bash
 # Contract tests (fast, zero-cost validation)
-./run-contract-tests.sh both
+npm run go-test
 
 # Terraform deployment tests (creates Azure resources)
-./run-deployment-tests.sh terraform
+npm run go-test:deploy:terraform
 
-# Bicep deployment tests (creates Azure resources, auto-generates password)
-./run-deployment-tests.sh bicep
+# Bicep deployment tests (creates Azure resources)
+npm run go-test:deploy:bicep
 
 # Run both deployment frameworks
-./run-deployment-tests.sh both
+npm run go-test:deploy
 ```
 
 ## Test Architecture
@@ -69,7 +69,6 @@ The test suite provides two complementary testing strategies:
 **Recommended:**
 
 - `kubectl` - Kubernetes cluster validation
-- `jq` - JSON parsing in helper scripts
 
 ## Setup
 
@@ -87,19 +86,26 @@ Run `go mod download` from the tests directory to fetch required Go packages.
 
 ### 3. Configure Azure Credentials (Deployment Tests Only)
 
-Authenticate with `az login`, optionally set subscription with `az account set`, and verify with `az account show`. The deployment scripts automatically export `ARM_SUBSCRIPTION_ID`.
-
-**See:** [run-deployment-tests.sh](run-deployment-tests.sh) for automatic credential handling
+Authenticate with `az login`, optionally set subscription with `az account set`, and verify with `az account show`. Set `ARM_SUBSCRIPTION_ID` before running deployment tests.
 
 ## Running Contract Tests
 
 Contract tests validate that all outputs defined in the `BlueprintOutputs` struct are properly declared in both Terraform and Bicep configurations. These tests run entirely offline and complete in seconds.
 
-### Using Helper Script (Recommended)
+### Using npm for Contract Tests
 
-Use `run-contract-tests.sh` with framework argument (`both`, `terraform`, or `bicep`) and optional `-v` flag for verbose output.
+Run contract tests from the repository root:
 
-**See:** [run-contract-tests.sh](run-contract-tests.sh) for script implementation
+```bash
+npm run go-test
+```
+
+Run framework-specific contract tests when you only need one implementation:
+
+```bash
+npm run go-test:contract:terraform
+npm run go-test:contract:bicep
+```
 
 ### Using Go Test Directly
 
@@ -112,21 +118,23 @@ Run `go test -v -run Contract` to execute all contract tests, or specify individ
 
 ## Running Deployment Tests
 
-### Using the Helper Script (Recommended)
+### Using npm for Deployment Tests
 
-The `run-deployment-tests.sh` script handles environment setup, auto-detection, and password generation.
+Run deployment tests from the repository root after configuring Azure credentials and required environment variables.
 
-**Usage:** Framework argument (`terraform`, `bicep`, or `both`) with optional `-v` verbose flag
-
-**See:** [run-deployment-tests.sh](run-deployment-tests.sh) for complete implementation
+```bash
+npm run go-test:deploy:terraform
+npm run go-test:deploy:bicep
+npm run go-test:deploy
+```
 
 ### Environment Variables
 
-**Auto-Detected Variables** (script handles these):
+**Required Variables**:
 
 - `ARM_SUBSCRIPTION_ID` - Azure subscription ID from `az account show`
-- `CUSTOM_LOCATIONS_OID` - Custom Locations RP object ID from Azure AD
-- `ADMIN_PASSWORD` - Auto-generated secure password (if not provided)
+- `CUSTOM_LOCATIONS_OID` - Custom Locations RP object ID from Azure AD for Bicep tests
+- `ADMIN_PASSWORD` - VM admin password for Bicep tests
 
 **Configuration Variables** (override as needed):
 
@@ -184,10 +192,10 @@ go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 2h
 - [validation.go](validation.go) - Comprehensive validation test suites for deployed infrastructure
 - [setup.go](setup.go) - Post-deployment configuration (Arc proxy, RBAC permissions)
 
-### Automation Scripts
+### Automation Entry Points
 
-- [run-contract-tests.sh](run-contract-tests.sh) - Contract test runner with dependency checks
-- [run-deployment-tests.sh](run-deployment-tests.sh) - Deployment test runner with auto-configuration
+- `npm run go-test` - Static contract tests used by CI
+- `npm run go-test:deploy:*` - Deployment test shortcuts for the local inner loop
 
 ## Test Files Reference
 
@@ -344,10 +352,10 @@ Implemented in `validateMessagingInfrastructure()` (Terraform only):
 
 ```bash
 # Step 1: Validate IaC output contract (fast, no costs)
-./run-contract-tests.sh both
+npm run go-test
 
 # Step 2: Initial deployment (resources remain for inspection)
-./run-deployment-tests.sh terraform
+npm run go-test:deploy:terraform
 
 # Step 3: Iterate on validation logic without redeploying
 export SKIP_BICEP_DEPLOYMENT=true
@@ -355,7 +363,7 @@ go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 30m
 
 # Step 4: Test cleanup functionality before final commit
 export CLEANUP_RESOURCES=true
-./run-deployment-tests.sh terraform
+npm run go-test:deploy:terraform
 ```
 
 ### CI/CD Integration
@@ -364,11 +372,11 @@ export CLEANUP_RESOURCES=true
 
 ```bash
 # Stage 1: PR validation (every commit, ~30 seconds)
-./run-contract-tests.sh both
+npm run go-test
 
 # Stage 2: Nightly integration tests (scheduled, ~90 minutes)
 export CLEANUP_RESOURCES=true
-./run-deployment-tests.sh both
+npm run go-test:deploy
 ```
 
 ### Adding New Infrastructure Outputs
@@ -385,14 +393,14 @@ export CLEANUP_RESOURCES=true
 # - Add struct field with terraform:"/" or bicep:"/" tag
 
 # Step 3: Verify contract validation passes
-./run-contract-tests.sh both
+npm run go-test
 
 # Step 4: Add validation logic (if needed)
 # - Edit validation.go
 # - Add assertions for new output values
 
 # Step 5: Run end-to-end deployment test
-./run-deployment-tests.sh terraform
+npm run go-test:deploy:terraform
 ```
 
 ### Debugging Failed Deployments
@@ -402,7 +410,7 @@ export CLEANUP_RESOURCES=true
 ```bash
 # Deploy without cleanup to inspect resources
 export CLEANUP_RESOURCES=false
-./run-deployment-tests.sh terraform
+npm run go-test:deploy:terraform
 
 # Manually inspect resources in Azure Portal or CLI
 az resource list --resource-group t6-terraform -o table
