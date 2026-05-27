@@ -403,7 +403,9 @@ impl OnnxRuntimeBackend {
             keep.push(detections[i].clone());
             for j in (i + 1)..detections.len() {
                 if suppressed[j] { continue; }
-                if Self::iou(&detections[i], &detections[j]) > nms_threshold {
+                if detections[i].class_id == detections[j].class_id
+                    && Self::iou(&detections[i], &detections[j]) > nms_threshold
+                {
                     suppressed[j] = true;
                 }
             }
@@ -574,7 +576,7 @@ impl InferenceBackend for OnnxRuntimeBackend {
             let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
 
             Ok(InferenceResult {
-                model_name: model_key.to_string(),
+                model_name: model.name.clone(),
                 model_type: "onnx".to_string(),
                 predictions,
                 confidence,
