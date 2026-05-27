@@ -2112,32 +2112,33 @@ Common settings for the components.
 
 ## Outputs
 
-| Name                    | Type     | Description                                                        |
-|:------------------------|:---------|:-------------------------------------------------------------------|
-| azureIotOperations      | `object` | Azure IoT Operations deployment details.                           |
-| assets                  | `object` | IoT asset resources.                                               |
-| clusterConnection       | `object` | Commands and information to connect to the deployed cluster.       |
-| containerRegistry       | `object` | Azure Container Registry resources.                                |
-| acrNetworkPosture       | `object` | Azure Container Registry network posture metadata.                 |
-| kubernetes              | `object` | Azure Kubernetes Service resources.                                |
-| dataStorage             | `object` | Data storage resources.                                            |
-| deploymentSummary       | `object` | Summary of the deployment configuration.                           |
-| natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.      |
-| natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name. |
-| messaging               | `object` | Cloud messaging resources.                                         |
-| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                           |
-| dataflows               | `array`  | Map of dataflow resources by name.                                 |
-| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                        |
-| aiFoundry               | `object` | Azure AI Foundry account resources.                                |
-| aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                |
-| aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                |
-| vmHost                  | `array`  | Virtual machine host resources.                                    |
-| arcConnectedCluster     | `object` | Azure Arc connected cluster resources.                             |
-| observability           | `object` | Monitoring and observability resources.                            |
-| securityIdentity        | `object` | Security and identity resources.                                   |
-| vpnGateway              | `object` | VPN Gateway configuration when enabled.                            |
-| vpnGatewayPublicIp      | `string` | VPN Gateway public IP address for client configuration.            |
-| vpnClientConnectionInfo | `object` | VPN client connection information including download URLs.         |
-| privateResolverDnsIp    | `string` | Private Resolver DNS IP address for VPN client configuration.      |
+| Name                    | Type     | Description                                                                                                                                                  |
+|:------------------------|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| azureIotOperations      | `object` | Azure IoT Operations deployment details.                                                                                                                     |
+| assets                  | `object` | IoT asset resources.                                                                                                                                         |
+| clusterConnection       | `object` | Commands and information to connect to the deployed cluster.                                                                                                 |
+| containerRegistry       | `object` | Azure Container Registry resources.                                                                                                                          |
+| acrNetworkPosture       | `object` | Azure Container Registry network posture metadata.                                                                                                           |
+| kubernetes              | `object` | Azure Kubernetes Service resources.                                                                                                                          |
+| dataStorage             | `object` | Data storage resources.                                                                                                                                      |
+| deploymentSummary       | `object` | Summary of the deployment configuration.                                                                                                                     |
+| natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.                                                                                                |
+| natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name.                                                                                           |
+| messaging               | `object` | Cloud messaging resources.                                                                                                                                   |
+| notification            | `object` | Alert notification pipeline resources. Bicep deployment does not currently wire the 045-notification component; output is stubbed for parity with Terraform. |
+| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                                                                                                                     |
+| dataflows               | `array`  | Map of dataflow resources by name.                                                                                                                           |
+| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                                                                                                                  |
+| aiFoundry               | `object` | Azure AI Foundry account resources.                                                                                                                          |
+| aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                                                                                                          |
+| aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                                                                                                          |
+| vmHost                  | `array`  | Virtual machine host resources.                                                                                                                              |
+| arcConnectedCluster     | `object` | Azure Arc connected cluster resources.                                                                                                                       |
+| observability           | `object` | Monitoring and observability resources.                                                                                                                      |
+| securityIdentity        | `object` | Security and identity resources.                                                                                                                             |
+| vpnGateway              | `object` | VPN Gateway configuration when enabled.                                                                                                                      |
+| vpnGatewayPublicIp      | `string` | VPN Gateway public IP address for client configuration.                                                                                                      |
+| vpnClientConnectionInfo | `object` | VPN client connection information including download URLs.                                                                                                   |
+| privateResolverDnsIp    | `string` | Private Resolver DNS IP address for VPN client configuration.                                                                                                |
 
 <!-- END_BICEP_DOCS -->
