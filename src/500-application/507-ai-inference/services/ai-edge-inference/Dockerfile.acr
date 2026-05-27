@@ -58,6 +58,7 @@ WORKDIR /tmp
 RUN if [ "$BACKEND" = "onnx" ]; then \
         mkdir -p /opt/onnxruntime && \
     curl --proto '=https' --tlsv1.2 -fsSL -o "onnxruntime-linux-x64-1.24.4.tgz" "https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-linux-x64-1.24.4.tgz" && \
+    echo "3a211fbea252c1e66290658f1b735b772056149f28321e71c308942cdb54b747  onnxruntime-linux-x64-1.24.4.tgz" | sha256sum -c - && \
     tar -xzf "onnxruntime-linux-x64-1.24.4.tgz" && \
     cp -r onnxruntime-linux-x64-1.24.4/* /opt/onnxruntime/ && \
     rm -rf onnxruntime-linux-x64-1.24.4.tgz onnxruntime-linux-x64-1.24.4; \
