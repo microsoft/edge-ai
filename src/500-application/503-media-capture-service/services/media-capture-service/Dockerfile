@@ -24,6 +24,10 @@ RUN rpm --import /etc/pki/rpm-gpg/MICROSOFT-RPM-GPG-KEY \
 ENV RUSTUP_HOME=/root/.rustup \
     CARGO_HOME=/root/.cargo \
     PATH=/root/.cargo/bin:/usr/local/bin:/usr/bin:/bin
+ARG CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+ARG CARGO_PROFILE_RELEASE_STRIP=none
+ENV CARGO_PROFILE_RELEASE_DEBUG=$CARGO_PROFILE_RELEASE_DEBUG
+ENV CARGO_PROFILE_RELEASE_STRIP=$CARGO_PROFILE_RELEASE_STRIP
 ARG RUST_TOOLCHAIN=1.86.0
 RUN set -eux; \
     case "$(uname -m)" in \

@@ -69,16 +69,16 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
+        uses: github/codeql-action/init@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
+        uses: github/codeql-action/autobuild@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4.35.5
+        uses: github/codeql-action/analyze@7211b7c8077ea37d8641b6271f6a365a22a5fbfa # v4.36.0
         with:
           category: "/language:${{matrix.language}}"
 
@@ -348,7 +348,11 @@ jobs:
       registryName: ${{ vars.REGISTRY_NAME || 'ghcr.io' }}
       buildConfig: |
         {
-          "dockerComposeVersion": "2.24.5"
+          "dockerComposeVersion": "2.24.5",
+          "dockerBuildArgs": {
+            "CARGO_PROFILE_RELEASE_DEBUG": "line-tables-only",
+            "CARGO_PROFILE_RELEASE_STRIP": "none"
+          }
         }
       securityConfig: |
         {
