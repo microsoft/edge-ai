@@ -96,6 +96,26 @@ Describe 'Get-BicepValidationFile' -Tag 'Unit' {
         $result | Should -Not -Contain 'blueprints/full-single-node-cluster/bicep/main.bicep'
         $result | Should -HaveCount 1
     }
+
+    It 'emits a GitHub annotation for missing folders when Platform is github' {
+        $json = @{
+            missing = @{ folderName = 'src/does-not-exist/bicep' }
+        } | ConvertTo-Json -Depth 4 -Compress
+
+        $output = Get-BicepValidationFile -RepoRoot $script:RepoRoot -FullValidation $false -BicepFoldersJson $json -Platform 'github'
+
+        $output | Should -Contain '::warning::Bicep folder does not exist: src/does-not-exist/bicep'
+    }
+
+    It 'does not emit a GitHub annotation for missing folders when Platform is generic' {
+        $json = @{
+            missing = @{ folderName = 'src/does-not-exist/bicep' }
+        } | ConvertTo-Json -Depth 4 -Compress
+
+        $output = Get-BicepValidationFile -RepoRoot $script:RepoRoot -FullValidation $false -BicepFoldersJson $json -Platform 'generic' -WarningAction SilentlyContinue
+
+        $output | Should -Not -Contain '::warning::Bicep folder does not exist: src/does-not-exist/bicep'
+    }
 }
 
 Describe 'Get-BicepValidationCommand' -Tag 'Unit' {

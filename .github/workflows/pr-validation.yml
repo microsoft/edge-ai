@@ -122,7 +122,9 @@ jobs:
   bicep-lint:
     name: Bicep Lint
     needs: [matrix-changes]
-    if: github.event_name != 'pull_request' || needs.matrix-changes.outputs.changesInBicepInstall == 'true' || needs.matrix-changes.outputs.bicepFullValidationRequired == 'true'
+    # changesInBicepInstall already implies full validation: Detect-Folder-Changes.ps1 sets
+    # has_changes = true whenever full_validation_required is true, so no separate clause is needed.
+    if: github.event_name != 'pull_request' || needs.matrix-changes.outputs.changesInBicepInstall == 'true'
     permissions:
       contents: read
     uses: ./.github/workflows/bicep-lint.yml
