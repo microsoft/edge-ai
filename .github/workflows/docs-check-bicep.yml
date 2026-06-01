@@ -67,14 +67,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0  # Full git history for comparison
-
-      - name: Setup PowerShell
-        run: |
-          echo "PowerShell Version: $($PSVersionTable.PSVersion)"
-          echo "PowerShell Edition: $($PSVersionTable.PSEdition)"
-        shell: pwsh
 
       - name: Setup Azure CLI with Bicep
         run: |
@@ -104,27 +96,29 @@ jobs:
           az bicep version
         shell: bash
 
-      - name: Check for changes in Bicep documentation
-        id: docs-check-bicep
-        run: |
-          # Run the bicep-docs-check.sh script and capture its output
-          docs_changed=$(tail -n 1 $(pwd)/scripts/bicep-docs-check.sh)
-
-          # Check if there are any changes in the Bicep documentation
-          if [ "$docs_changed" = true ]; then
-            echo "Updates are required for Bicep documentation."
-            echo "Please go into the project's scripts directory, run the update-all-bicep-docs.sh script and commit changes."
-
-            echo "::warning::Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
-
-            if [[ "${{ env.BREAK_BUILD }}" == "true" ]]; then
-              echo "::error::Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
-              exit 1
-            fi
-          else
-            echo "No updates detected in the Bicep documentation."
-          fi
+      - name: Check Bicep docs drift
+        id: bicep_docs_drift
         shell: bash
+        run: |
+          set -euo pipefail
+          # bicep-docs-check.sh writes progress to stdout and ends with `echo $docs_changed` (true|false)
+          docs_changed="$(./scripts/bicep-docs-check.sh | tail -n 1)"
+          echo "changed=${docs_changed}" >> "$GITHUB_OUTPUT"
+
+      - name: Report Bicep docs drift
+        if: steps.bicep_docs_drift.outputs.changed == 'true'
+        shell: bash
+        run: |
+          echo "Updates are required for Bicep documentation."
+          echo "Please go into the project's scripts directory, run the update-all-bicep-docs.sh script and commit changes."
+          echo "::warning::Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
+
+      - name: Fail when Bicep docs are out of date
+        if: steps.bicep_docs_drift.outputs.changed == 'true' && env.BREAK_BUILD == 'true'
+        shell: bash
+        run: |
+          echo "::error::Bicep auto-gen documentation needs to be updated. Please run the scripts/update-all-bicep-docs.sh script and commit the changes."
+          exit 1
 
       - name: Check for language path segments in links
         id: link-lang-check
