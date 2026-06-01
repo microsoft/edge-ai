@@ -17,8 +17,8 @@
     "@azure/functions": "^4.6.0"
   },
   "devDependencies": {
-    "vitest": "^3.0.0",
-    "@vitest/coverage-v8": "^3.0.0",
+    "vitest": "^4.1.8",
+    "@vitest/coverage-v8": "^4.1.8",
     "@jazzer.js/core": "^2.0.0"
   },
   "overrides": {
