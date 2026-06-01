@@ -13,7 +13,6 @@ keywords:
   - terraform testing
   - bicep testing
   - pester
-  - terratest
   - checkov
   - security testing
 ---
@@ -85,22 +84,22 @@ tflint --config=.tflint.hcl
 tflint main.tf variables.tf
 ```
 
-#### Testing Framework
+#### Native Terraform Tests
 
-Use Terratest for integration testing:
+Use Terraform's native test framework for component tests. Tests live next to the module under `terraform/tests/` and use `.tftest.hcl` files with `run` blocks, `command = plan`, and `assert` checks.
 
 ```bash
-# Navigate to test directory
-cd src/000-cloud/010-security-identity/tests
+# Navigate to the Terraform module
+cd src/000-cloud/010-security-identity/terraform
 
-# Run Go tests
-go test -v -timeout 30m
+# Initialize providers and modules
+terraform init
 
-# Run specific test
-go test -v -run TestTerraformSecurityIdentity
+# Run the native Terraform tests in terraform/tests/*.tftest.hcl
+terraform test
 
-# Run tests with verbose output
-go test -v -timeout 30m ./...
+# Run tests with verbose output when debugging
+terraform test -verbose
 ```
 
 ### Bicep Testing
@@ -194,8 +193,7 @@ npm run cspell
 # Check specific file
 npx cspell docs/contributor/testing-validation.md
 
-# Add words to project dictionary
-echo "terratest" >> .cspell-dictionary.txt
+# Add project-specific words to .cspell-dictionary.txt when needed
 ```
 
 ## Pre-Commit Validation
@@ -251,13 +249,11 @@ src/000-cloud/010-security-identity/
 ├── terraform/
 │   ├── main.tf
 │   ├── variables.tf
-│   └── outputs.tf
-├── tests/
-│   ├── go.mod
-│   ├── go.sum
-│   ├── terraform_test.go
-│   └── fixtures/
-│       └── test-parameters.tfvars
+│   ├── outputs.tf
+│   └── tests/
+│       ├── iot-ops-cloud-reqs.tftest.hcl
+│       └── setup/
+│           └── main.tf
 └── ci/
     └── terraform/
         ├── main.tf
@@ -266,51 +262,53 @@ src/000-cloud/010-security-identity/
 
 ### Writing Component Tests
 
-Create comprehensive test coverage:
+Create comprehensive native Terraform test coverage:
 
-```go
-// Example: tests/terraform_test.go
-package test
+```hcl
+# Example: terraform/tests/iot-ops-cloud-reqs.tftest.hcl
+provider "azurerm" {
+  storage_use_azuread = true
+  features {}
+}
 
-import (
-    "testing"
-    "github.com/gruntwork-io/terratest/modules/terraform"
-    "github.com/stretchr/testify/assert"
-)
+run "setup_tests" {
+  module {
+    source = "./tests/setup"
+  }
+}
 
-func TestTerraformSecurityIdentity(t *testing.T) {
-    t.Parallel()
+run "create_default_configuration" {
+  command = plan
 
-    terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-        TerraformDir: "../terraform",
-        VarFiles:     []string{"fixtures/test-parameters.tfvars"},
-    })
+  variables {
+    resource_prefix    = run.setup_tests.resource_prefix
+    environment        = "test"
+    location           = run.setup_tests.location
+    aio_resource_group = run.setup_tests.aio_resource_group
+  }
 
-    defer terraform.Destroy(t, terraformOptions)
-
-    // Apply the Terraform configuration
-    terraform.InitAndApply(t, terraformOptions)
-
-    // Validate outputs
-    keyVaultName := terraform.Output(t, terraformOptions, "key_vault_name")
-    assert.NotEmpty(t, keyVaultName)
-
-    // Additional validations
-    resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-    assert.Contains(t, resourceGroupName, "test")
+  assert {
+    condition     = length(module.key_vault) == 1
+    error_message = "Key vault should be created with default configuration"
+  }
 }
 ```
 
 ### Test Data Management
 
-Use fixture files for test parameters:
+Use `variables` blocks inside `.tftest.hcl` files for test parameters. Shared setup can be placed in a helper module under `terraform/tests/setup`.
 
 ```hcl
-# tests/fixtures/test-parameters.tfvars
-prefix = "test"
-environment = "dev"
-location = "East US"
-enable_monitoring = true
+# terraform/tests/base.tftest.hcl
+run "create_base_configuration" {
+  command = plan
+
+  variables {
+    resource_prefix = "test"
+    environment     = "dev"
+    location        = "eastus2"
+  }
+}
 ```
 
 ## Blueprint Testing
