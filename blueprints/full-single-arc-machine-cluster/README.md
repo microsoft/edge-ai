@@ -87,7 +87,7 @@ The Arc-specific inputs in this blueprint:
 | `arc_machine_resource_group_name`      | Resource group name containing the Arc-enabled machine; when null, defaults to the blueprint resource group  | `null`   |
 | `cluster_server_host_machine_username` | Linux user on the Arc machine that owns the kubeconfig                                                       | Required |
 
-For the full list of cloud and AIO inputs (private endpoints, AKS, Azure ML, AI Foundry, dataflow graphs, schema registry, and connectors), see [variables.tf](terraform/variables.tf). The non-Arc surface mirrors `full-single-node-cluster` and accepts the same `*.tfvars.example` files included in this blueprint's `terraform/` directory.
+For the full list of cloud and AIO inputs (private endpoints, AKS, Azure ML, AI Foundry, dataflow graphs, schema registry, and connectors), see [variables.tf](terraform/variables.tf). The [terraform/arc.tfvars.example](terraform/arc.tfvars.example) file covers the Arc-machine inputs and core features (AIO, ACR registry endpoint, resource sync rules, OPC UA simulator). To enable optional add-ons (dataflow graphs, AI Foundry, Preview Connectors, leak detection), copy the matching `*.tfvars.example` files from `full-single-node-cluster` blueprint `terraform/` directory.
 
 ## Deploy Blueprint
 

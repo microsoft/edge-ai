@@ -1,0 +1,90 @@
+/*
+ * Full Single Node Arc Cluster - Core Configuration
+ *
+ * Deploys Azure IoT Operations on a customer-supplied Azure Arc-enabled Linux
+ * machine. Copy this file to a *.tfvars file and customize the values, then run:
+ *
+ *   terraform apply -var-file="arc.tfvars"
+ *
+ * This example enables the core edge-to-cloud features (AIO, OPC UA simulator,
+ * resource sync rules). Optional add-ons (dataflow graphs, AI Foundry, Preview
+ * Connectors, leak detection) mirror the full-single-node-cluster blueprint;
+ * copy the matching *.tfvars.example files from that blueprint to enable them.
+ */
+
+/*
+ * Core Parameters - Required
+ */
+environment     = "dev"
+resource_prefix = "myedge"
+location        = "eastus2"
+
+/*
+ * Instance Identifier - Optional
+ *
+ * Distinguishes multiple deployments that share the same resource_prefix.
+ */
+instance = "001"
+
+/*
+ * Arc Machine Configuration - Required
+ *
+ * Identifies the existing Azure Arc-enabled Linux host that becomes the cluster.
+ * - arc_machine_name: name of the Arc machine as registered in Azure
+ * - arc_machine_resource_group_name: when null, defaults to the blueprint resource group
+ * - cluster_server_host_machine_username: Linux user that owns the K3s kubeconfig
+ */
+arc_machine_name                     = "edge-server-01"
+arc_machine_resource_group_name      = null
+cluster_server_host_machine_username = "azureuser"
+
+/*
+ * Cluster Onboarding - Required
+ *
+ * - custom_locations_oid: Custom Locations enterprise application object ID
+ * - should_get_custom_locations_oid: set true to resolve the OID via the azuread provider
+ * - should_add_current_user_cluster_admin: grant the signed-in user cluster-admin
+ */
+custom_locations_oid                  = "00000000-0000-0000-0000-000000000000"
+should_get_custom_locations_oid       = false
+should_add_current_user_cluster_admin = true
+
+/*
+ * Azure IoT Operations
+ *
+ * Deploys AIO and its dependent edge components. Set to false to deploy an
+ * Arc-connected cluster with extensions and observability only.
+ */
+should_deploy_aio = true
+
+/*
+ * Resource Sync Rules
+ *
+ * Syncs edge resources (assets, asset endpoints) back to Azure Resource Manager.
+ */
+should_deploy_resource_sync_rules = true
+
+/*
+ * OPC UA Simulator
+ *
+ * Deploys an OPC UA simulator to the cluster for testing asset discovery and
+ * data ingestion. Recommended for development and demonstration environments.
+ */
+should_enable_opc_ua_simulator = true
+
+/*
+ * ACR Registry Endpoint
+ *
+ * Includes the deployed Azure Container Registry as an AIO registry endpoint
+ * using System-Assigned Managed Identity authentication. Enables pulling
+ * container images (such as WASM operators) from the blueprint's ACR.
+ */
+should_include_acr_registry_endpoint = true
+
+/*
+ * Anonymous MQTT Broker Listener - Optional
+ *
+ * WARNING: Creates an insecure MQTT listener without authentication. Only enable
+ * in isolated development or test environments.
+ */
+should_create_anonymous_broker_listener = false
