@@ -20,7 +20,10 @@ estimated_reading_time: 5
 
 ## Full Single Node Arc Cluster Blueprint
 
-This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a customer-supplied Azure Arc-enabled Linux machine. Unlike the [full-single-node-cluster](../full-single-node-cluster/README.md) blueprint, this variant does not provision an Azure VM. Instead, it expects an Arc-onboarded Linux host to already exist, installs K3s in-place via `azurerm_arc_machine_extension`, and uses the machine's system-assigned managed identity for cluster onboarding. Set `should_deploy_aio = false` to deploy an Arc-connected cluster without AIO.
+This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a customer-supplied Azure Arc-enabled Linux machine.
+Unlike the [full-single-node-cluster](../full-single-node-cluster/README.md) blueprint, this variant does not provision an Azure VM.
+Instead, it expects an Arc-onboarded Linux host to already exist, installs K3s in-place via `azurerm_arc_machine_extension`, and uses the machine's system-assigned managed identity for cluster onboarding.
+Set `should_deploy_aio = false` to deploy an Arc-connected cluster without AIO.
 
 Please follow general blueprint recommendations from the blueprints [README.md](../README.md).
 
@@ -62,18 +65,18 @@ This blueprint consists of the following key components:
 
 ### Key Modules Used in Terraform
 
-| Module                    | Purpose                                                               | Source Location                                          |
-|---------------------------|-----------------------------------------------------------------------|----------------------------------------------------------|
-| `cloud_resource_group`    | Creates resource groups                                               | `../../../src/000-cloud/000-resource-group/terraform`    |
+| Module                    | Purpose                                                                | Source Location                                          |
+|---------------------------|------------------------------------------------------------------------|----------------------------------------------------------|
+| `cloud_resource_group`    | Creates resource groups                                                | `../../../src/000-cloud/000-resource-group/terraform`    |
 | `cloud_security_identity` | Handles identity and security resources (`onboard_identity_type=skip`) | `../../../src/000-cloud/010-security-identity/terraform` |
-| `cloud_observability`     | Sets up monitoring infrastructure                                     | `../../../src/000-cloud/020-observability/terraform`     |
-| `cloud_data`              | Creates data storage resources                                        | `../../../src/000-cloud/030-data/terraform`              |
-| `cloud_messaging`         | Sets up messaging infrastructure                                      | `../../../src/000-cloud/040-messaging/terraform`         |
-| `cloud_acr`               | Azure Container Registry                                              | `../../../src/000-cloud/060-acr/terraform`               |
-| `edge_cncf_cluster`       | Installs K3s on the Arc machine and registers Arc cluster             | `../../../src/100-edge/100-cncf-cluster/terraform`       |
-| `edge_iot_ops`            | Installs Azure IoT Operations                                         | `../../../src/100-edge/110-iot-ops/terraform`            |
-| `edge_observability`      | Sets up edge monitoring                                               | `../../../src/100-edge/120-observability/terraform`      |
-| `edge_messaging`          | Deploys edge messaging components                                     | `../../../src/100-edge/130-messaging/terraform`          |
+| `cloud_observability`     | Sets up monitoring infrastructure                                      | `../../../src/000-cloud/020-observability/terraform`     |
+| `cloud_data`              | Creates data storage resources                                         | `../../../src/000-cloud/030-data/terraform`              |
+| `cloud_messaging`         | Sets up messaging infrastructure                                       | `../../../src/000-cloud/040-messaging/terraform`         |
+| `cloud_acr`               | Azure Container Registry                                               | `../../../src/000-cloud/060-acr/terraform`               |
+| `edge_cncf_cluster`       | Installs K3s on the Arc machine and registers Arc cluster              | `../../../src/100-edge/100-cncf-cluster/terraform`       |
+| `edge_iot_ops`            | Installs Azure IoT Operations                                          | `../../../src/100-edge/110-iot-ops/terraform`            |
+| `edge_observability`      | Sets up edge monitoring                                                | `../../../src/100-edge/120-observability/terraform`      |
+| `edge_messaging`          | Deploys edge messaging components                                      | `../../../src/100-edge/130-messaging/terraform`          |
 
 This blueprint does **not** deploy `cloud_vm_host`; the Arc machine you supply is the cluster host.
 
@@ -81,13 +84,15 @@ This blueprint does **not** deploy `cloud_vm_host`; the Arc machine you supply i
 
 The Arc-specific inputs in this blueprint:
 
-| Variable                               | Description                                                                                                  | Default  |
-|----------------------------------------|--------------------------------------------------------------------------------------------------------------|----------|
-| `arc_machine_name`                     | Name of the existing Azure Arc-enabled machine                                                               | Required |
-| `arc_machine_resource_group_name`      | Resource group name containing the Arc-enabled machine; when null, defaults to the blueprint resource group  | `null`   |
-| `cluster_server_host_machine_username` | Linux user on the Arc machine that owns the kubeconfig                                                       | Required |
+| Variable                               | Description                                                                                                 | Default  |
+|----------------------------------------|-------------------------------------------------------------------------------------------------------------|----------|
+| `arc_machine_name`                     | Name of the existing Azure Arc-enabled machine                                                              | Required |
+| `arc_machine_resource_group_name`      | Resource group name containing the Arc-enabled machine; when null, defaults to the blueprint resource group | `null`   |
+| `cluster_server_host_machine_username` | Linux user on the Arc machine that owns the kubeconfig                                                      | Required |
 
-For the full list of cloud and AIO inputs (private endpoints, AKS, Azure ML, AI Foundry, dataflow graphs, schema registry, and connectors), see [variables.tf](terraform/variables.tf). The [terraform/arc.tfvars.example](terraform/arc.tfvars.example) file covers the Arc-machine inputs and core features (AIO, ACR registry endpoint, resource sync rules, OPC UA simulator). To enable optional add-ons (dataflow graphs, AI Foundry, Preview Connectors, leak detection), copy the matching `*.tfvars.example` files from `full-single-node-cluster` blueprint `terraform/` directory.
+For the full list of cloud and AIO inputs (private endpoints, AKS, Azure ML, AI Foundry, dataflow graphs, schema registry, and connectors), see [variables.tf](terraform/variables.tf).
+The [terraform/arc.tfvars.example](terraform/arc.tfvars.example) file covers the Arc-machine inputs and core features (AIO, ACR registry endpoint, resource sync rules, OPC UA simulator).
+To enable optional add-ons (dataflow graphs, AI Foundry, Preview Connectors, leak detection), copy the matching `*.tfvars.example` files from `full-single-node-cluster` blueprint `terraform/` directory.
 
 ## Deploy Blueprint
 
