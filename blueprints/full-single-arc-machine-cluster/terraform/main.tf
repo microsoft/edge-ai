@@ -1,0 +1,559 @@
+/**
+ * # Full Single Node Arc Cluster Blueprint
+ *
+ * This blueprint deploys a complete Azure IoT Operations environment with all cloud and edge components
+ * onto a customer-supplied Azure Arc-enabled Linux machine for a single-node deployment, including
+ * observability, messaging, and data management. The Arc machine's system-assigned managed identity
+ * performs cluster onboarding instead of a user-assigned managed identity.
+ */
+
+data "azurerm_arc_machine" "arc_machine" {
+  name                = var.arc_machine_name
+  resource_group_name = coalesce(var.arc_machine_resource_group_name, module.cloud_resource_group.resource_group.name)
+}
+
+locals {
+  alert_eventhub_name             = coalesce(var.alert_eventhub_name, "evh-${var.resource_prefix}-alerts-${var.environment}-${var.instance}")
+  eventhub_namespace_name         = "evhns-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
+  default_outbound_access_enabled = var.should_enable_managed_outbound_access == false
+
+  alert_eventhub_config = var.should_create_azure_functions ? {
+    (local.alert_eventhub_name) = {}
+  } : {}
+
+  eventhubs = merge(local.alert_eventhub_config, var.eventhubs)
+
+  function_app_computed_settings = var.should_create_azure_functions ? {
+    "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
+    "EventHubConnection__credential"              = "managedidentity"
+    "EventHubConnection__clientId"                = module.cloud_messaging.function_identity.client_id
+    "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
+    "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
+  } : {}
+
+  acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
+    name                           = "acr-${var.resource_prefix}"
+    host                           = "${module.cloud_acr.acr.name}.azurecr.io"
+    acr_resource_id                = module.cloud_acr.acr.id
+    should_assign_acr_pull_for_aio = true
+    authentication = {
+      method                                    = "SystemAssignedManagedIdentity"
+      system_assigned_managed_identity_settings = null
+      user_assigned_managed_identity_settings   = null
+      artifact_pull_secret_settings             = null
+    }
+  }] : []
+
+  combined_registry_endpoints = concat(var.registry_endpoints, local.acr_registry_endpoint)
+}
+
+module "cloud_resource_group" {
+  source = "../../../src/000-cloud/000-resource-group/terraform"
+
+  tags            = merge(var.tags, { blueprint = "full-single-arc-machine-cluster" })
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  // Optional parameters for using an existing resource group
+  use_existing_resource_group = var.use_existing_resource_group
+  resource_group_name         = var.resource_group_name
+}
+
+module "cloud_networking" {
+  source = "../../../src/000-cloud/050-networking/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  # Private Resolver configuration
+  should_enable_private_resolver  = var.should_enable_private_resolver
+  resolver_subnet_address_prefix  = var.resolver_subnet_address_prefix
+  default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
+
+  nat_gateway_idle_timeout_minutes = var.nat_gateway_idle_timeout_minutes
+  nat_gateway_public_ip_count      = var.nat_gateway_public_ip_count
+  nat_gateway_zones                = var.nat_gateway_zones
+}
+
+module "cloud_security_identity" {
+  source = "../../../src/000-cloud/010-security-identity/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  aio_resource_group = module.cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+  should_enable_public_network_access      = var.should_enable_key_vault_public_network_access
+  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
+  should_create_aks_identity               = var.should_create_aks_identity
+  should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
+  should_create_secret_sync_identity       = var.should_deploy_aio
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
+
+  // Arc machine system-assigned identity replaces the UAMI for onboarding
+  onboard_identity_type = "skip"
+}
+
+module "cloud_vpn_gateway" {
+  count  = var.should_enable_vpn_gateway ? 1 : 0
+  source = "../../../src/000-cloud/055-vpn-gateway/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  aio_resource_group                  = module.cloud_resource_group.resource_group
+  virtual_network                     = module.cloud_networking.virtual_network
+  key_vault                           = var.should_enable_private_endpoints ? module.cloud_security_identity.key_vault : null
+  vpn_gateway_config                  = var.vpn_gateway_config
+  vpn_gateway_subnet_address_prefixes = var.vpn_gateway_subnet_address_prefixes
+  should_use_azure_ad_auth            = var.vpn_gateway_should_use_azure_ad_auth
+  should_generate_ca                  = var.vpn_gateway_should_generate_ca
+  existing_certificate_name           = var.existing_certificate_name
+  certificate_validity_days           = var.certificate_validity_days
+  certificate_subject                 = var.certificate_subject
+  default_outbound_access_enabled     = local.default_outbound_access_enabled
+  vpn_site_connections                = var.vpn_site_connections
+  vpn_site_default_ipsec_policy       = var.vpn_site_default_ipsec_policy
+  vpn_site_shared_keys                = var.vpn_site_shared_keys
+}
+
+module "cloud_observability" {
+  source = "../../../src/000-cloud/020-observability/terraform"
+
+  tags            = merge(var.tags, { blueprint = "full-single-arc-machine-cluster" })
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  azmon_resource_group = module.cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_enable_private_endpoints = var.should_enable_private_endpoints
+  private_endpoint_subnet_id      = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  virtual_network_id              = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+}
+
+module "cloud_data" {
+  source = "../../../src/000-cloud/030-data/terraform"
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  # Private endpoint configuration
+  should_enable_private_endpoint      = var.should_enable_private_endpoints
+  private_endpoint_subnet_id          = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  virtual_network_id                  = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+  should_enable_public_network_access = var.should_enable_storage_public_network_access
+  storage_account_is_hns_enabled      = var.storage_account_is_hns_enabled && !var.should_deploy_azureml
+
+  should_create_blob_dns_zone = !var.should_enable_private_endpoints
+  blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null
+
+  // AIO-specific data resources
+  should_create_schema_registry = var.should_deploy_aio
+  should_create_adr_namespace   = var.should_deploy_aio
+
+  schemas = var.schemas
+}
+
+module "cloud_postgresql" {
+  count  = var.should_deploy_postgresql ? 1 : 0
+  source = "../../../src/000-cloud/035-postgresql/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group  = module.cloud_resource_group.resource_group
+  virtual_network = module.cloud_networking.virtual_network
+  key_vault       = module.cloud_security_identity.key_vault
+
+  delegated_subnet_id = var.postgresql_delegated_subnet_id
+
+  admin_username                        = var.postgresql_admin_username
+  admin_password                        = var.postgresql_admin_password
+  admin_password_wo_version             = var.postgresql_admin_password_wo_version
+  should_generate_admin_password        = var.postgresql_should_generate_admin_password
+  should_store_credentials_in_key_vault = var.postgresql_should_store_credentials_in_key_vault
+
+  postgres_version                   = var.postgresql_version
+  sku_name                           = var.postgresql_sku_name
+  storage_mb                         = var.postgresql_storage_mb
+  should_enable_extensions           = var.postgresql_should_enable_extensions
+  should_enable_timescaledb          = var.postgresql_should_enable_timescaledb
+  should_enable_geo_redundant_backup = var.postgresql_should_enable_geo_redundant_backup
+  databases                          = var.postgresql_databases
+}
+
+module "cloud_managed_redis" {
+  count  = var.should_deploy_redis ? 1 : 0
+  source = "../../../src/000-cloud/036-managed-redis/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  // Private endpoint configuration
+  should_enable_private_endpoint = var.should_enable_private_endpoints
+  private_endpoint_subnet = var.should_enable_private_endpoints ? {
+    id = module.cloud_networking.subnet_id
+  } : null
+  virtual_network = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network : null
+
+  // Entra ID authentication (default)
+  access_keys_authentication_enabled = false
+  managed_identity                   = module.cloud_security_identity.aio_identity
+
+  // Redis configuration
+  sku_name                        = var.redis_sku_name
+  should_enable_high_availability = var.redis_should_enable_high_availability
+  clustering_policy               = var.redis_clustering_policy
+}
+
+module "cloud_messaging" {
+  source = "../../../src/000-cloud/040-messaging/terraform"
+
+  tags            = merge(var.tags, { blueprint = "full-single-arc-machine-cluster" })
+  resource_group  = module.cloud_resource_group.resource_group
+  aio_identity    = module.cloud_security_identity.aio_identity
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  should_create_azure_functions = var.should_create_azure_functions
+
+  // Event Hub configuration with alerts hub merged when Functions are enabled
+  eventhubs = local.eventhubs
+
+  function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
+
+  log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings = true
+}
+
+module "cloud_notification" {
+  count  = var.should_deploy_notification ? 1 : 0
+  source = "../../../src/000-cloud/045-notification/terraform"
+
+  depends_on = [module.cloud_messaging]
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  eventhub_namespace = module.cloud_messaging.eventhub_namespace
+  eventhub_name      = local.alert_eventhub_name
+  storage_account    = module.cloud_data.storage_account
+
+  event_schema                  = var.notification_event_schema
+  notification_message_template = var.notification_message_template
+  closure_message_template      = var.closure_message_template
+  partition_key_field           = var.notification_partition_key_field
+  teams_recipient_id            = var.teams_recipient_id
+  teams_group_id                = var.teams_group_id
+  teams_post_location           = var.teams_post_location
+}
+
+module "cloud_acr" {
+  source = "../../../src/000-cloud/060-acr/terraform"
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  network_security_group = module.cloud_networking.network_security_group
+  virtual_network        = module.cloud_networking.virtual_network
+  nat_gateway            = module.cloud_networking.nat_gateway
+
+  should_create_acr_private_endpoint = var.should_enable_private_endpoints
+  default_outbound_access_enabled    = local.default_outbound_access_enabled
+  should_enable_nat_gateway          = var.should_enable_managed_outbound_access
+  sku                                = var.acr_sku
+  allow_trusted_services             = var.acr_allow_trusted_services
+  allowed_public_ip_ranges           = var.acr_allowed_public_ip_ranges
+  public_network_access_enabled      = var.acr_public_network_access_enabled
+  should_enable_data_endpoints       = var.acr_data_endpoint_enabled
+  should_enable_export_policy        = var.acr_export_policy_enabled
+  log_analytics_workspace_id         = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings  = true
+}
+
+module "cloud_kubernetes" {
+  count = var.should_create_aks ? 1 : 0
+
+  source = "../../../src/000-cloud/070-kubernetes/terraform"
+
+  depends_on = [module.cloud_networking, module.cloud_acr, module.cloud_observability]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group    = module.cloud_resource_group.resource_group
+  should_create_aks = true
+
+  network_security_group = module.cloud_networking.network_security_group
+  virtual_network        = module.cloud_networking.virtual_network
+  nat_gateway            = module.cloud_networking.nat_gateway
+
+  acr                          = module.cloud_acr.acr
+  log_analytics_workspace      = module.cloud_observability.log_analytics_workspace
+  metrics_data_collection_rule = module.cloud_observability.metrics_data_collection_rule
+  logs_data_collection_rule    = module.cloud_observability.logs_data_collection_rule
+  aks_identity                 = module.cloud_security_identity.aks_identity
+
+  default_outbound_access_enabled = local.default_outbound_access_enabled
+  should_enable_nat_gateway       = var.should_enable_managed_outbound_access
+
+  node_count                      = var.node_count
+  node_vm_size                    = var.node_vm_size
+  node_pools                      = var.node_pools
+  should_enable_workload_identity = var.should_enable_workload_identity
+  should_enable_oidc_issuer       = var.should_enable_oidc_issuer
+
+  # Private cluster configuration
+  should_enable_private_cluster             = var.aks_should_enable_private_cluster
+  should_enable_private_cluster_public_fqdn = var.aks_should_enable_private_cluster_public_fqdn
+  should_enable_private_endpoint            = var.should_enable_private_endpoints
+  private_endpoint_subnet_id                = module.cloud_networking.subnet_id
+}
+
+module "cloud_azureml" {
+  count = var.should_deploy_azureml ? 1 : 0
+
+  source = "../../../src/000-cloud/080-azureml/terraform"
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group         = module.cloud_resource_group.resource_group
+  application_insights   = try(module.cloud_observability.application_insights, null)
+  key_vault              = try(module.cloud_security_identity.key_vault, null)
+  storage_account        = try(module.cloud_data.storage_account, null)
+  acr                    = try(module.cloud_acr.acr, null)
+  network_security_group = try(module.cloud_networking.network_security_group, null)
+  virtual_network        = try(module.cloud_networking.virtual_network, null)
+  nat_gateway            = try(module.cloud_networking.nat_gateway, null)
+  kubernetes             = try(module.cloud_kubernetes[0].aks, null)
+
+  default_outbound_access_enabled         = local.default_outbound_access_enabled
+  should_associate_network_security_group = true
+  should_enable_nat_gateway               = var.should_enable_managed_outbound_access
+  should_enable_public_network_access     = var.azureml_should_enable_public_network_access
+  should_create_compute_cluster           = var.azureml_should_create_compute_cluster
+  compute_cluster_node_public_ip_enabled  = !var.azureml_should_enable_private_endpoint
+  ml_workload_identity                    = try(module.cloud_security_identity.ml_workload_identity, null)
+  ml_workload_subjects                    = var.azureml_ml_workload_subjects
+
+  should_assign_ml_workload_identity_roles = var.azureml_should_create_ml_workload_identity
+
+  // Private endpoint configuration
+  should_enable_private_endpoint               = var.azureml_should_enable_private_endpoint
+  private_endpoint_subnet_id                   = var.azureml_should_enable_private_endpoint ? module.cloud_networking.subnet_id : null
+  should_deploy_registry                       = var.azureml_should_deploy_registry
+  registry_should_enable_public_network_access = var.azureml_registry_should_enable_public_network_access
+
+  // Registry dependencies
+  registry_storage_account = try(module.cloud_data.storage_account, null)
+  registry_acr             = try(module.cloud_acr.acr, null)
+}
+
+module "cloud_ai_foundry" {
+  count  = var.should_deploy_ai_foundry ? 1 : 0
+  source = "../../../src/000-cloud/085-ai-foundry/terraform"
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  location        = var.location
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  sku                                 = var.ai_foundry_sku
+  should_enable_public_network_access = var.ai_foundry_should_enable_public_network_access
+  should_enable_local_auth            = var.ai_foundry_should_enable_local_auth
+  should_enable_private_endpoint      = var.ai_foundry_should_enable_private_endpoint
+  private_endpoint_subnet_id          = var.ai_foundry_should_enable_private_endpoint ? try(module.cloud_networking.subnet_id, null) : null
+  private_dns_zone_ids                = var.ai_foundry_should_enable_private_endpoint ? var.ai_foundry_private_dns_zone_ids : []
+
+  ai_projects       = var.ai_foundry_projects
+  rai_policies      = var.ai_foundry_rai_policies
+  model_deployments = var.ai_foundry_model_deployments
+
+  tags = var.tags
+}
+
+module "edge_cncf_cluster" {
+  source = "../../../src/100-edge/100-cncf-cluster/terraform"
+
+  depends_on = [module.cloud_security_identity]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group               = module.cloud_resource_group.resource_group
+  arc_onboarding_principal_ids = [data.azurerm_arc_machine.arc_machine.identity[0].principal_id]
+  cluster_server_machine       = data.azurerm_arc_machine.arc_machine
+
+  should_deploy_arc_machines            = true
+  should_get_custom_locations_oid       = var.should_get_custom_locations_oid
+  should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
+  cluster_admin_group_oid               = var.cluster_admin_group_oid
+  custom_locations_oid                  = var.custom_locations_oid
+
+  cluster_server_host_machine_username = var.cluster_server_host_machine_username
+
+  // Key Vault for script retrieval
+  key_vault = module.cloud_security_identity.key_vault
+}
+
+module "edge_arc_extensions" {
+  source = "../../../src/100-edge/109-arc-extensions/terraform"
+
+  depends_on = [module.edge_cncf_cluster]
+
+  arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
+}
+
+module "edge_iot_ops" {
+  count  = var.should_deploy_aio ? 1 : 0
+  source = "../../../src/100-edge/110-iot-ops/terraform"
+
+  depends_on = [module.edge_arc_extensions]
+
+  adr_schema_registry   = module.cloud_data.schema_registry
+  adr_namespace         = module.cloud_data.adr_namespace
+  resource_group        = module.cloud_resource_group.resource_group
+  aio_identity          = module.cloud_security_identity.aio_identity
+  arc_connected_cluster = module.edge_cncf_cluster.arc_connected_cluster
+  secret_sync_key_vault = module.cloud_security_identity.key_vault
+  secret_sync_identity  = module.cloud_security_identity.secret_sync_identity
+
+  should_deploy_resource_sync_rules       = var.should_deploy_resource_sync_rules
+  should_create_anonymous_broker_listener = var.should_create_anonymous_broker_listener
+
+  aio_features                       = var.aio_features
+  enable_opc_ua_simulator            = var.should_enable_opc_ua_simulator
+  should_enable_akri_rest_connector  = var.should_enable_akri_rest_connector
+  should_enable_akri_media_connector = var.should_enable_akri_media_connector
+  should_enable_akri_onvif_connector = var.should_enable_akri_onvif_connector
+  should_enable_akri_sse_connector   = var.should_enable_akri_sse_connector
+  custom_akri_connectors             = var.custom_akri_connectors
+  registry_endpoints                 = local.combined_registry_endpoints
+
+}
+
+module "edge_assets" {
+  count  = var.should_deploy_aio ? 1 : 0
+  source = "../../../src/100-edge/111-assets/terraform"
+
+  depends_on = [module.edge_iot_ops]
+
+  location           = var.location
+  resource_group     = module.cloud_resource_group.resource_group
+  custom_location_id = module.edge_iot_ops[0].custom_locations.id
+  adr_namespace      = module.cloud_data.adr_namespace
+
+  should_create_default_namespaced_asset = var.should_enable_opc_ua_simulator
+  namespaced_devices                     = var.namespaced_devices
+  namespaced_assets                      = var.namespaced_assets
+}
+
+module "edge_observability" {
+  source = "../../../src/100-edge/120-observability/terraform"
+
+  depends_on = [module.edge_arc_extensions, module.edge_iot_ops]
+
+  aio_azure_managed_grafana        = module.cloud_observability.azure_managed_grafana
+  aio_azure_monitor_workspace      = module.cloud_observability.azure_monitor_workspace
+  aio_log_analytics_workspace      = module.cloud_observability.log_analytics_workspace
+  aio_logs_data_collection_rule    = module.cloud_observability.logs_data_collection_rule
+  aio_metrics_data_collection_rule = module.cloud_observability.metrics_data_collection_rule
+  resource_group                   = module.cloud_resource_group.resource_group
+  arc_connected_cluster            = module.edge_cncf_cluster.arc_connected_cluster
+}
+
+module "edge_messaging" {
+  count  = var.should_deploy_aio ? 1 : 0
+  source = "../../../src/100-edge/130-messaging/terraform"
+
+  depends_on = [module.edge_iot_ops]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  aio_custom_locations = module.edge_iot_ops[0].custom_locations
+  aio_dataflow_profile = module.edge_iot_ops[0].aio_dataflow_profile
+  aio_instance         = module.edge_iot_ops[0].aio_instance
+  aio_identity         = module.cloud_security_identity.aio_identity
+  eventgrid            = module.cloud_messaging.eventgrid
+  eventhub             = try([for eh in module.cloud_messaging.eventhubs : eh if eh.eventhub_name != local.alert_eventhub_name][0], try(module.cloud_messaging.eventhubs[0], null))
+  adr_namespace        = module.cloud_data.adr_namespace
+  dataflow_graphs      = var.dataflow_graphs
+  dataflows            = var.dataflows
+  dataflow_endpoints   = var.dataflow_endpoints
+}
+
+module "edge_azureml" {
+  count  = var.should_deploy_azureml && var.should_deploy_edge_azureml ? 1 : 0
+  source = "../../../src/100-edge/140-azureml/terraform"
+
+  depends_on = [module.cloud_azureml]
+
+  environment     = var.environment
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+  location        = var.location
+
+  machine_learning_workspace = module.cloud_azureml[0].azureml_workspace
+
+  should_enable_inference_router_ha = false
+
+  connected_cluster               = module.edge_cncf_cluster.arc_connected_cluster
+  resource_group                  = module.cloud_resource_group.resource_group
+  workspace_identity_principal_id = module.cloud_azureml[0].workspace_principal_id
+  ml_workload_identity            = module.cloud_security_identity.ml_workload_identity
+  ml_workload_subjects            = var.azureml_ml_workload_subjects
+}

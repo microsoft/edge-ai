@@ -3,7 +3,11 @@
   "tasks": [
     {
       "label": "Terraform Build",
-      "dependsOn": ["Terraform Lint Fix and Fmt All", "Terraform Validate All", "Terraform Docs Generation"],
+      "dependsOn": [
+        "Terraform Lint Fix and Fmt All",
+        "Terraform Validate All",
+        "Terraform Docs Generation"
+      ],
       "isBackground": false,
       "problemMatcher": [],
       "group": {
@@ -20,7 +24,10 @@
       "label": "Terraform Validate All",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-validate-all"],
+      "args": [
+        "run",
+        "tf-validate-all"
+      ],
       "isBackground": false,
       "problemMatcher": [],
       "presentation": {
@@ -33,7 +40,12 @@
       "label": "Terraform Validate",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-validate", "--", "${relativeFileDirname}"],
+      "args": [
+        "run",
+        "tf-validate",
+        "--",
+        "${relativeFileDirname}"
+      ],
       "presentation": {
         "clear": true
       },
@@ -45,7 +57,10 @@
       "label": "Terraform Docs Generation",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-docs"],
+      "args": [
+        "run",
+        "tf-docs"
+      ],
       "isBackground": false,
       "problemMatcher": [],
       "presentation": {
@@ -58,7 +73,10 @@
       "label": "Terraform Lint Fix and Fmt All",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tflint-fix-all"],
+      "args": [
+        "run",
+        "tflint-fix-all"
+      ],
       "isBackground": false,
       "problemMatcher": [],
       "presentation": {
@@ -71,7 +89,12 @@
       "label": "Terraform Lint Fix and Fmt",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tflint-fix", "--", "${relativeFileDirname}"],
+      "args": [
+        "run",
+        "tflint-fix",
+        "--",
+        "${relativeFileDirname}"
+      ],
       "isBackground": false,
       "problemMatcher": [],
       "presentation": {
@@ -83,19 +106,27 @@
       "label": "Markdown Lint Fix",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "mdlint-fix"],
+      "args": [
+        "run",
+        "mdlint-fix"
+      ],
       "presentation": {
         "clear": true
       },
       "isBackground": false,
-      "problemMatcher": ["$markdownlint"],
+      "problemMatcher": [
+        "$markdownlint"
+      ],
       "detail": "Fix all Markdown formatting and linting issues"
     },
     {
       "label": "Terraform Init Upgrade",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-init-upgrade"],
+      "args": [
+        "run",
+        "tf-init-upgrade"
+      ],
       "presentation": {
         "clear": true
       },
@@ -107,7 +138,12 @@
       "label": "Terraform Test",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-test", "--", "${relativeFileDirname}"],
+      "args": [
+        "run",
+        "tf-test",
+        "--",
+        "${relativeFileDirname}"
+      ],
       "presentation": {
         "clear": true
       },
@@ -119,7 +155,10 @@
       "label": "Terraform Test All",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-test-all"],
+      "args": [
+        "run",
+        "tf-test-all"
+      ],
       "presentation": {
         "clear": true
       },
@@ -131,13 +170,46 @@
       "label": "Terraform Plan (With Required Test Vars)",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "tf-plan-test", "--", "${relativeFileDirname}"],
+      "args": [
+        "run",
+        "tf-plan-test",
+        "--",
+        "${relativeFileDirname}"
+      ],
       "presentation": {
         "clear": true
       },
       "isBackground": false,
       "problemMatcher": [],
       "detail": "Runs scripts/az-sub-init.sh then terraform plan with required vars for testing terraform plan, in folder for current focused file"
+    },
+    {
+      "type": "func",
+      "label": "func: host start",
+      "command": "host start",
+      "problemMatcher": "$func-node-watch",
+      "isBackground": true,
+      "dependsOn": "npm install (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/src/500-application/513-tiered-notification-service"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "npm install (functions)",
+      "command": "npm install",
+      "options": {
+        "cwd": "${workspaceFolder}/src/500-application/513-tiered-notification-service"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "npm prune (functions)",
+      "command": "npm prune --production",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}/src/500-application/513-tiered-notification-service"
+      }
     }
   ]
 }
