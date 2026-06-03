@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: MIT
+
 set -euo pipefail
 
 ################################################################################
@@ -44,14 +47,75 @@ IMAGE_NAME="${IMAGE_NAME:-ai-edge-inference}"
 IMAGE_VERSION="${IMAGE_VERSION:-latest}"
 NAMESPACE="${NAMESPACE:-azure-iot-operations}"
 
+usage() {
+  echo "Usage: ${0##*/} [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "  --acr-name <name>       ACR name (default: acrmodules01)"
+  echo "  --image-name <name>     Image name (default: ai-edge-inference)"
+  echo "  --image-version <tag>   Image tag (default: latest)"
+  echo "  --namespace <ns>        K8s namespace (default: azure-iot-operations)"
+  echo "  --help, -h              Show this help message"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --acr-name)
+      if [[ -z "${2:-}" || "${2}" == --* ]]; then
+        echo "Error: --acr-name requires a value" >&2
+        usage
+        exit 1
+      fi
+      ACR_NAME="${2}"
+      shift 2
+      ;;
+    --image-name)
+      if [[ -z "${2:-}" || "${2}" == --* ]]; then
+        echo "Error: --image-name requires a value" >&2
+        usage
+        exit 1
+      fi
+      IMAGE_NAME="${2}"
+      shift 2
+      ;;
+    --image-version)
+      if [[ -z "${2:-}" || "${2}" == --* ]]; then
+        echo "Error: --image-version requires a value" >&2
+        usage
+        exit 1
+      fi
+      IMAGE_VERSION="${2}"
+      shift 2
+      ;;
+    --namespace)
+      if [[ -z "${2:-}" || "${2}" == --* ]]; then
+        echo "Error: --namespace requires a value" >&2
+        usage
+        exit 1
+      fi
+      NAMESPACE="${2}"
+      shift 2
+      ;;
+    --help | -h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
+
 # Create the container patch file
 cat >patch-containers.yaml <<EOF
 - op: replace
   path: /spec/template/spec/containers/0/image
-  value: ${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_VERSION}
+  value: "${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_VERSION}"
 - op: replace
   path: /metadata/namespace
-  value: ${NAMESPACE}
+  value: "${NAMESPACE}"
 EOF
 
 echo "Generated patch-containers.yaml with:"

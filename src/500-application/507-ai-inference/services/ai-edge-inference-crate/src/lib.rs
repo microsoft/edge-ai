@@ -21,7 +21,7 @@
 //!
 //! ## Example Usage
 //!
-//! ```rust
+//! ```rust,no_run
 //! use ai_edge_inference_crate::{InferenceEngine, InferenceConfig, InferenceRequest, ModelConfig};
 //!
 //! #[tokio::main]
@@ -44,6 +44,7 @@
 //!     engine.load_model("safety-detector", &model_config).await?;
 //!
 //!     // Create inference request
+//!     let base64_encoded_image_data = String::new();
 //!     let request = InferenceRequest {
 //!         request_id: "test-001".to_string(),
 //!         model_name: Some("safety-detector".to_string()),
@@ -60,8 +61,6 @@
 //!     println!("Inference result: {}", json_result);
 //!
 //!     Ok(())
-//! }
-//! ```
 //! }
 //! ```
 //!
