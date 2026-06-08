@@ -26,7 +26,6 @@ locals {
   function_app_computed_settings = var.should_create_azure_functions ? {
     "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
     "EventHubConnection__credential"              = "managedidentity"
-    "EventHubConnection__clientId"                = module.cloud_messaging.function_identity.client_id
     "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
     "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
   } : {}
