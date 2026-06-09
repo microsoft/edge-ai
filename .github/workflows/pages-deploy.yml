@@ -30,6 +30,8 @@ concurrency:
 
 jobs:
   test:
+    permissions:
+      contents: read
     uses: ./.github/workflows/docusaurus-tests.yml
     with:
       soft-fail: false
