@@ -1,0 +1,97 @@
+# Two-pipeline stitching pattern:
+# Pipeline A writes device state to DSS (514-wasm-msg-to-dss)
+# Pipeline B enriches telemetry by reading from DSS (515-wasm-dss-enricher)
+
+registry_endpoints = [
+  {
+    name                  = "acr-myprefix"
+    endpoint_url          = "https://myprefix.azurecr.io"
+    authentication_method = "SystemAssignedManagedIdentity"
+  }
+]
+
+should_assign_acr_pull_for_aio = true
+
+dataflow_graphs = [
+  # Pipeline A: Write device state to DSS
+  {
+    name = "device-state-writer"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "device-source"
+        sourceSettings = {
+          endpointRef = "default"
+          dataSources = ["devices/+/state"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "write-to-dss"
+        graphSettings = {
+          registryEndpointRef = "acr-myprefix"
+          artifact            = "msg-to-dss-key-graph:1.0.0"
+          configuration = [
+            { key = "keyPath", value = "/deviceId" },
+            { key = "ttlSeconds", value = "86400" },
+            { key = "keyPrefix", value = "device:" }
+          ]
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "writer-sink"
+        destinationSettings = {
+          endpointRef     = "default"
+          dataDestination = "devices/state/ack"
+        }
+      }
+    ]
+    node_connections = [
+      { from = { name = "device-source" }, to = { name = "write-to-dss" } },
+      { from = { name = "write-to-dss" }, to = { name = "writer-sink" } }
+    ]
+  },
+
+  # Pipeline B: Enrich telemetry with stored device state
+  {
+    name = "telemetry-enrichment"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "telemetry-source"
+        sourceSettings = {
+          endpointRef = "default"
+          dataSources = ["telemetry/+/readings"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "enrich-from-dss"
+        graphSettings = {
+          registryEndpointRef = "acr-myprefix"
+          artifact            = "dss-enricher-graph:1.0.0"
+          configuration = [
+            { key = "keyPath", value = "/deviceId" },
+            { key = "keyPrefix", value = "device:" },
+            { key = "outputPath", value = "deviceContext" },
+            { key = "fields", value = "location,calibration,name" },
+            { key = "onMissing", value = "skip" }
+          ]
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "enriched-destination"
+        destinationSettings = {
+          endpointRef     = "default"
+          dataDestination = "telemetry/enriched"
+        }
+      }
+    ]
+    node_connections = [
+      { from = { name = "telemetry-source" }, to = { name = "enrich-from-dss" } },
+      { from = { name = "enrich-from-dss" }, to = { name = "enriched-destination" } }
+    ]
+  }
+]

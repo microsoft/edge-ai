@@ -285,7 +285,7 @@ map:
 | Match expression     | Boolean expression comparing `$source` fields against `$context` fields                                         |
 | Context access       | `$context(<alias>).<field>` in map, filter, or branch expressions                                               |
 | Supported transforms | Built-in map, filter, and branch transforms                                                                     |
-| Dynamic key lookup   | Not supported by built-in enrichment. Requires a custom WASM state reader operator.                             |
+| Dynamic key lookup   | Not supported by built-in enrichment. Use the read-side companion [515-wasm-dss-enricher](../515-wasm-dss-enricher/README.md).                            |
 
 > [!NOTE]
 > The `msg-to-dss-key` operator stores each message as a single JSON object per key. This is compatible with AIO enrichment because a single JSON object is valid single-record NDJSON. For multi-record datasets (multiple entities under one key), populate the state store directly using the [AIO state store CLI](https://github.com/Azure/iot-operations-sdks/tree/main/tools/statestore-cli) with NDJSON content.
@@ -411,7 +411,7 @@ Example message on `packaging/started`:
 {
   "lotId": "LOT-2026-04-08-0042",
   "packagingLineId": "packaging-line-B",
-  "palletId": "PLT-7891",
+  "containerId": "CNT-7891",
   "startedAt": "2026-04-08T14:22:00Z"
 }
 ```
@@ -438,8 +438,8 @@ map:
       - "$source.packagingLineId"
     output: "packagingLineId"
   - inputs:
-      - "$source.palletId"
-    output: "palletId"
+      - "$source.containerId"
+    output: "containerId"
   - inputs:
       - "$source.startedAt"
     output: "packagingStartedAt"
@@ -463,7 +463,7 @@ The enriched output sent to the cloud:
 {
   "lotId": "LOT-2026-04-08-0042",
   "packagingLineId": "packaging-line-B",
-  "palletId": "PLT-7891",
+  "containerId": "CNT-7891",
   "packagingStartedAt": "2026-04-08T14:22:00Z",
   "productType": "apple-sauce-500ml",
   "fillWeight": 502.3,
@@ -483,7 +483,7 @@ The enriched output sent to the cloud:
 
 * `onMissing=skip` is the default behavior. Messages where the `keyPath` is not found are silently passed through with only a log warning.
 * Each key stores a single JSON object. The operator does not produce multi-record NDJSON datasets.
-* Dynamic key lookup at enrichment time (where the key name is determined from the incoming message) is not supported by built-in enrichment and requires a custom WASM state reader operator.
+* Dynamic key lookup at enrichment time (where the key name is determined from the incoming message) is not supported by built-in enrichment. The read-side companion module [515-wasm-dss-enricher](../515-wasm-dss-enricher/README.md) performs this dynamic-key enrichment, matching the same `keyPath` and `keyPrefix` written here.
 * Not designed for high-throughput telemetry. See [Capacity and Performance Considerations](#capacity-and-performance-considerations) for sizing guidance.
 
 ## References

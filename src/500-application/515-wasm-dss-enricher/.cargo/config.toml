@@ -1,0 +1,11 @@
+[build]
+target = "wasm32-wasip2"
+
+[registries]
+aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }
+
+[net]
+git-fetch-with-cli = true
+
+[target.wasm32-wasip2]
+rustflags = ["-C", "link-args=--export-table"]

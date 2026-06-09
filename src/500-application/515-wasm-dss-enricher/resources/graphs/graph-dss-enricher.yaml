@@ -1,0 +1,53 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "DSS Dynamic Key Enricher"
+  description: "Enriches messages with data from the AIO Distributed State Store using a dynamically constructed key from the incoming message"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: dss_enricher
+    parameters:
+      keyPath:
+        name: keyPath
+        description: "JSON Pointer (RFC 6901) path to the field whose value forms the DSS lookup key. Examples: /id, /data/entityId, /sensors/0/ref"
+      keyPrefix:
+        name: keyPrefix
+        description: "Optional prefix prepended to the extracted key value for namespace isolation. Example: device: produces key device:sensor-001"
+      outputPath:
+        name: outputPath
+        description: "Optional path where enriched data is injected in the output message. Empty = merge at root level. Example: context produces {... context: {stored fields}}"
+      fields:
+        name: fields
+        description: "Comma-separated list of fields to extract from the stored record. Use * for all top-level fields. Example: location,calibration,name"
+      onMissing:
+        name: onMissing
+        description: "Behavior when key is not found in DSS: skip (default, passthrough), error (drops message), default (inject empty object)"
+      onError:
+        name: onError
+        description: "Behavior on state store errors: skip (default, passthrough with warning) or error (drops message)"
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "dss_enricher"
+    module: "dss-enricher:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "dss_enricher"
+  - from:
+      name: "dss_enricher"
+    to:
+      name: "sink"
