@@ -262,49 +262,49 @@ mod tests {
     // ─── value_to_key_string ────────────────────────────────────────────────
 
     #[test]
-    fn test_value_to_key_string_string() {
+    fn string_value_converts_to_key_string() {
         let v = serde_json::json!("abc123");
         assert_eq!(value_to_key_string(&v), Some("abc123".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_integer() {
+    fn integer_value_converts_to_key_string() {
         let v = serde_json::json!(42);
         assert_eq!(value_to_key_string(&v), Some("42".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_float() {
+    fn float_value_converts_to_key_string() {
         let v = serde_json::json!(3.14);
         assert_eq!(value_to_key_string(&v), Some("3.14".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_bool_true() {
+    fn bool_true_converts_to_key_string() {
         let v = serde_json::json!(true);
         assert_eq!(value_to_key_string(&v), Some("true".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_bool_false() {
+    fn bool_false_converts_to_key_string() {
         let v = serde_json::json!(false);
         assert_eq!(value_to_key_string(&v), Some("false".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_null() {
+    fn null_value_returns_no_key_string() {
         let v = serde_json::json!(null);
         assert_eq!(value_to_key_string(&v), None);
     }
 
     #[test]
-    fn test_value_to_key_string_object() {
+    fn object_value_returns_no_key_string() {
         let v = serde_json::json!({"a": 1});
         assert_eq!(value_to_key_string(&v), None);
     }
 
     #[test]
-    fn test_value_to_key_string_array() {
+    fn array_value_returns_no_key_string() {
         let v = serde_json::json!([1, 2, 3]);
         assert_eq!(value_to_key_string(&v), None);
     }
@@ -312,70 +312,70 @@ mod tests {
     // ─── JSON Pointer extraction ─────────────────────────────────────────────
 
     #[test]
-    fn test_pointer_top_level_string() {
+    fn given_top_level_string_pointer_extracts_key() {
         let data = serde_json::json!({"id": "R-001"});
         let result = data.pointer("/id").and_then(value_to_key_string);
         assert_eq!(result, Some("R-001".to_string()));
     }
 
     #[test]
-    fn test_pointer_top_level_number() {
+    fn given_top_level_number_pointer_extracts_key() {
         let data = serde_json::json!({"count": 42});
         let result = data.pointer("/count").and_then(value_to_key_string);
         assert_eq!(result, Some("42".to_string()));
     }
 
     #[test]
-    fn test_pointer_nested_two_levels() {
+    fn given_nested_path_pointer_extracts_key() {
         let data = serde_json::json!({"data": {"id": "nested-id"}});
         let result = data.pointer("/data/id").and_then(value_to_key_string);
         assert_eq!(result, Some("nested-id".to_string()));
     }
 
     #[test]
-    fn test_pointer_array_first_element() {
+    fn given_array_index_zero_pointer_extracts_first_element() {
         let data = serde_json::json!({"items": [{"id": "first"}, {"id": "second"}]});
         let result = data.pointer("/items/0/id").and_then(value_to_key_string);
         assert_eq!(result, Some("first".to_string()));
     }
 
     #[test]
-    fn test_pointer_array_second_element() {
+    fn given_array_index_one_pointer_extracts_second_element() {
         let data = serde_json::json!({"items": [{"id": "first"}, {"id": "second"}]});
         let result = data.pointer("/items/1/id").and_then(value_to_key_string);
         assert_eq!(result, Some("second".to_string()));
     }
 
     #[test]
-    fn test_pointer_deep_nested() {
+    fn given_deeply_nested_path_pointer_extracts_key() {
         let data = serde_json::json!({"a": {"b": {"c": {"id": "deep"}}}});
         let result = data.pointer("/a/b/c/id").and_then(value_to_key_string);
         assert_eq!(result, Some("deep".to_string()));
     }
 
     #[test]
-    fn test_pointer_missing_field() {
+    fn given_missing_field_pointer_returns_none() {
         let data = serde_json::json!({"name": "test"});
         let result = data.pointer("/nonexistent").and_then(value_to_key_string);
         assert_eq!(result, None);
     }
 
     #[test]
-    fn test_pointer_partial_path_returns_none() {
+    fn given_partial_path_pointer_returns_none() {
         let data = serde_json::json!({"data": {"name": "test"}});
         let result = data.pointer("/data/id").and_then(value_to_key_string);
         assert_eq!(result, None);
     }
 
     #[test]
-    fn test_pointer_array_out_of_bounds() {
+    fn given_array_index_out_of_bounds_pointer_returns_none() {
         let data = serde_json::json!({"items": [{"id": "only"}]});
         let result = data.pointer("/items/5/id").and_then(value_to_key_string);
         assert_eq!(result, None);
     }
 
     #[test]
-    fn test_pointer_object_at_path_returns_none() {
+    fn given_object_at_path_pointer_returns_none() {
         let data = serde_json::json!({"meta": {"nested": {"object": true}}});
         let result = data.pointer("/meta/nested").and_then(value_to_key_string);
         assert_eq!(result, None);
@@ -384,19 +384,19 @@ mod tests {
     // ─── Key construction ────────────────────────────────────────────────────
 
     #[test]
-    fn test_key_construction_with_prefix() {
+    fn given_prefix_key_construction_prepends_it() {
         let key = format!("{}{}", "device:", "001");
         assert_eq!(key, "device:001");
     }
 
     #[test]
-    fn test_key_construction_no_prefix() {
+    fn given_empty_prefix_key_construction_uses_value_only() {
         let key = format!("{}{}", "", "R-001");
         assert_eq!(key, "R-001");
     }
 
     #[test]
-    fn test_key_construction_numeric_value() {
+    fn given_numeric_value_key_construction_includes_it() {
         let data = serde_json::json!({"sensor_id": 42});
         let extracted = data.pointer("/sensor_id").and_then(value_to_key_string).unwrap();
         let key = format!("{}{}", "sensor:", extracted);
@@ -404,7 +404,7 @@ mod tests {
     }
 
     #[test]
-    fn test_key_construction_bool_value() {
+    fn given_bool_value_key_construction_includes_it() {
         let data = serde_json::json!({"active": true});
         let extracted = data.pointer("/active").and_then(value_to_key_string).unwrap();
         let key = format!("{}{}", "status:", extracted);
@@ -420,7 +420,7 @@ mod tests {
     // — Valid configurations —
 
     #[test]
-    fn test_parse_config_minimal_required() {
+    fn given_minimal_required_properties_parse_returns_config() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60")]);
         let cfg = parse_config(&p).unwrap();
         assert_eq!(cfg.key_path, "/id");
@@ -430,7 +430,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_all_fields() {
+    fn given_all_fields_parse_returns_config() {
         let p = props(&[
             ("keyPath", "/data/record_id"),
             ("ttlSeconds", "3600"),
@@ -445,49 +445,49 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_ttl_zero_no_expiration() {
+    fn given_ttl_zero_parse_returns_no_expiration() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "0")]);
         let cfg = parse_config(&p).unwrap();
         assert_eq!(cfg.ttl_seconds, 0);
     }
 
     #[test]
-    fn test_parse_config_on_missing_skip_explicit() {
+    fn given_on_missing_skip_parse_returns_skip() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "10"), ("onMissing", "skip")]);
         let cfg = parse_config(&p).unwrap();
         assert!(!cfg.error_on_missing);
     }
 
     #[test]
-    fn test_parse_config_on_missing_defaults_to_skip() {
+    fn given_no_on_missing_parse_defaults_to_skip() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "10")]);
         let cfg = parse_config(&p).unwrap();
         assert!(!cfg.error_on_missing);
     }
 
     #[test]
-    fn test_parse_config_key_prefix_defaults_to_empty() {
+    fn given_no_key_prefix_parse_defaults_to_empty() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "10")]);
         let cfg = parse_config(&p).unwrap();
         assert_eq!(cfg.key_prefix, "");
     }
 
     #[test]
-    fn test_parse_config_deep_key_path() {
+    fn given_deep_key_path_parse_returns_config() {
         let p = props(&[("keyPath", "/a/b/c/d"), ("ttlSeconds", "1")]);
         let cfg = parse_config(&p).unwrap();
         assert_eq!(cfg.key_path, "/a/b/c/d");
     }
 
     #[test]
-    fn test_parse_config_array_index_key_path() {
+    fn given_array_index_key_path_parse_returns_config() {
         let p = props(&[("keyPath", "/items/0/id"), ("ttlSeconds", "1")]);
         let cfg = parse_config(&p).unwrap();
         assert_eq!(cfg.key_path, "/items/0/id");
     }
 
     #[test]
-    fn test_parse_config_large_ttl() {
+    fn given_large_ttl_parse_returns_config() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "31536000")]);
         let cfg = parse_config(&p).unwrap();
         assert_eq!(cfg.ttl_seconds, 31_536_000);
@@ -496,28 +496,28 @@ mod tests {
     // — keyPath validation —
 
     #[test]
-    fn test_parse_config_missing_key_path() {
+    fn given_missing_key_path_parse_returns_error() {
         let p = props(&[("ttlSeconds", "60")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Missing required configuration: 'keyPath'"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_empty_key_path() {
+    fn given_empty_key_path_parse_returns_error() {
         let p = props(&[("keyPath", ""), ("ttlSeconds", "60")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid keyPath"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_key_path_no_leading_slash() {
+    fn given_key_path_without_leading_slash_parse_returns_error() {
         let p = props(&[("keyPath", "id"), ("ttlSeconds", "60")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("must start with '/'"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_key_path_whitespace() {
+    fn given_key_path_with_leading_whitespace_parse_returns_error() {
         let p = props(&[("keyPath", " /id"), ("ttlSeconds", "60")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("must start with '/'"), "{err}");
@@ -526,35 +526,35 @@ mod tests {
     // — ttlSeconds validation —
 
     #[test]
-    fn test_parse_config_missing_ttl_seconds() {
+    fn given_missing_ttl_seconds_parse_returns_error() {
         let p = props(&[("keyPath", "/id")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Missing required configuration: 'ttlSeconds'"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_ttl_non_numeric() {
+    fn given_non_numeric_ttl_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "abc")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid ttlSeconds 'abc'"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_ttl_negative() {
+    fn given_negative_ttl_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "-1")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid ttlSeconds"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_ttl_float() {
+    fn given_float_ttl_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "3.14")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid ttlSeconds"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_ttl_empty_string() {
+    fn given_empty_ttl_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid ttlSeconds"), "{err}");
@@ -563,21 +563,21 @@ mod tests {
     // — onMissing validation —
 
     #[test]
-    fn test_parse_config_on_missing_invalid_value() {
+    fn given_invalid_on_missing_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60"), ("onMissing", "ignore")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid onMissing value 'ignore'"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_on_missing_empty_string() {
+    fn given_empty_on_missing_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60"), ("onMissing", "")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid onMissing value"), "{err}");
     }
 
     #[test]
-    fn test_parse_config_on_missing_case_sensitive() {
+    fn given_mixed_case_on_missing_parse_returns_error() {
         let p = props(&[("keyPath", "/id"), ("ttlSeconds", "60"), ("onMissing", "Skip")]);
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Invalid onMissing value 'Skip'"), "{err}");
@@ -586,7 +586,7 @@ mod tests {
     // — Empty / no properties —
 
     #[test]
-    fn test_parse_config_empty_properties() {
+    fn given_empty_properties_parse_returns_error() {
         let p: Vec<(String, String)> = vec![];
         let err = parse_config(&p).unwrap_err();
         assert!(err.contains("Missing required configuration: 'keyPath'"), "{err}");

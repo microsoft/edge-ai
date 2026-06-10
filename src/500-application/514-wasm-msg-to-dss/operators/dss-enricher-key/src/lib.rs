@@ -481,37 +481,37 @@ mod tests {
     // ─── value_to_key_string ─────────────────────────────────────────────
 
     #[test]
-    fn test_value_to_key_string_string() {
+    fn string_value_converts_to_key_string() {
         let v = serde_json::json!("abc-123");
         assert_eq!(value_to_key_string(&v), Some("abc-123".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_number() {
+    fn number_value_converts_to_key_string() {
         let v = serde_json::json!(42);
         assert_eq!(value_to_key_string(&v), Some("42".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_bool() {
+    fn bool_value_converts_to_key_string() {
         let v = serde_json::json!(true);
         assert_eq!(value_to_key_string(&v), Some("true".to_string()));
     }
 
     #[test]
-    fn test_value_to_key_string_null_returns_none() {
+    fn null_value_returns_no_key_string() {
         let v = serde_json::Value::Null;
         assert_eq!(value_to_key_string(&v), None);
     }
 
     #[test]
-    fn test_value_to_key_string_object_returns_none() {
+    fn object_value_returns_no_key_string() {
         let v = serde_json::json!({"a": 1});
         assert_eq!(value_to_key_string(&v), None);
     }
 
     #[test]
-    fn test_value_to_key_string_array_returns_none() {
+    fn array_value_returns_no_key_string() {
         let v = serde_json::json!([1, 2]);
         assert_eq!(value_to_key_string(&v), None);
     }
@@ -519,14 +519,14 @@ mod tests {
     // ─── extract_fields ──────────────────────────────────────────────────
 
     #[test]
-    fn test_extract_fields_all() {
+    fn given_all_selection_extract_returns_full_object() {
         let stored = serde_json::json!({"a": 1, "b": "two", "c": true});
         let result = extract_fields(&stored, &FieldSelection::All);
         assert_eq!(result, stored);
     }
 
     #[test]
-    fn test_extract_fields_named_subset() {
+    fn given_named_selection_extract_returns_subset() {
         let stored = serde_json::json!({"a": 1, "b": "two", "c": true});
         let fields = FieldSelection::Named(vec!["a".to_string(), "c".to_string()]);
         let result = extract_fields(&stored, &fields);
@@ -534,7 +534,7 @@ mod tests {
     }
 
     #[test]
-    fn test_extract_fields_named_missing_field() {
+    fn given_named_selection_with_missing_field_extract_omits_it() {
         let stored = serde_json::json!({"a": 1});
         let fields = FieldSelection::Named(vec!["a".to_string(), "missing".to_string()]);
         let result = extract_fields(&stored, &fields);
@@ -544,7 +544,7 @@ mod tests {
     // ─── merge_into_message ──────────────────────────────────────────────
 
     #[test]
-    fn test_merge_at_root_no_overwrite() {
+    fn given_root_merge_existing_fields_are_not_overwritten() {
         let mut msg = serde_json::json!({"id": "x", "temp": 22});
         let enrichment = serde_json::json!({"location": "lab", "id": "SHOULD_NOT_OVERWRITE"});
         merge_into_message(&mut msg, enrichment, &None);
@@ -552,7 +552,7 @@ mod tests {
     }
 
     #[test]
-    fn test_merge_at_output_path() {
+    fn given_output_path_enrichment_nests_under_path() {
         let mut msg = serde_json::json!({"id": "x", "temp": 22});
         let enrichment = serde_json::json!({"location": "lab"});
         merge_into_message(&mut msg, enrichment.clone(), &Some("/context".to_string()));
@@ -563,7 +563,7 @@ mod tests {
     }
 
     #[test]
-    fn test_merge_at_nested_output_path() {
+    fn given_nested_output_path_merge_creates_intermediate_objects() {
         let mut msg = serde_json::json!({"id": "x"});
         let enrichment = serde_json::json!({"location": "lab"});
         merge_into_message(&mut msg, enrichment, &Some("/data/context".to_string()));
@@ -574,7 +574,7 @@ mod tests {
     }
 
     #[test]
-    fn test_merge_preserves_field_order() {
+    fn merge_preserves_original_field_order() {
         // With preserve_order, original keys keep their order and enrichment is appended.
         let mut msg: serde_json::Value =
             serde_json::from_str(r#"{"zebra":1,"apple":2,"mango":3}"#).unwrap();
@@ -587,7 +587,7 @@ mod tests {
     // ─── parse_config ────────────────────────────────────────────────────
 
     #[test]
-    fn test_parse_config_minimal_valid() {
+    fn given_minimal_properties_parse_returns_config() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
             ("keyPrefix".to_string(), "device:".to_string()),
@@ -601,7 +601,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_full() {
+    fn given_all_properties_parse_returns_config() {
         let props = vec![
             ("keyPath".to_string(), "/data/ref".to_string()),
             ("keyPrefix".to_string(), "entity:".to_string()),
@@ -619,7 +619,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_missing_key_path() {
+    fn given_missing_key_path_parse_returns_error() {
         let props = vec![("keyPrefix".to_string(), "x:".to_string())];
         let result = parse_config(&props);
         assert!(result.is_err());
@@ -627,7 +627,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_invalid_key_path_no_slash() {
+    fn given_key_path_without_leading_slash_parse_returns_error() {
         let props = vec![("keyPath".to_string(), "noslash".to_string())];
         let result = parse_config(&props);
         assert!(result.is_err());
@@ -635,7 +635,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_missing_key_prefix() {
+    fn given_missing_key_prefix_parse_returns_error() {
         let props = vec![("keyPath".to_string(), "/id".to_string())];
         let result = parse_config(&props);
         assert!(result.is_err());
@@ -645,7 +645,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_empty_key_prefix_rejected() {
+    fn given_empty_key_prefix_parse_returns_error() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
             ("keyPrefix".to_string(), "".to_string()),
@@ -656,7 +656,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_invalid_output_path() {
+    fn given_invalid_output_path_parse_returns_error() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
             ("keyPrefix".to_string(), "device:".to_string()),
@@ -668,7 +668,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_nested_output_path_valid() {
+    fn given_nested_output_path_parse_returns_config() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
             ("keyPrefix".to_string(), "device:".to_string()),
@@ -679,7 +679,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_invalid_on_missing() {
+    fn given_invalid_on_missing_parse_returns_error() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
             ("keyPrefix".to_string(), "device:".to_string()),
@@ -690,7 +690,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_config_on_missing_default() {
+    fn given_on_missing_default_parse_returns_default_variant() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
             ("keyPrefix".to_string(), "device:".to_string()),
