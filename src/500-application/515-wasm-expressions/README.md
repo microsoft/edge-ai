@@ -34,7 +34,15 @@ The operator follows a two-phase lifecycle:
 
 Error handling is passthrough first. When input is missing or malformed, the operator logs a warning and returns the message unchanged, so one bad message never drops the flow. Set `onMissing` to `error` to drop the message instead.
 
-The operator is deterministic and UTC only. It never calls a wall clock such as `Utc::now()`, and no `now` mode is shipped. When a node needs an ingestion time, set `inputSource` to `messageTimestamp` to read the host-stamped hybrid logical clock (HLC) wall-clock time. This keeps results reproducible and removes any WASI clock capability requirement.
+The operator is deterministic and UTC only. It never calls a wall clock such as `Utc::now()`, and no `now` mode is shipped. When a node needs an ingestion or current time, set `inputSource` to `messageTimestamp` to read the message hybrid logical clock (HLC) timestamp instead. This keeps results reproducible and removes any WASI clock capability requirement. See [Message timestamp source](#message-timestamp-source) for what that timestamp represents and when it is reliable.
+
+### Message timestamp source
+
+Every data item in a dataflow graph carries a [hybrid logical clock (HLC) timestamp](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concepts-wasm-modules#timely-dataflow-model). The SDK exposes it on the message as a `timespec` wall-clock component (seconds and nanoseconds) plus a logical counter and originating node id. The `datetime` operator reads only the wall-clock component when `inputSource` is `messageTimestamp`.
+
+That wall-clock value originates from the publisher's optional [`__ts` MQTT user property](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graph-wasm), whose format is `<timestamp>:<counter>:<nodeid>`. When a publisher sets `__ts`, the value reflects that publisher's clock, so its absolute accuracy depends on the source. When a publisher does not set `__ts`, the data flow assigns the timestamp during processing. The property is not mandatory.
+
+Because of this, treat `messageTimestamp` as deterministic event-time for ordering, windowing, and age calculations rather than a guaranteed broker-stamped ingestion clock. The built-in [`accumulate`](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concepts-wasm-modules#operators-and-modules) (windowing) and `delay` operators key off this same HLC timestamp, so age and duration results from `messageTimestamp` stay consistent with built-in time-based operators in the same graph. For a precise ingestion time, ensure upstream publishers set `__ts` from a trusted clock; otherwise prefer an explicit payload timestamp field via `inputSource = payload`.
 
 ## Folder Structure
 
@@ -104,7 +112,7 @@ One operator runs one `mode` per graph node. All values are strings, matching th
 | Config key    | Modes that use it                        | Purpose                                                                     |
 |---------------|------------------------------------------|-----------------------------------------------------------------------------|
 | `mode`        | all                                      | `parse` \| `format` \| `reformat` \| `duration` \| `parts`                  |
-| `inputSource` | parse, format, reformat, parts, duration | `payload` (default, uses `inputPath`) \| `messageTimestamp` (host HLC)      |
+| `inputSource` | parse, format, reformat, parts, duration | `payload` (default, uses `inputPath`) \| `messageTimestamp` (message HLC, see [source notes](#message-timestamp-source)) |
 | `inputPath`   | parse, format, reformat, parts, duration | JSON Pointer (RFC 6901) to the source field when `inputSource` is `payload` |
 | `inputPath2`  | duration                                 | JSON Pointer to the second timestamp for the duration diff                  |
 | `outputPath`  | all                                      | JSON Pointer where the result is written                                    |
@@ -117,10 +125,10 @@ One operator runs one `mode` per graph node. All values are strings, matching th
 
 ### Mode Semantics
 
-* `parse`: RFC 3339 string at `inputPath` (or the host HLC timestamp when `inputSource` is `messageTimestamp`) to an epoch number (`epochUnit`) at `outputPath`. Feeds downstream built-in numeric expressions.
-* `format`: epoch number at `inputPath` (or the host HLC timestamp when `inputSource` is `messageTimestamp`) to a formatted UTC string (`format`) at `outputPath`.
+* `parse`: RFC 3339 string at `inputPath` (or the message HLC timestamp when `inputSource` is `messageTimestamp`) to an epoch number (`epochUnit`) at `outputPath`. Feeds downstream built-in numeric expressions.
+* `format`: epoch number at `inputPath` (or the message HLC timestamp when `inputSource` is `messageTimestamp`) to a formatted UTC string (`format`) at `outputPath`.
 * `reformat`: timestamp string at `inputPath` (RFC 3339 or `inputFormat`) to a restyled string (`format`) at `outputPath`.
-* `duration`: two timestamps (`inputPath`, `inputPath2`, either may be the host HLC timestamp via `inputSource`) to a numeric diff in `unit` at `outputPath`. Computes datediff and age since ingestion without a wall clock.
+* `duration`: two timestamps (`inputPath`, `inputPath2`, either may be the message HLC timestamp via `inputSource`) to a numeric diff in `unit` at `outputPath`. Computes datediff and age since the message timestamp without a wall clock.
 * `parts`: timestamp string at `inputPath` to an object of the requested `parts` at `outputPath`.
 
 ## Example: Lot Age Enrichment

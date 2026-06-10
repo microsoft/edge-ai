@@ -4,7 +4,10 @@
 //! them back into the JSON payload by JSON Pointer, returning the full message so
 //! the graph continues. All conversions are UTC-only and deterministic: no wall
 //! clock is read. For current/ingestion-time conversions, `inputSource =
-//! messageTimestamp` exposes the host-stamped hybrid logical clock timestamp.
+//! messageTimestamp` reads the message hybrid logical clock (HLC) wall-clock
+//! component. That value comes from the publisher's optional `__ts` MQTT user
+//! property (the data flow assigns it when absent), so treat it as deterministic
+//! event-time rather than a guaranteed broker-stamped ingestion clock.
 //!
 //! Modes (`mode`):
 //! - `parse`    — RFC 3339 string (or host timestamp) -> epoch number (`epochUnit`)
