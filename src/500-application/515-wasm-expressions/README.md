@@ -111,19 +111,19 @@ Once the artifacts are available in ACR, the dataflow graph resolves and begins 
 
 One operator runs one `mode` per graph node. All values are strings, matching the dataflow configuration contract.
 
-| Config key    | Modes that use it                        | Purpose                                                                     |
-|---------------|------------------------------------------|-----------------------------------------------------------------------------|
-| `mode`        | all                                      | `parse` \| `format` \| `reformat` \| `duration` \| `parts`                  |
+| Config key    | Modes that use it                        | Purpose                                                                                                                  |
+|---------------|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| `mode`        | all                                      | `parse` \| `format` \| `reformat` \| `duration` \| `parts`                                                               |
 | `inputSource` | parse, format, reformat, parts, duration | `payload` (default, uses `inputPath`) \| `messageTimestamp` (message HLC, see [source notes](#message-timestamp-source)) |
-| `inputPath`   | parse, format, reformat, parts, duration | JSON Pointer (RFC 6901) to the source field when `inputSource` is `payload` |
-| `inputPath2`  | duration                                 | JSON Pointer to the second timestamp for the duration diff                  |
-| `outputPath`  | all                                      | JSON Pointer where the result is written                                    |
-| `inputFormat` | reformat, parse (optional)               | strftime parse layout when the input is not RFC 3339                        |
-| `format`      | format, reformat                         | strftime output layout, e.g. `%Y-%m-%dT%H:%M:%S%.3fZ` or `%Y-%m-%d %H:%M`   |
-| `unit`        | duration                                 | `ms` \| `seconds` \| `minutes` \| `hours` (default `ms`)                    |
-| `epochUnit`   | parse, format                            | `ms` \| `seconds`, epoch granularity in and out (default `ms`)              |
-| `parts`       | parts                                    | comma list: `year,month,day,hour,minute,second,weekday,ordinal`             |
-| `onMissing`   | all                                      | `skip` (default, passthrough with warning) \| `error` (drops the message)   |
+| `inputPath`   | parse, format, reformat, parts, duration | JSON Pointer (RFC 6901) to the source field when `inputSource` is `payload`                                              |
+| `inputPath2`  | duration                                 | JSON Pointer to the second timestamp for the duration diff                                                               |
+| `outputPath`  | all                                      | JSON Pointer where the result is written                                                                                 |
+| `inputFormat` | reformat, parse (optional)               | strftime parse layout when the input is not RFC 3339                                                                     |
+| `format`      | format, reformat                         | strftime output layout, e.g. `%Y-%m-%dT%H:%M:%S%.3fZ` or `%Y-%m-%d %H:%M`                                                |
+| `unit`        | duration                                 | `ms` \| `seconds` \| `minutes` \| `hours` (default `ms`)                                                                 |
+| `epochUnit`   | parse, format                            | `ms` \| `seconds`, epoch granularity in and out (default `ms`)                                                           |
+| `parts`       | parts                                    | comma list: `year,month,day,hour,minute,second,weekday,ordinal`                                                          |
+| `onMissing`   | all                                      | `skip` (default, passthrough with warning) \| `error` (drops the message)                                                |
 
 ### Mode Semantics
 
