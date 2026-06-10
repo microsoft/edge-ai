@@ -177,7 +177,11 @@ function Get-BicepValidationFile {
         [bool]$FullValidation,
 
         [Parameter(Mandatory = $false)]
-        [string]$BicepFoldersJson = '{}'
+        [string]$BicepFoldersJson = '{}',
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('github', 'generic')]
+        [string]$Platform = 'generic'
     )
 
     $resolvedRepoRoot = Resolve-BicepRepoRoot -Path $RepoRoot
@@ -197,7 +201,7 @@ function Get-BicepValidationFile {
             }
 
             if (-not (Test-Path -Path $resolvedFolderPath -PathType Container)) {
-                Write-BicepWarning -Platform 'generic' -Message "Bicep folder does not exist: $folderPath"
+                Write-BicepWarning -Platform $Platform -Message "Bicep folder does not exist: $folderPath"
                 continue
             }
 
@@ -444,7 +448,7 @@ function Invoke-BicepLint {
 
     $resolvedRepoRoot = Resolve-BicepRepoRoot -Path $RepoRoot
     $fullValidationEnabled = ConvertTo-BicepRunnerBoolean -Value $FullValidation
-    $bicepFiles = @(Get-BicepValidationFile -RepoRoot $resolvedRepoRoot -FullValidation $fullValidationEnabled -BicepFoldersJson $BicepFoldersJson)
+    $bicepFiles = @(Get-BicepValidationFile -RepoRoot $resolvedRepoRoot -FullValidation $fullValidationEnabled -BicepFoldersJson $BicepFoldersJson -Platform $Platform)
     $validationCommand = Get-BicepValidationCommand
     $failedFiles = [System.Collections.Generic.List[string]]::new()
     $filesChecked = 0
