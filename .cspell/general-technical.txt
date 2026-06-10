@@ -373,6 +373,7 @@ dataset
 datasets
 datasize
 dataverse
+datediff
 datefmt
 davinci
 dbcc

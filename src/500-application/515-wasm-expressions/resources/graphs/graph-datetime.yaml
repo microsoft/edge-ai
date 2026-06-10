@@ -1,0 +1,68 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "DateTime"
+  description: "Parse, format, reformat, datediff, and extract parts from UTC timestamps; outputs new fields to continue the graph"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: datetime
+    parameters:
+      mode:
+        name: mode
+        description: "parse | format | reformat | duration | parts"
+      inputSource:
+        name: inputSource
+        description: "payload (default, uses inputPath) | messageTimestamp (host HLC ingestion time)"
+      inputPath:
+        name: inputPath
+        description: "JSON Pointer (RFC 6901) to the source timestamp field"
+      inputPath2:
+        name: inputPath2
+        description: "JSON Pointer to the second timestamp (duration/datediff)"
+      outputPath:
+        name: outputPath
+        description: "JSON Pointer where the result is written"
+      inputFormat:
+        name: inputFormat
+        description: "strftime parse layout when input is not RFC 3339"
+      format:
+        name: format
+        description: "strftime output layout, e.g. %Y-%m-%dT%H:%M:%S%.3fZ"
+      unit:
+        name: unit
+        description: "duration unit: ms | seconds | minutes | hours"
+      epochUnit:
+        name: epochUnit
+        description: "epoch granularity: ms | seconds"
+      parts:
+        name: parts
+        description: "comma list: year,month,day,hour,minute,second,weekday,ordinal"
+      onMissing:
+        name: onMissing
+        description: "skip (default, passthrough) | error"
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "datetime"
+    module: "datetime:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "datetime"
+  - from:
+      name: "datetime"
+    to:
+      name: "sink"
