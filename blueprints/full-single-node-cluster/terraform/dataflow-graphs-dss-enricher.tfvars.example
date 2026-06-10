@@ -1,6 +1,6 @@
 # Two-pipeline stitching pattern:
-# Pipeline A writes device state to DSS (514-wasm-msg-to-dss)
-# Pipeline B enriches telemetry by reading from DSS (515-wasm-dss-enricher)
+# Pipeline A writes device state to DSS (514-wasm-msg-to-dss msg-to-dss-key)
+# Pipeline B enriches telemetry by reading from DSS (514-wasm-msg-to-dss dss-enricher-key)
 
 registry_endpoints = [
   {
@@ -70,7 +70,7 @@ dataflow_graphs = [
         name     = "enrich-from-dss"
         graphSettings = {
           registryEndpointRef = "acr-myprefix"
-          artifact            = "dss-enricher-graph:1.0.0"
+          artifact            = "dss-enricher-key-graph:1.0.0"
           configuration = [
             { key = "keyPath", value = "/deviceId" },
             { key = "keyPrefix", value = "device:" },

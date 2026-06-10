@@ -77,8 +77,7 @@ The following applications are currently available in this directory:
 - **[511-rust-embedded-wasm-provider](./511-rust-embedded-wasm-provider/README.md)** - WebAssembly operators for Azure IoT Operations dataflow graphs using WIT Component Model composition
 - **[512-avro-to-json](./512-avro-to-json/README.md)** - Avro binary to JSON transformation WASM module for Azure IoT Operations dataflow graphs
 - **[513-tiered-notification-service](./513-tiered-notification-service/README.md)** - Azure Function that processes events from Event Hub and dispatches tiered webhook notifications to Teams, Slack, or generic HTTP endpoints
-- **[514-wasm-msg-to-dss](./514-wasm-msg-to-dss/README.md)** - WASM map operator that writes any incoming JSON message to the AIO Distributed State Store under a configurable key extracted via JSON Pointer, with TTL and passthrough behavior
-- **[515-wasm-dss-enricher](./515-wasm-dss-enricher/README.md)** - WASM map operator that enriches messages with data from the AIO Distributed State Store using a dynamically constructed key extracted via JSON Pointer, the read-side companion to 514-wasm-msg-to-dss
+- **[514-wasm-msg-to-dss](./514-wasm-msg-to-dss/README.md)** - WASM operators for the AIO Distributed State Store: `msg-to-dss-key` writes incoming JSON messages to the state store under a configurable key extracted via JSON Pointer (with TTL and passthrough), and `dss-enricher-key` reads/enriches messages with stored records using a dynamically constructed key
 
 ## Service Implementation
 

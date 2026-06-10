@@ -10,7 +10,7 @@ moduleRequirements:
   runtimeVersion: "1.1.0"
 
 moduleConfigurations:
-  - name: dss_enricher
+  - name: dss_enricher_key
     parameters:
       keyPath:
         name: keyPath
@@ -36,8 +36,8 @@ operations:
     name: "source"
 
   - operationType: "map"
-    name: "dss_enricher"
-    module: "dss-enricher:${VERSION}"
+    name: "dss_enricher_key"
+    module: "dss-enricher-key:${VERSION}"
 
   - operationType: "sink"
     name: "sink"
@@ -46,8 +46,8 @@ connections:
   - from:
       name: "source"
     to:
-      name: "dss_enricher"
+      name: "dss_enricher_key"
   - from:
-      name: "dss_enricher"
+      name: "dss_enricher_key"
     to:
       name: "sink"

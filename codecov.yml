@@ -26,7 +26,6 @@ ignore:
   - "src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/**"
   - "src/500-application/512-avro-to-json/**"
   - "src/500-application/514-wasm-msg-to-dss/**"
-  - "src/500-application/515-wasm-dss-enricher/**"
   - "target/**"
 comment:
   layout: "reach,diff,flags,files"

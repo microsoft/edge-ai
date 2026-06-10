@@ -18,7 +18,7 @@ use wasm_graph_sdk::logger::{self, Level};
 use wasm_graph_sdk::macros::map_operator;
 use wasm_graph_sdk::state_store;
 
-const MODULE_NAME: &str = "dss-enricher";
+const MODULE_NAME: &str = "dss-enricher-key";
 
 #[derive(Debug, Clone, PartialEq)]
 enum OnMissing {
@@ -218,7 +218,7 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
     })
 }
 
-fn dss_enricher_init(configuration: ModuleConfiguration) -> bool {
+fn dss_enricher_key_init(configuration: ModuleConfiguration) -> bool {
     logger::log(Level::Info, MODULE_NAME, "Initializing operator");
 
     for (key, _) in &configuration.properties {
@@ -255,8 +255,8 @@ fn dss_enricher_init(configuration: ModuleConfiguration) -> bool {
     }
 }
 
-#[map_operator(init = "dss_enricher_init")]
-fn dss_enricher(input: DataModel) -> Result<DataModel, Error> {
+#[map_operator(init = "dss_enricher_key_init")]
+fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
     let config = CONFIG.get().ok_or_else(|| Error {
         message: "Operator not initialized".to_string(),
     })?;

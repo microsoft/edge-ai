@@ -1,5 +1,5 @@
 [package]
-name = "dss-enricher"
+name = "dss-enricher-key"
 version = "1.0.0"
 license = "MIT"
 edition = "2021"
