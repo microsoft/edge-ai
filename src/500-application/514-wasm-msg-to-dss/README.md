@@ -94,8 +94,9 @@ The `dss-enricher-key` operator parses the JSON payload, extracts the key value 
 ### Step 1: Deploy the Full Stack
 
 Deploy the [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint using [dataflow-graphs-msg-to-dss.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-msg-to-dss.tfvars.example) as the starting point for your `terraform.tfvars`.
+The example defines Pipeline A for the write side (`msg-to-dss-key`) and an optional Pipeline B for the read and enrich side (`dss-enricher-key`). Remove the second pipeline from `dataflow_graphs` to deploy the write side only.
 
-This creates the complete infrastructure including ACR, the AIO cluster, and the dataflow graph referencing the WASM module. The graph will temporarily reference an ACR artifact that does not yet exist. The graph enters a pending state until Steps 2-4 publish the module.
+This creates the complete infrastructure including ACR, the AIO cluster, and the dataflow graphs referencing the WASM modules. The graphs will temporarily reference ACR artifacts that do not yet exist. They enter a pending state until Steps 2-4 publish the modules.
 
 > [!NOTE]
 > If the full stack is already deployed from a previous run, skip to Step 2.
@@ -485,7 +486,7 @@ A food factory operates two production lines on different schedules. The **Filli
         ▼              │           │              ▼
   ┌──────────────┐     │           │     ┌──────────────────┐
   │ Pipeline A   │     │           │     │ Pipeline B       │
-  │ msg_to_dss   │     │           │     │ built-in enrich  │
+  │ msg_to_dss   │     │           │     │ dss_enricher_key │
   │ key          │     │           │     │ from DSS         │
   └──────┬───────┘     │           │     └────┬────────┬────┘
          │             │           │          │        │
@@ -521,7 +522,7 @@ Result: DSS key `lot:LOT-2026-04-08-0042` stores the full JSON payload.
 
 ### Pipeline B: Enrich packaging events with lot context
 
-When Line B begins packaging a lot, it publishes a lean event referencing the lot number. Pipeline B uses built-in enrichment to look up the lot metadata from the DSS and merge both records into a single consolidated message.
+When Line B begins packaging a lot, it publishes a lean event referencing the lot number. Each event references a different lot, so the DSS key is known only at runtime. Built-in enrichment cannot help here because its `datasets` configuration requires a static key string fixed at deployment time. Pipeline B uses the `dss-enricher-key` operator, which builds the lookup key dynamically from each message and merges the stored lot metadata into the outgoing event.
 
 Example message on `packaging/started`:
 
@@ -534,46 +535,11 @@ Example message on `packaging/started`:
 }
 ```
 
-The DataflowGraph for Pipeline B uses a `datasets` enrichment to read from the DSS key written by Pipeline A:
+Pipeline B configures `dss-enricher-key` to construct the same key Pipeline A wrote (`lot:` prepended to the `lotId` value) and merge the selected lot fields into the message at the root.
 
-```yaml
-datasets:
-  - key: "lot:LOT-2026-04-08-0042"
-    inputs:
-      - "$source.lotId"
-      - "$context.lotId"
-    expression: "$1 == $2"
-```
+**Graph configuration**: `keyPath=/lotId`, `keyPrefix=lot:`, `fields=productType,fillWeight,qualityGrade,completedAt`
 
-A map transform merges the stored lot fields into the outgoing message:
-
-```yaml
-map:
-  - inputs:
-      - "$source.lotId"
-    output: "lotId"
-  - inputs:
-      - "$source.packagingLineId"
-    output: "packagingLineId"
-  - inputs:
-      - "$source.containerId"
-    output: "containerId"
-  - inputs:
-      - "$source.startedAt"
-    output: "packagingStartedAt"
-  - inputs:
-      - "$context(lot).productType"
-    output: "productType"
-  - inputs:
-      - "$context(lot).fillWeight"
-    output: "fillWeight"
-  - inputs:
-      - "$context(lot).qualityGrade"
-    output: "qualityGrade"
-  - inputs:
-      - "$context(lot).completedAt"
-    output: "fillingCompletedAt"
-```
+For each packaging event the operator extracts the value at `/lotId`, reads the DSS record at `lot:<lotId>`, and merges the configured fields into the outgoing message. Source fields take precedence, so the event's own `lotId` and timestamps are preserved.
 
 The enriched output sent to the cloud:
 
@@ -582,20 +548,20 @@ The enriched output sent to the cloud:
   "lotId": "LOT-2026-04-08-0042",
   "packagingLineId": "packaging-line-B",
   "containerId": "CNT-7891",
-  "packagingStartedAt": "2026-04-08T14:22:00Z",
+  "startedAt": "2026-04-08T14:22:00Z",
   "productType": "apple-sauce-500ml",
   "fillWeight": 502.3,
   "qualityGrade": "A",
-  "fillingCompletedAt": "2026-04-08T09:14:00Z"
+  "completedAt": "2026-04-08T09:14:00Z"
 }
 ```
 
-### Why this works well with `msg-to-dss-key`
+### Why this works well with these operators
 
-* **Low message rate**: ~1,000 lots/day is well within the operator's design envelope for state store writes.
+* **Low message rate**: ~1,000 lots/day is well within each operator's design envelope for state store writes and reads.
 * **Natural TTL alignment**: A 48-hour TTL covers the typical gap between filling and packaging. Expired lots that were never packaged are automatically cleaned up.
-* **`onMissing` safety net**: If Pipeline B references a lot that hasn't been produced yet or whose TTL has expired, the `onMissing` configuration controls whether the message passes through with a warning (`skip`) or is dropped (`error`).
-* **No custom read-side code**: Pipeline B uses only built-in AIO enrichment transforms — no additional WASM development required.
+* **`onMissing` safety net**: If Pipeline B references a lot that hasn't been produced yet or whose TTL has expired, the `dss-enricher-key` `onMissing` configuration controls whether the message passes through with a warning (`skip`) or is dropped (`error`).
+* **Dynamic key lookup**: Each packaging event references a different lot, so the DSS key is known only at runtime. The `dss-enricher-key` operator builds the key from message content, which built-in enrichment with static `datasets` keys cannot do.
 
 ## Limitations
 

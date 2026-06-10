@@ -1,12 +1,21 @@
 /*
- * Dataflow Graphs Configuration Example — Message to DSS Key Writer
+ * Dataflow Graphs Configuration Example — Message to DSS (Write and Optional Enrich)
  *
- * This file demonstrates how to configure a dataflow graph that uses the
- * msg-to-dss-key WASM module to write any JSON message from an MQTT topic
- * to the AIO Distributed State Store (DSS) under a configurable key,
- * while passing the message through unchanged to a destination MQTT topic.
+ * This file demonstrates the two complementary operators packaged in
+ * src/500-application/514-wasm-msg-to-dss:
  *
- * Before applying this configuration, build and push the module from
+ *   Pipeline A (write):  msg-to-dss-key writes any JSON message from an MQTT
+ *                        topic to the AIO Distributed State Store (DSS) under a
+ *                        configurable key, passing the message through unchanged.
+ *   Pipeline B (enrich): dss-enricher-key reads a stored record from the DSS
+ *                        using a key built from the incoming message and merges
+ *                        selected fields into the outgoing message.
+ *
+ * Pipeline B is OPTIONAL. Keep only Pipeline A in dataflow_graphs if you just
+ * need to write state to the DSS. Add Pipeline B when a downstream pipeline must
+ * enrich messages with that stored state using a dynamically constructed key.
+ *
+ * Before applying this configuration, build and push both operators from
  * src/500-application/514-wasm-msg-to-dss:
  *   ./scripts/build-wasm.sh
  *   ./scripts/push-to-acr.sh <acr_name>
@@ -21,10 +30,15 @@
  *   should_include_acr_registry_endpoint = true
  */
 
-// Configure the dataflow graph that wires the default MQTT source through
-// the msg-to-dss-key WASM module back to a destination MQTT topic.
-// The operator writes each message to the DSS and forwards it unchanged.
+// Configure two dataflow graphs:
+//   Pipeline A wires the default MQTT source through the msg-to-dss-key WASM
+//     module back to a destination MQTT topic. The operator writes each message
+//     to the DSS and forwards it unchanged.
+//   Pipeline B (optional) wires a telemetry source through the dss-enricher-key
+//     WASM module, reading state written by Pipeline A and merging it into the
+//     outgoing message. Remove this second object to deploy the write side only.
 dataflow_graphs = [
+  # Pipeline A: Write device state to DSS
   {
     name = "device-state-to-dss"
     nodes = [
@@ -86,12 +100,85 @@ dataflow_graphs = [
         to   = { name = "mqtt-destination" }
       }
     ]
+  },
+
+  # Pipeline B (OPTIONAL): Enrich telemetry with stored device state.
+  # Remove this object to deploy the write side only.
+  {
+    name = "telemetry-enrichment"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "telemetry-source"
+        sourceSettings = {
+          endpointRef = "default"
+          // Replace with the MQTT topic carrying telemetry to enrich
+          dataSources = ["telemetry/+/readings"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "dss-enricher-key-map"
+        graphSettings = {
+          // Must match the registry endpoint name: acr-{var.resource_prefix}
+          registryEndpointRef = "acr-dss"
+          artifact            = "dss-enricher-key-graph:1.0.0"
+          // Configure the DSS lookup and field merge.
+          // keyPath (required): JSON Pointer to the field used as the lookup key.
+          // keyPrefix (optional): Prefix matching the write side namespace.
+          // outputPath (optional): JSON path where enriched data is injected.
+          // fields (optional): Comma-separated fields to extract ("*" = all).
+          // onMissing (optional): "skip" (default), "error", or "default".
+          // Use the same keyPath and keyPrefix as Pipeline A to read its writes.
+          configuration = [
+            {
+              key   = "keyPath"
+              value = "/deviceId"
+            },
+            {
+              key   = "keyPrefix"
+              value = "device:"
+            },
+            {
+              key   = "outputPath"
+              value = "deviceContext"
+            },
+            {
+              key   = "fields"
+              value = "location,calibration,name"
+            },
+            {
+              key   = "onMissing"
+              value = "skip"
+            }
+          ]
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "enriched-destination"
+        destinationSettings = {
+          endpointRef     = "default"
+          dataDestination = "telemetry/enriched"
+        }
+      }
+    ]
+    node_connections = [
+      {
+        from = { name = "telemetry-source" }
+        to   = { name = "dss-enricher-key-map" }
+      },
+      {
+        from = { name = "dss-enricher-key-map" }
+        to   = { name = "enriched-destination" }
+      }
+    ]
   }
 ]
 
 // --- Additional Configuration Examples ---
 //
-// Nested key extraction:
+// Pipeline A (write) — nested key extraction:
 //
 //   configuration = [
 //     { key = "keyPath",    value = "/metadata/entityId" },
@@ -99,7 +186,7 @@ dataflow_graphs = [
 //     { key = "ttlSeconds", value = "3600" }
 //   ]
 //
-// Array-indexed key:
+// Pipeline A (write) — array-indexed key:
 //
 //   configuration = [
 //     { key = "keyPath",    value = "/entries/0/id" },
@@ -107,11 +194,26 @@ dataflow_graphs = [
 //     { key = "ttlSeconds", value = "86400" }
 //   ]
 //
-// No expiration with strict missing-key behavior:
+// Pipeline A (write) — no expiration with strict missing-key behavior:
 //
 //   configuration = [
 //     { key = "keyPath",    value = "/assetId" },
 //     { key = "keyPrefix",  value = "asset:" },
 //     { key = "ttlSeconds", value = "0" },
 //     { key = "onMissing",  value = "error" }
+//   ]
+//
+// Pipeline B (enrich) — merge all stored fields at the message root:
+//
+//   configuration = [
+//     { key = "keyPath",   value = "/deviceId" },
+//     { key = "keyPrefix", value = "device:" }
+//   ]
+//
+// Pipeline B (enrich) — strict mode that drops messages without matching state:
+//
+//   configuration = [
+//     { key = "keyPath",   value = "/deviceId" },
+//     { key = "keyPrefix", value = "device:" },
+//     { key = "onMissing", value = "error" }
 //   ]
