@@ -125,8 +125,8 @@ dataflow_graphs = [
           artifact            = "dss-enricher-key-graph:1.0.0"
           // Configure the DSS lookup and field merge.
           // keyPath (required): JSON Pointer to the field used as the lookup key.
-          // keyPrefix (optional): Prefix matching the write side namespace.
-          // outputPath (optional): JSON path where enriched data is injected.
+          // keyPrefix (required): Non-empty prefix matching the write side namespace.
+          // outputPath (optional): RFC 6901 JSON Pointer where enriched data is injected.
           // fields (optional): Comma-separated fields to extract ("*" = all).
           // onMissing (optional): "skip" (default), "error", or "default".
           // Use the same keyPath and keyPrefix as Pipeline A to read its writes.
@@ -141,7 +141,7 @@ dataflow_graphs = [
             },
             {
               key   = "outputPath"
-              value = "deviceContext"
+              value = "/deviceContext"
             },
             {
               key   = "fields"

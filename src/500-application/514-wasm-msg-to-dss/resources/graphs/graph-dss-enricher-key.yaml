@@ -17,10 +17,10 @@ moduleConfigurations:
         description: "JSON Pointer (RFC 6901) path to the field whose value forms the DSS lookup key. Examples: /id, /data/entityId, /sensors/0/ref"
       keyPrefix:
         name: keyPrefix
-        description: "Optional prefix prepended to the extracted key value for namespace isolation. Example: device: produces key device:sensor-001"
+        description: "Required non-empty prefix prepended to the extracted key value for namespace isolation. Must match the writer prefix. Example: device: produces key device:sensor-001"
       outputPath:
         name: outputPath
-        description: "Optional path where enriched data is injected in the output message. Empty = merge at root level. Example: context produces {... context: {stored fields}}"
+        description: "Optional RFC 6901 JSON Pointer (same syntax as keyPath) where enriched data is injected in the output message. Empty = merge at root level. Intermediate objects are created as needed. Example: /data/context produces {... data: {context: {stored fields}}}"
       fields:
         name: fields
         description: "Comma-separated list of fields to extract from the stored record. Use * for all top-level fields. Example: location,calibration,name"

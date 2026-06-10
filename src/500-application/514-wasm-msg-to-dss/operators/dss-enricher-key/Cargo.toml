@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 [dependencies]
 wit-bindgen = "0.22"
 wasm_graph_sdk = { version = "=1.1.3", registry = "aio-sdks" }
-serde_json = { version = "1", default-features = false, features = ["alloc"] }
+serde_json = { version = "1", default-features = false, features = ["alloc", "preserve_order"] }
 
 [lints.clippy]
 correctness = { level = "deny", priority = -1 }

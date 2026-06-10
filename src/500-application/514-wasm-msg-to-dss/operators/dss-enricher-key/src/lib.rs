@@ -6,11 +6,15 @@
 //!
 //! Configuration (via `ModuleConfiguration.properties`):
 //! - `keyPath`    (required): JSON Pointer (RFC 6901) to the key field
-//! - `keyPrefix`  (optional): Prefix prepended to the extracted key; default empty
-//! - `outputPath` (optional): Path where enriched data is injected; empty = root merge
+//! - `keyPrefix`  (required): Non-empty prefix prepended to the extracted key for namespace isolation
+//! - `outputPath` (optional): RFC 6901 JSON Pointer where enriched data is injected; empty = root merge
 //! - `fields`     (optional): Comma-separated fields to extract; `*` = all; default `*`
 //! - `onMissing`  (optional): `skip` (default), `error`, or `default`
 //! - `onError`    (optional): `skip` (default) or `error`
+//!
+//! Logging note: per-message passthrough and skip paths log at `Debug` because
+//! they include runtime values (lookup keys derived from message content) that
+//! may be sensitive. Enable `Debug` logging only in trusted/diagnostic contexts.
 
 use std::sync::OnceLock;
 
@@ -83,18 +87,44 @@ fn extract_fields(
     }
 }
 
+/// Decodes a single RFC 6901 JSON Pointer reference token (`~1` -> `/`, `~0` -> `~`).
+fn decode_json_pointer_token(token: &str) -> String {
+    token.replace("~1", "/").replace("~0", "~")
+}
+
 /// Merges enrichment data into the message at the configured output path.
+/// `output_path`, when present, is an RFC 6901 JSON Pointer (matching `keyPath`);
+/// intermediate objects are created as needed.
 fn merge_into_message(
     message: &mut serde_json::Value,
     enrichment: serde_json::Value,
     output_path: &Option<String>,
 ) {
     match output_path {
-        Some(path) => {
-            // Inject under the specified path
-            if let Some(obj) = message.as_object_mut() {
-                obj.insert(path.clone(), enrichment);
+        Some(pointer) => {
+            // Inject under the JSON Pointer location, creating nested objects as needed
+            let Some(obj) = message.as_object_mut() else {
+                return;
+            };
+            let tokens: Vec<String> = pointer
+                .split('/')
+                .skip(1)
+                .map(decode_json_pointer_token)
+                .collect();
+            let Some((last, parents)) = tokens.split_last() else {
+                return;
+            };
+            let mut current = obj;
+            for token in parents {
+                let entry = current
+                    .entry(token.clone())
+                    .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+                if !entry.is_object() {
+                    *entry = serde_json::Value::Object(serde_json::Map::new());
+                }
+                current = entry.as_object_mut().expect("entry coerced to object");
             }
+            current.insert(last.clone(), enrichment);
         }
         None => {
             // Merge at root level — stored fields are added alongside source fields
@@ -137,19 +167,46 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
         }
     };
 
-    // keyPrefix — OPTIONAL
-    let key_prefix = properties
+    // keyPrefix — REQUIRED (non-empty) for namespace isolation
+    let key_prefix = match properties
         .iter()
         .find(|(k, _)| k == "keyPrefix")
         .map(|(_, v)| v.clone())
-        .unwrap_or_default();
+    {
+        Some(prefix) if !prefix.is_empty() => prefix,
+        Some(_) => {
+            return Err(
+                "Invalid keyPrefix: must be a non-empty namespace prefix. \
+                 Use the same prefix as the writer, e.g. device:"
+                    .to_string(),
+            );
+        }
+        None => {
+            return Err(
+                "Missing required configuration: 'keyPrefix'. \
+                 Provide a non-empty namespace prefix matching the writer, e.g. device:"
+                    .to_string(),
+            );
+        }
+    };
 
-    // outputPath — OPTIONAL
-    let output_path = properties
+    // outputPath — OPTIONAL (RFC 6901 JSON Pointer, matching keyPath)
+    let output_path = match properties
         .iter()
         .find(|(k, _)| k == "outputPath")
         .map(|(_, v)| v.clone())
-        .filter(|v| !v.is_empty());
+        .filter(|v| !v.is_empty())
+    {
+        Some(path) if path.starts_with('/') => Some(path),
+        Some(other) => {
+            return Err(format!(
+                "Invalid outputPath '{}': must start with '/'. \
+                 Use RFC 6901 JSON Pointer syntax, e.g. /context, /data/context",
+                other
+            ));
+        }
+        None => None,
+    };
 
     // fields — OPTIONAL (default: *)
     let fields = match properties
@@ -275,7 +332,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
         Ok(s) => s,
         Err(_) => {
             logger::log(
-                Level::Warn,
+                Level::Debug,
                 MODULE_NAME,
                 "Payload is not valid UTF-8 — passing through unchanged",
             );
@@ -287,7 +344,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
         Ok(v) => v,
         Err(e) => {
             logger::log(
-                Level::Warn,
+                Level::Debug,
                 MODULE_NAME,
                 &format!("Payload is not valid JSON ({}). Passing through unchanged.", e),
             );
@@ -307,7 +364,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
                 match config.on_missing {
                     OnMissing::Error => return Err(Error { message: msg }),
                     _ => {
-                        logger::log(Level::Warn, MODULE_NAME, &msg);
+                        logger::log(Level::Debug, MODULE_NAME, &msg);
                         return Ok(input);
                     }
                 }
@@ -318,7 +375,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
             match config.on_missing {
                 OnMissing::Error => return Err(Error { message: msg }),
                 _ => {
-                    logger::log(Level::Warn, MODULE_NAME, &msg);
+                    logger::log(Level::Debug, MODULE_NAME, &msg);
                     return Ok(input);
                 }
             }
@@ -343,7 +400,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
                             match config.on_error {
                                 OnError::Error => return Err(Error { message: msg }),
                                 OnError::Skip => {
-                                    logger::log(Level::Warn, MODULE_NAME, &msg);
+                                    logger::log(Level::Debug, MODULE_NAME, &msg);
                                     None
                                 }
                             }
@@ -357,7 +414,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
                         match config.on_error {
                             OnError::Error => return Err(Error { message: msg }),
                             OnError::Skip => {
-                                logger::log(Level::Warn, MODULE_NAME, &msg);
+                                logger::log(Level::Debug, MODULE_NAME, &msg);
                                 None
                             }
                         }
@@ -370,11 +427,11 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
                 match config.on_missing {
                     OnMissing::Error => return Err(Error { message: msg }),
                     OnMissing::Default => {
-                        logger::log(Level::Info, MODULE_NAME, &msg);
+                        logger::log(Level::Debug, MODULE_NAME, &msg);
                         Some(serde_json::Value::Object(serde_json::Map::new()))
                     }
                     OnMissing::Skip => {
-                        logger::log(Level::Info, MODULE_NAME, &msg);
+                        logger::log(Level::Debug, MODULE_NAME, &msg);
                         None
                     }
                 }
@@ -388,7 +445,7 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
             match config.on_error {
                 OnError::Error => return Err(Error { message: msg }),
                 OnError::Skip => {
-                    logger::log(Level::Warn, MODULE_NAME, &msg);
+                    logger::log(Level::Debug, MODULE_NAME, &msg);
                     None
                 }
             }
@@ -400,7 +457,8 @@ fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
         let enrichment = extract_fields(&stored, &config.fields);
         merge_into_message(&mut parsed, enrichment, &config.output_path);
 
-        // Serialize enriched message
+        // Serialize enriched message. serde_json is built with `preserve_order`,
+        // so original field order is retained and enrichment fields appended.
         let enriched_bytes = serde_json::to_vec(&parsed).map_err(|e| Error {
             message: format!("Failed to serialize enriched message: {}", e),
         })?;
@@ -497,21 +555,46 @@ mod tests {
     fn test_merge_at_output_path() {
         let mut msg = serde_json::json!({"id": "x", "temp": 22});
         let enrichment = serde_json::json!({"location": "lab"});
-        merge_into_message(&mut msg, enrichment.clone(), &Some("context".to_string()));
+        merge_into_message(&mut msg, enrichment.clone(), &Some("/context".to_string()));
         assert_eq!(
             msg,
             serde_json::json!({"id": "x", "temp": 22, "context": {"location": "lab"}})
         );
     }
 
+    #[test]
+    fn test_merge_at_nested_output_path() {
+        let mut msg = serde_json::json!({"id": "x"});
+        let enrichment = serde_json::json!({"location": "lab"});
+        merge_into_message(&mut msg, enrichment, &Some("/data/context".to_string()));
+        assert_eq!(
+            msg,
+            serde_json::json!({"id": "x", "data": {"context": {"location": "lab"}}})
+        );
+    }
+
+    #[test]
+    fn test_merge_preserves_field_order() {
+        // With preserve_order, original keys keep their order and enrichment is appended.
+        let mut msg: serde_json::Value =
+            serde_json::from_str(r#"{"zebra":1,"apple":2,"mango":3}"#).unwrap();
+        let enrichment = serde_json::json!({"location": "lab"});
+        merge_into_message(&mut msg, enrichment, &None);
+        let serialized = serde_json::to_string(&msg).unwrap();
+        assert_eq!(serialized, r#"{"zebra":1,"apple":2,"mango":3,"location":"lab"}"#);
+    }
+
     // ─── parse_config ────────────────────────────────────────────────────
 
     #[test]
     fn test_parse_config_minimal_valid() {
-        let props = vec![("keyPath".to_string(), "/id".to_string())];
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+        ];
         let config = parse_config(&props).unwrap();
         assert_eq!(config.key_path, "/id");
-        assert_eq!(config.key_prefix, "");
+        assert_eq!(config.key_prefix, "device:");
         assert_eq!(config.output_path, None);
         assert_eq!(config.on_missing, OnMissing::Skip);
         assert_eq!(config.on_error, OnError::Skip);
@@ -522,7 +605,7 @@ mod tests {
         let props = vec![
             ("keyPath".to_string(), "/data/ref".to_string()),
             ("keyPrefix".to_string(), "entity:".to_string()),
-            ("outputPath".to_string(), "enriched".to_string()),
+            ("outputPath".to_string(), "/enriched".to_string()),
             ("fields".to_string(), "name,category".to_string()),
             ("onMissing".to_string(), "error".to_string()),
             ("onError".to_string(), "error".to_string()),
@@ -530,7 +613,7 @@ mod tests {
         let config = parse_config(&props).unwrap();
         assert_eq!(config.key_path, "/data/ref");
         assert_eq!(config.key_prefix, "entity:");
-        assert_eq!(config.output_path, Some("enriched".to_string()));
+        assert_eq!(config.output_path, Some("/enriched".to_string()));
         assert_eq!(config.on_missing, OnMissing::Error);
         assert_eq!(config.on_error, OnError::Error);
     }
@@ -552,9 +635,54 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_config_missing_key_prefix() {
+        let props = vec![("keyPath".to_string(), "/id".to_string())];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("Missing required configuration: 'keyPrefix'"));
+    }
+
+    #[test]
+    fn test_parse_config_empty_key_prefix_rejected() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "".to_string()),
+        ];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("non-empty namespace prefix"));
+    }
+
+    #[test]
+    fn test_parse_config_invalid_output_path() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+            ("outputPath".to_string(), "no-leading-slash".to_string()),
+        ];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Invalid outputPath"));
+    }
+
+    #[test]
+    fn test_parse_config_nested_output_path_valid() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+            ("outputPath".to_string(), "/data/context".to_string()),
+        ];
+        let config = parse_config(&props).unwrap();
+        assert_eq!(config.output_path, Some("/data/context".to_string()));
+    }
+
+    #[test]
     fn test_parse_config_invalid_on_missing() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
             ("onMissing".to_string(), "invalid".to_string()),
         ];
         let result = parse_config(&props);
@@ -565,6 +693,7 @@ mod tests {
     fn test_parse_config_on_missing_default() {
         let props = vec![
             ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
             ("onMissing".to_string(), "default".to_string()),
         ];
         let config = parse_config(&props).unwrap();

@@ -55,6 +55,8 @@ The `msg-to-dss-key` operator parses the JSON payload, extracts the key value at
 
 The `dss-enricher-key` operator parses the JSON payload, extracts the key value at the configured JSON Pointer path, constructs the DSS key as `{keyPrefix}{extractedKey}`, reads the stored record with `state_store::get`, extracts the selected fields, and merges them into the outgoing message. The operator is passthrough-first: state store errors and missing keys never drop messages by default, and the read is a pure lookup with no side effects on DSS state.
 
+Because the lookup key is derived from attacker-influenceable message content, `keyPrefix` is **required** and must be non-empty. The prefix scopes every read to a single namespace, preventing a crafted message from reading records written under unrelated prefixes. Always set `keyPrefix` to the same value used by the write pipeline.
+
 ## Folder Structure
 
 ```text
@@ -286,8 +288,8 @@ Reference: [Filter and route data in data flow graphs](https://learn.microsoft.c
 | Parameter    | Required | Default | Description                                                                                                                                                    |
 |--------------|----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `keyPath`    | Yes      | (none)  | RFC 6901 JSON Pointer to the field used as the DSS lookup key. Examples: `/id`, `/data/entityId`, `/items/0/ref`                                               |
-| `keyPrefix`  | No       | (empty) | String prepended to the extracted key value. Example: `device:` produces key `device:sensor-001`                                                               |
-| `outputPath` | No       | (empty) | JSON path where enriched data is injected. Empty merges at root. Example: `context` nests under `$.context`                                                    |
+| `keyPrefix`  | Yes      | (none)  | Required non-empty string prepended to the extracted key value for namespace isolation. Must match the writer prefix. Example: `device:` produces key `device:sensor-001` |
+| `outputPath` | No       | (empty) | RFC 6901 JSON Pointer (same syntax as `keyPath`) where enriched data is injected. Empty merges at root. Intermediate objects are created as needed, e.g. `/data/context` nests under `$.data.context` |
 | `fields`     | No       | `*`     | Comma-separated list of fields to extract from the stored record. `*` extracts all top-level fields. Example: `location,calibration,name`                      |
 | `onMissing`  | No       | `skip`  | Behavior when key is not found in DSS: `skip` (passthrough with warning), `error` (return error, drops message), `default` (inject empty object at outputPath) |
 | `onError`    | No       | `skip`  | Behavior on state store errors: `skip` (passthrough with warning), `error` (return error)                                                                      |
@@ -297,7 +299,8 @@ Reference: [Filter and route data in data flow graphs](https://learn.microsoft.c
 The init phase returns `false` and halts the dataflow when any of the following validations fail:
 
 * `keyPath` must be non-empty and start with `/` (RFC 6901)
-* `outputPath` if provided must be a valid identifier (alphanumeric, underscores, dots)
+* `keyPrefix` must be non-empty for namespace isolation
+* `outputPath` if provided must be an RFC 6901 JSON Pointer starting with `/` (same syntax as `keyPath`)
 * `fields` if provided must be non-empty comma-separated identifiers
 * `onMissing` must be one of `skip`, `error`, or `default`
 * `onError` must be one of `skip` or `error`
@@ -319,7 +322,7 @@ Select fields under a namespace:
 ```text
 keyPath=/deviceId
 keyPrefix=device:
-outputPath=deviceContext
+outputPath=/deviceContext
 fields=name,category
 ```
 
@@ -445,8 +448,12 @@ The `dss-enricher-key` operator returns `false` during init if required configur
 
 * `Missing required configuration: 'keyPath'`: Add the `keyPath` parameter to the graph definition.
 * `Invalid keyPath '...'`: The value must start with `/` and follow RFC 6901 JSON Pointer syntax.
+* `Missing required configuration: 'keyPrefix'` / `Invalid keyPrefix`: Provide a non-empty `keyPrefix` matching the write side namespace.
+* `Invalid outputPath '...'`: The value must start with `/` and follow RFC 6901 JSON Pointer syntax (same as `keyPath`).
 * `Invalid onMissing value '...'`: Use `skip`, `error`, or `default`.
 * `Invalid onError value '...'`: Use `skip` or `error`.
+
+The enrich operator preserves the original field order of the incoming message and appends enrichment fields, so enriched output stays visually consistent with the source message.
 
 ## Capacity and Performance Considerations
 
