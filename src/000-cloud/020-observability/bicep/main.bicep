@@ -33,7 +33,7 @@ param dailyQuotaInGb int = 10
 */
 
 @description('Grafana major version')
-param grafanaMajorVersion string = '11'
+param grafanaMajorVersion string = '12'
 
 @description('The principalId (objectId) of the user or service principal to assign the Grafana Admin role.')
 param grafanaAdminPrincipalId string?

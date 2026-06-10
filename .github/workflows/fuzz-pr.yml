@@ -38,7 +38,7 @@ jobs:
       matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzRustFolders) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
           fetch-depth: 0
       - name: Build fuzzers
@@ -57,7 +57,7 @@ jobs:
           output-sarif: true
       - name: Upload coverage to Codecov
         if: always()
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354  # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7.0.0
         with:
           use_oidc: true
           flags: fuzz-${{ matrix.folderName }}
@@ -78,7 +78,7 @@ jobs:
       matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
           fetch-depth: 0
       - name: Build fuzzers
@@ -97,7 +97,7 @@ jobs:
           output-sarif: true
       - name: Upload coverage to Codecov
         if: always()
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354  # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7.0.0
         with:
           use_oidc: true
           flags: fuzz-py-${{ matrix.folderName }}
@@ -118,7 +118,7 @@ jobs:
       matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzJsFolders) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
           fetch-depth: 0
       - name: Build fuzzers
@@ -137,7 +137,7 @@ jobs:
           output-sarif: true
       - name: Upload coverage to Codecov
         if: always()
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354  # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7.0.0
         with:
           use_oidc: true
           flags: fuzz-js-${{ matrix.folderName }}
