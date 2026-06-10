@@ -42,7 +42,9 @@ Every data item in a dataflow graph carries a [hybrid logical clock (HLC) timest
 
 That wall-clock value originates from the publisher's optional [`__ts` MQTT user property](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graph-wasm), whose format is `<timestamp>:<counter>:<nodeid>`. When a publisher sets `__ts`, the value reflects that publisher's clock, so its absolute accuracy depends on the source. When a publisher does not set `__ts`, the data flow assigns the timestamp during processing. The property is not mandatory.
 
-Because of this, treat `messageTimestamp` as deterministic event-time for ordering, windowing, and age calculations rather than a guaranteed broker-stamped ingestion clock. The built-in [`accumulate`](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concepts-wasm-modules#operators-and-modules) (windowing) and `delay` operators key off this same HLC timestamp, so age and duration results from `messageTimestamp` stay consistent with built-in time-based operators in the same graph. For a precise ingestion time, ensure upstream publishers set `__ts` from a trusted clock; otherwise prefer an explicit payload timestamp field via `inputSource = payload`.
+Because of this, treat `messageTimestamp` as deterministic event-time for ordering, windowing, and age calculations rather than a guaranteed broker-stamped ingestion clock.
+The built-in [`accumulate`](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concepts-wasm-modules#operators-and-modules) (windowing) and `delay` operators key off this same HLC timestamp, so age and duration results from `messageTimestamp` stay consistent with built-in time-based operators in the same graph.
+For a precise ingestion time, ensure upstream publishers set `__ts` from a trusted clock; otherwise prefer an explicit payload timestamp field via `inputSource = payload`.
 
 ## Folder Structure
 
