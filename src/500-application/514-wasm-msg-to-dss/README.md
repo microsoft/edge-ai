@@ -285,14 +285,14 @@ Reference: [Filter and route data in data flow graphs](https://learn.microsoft.c
 
 ### Enrich Operator Parameters (`dss-enricher-key`)
 
-| Parameter    | Required | Default | Description                                                                                                                                                    |
-|--------------|----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `keyPath`    | Yes      | (none)  | RFC 6901 JSON Pointer to the field used as the DSS lookup key. Examples: `/id`, `/data/entityId`, `/items/0/ref`                                               |
-| `keyPrefix`  | Yes      | (none)  | Required non-empty string prepended to the extracted key value for namespace isolation. Must match the writer prefix. Example: `device:` produces key `device:sensor-001` |
+| Parameter    | Required | Default | Description                                                                                                                                                                                           |
+|--------------|----------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `keyPath`    | Yes      | (none)  | RFC 6901 JSON Pointer to the field used as the DSS lookup key. Examples: `/id`, `/data/entityId`, `/items/0/ref`                                                                                      |
+| `keyPrefix`  | Yes      | (none)  | Required non-empty string prepended to the extracted key value for namespace isolation. Must match the writer prefix. Example: `device:` produces key `device:sensor-001`                             |
 | `outputPath` | No       | (empty) | RFC 6901 JSON Pointer (same syntax as `keyPath`) where enriched data is injected. Empty merges at root. Intermediate objects are created as needed, e.g. `/data/context` nests under `$.data.context` |
-| `fields`     | No       | `*`     | Comma-separated list of fields to extract from the stored record. `*` extracts all top-level fields. Example: `location,calibration,name`                      |
-| `onMissing`  | No       | `skip`  | Behavior when key is not found in DSS: `skip` (passthrough with warning), `error` (return error, drops message), `default` (inject empty object at outputPath) |
-| `onError`    | No       | `skip`  | Behavior on state store errors: `skip` (passthrough with warning), `error` (return error)                                                                      |
+| `fields`     | No       | `*`     | Comma-separated list of fields to extract from the stored record. `*` extracts all top-level fields. Example: `location,calibration,name`                                                             |
+| `onMissing`  | No       | `skip`  | Behavior when key is not found in DSS: `skip` (passthrough with warning), `error` (return error, drops message), `default` (inject empty object at outputPath)                                        |
+| `onError`    | No       | `skip`  | Behavior on state store errors: `skip` (passthrough with warning), `error` (return error)                                                                                                             |
 
 #### Enrich Validation Rules
 
