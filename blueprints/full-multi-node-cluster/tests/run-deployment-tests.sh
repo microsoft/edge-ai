@@ -113,7 +113,7 @@ run_terraform_tests() {
   echo "Resource Group: ${TEST_RESOURCE_GROUP_NAME}"
 
   echo -e "${YELLOW}Running Terraform deployment tests...${NC}"
-  if go test $VERBOSE_FLAG -run TestTerraformFullSingleNodeClusterDeploy -timeout 2h; then
+  if go test $VERBOSE_FLAG -run TestTerraformFullMultiNodeClusterDeploy -timeout 2h; then
     echo -e "${GREEN}✓ Terraform tests passed${NC}"
     return 0
   else
@@ -127,7 +127,7 @@ run_bicep_tests() {
   echo "Resource Group: ${TEST_RESOURCE_GROUP_NAME}"
 
   echo -e "${YELLOW}Running Bicep deployment tests...${NC}"
-  if go test $VERBOSE_FLAG -run TestBicepFullSingleNodeClusterDeploy -timeout 2h; then
+  if go test $VERBOSE_FLAG -run TestBicepFullMultiNodeClusterDeploy -timeout 2h; then
     echo -e "${GREEN}✓ Bicep tests passed${NC}"
     return 0
   else

@@ -44,7 +44,7 @@
 #   custom-terraform-test:
 #     uses: ./.github/workflows/cluster-test-terraform.yml
 #     with:
-#       working-directory: 'blueprints/full-single-cluster/terraform'
+#       working-directory: 'blueprints/full-multi-node-cluster/terraform'
 #       terraform-version: '1.12.2'
 #       terraform-vars-file: './test.tfvars'
 #       backend-key: 'custom-state.tfstate'

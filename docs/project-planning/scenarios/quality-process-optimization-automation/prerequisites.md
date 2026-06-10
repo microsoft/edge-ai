@@ -245,7 +245,6 @@ When implementing multiple scenarios, optimize shared infrastructure:
 
 | **Blueprint**                                                  | **Use Case**              | **Resource Requirements**            | **Implementation Complexity** |
 |----------------------------------------------------------------|---------------------------|--------------------------------------|-------------------------------|
-| **[Full Single-Node Cluster][full-single-node-cluster]**       | Single production line    | 1 edge device, AI-capable specs      | ⭐⭐⭐⭐                          |
 | **[Full Multi-Node Cluster][full-multi-node-cluster]**         | Multiple production lines | 3+ edge devices, extensive resources | ⭐⭐⭐⭐⭐                         |
 | **[Only Edge IoT Ops][only-edge-iot-ops]**                     | Edge-focused quality      | 1+ edge devices, minimal cloud       | ⭐⭐⭐                           |
 | **[Minimum Single-Node Cluster][minimum-single-node-cluster]** | Development/POC           | 1 edge device, basic specs           | ⭐⭐                            |
@@ -306,7 +305,6 @@ When implementing multiple scenarios, optimize shared infrastructure:
 [blueprints-readme]: /blueprints/README
 [security-identity-module]: /src/000-cloud/010-security-identity/terraform/README
 [iot-operations-module]: /src/100-edge/110-iot-ops/terraform/README
-[full-single-node-cluster]: /blueprints/full-single-node-cluster/README
 [full-multi-node-cluster]: /blueprints/full-multi-node-cluster/README
 [only-edge-iot-ops]: /blueprints/only-edge-iot-ops/README
 [minimum-single-node-cluster]: /blueprints/minimum-single-node-cluster/README

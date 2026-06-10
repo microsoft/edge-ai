@@ -1,4 +1,4 @@
-// Package test provides validation and testing utilities for the full-single-node-cluster blueprint.
+// Package test provides validation and testing utilities for the full-multi-node-cluster blueprint.
 // This file contains post-deployment setup functions for permissions and connectivity.
 package test
 

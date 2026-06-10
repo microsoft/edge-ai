@@ -1,8 +1,8 @@
 /*
- * Leak Detection Scenario on the full-single-node-cluster blueprint
+ * Leak Detection Scenario on the full-multi-node-cluster blueprint
  *
  * This is NOT a separate blueprint. It is an example tfvars overlay for the
- * `full-single-node-cluster` Terraform that configures the alert dataflow
+ * `full-multi-node-cluster` Terraform that configures the alert dataflow
  * routing, Azure Functions for alert processing, and the 045-notification
  * Logic App pipeline for Teams-based leak detection alerts with session
  * deduplication.

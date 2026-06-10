@@ -1,8 +1,8 @@
 /**
- * # Full Multi Node Cluster Blueprint (Updated)
+ * # Full Multi Node Cluster Blueprint
  *
- * Deploys the complete Edge AI solution for a multi-node edge cluster, aligning module orchestration
- * with the single-node blueprint while preserving multi-node specific capabilities.
+ * Deploys the complete Edge AI solution for a single- or multi-node edge cluster, targeting either a
+ * VM or a pre-existing Arc-enabled machine.
  */
 
 locals {
@@ -12,6 +12,22 @@ locals {
   vm_host_virtual_machines        = try(module.cloud_vm_host[0].virtual_machines, [])
   cluster_machine_count           = local.should_use_arc_machines ? var.arc_machine_count : var.host_machine_count
   cluster_node_machine_count      = max(local.cluster_machine_count - 1, 0)
+
+  alert_eventhub_name     = coalesce(var.alert_eventhub_name, "evh-${var.resource_prefix}-alerts-${var.environment}-${var.instance}")
+  eventhub_namespace_name = "evhns-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
+
+  alert_eventhub_config = var.should_create_azure_functions ? {
+    (local.alert_eventhub_name) = {}
+  } : {}
+
+  eventhubs = merge(local.alert_eventhub_config, var.eventhubs)
+
+  function_app_computed_settings = var.should_create_azure_functions ? {
+    "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
+    "EventHubConnection__credential"              = "managedidentity"
+    "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
+    "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
+  } : {}
 
   acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
     name                           = "acr-${var.resource_prefix}"
@@ -45,7 +61,7 @@ resource "terraform_data" "defer_arc_machine_prefix" {
 data "azurerm_arc_machine" "arc_machines" {
   count = local.should_use_arc_machines ? length(range(var.arc_machine_count)) : 0
 
-  name                = "${terraform_data.defer_arc_machine_prefix[0].output.arc_machine_name_prefix}${count.index + 1}"
+  name                = coalesce(var.arc_machine_count == 1 ? var.arc_machine_name : null, "${terraform_data.defer_arc_machine_prefix[0].output.arc_machine_name_prefix}${count.index + 1}")
   resource_group_name = coalesce(var.arc_machine_resource_group_name, var.resource_group_name, module.cloud_resource_group.resource_group.name)
 }
 
@@ -246,9 +262,41 @@ module "cloud_messaging" {
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  should_create_azure_functions     = var.should_create_azure_functions
+  should_create_azure_functions = var.should_create_azure_functions
+
+  // Event Hub configuration with alerts hub merged when Functions are enabled
+  eventhubs = local.eventhubs
+
+  function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
+
   log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
   should_enable_diagnostic_settings = true
+}
+
+module "cloud_notification" {
+  count  = var.should_deploy_notification ? 1 : 0
+  source = "../../../src/000-cloud/045-notification/terraform"
+
+  depends_on = [module.cloud_messaging]
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  eventhub_namespace = module.cloud_messaging.eventhub_namespace
+  eventhub_name      = local.alert_eventhub_name
+  storage_account    = module.cloud_data.storage_account
+
+  event_schema                  = var.notification_event_schema
+  notification_message_template = var.notification_message_template
+  closure_message_template      = var.closure_message_template
+  partition_key_field           = var.notification_partition_key_field
+  teams_recipient_id            = var.teams_recipient_id
+  teams_group_id                = var.teams_group_id
+  teams_post_location           = var.teams_post_location
 }
 
 module "cloud_vm_host" {
@@ -527,7 +575,7 @@ module "edge_messaging" {
   aio_instance         = module.edge_iot_ops[0].aio_instance
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
-  eventhub             = module.cloud_messaging.eventhubs[0]
+  eventhub             = try([for eh in module.cloud_messaging.eventhubs : eh if eh.eventhub_name != local.alert_eventhub_name][0], try(module.cloud_messaging.eventhubs[0], null))
   adr_namespace        = module.cloud_data.adr_namespace
 
   dataflow_graphs    = var.dataflow_graphs

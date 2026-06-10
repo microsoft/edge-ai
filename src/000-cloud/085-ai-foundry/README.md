@@ -276,7 +276,7 @@ When enabling private endpoints, three DNS zones are automatically created and c
 
 #### Blueprint Integration
 
-The component is integrated into the full-single-node-cluster and full-multi-node-cluster blueprints with conditional deployment:
+The component is integrated into the full-multi-node-cluster blueprint with conditional deployment:
 
 ```bicep
 param shouldDeployAiFoundry bool = false
