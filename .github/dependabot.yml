@@ -1,8 +1,9 @@
+---
 # Dependabot configuration
 #
 # Grouping policy (aligned with microsoft/hve-core, optimized for fewer PRs):
 #   * One grouped PR per ecosystem per week (Monday 09:00 US/Pacific).
-#     Floor = 7 PRs/week (one per ecosystem) since Dependabot cannot group
+#     Floor = 8 PRs/week (one per ecosystem) since Dependabot cannot group
 #     across ecosystems.
 #   * Each ecosystem uses a single group named after the ecosystem itself,
 #     pattern "*", and update-types ["major", "minor", "patch"] so every
@@ -87,6 +88,33 @@ updates:
       - "cargo"
     groups:
       cargo:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+
+  # Go modules
+  - package-ecosystem: "gomod"
+    directories:
+      - "/blueprints/full-single-node-cluster/tests"
+      - "/src/900-tools-utilities/904-test-utilities"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "US/Pacific"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+      - "gomod"
+    groups:
+      gomod:
         patterns:
           - "*"
         update-types:
