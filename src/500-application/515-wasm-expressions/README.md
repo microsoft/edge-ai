@@ -111,6 +111,8 @@ Once the artifacts are available in ACR, the dataflow graph resolves and begins 
 
 One operator runs one `mode` per graph node. All values are strings, matching the dataflow configuration contract.
 
+Validation runs at deployment (init): a field that does not apply to the selected `mode` is rejected with a message naming the field and mode, and `format`/`inputFormat` layouts are checked for unknown strftime specifiers. This gives fast, specific feedback in the operations portal instead of silently ignoring a misplaced value.
+
 | Config key    | Modes that use it                        | Purpose                                                                                                                  |
 |---------------|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
 | `mode`        | all                                      | `parse` \| `format` \| `reformat` \| `duration` \| `parts`                                                               |
@@ -118,7 +120,7 @@ One operator runs one `mode` per graph node. All values are strings, matching th
 | `inputPath`   | parse, format, reformat, parts, duration | JSON Pointer (RFC 6901) to the source field when `inputSource` is `payload`                                              |
 | `inputPath2`  | duration                                 | JSON Pointer to the second timestamp for the duration diff                                                               |
 | `outputPath`  | all                                      | JSON Pointer where the result is written                                                                                 |
-| `inputFormat` | reformat, parse (optional)               | strftime parse layout when the input is not RFC 3339                                                                     |
+| `inputFormat` | parse, reformat, duration, parts (optional) | strftime parse layout when the input is not RFC 3339                                                                  |
 | `format`      | format, reformat                         | strftime output layout, e.g. `%Y-%m-%dT%H:%M:%S%.3fZ` or `%Y-%m-%d %H:%M`                                                |
 | `unit`        | duration                                 | `ms` \| `seconds` \| `minutes` \| `hours` (default `ms`)                                                                 |
 | `epochUnit`   | parse, format                            | `ms` \| `seconds`, epoch granularity in and out (default `ms`)                                                           |

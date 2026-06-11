@@ -16,16 +16,41 @@
 //! - `duration` — two timestamps (`inputPath`, `inputPath2`) -> numeric diff (`unit`)
 //! - `parts`    — timestamp -> object of requested `parts`
 //!
-//! Configuration (via `ModuleConfiguration.properties`, flat camelCase strings):
+//! # Fields by mode
+//!
+//! Every node runs exactly one `mode`. Each field is required (R), optional (O),
+//! or not applicable (—) for that mode. A low-code UI surfaces all fields at
+//! once, so a field that is not applicable to the selected mode is rejected at
+//! init rather than silently ignored.
+//!
+//! | field         | parse | format | reformat | duration | parts |
+//! |---------------|-------|--------|----------|----------|-------|
+//! | `inputSource` |  O    |  O     |   O      |   O      |  O    |
+//! | `inputPath`   |  R*   |  R*    |   R*     |   R*     |  R*   |
+//! | `inputPath2`  |  —    |  —     |   —      |   R      |  —    |
+//! | `outputPath`  |  R    |  R     |   R      |   R      |  R    |
+//! | `inputFormat` |  O    |  —     |   O      |   O      |  O    |
+//! | `format`      |  —    |  R     |   R      |   —      |  —    |
+//! | `unit`        |  —    |  —     |   —      |   O      |  —    |
+//! | `epochUnit`   |  O    |  O     |   —      |   —      |  —    |
+//! | `parts`       |  —    |  —     |   —      |   —      |  R    |
+//! | `onMissing`   |  O    |  O     |   O      |   O      |  O    |
+//!
+//! R* = required when `inputSource = payload`; omit when `inputSource =
+//! messageTimestamp`. In `duration`, `inputPath` is the first timestamp; with
+//! `inputSource = messageTimestamp` the message HLC timestamp is the first
+//! timestamp and only `inputPath2` is read from the payload.
+//!
+//! Field reference (via `ModuleConfiguration.properties`, flat camelCase strings):
 //! - `mode`        (required): `parse` | `format` | `reformat` | `duration` | `parts`
 //! - `inputSource` (optional): `payload` (default, uses `inputPath`) | `messageTimestamp`
 //! - `inputPath`   (required when `inputSource = payload`): JSON Pointer to the source field
 //! - `inputPath2`  (required for `duration`): JSON Pointer to the second timestamp
 //! - `outputPath`  (required): JSON Pointer where the result is written
-//! - `inputFormat` (optional): strftime parse layout when input is not RFC 3339
+//! - `inputFormat` (optional, not `format` mode): strftime parse layout when input is not RFC 3339
 //! - `format`      (required for `format`/`reformat`): strftime output layout
-//! - `unit`        (optional): duration unit `ms` (default) | `seconds` | `minutes` | `hours`
-//! - `epochUnit`   (optional): epoch granularity `ms` (default) | `seconds`
+//! - `unit`        (optional, `duration` only): `ms` (default) | `seconds` | `minutes` | `hours`
+//! - `epochUnit`   (optional, `parse`/`format` only): `ms` (default) | `seconds`
 //! - `parts`       (required for `parts`): comma list of year,month,day,hour,minute,second,weekday,ordinal
 //! - `onMissing`   (optional): `skip` (default, passthrough) | `error`
 
@@ -160,6 +185,12 @@ fn passthrough_or_error(
 }
 
 /// Parses and validates operator configuration from key-value properties.
+///
+/// Validation is mode-aware: a field that is not applicable to the selected
+/// `mode` (see the module-level table) is rejected so a low-code UI that
+/// surfaces every field cannot silently ignore a misplaced value. `format` and
+/// `inputFormat` layouts are checked for unknown strftime specifiers.
+///
 /// Returns `Ok(OperatorConfig)` on success, or `Err(message)` describing the failure.
 fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, String> {
     let get = |key: &str| {
@@ -202,22 +233,72 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
         None => InputSource::Payload,
     };
 
+    // Reject fields that do not apply to the selected mode before parsing them,
+    // so the error names the field and the active mode (see the module table).
+    let label = mode_label(mode);
+    let has_input_path = get("inputPath").is_some_and(|value| !value.is_empty());
+    let has_input_path2 = get("inputPath2").is_some();
+    let has_format = get("format").is_some_and(|value| !value.is_empty());
+    let has_input_format = get("inputFormat").is_some_and(|value| !value.is_empty());
+    let has_unit = get("unit").is_some();
+    let has_epoch_unit = get("epochUnit").is_some();
+    let has_parts = get("parts")
+        .is_some_and(|value| value.split(',').any(|entry| !entry.trim().is_empty()));
+
+    if has_input_path2 && !matches!(mode, Mode::Duration) {
+        return Err(format!(
+            "Field 'inputPath2' applies only to mode=duration (the second timestamp to diff); \
+             mode '{label}' does not use it."
+        ));
+    }
+    if has_format && !matches!(mode, Mode::Format | Mode::Reformat) {
+        return Err(format!(
+            "Field 'format' applies only to mode=format and mode=reformat (the strftime output \
+             layout); mode '{label}' does not use it."
+        ));
+    }
+    if has_input_format && matches!(mode, Mode::Format) {
+        return Err("Field 'inputFormat' does not apply to mode=format: that mode reads a numeric \
+             epoch, not a string timestamp. Set 'epochUnit' for the epoch granularity."
+            .to_string());
+    }
+    if has_unit && !matches!(mode, Mode::Duration) {
+        return Err(format!(
+            "Field 'unit' applies only to mode=duration; mode '{label}' does not use it."
+        ));
+    }
+    if has_epoch_unit && !matches!(mode, Mode::Parse | Mode::Format) {
+        return Err(format!(
+            "Field 'epochUnit' applies only to mode=parse and mode=format; mode '{label}' does \
+             not use it."
+        ));
+    }
+    if has_parts && !matches!(mode, Mode::Parts) {
+        return Err(format!(
+            "Field 'parts' applies only to mode=parts; mode '{label}' does not use it."
+        ));
+    }
+    if matches!(input_source, InputSource::MessageTimestamp) && has_input_path {
+        return Err("Field 'inputPath' is not used when inputSource=messageTimestamp: the message \
+             timestamp is the input. Remove inputPath or set inputSource=payload."
+            .to_string());
+    }
+
     let input_path = match get("inputPath") {
+        Some(path) if path.is_empty() => String::new(),
         Some(path) if path.starts_with('/') => path,
         Some(other) => {
             return Err(format!(
                 "Invalid inputPath '{other}': must start with '/' (RFC 6901 JSON Pointer)."
             ));
         }
-        None => {
-            if matches!(input_source, InputSource::Payload) {
-                return Err("Missing required configuration: 'inputPath'. \
-                     Provide a JSON Pointer, e.g. /event_timestamp, when inputSource=payload."
-                    .to_string());
-            }
-            String::new()
-        }
+        None => String::new(),
     };
+    if matches!(input_source, InputSource::Payload) && input_path.is_empty() {
+        return Err("Missing required configuration: 'inputPath'. \
+             Provide a JSON Pointer, e.g. /event_timestamp, when inputSource=payload."
+            .to_string());
+    }
 
     let input_path2 = match get("inputPath2") {
         Some(path) if path.starts_with('/') => Some(path),
@@ -249,12 +330,18 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
     };
 
     let input_format = get("inputFormat").filter(|value| !value.is_empty());
+    if let Some(layout) = input_format.as_deref() {
+        validate_strftime("inputFormat", layout)?;
+    }
 
     let format = get("format").filter(|value| !value.is_empty());
     if matches!(mode, Mode::Format | Mode::Reformat) && format.is_none() {
         return Err("Missing required configuration: 'format'. \
              Provide a strftime layout for format/reformat modes, e.g. %Y-%m-%dT%H:%M:%S%.3fZ."
             .to_string());
+    }
+    if let Some(layout) = format.as_deref() {
+        validate_strftime("format", layout)?;
     }
 
     let unit = match get("unit") {
@@ -332,6 +419,30 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
         parts,
         on_missing,
     })
+}
+
+/// Returns the lowercase mode name used in configuration and error messages.
+fn mode_label(mode: Mode) -> &'static str {
+    match mode {
+        Mode::Parse => "parse",
+        Mode::Format => "format",
+        Mode::Reformat => "reformat",
+        Mode::Duration => "duration",
+        Mode::Parts => "parts",
+    }
+}
+
+/// Validates that `layout` contains only recognized strftime specifiers, so a
+/// typo such as `%Q` fails at init instead of on every message.
+fn validate_strftime(field: &str, layout: &str) -> Result<(), String> {
+    use chrono::format::{Item, StrftimeItems};
+    if StrftimeItems::new(layout).any(|item| matches!(item, Item::Error)) {
+        return Err(format!(
+            "Invalid {field} layout '{layout}': contains an unknown strftime specifier. \
+             Use specifiers such as %Y %m %d %H %M %S %.3f."
+        ));
+    }
+    Ok(())
 }
 
 /// Computes the configured mode result and writes it into `value` at `outputPath`.
@@ -820,6 +931,171 @@ mod tests {
         assert!(
             error.contains("Invalid onMissing"),
             "error should reject the onMissing value: {error}"
+        );
+    }
+
+    // ─── parse_config: mode-aware field applicability ────────────────────────
+
+    #[test]
+    fn given_input_path2_in_parse_mode_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "parse"),
+            ("inputPath", "/ts"),
+            ("inputPath2", "/other"),
+            ("outputPath", "/epoch"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'inputPath2'") && error.contains("duration"),
+            "error should reject inputPath2 outside duration: {error}"
+        );
+    }
+
+    #[test]
+    fn given_format_in_duration_mode_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "duration"),
+            ("inputPath", "/a"),
+            ("inputPath2", "/b"),
+            ("outputPath", "/d"),
+            ("format", "%Y-%m-%d"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'format'"),
+            "error should reject format in duration: {error}"
+        );
+    }
+
+    #[test]
+    fn given_input_format_in_format_mode_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "format"),
+            ("inputPath", "/epoch"),
+            ("outputPath", "/display"),
+            ("format", "%Y-%m-%d"),
+            ("inputFormat", "%Y-%m-%d"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'inputFormat'"),
+            "error should reject inputFormat in format mode: {error}"
+        );
+    }
+
+    #[test]
+    fn given_unit_in_parse_mode_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "parse"),
+            ("inputPath", "/ts"),
+            ("outputPath", "/epoch"),
+            ("unit", "minutes"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'unit'") && error.contains("duration"),
+            "error should reject unit outside duration: {error}"
+        );
+    }
+
+    #[test]
+    fn given_epoch_unit_in_reformat_mode_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "reformat"),
+            ("inputPath", "/ts"),
+            ("outputPath", "/out"),
+            ("format", "%Y-%m-%d"),
+            ("epochUnit", "ms"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'epochUnit'"),
+            "error should reject epochUnit in reformat: {error}"
+        );
+    }
+
+    #[test]
+    fn given_parts_in_duration_mode_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "duration"),
+            ("inputPath", "/a"),
+            ("inputPath2", "/b"),
+            ("outputPath", "/d"),
+            ("parts", "year,month"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'parts'") && error.contains("parts"),
+            "error should reject parts outside parts mode: {error}"
+        );
+    }
+
+    #[test]
+    fn given_input_path_with_message_timestamp_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "parse"),
+            ("inputSource", "messageTimestamp"),
+            ("inputPath", "/ts"),
+            ("outputPath", "/epoch"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("'inputPath'") && error.contains("messageTimestamp"),
+            "error should reject inputPath with messageTimestamp: {error}"
+        );
+    }
+
+    // ─── parse_config: strftime layout validation ────────────────────────────
+
+    #[test]
+    fn given_invalid_format_layout_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "reformat"),
+            ("inputPath", "/ts"),
+            ("outputPath", "/out"),
+            ("format", "%Q"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("Invalid format layout"),
+            "error should reject the unknown specifier: {error}"
+        );
+    }
+
+    #[test]
+    fn given_invalid_input_format_layout_when_parse_config_then_errors() {
+        let error = parse_config(&props(&[
+            ("mode", "reformat"),
+            ("inputPath", "/ts"),
+            ("outputPath", "/out"),
+            ("format", "%Y-%m-%d"),
+            ("inputFormat", "%Q"),
+        ]))
+        .unwrap_err();
+        assert!(
+            error.contains("Invalid inputFormat layout"),
+            "error should reject the unknown specifier: {error}"
+        );
+    }
+
+    #[test]
+    fn given_full_duration_config_when_parse_config_then_ok() {
+        let config = parse_config(&props(&[
+            ("mode", "duration"),
+            ("inputPath", "/startedAt"),
+            ("inputPath2", "/completedAt"),
+            ("outputPath", "/lotAgeMinutes"),
+            ("unit", "minutes"),
+            ("onMissing", "error"),
+        ]))
+        .expect("applicable duration fields should pass");
+
+        assert_eq!(config.mode, Mode::Duration, "mode should be Duration");
+        assert_eq!(config.unit, "minutes", "unit should be retained");
+        assert_eq!(
+            config.on_missing,
+            OnMissing::Error,
+            "onMissing should be error"
         );
     }
 
