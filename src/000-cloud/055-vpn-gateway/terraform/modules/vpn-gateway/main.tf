@@ -37,6 +37,12 @@ resource "azurerm_public_ip" "vpn_gateway" {
   resource_group_name = var.resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
+
+  lifecycle {
+    // ip_tags are stamped by the Azure platform on Standard SKU public IPs and are
+    // ForceNew; the platform owns this field, so ignore it to avoid replacement.
+    ignore_changes = [ip_tags]
+  }
 }
 
 /*
