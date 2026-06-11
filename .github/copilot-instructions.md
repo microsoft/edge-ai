@@ -277,7 +277,7 @@ Use these as templates when creating new components or understanding expected pa
 <!-- <terraform-operations> -->
 ## Terraform Operations Requirements
 
-* Use `npm run tf-validate` for terraform validate and `npm run tflint-fix-fast` for terraform linting with tflint
+* Use `npm run tf-validate` for terraform validate and `npm run tflint-fix-all` for terraform linting with tflint
   * Avoid running tflint immediately after adding any **unused** variables, locals, or data resources, that will eventually be used in later edits
   * tflint will remove all unused variables, locals, resources, and data resources if they have no usages
 * `terraform init`, `terraform validate`, `terraform test`, `terraform plan`, `terraform apply`, requires `source [workspaceFolder]/scripts/az-sub-init.sh` ran at least once before any `run_in_terminal` commands to set the `ARM_SUBSCRIPTION_ID` env variable for terraform
