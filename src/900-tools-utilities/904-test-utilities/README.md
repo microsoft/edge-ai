@@ -462,9 +462,7 @@ blueprints/full-single-node-cluster/tests/
 ├── deploy_terraform_test.go       # Terraform end-to-end deployment test
 ├── deploy_bicep_test.go           # Bicep end-to-end deployment test
 ├── validation.go                  # Reusable validation functions
-├── setup.go                       # Post-deployment setup (Arc proxy, RBAC)
-├── run-contract-tests.sh          # Contract test helper script
-└── run-deployment-tests.sh        # Deployment test helper script
+└── setup.go                       # Post-deployment setup (Arc proxy, RBAC)
 ```
 
 **Use these files as templates** when creating tests for your own blueprints.
