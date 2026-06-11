@@ -25,6 +25,8 @@ input -> [datetime] -> output
 
 Each operator implements a single `#[map_operator]` using the [Azure IoT Operations WASM SDK](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust). A map operator returns the full message so the graph continues, and new fields are written into the JSON payload by JSON Pointer.
 
+The SDK (`wasm_graph_sdk`) is pinned to an exact version and resolved from the Microsoft AIO SDK team preview feed declared in `.cargo/config.toml`. Because Dependabot cannot scan that private feed, review and bump this dependency manually on each SDK release; the remaining crates.io dependencies are covered by Dependabot.
+
 The `datetime` operator is mode driven. A single `mode` configuration key selects the function (`parse`, `format`, `reformat`, `duration`, or `parts`) for each graph node. Chain multiple `datetime` nodes to derive several fields.
 
 The operator follows a two-phase lifecycle:
@@ -33,6 +35,8 @@ The operator follows a two-phase lifecycle:
 * Process phase: parses the JSON payload, applies the selected mode, writes the result at the configured `outputPath`, and returns the message with all existing fields preserved.
 
 Error handling is passthrough first. When input is missing or malformed, the operator logs a warning and returns the message unchanged, so one bad message never drops the flow. Set `onMissing` to `error` to drop the message instead.
+
+With the default `onMissing = skip`, downstream consumers must tolerate the derived output field being absent, since a malformed input passes the message through without writing it. Choose `onMissing = error` for graphs where the derived field is load-bearing. Each passthrough emits a structured `Warn` log at the operator boundary; configure a platform alert on the rate of these warnings to detect a sustained rise in malformed input, since the operator emits no separate metric.
 
 The operator is deterministic and UTC only. It never calls a wall clock such as `Utc::now()`, and no `now` mode is shipped. When a node needs an ingestion or current time, set `inputSource` to `messageTimestamp` to read the message hybrid logical clock (HLC) timestamp instead. This keeps results reproducible and removes any WASI clock capability requirement. See [Message timestamp source](#message-timestamp-source) for what that timestamp represents and when it is reliable.
 
@@ -76,29 +80,27 @@ For a precise ingestion time, ensure upstream publishers set `__ts` from a trust
 
 ## Deployment
 
-### Step 1: Install WASM Target
+### Step 1: Build the Module
 
-```bash
-rustup target add wasm32-wasip2
-```
-
-### Step 2: Build the Module
-
-Run the build script from the application root:
+The `wasm32-wasip2` target is declared in `rust-toolchain.toml`, so rustup installs it automatically on first build. Run the build script from the application root:
 
 ```bash
 ./scripts/build-wasm.sh
 ```
 
-The compiled WASM module is output to `operators/datetime/target/wasm32-wasip2/release/datetime.wasm`.
+Before producing the WASM artifact, the build script runs the quality gates this component would otherwise get from CI (it is excluded from the Docker pipeline via `.nobuild`): `clippy` with the crate's `correctness = deny` lints, the unit tests on the host target, and a `cargo audit` dependency scan when `cargo-audit` is installed (set `SKIP_AUDIT=true` to skip it offline). The compiled WASM module is output to `operators/datetime/target/wasm32-wasip2/release/datetime.wasm`.
 
-### Step 3: Push to Azure Container Registry
+### Step 2: Push to Azure Container Registry
 
 Push the compiled module and graph definition to your Azure Container Registry using the provided script. Pass your ACR name as an argument (without the `.azurecr.io` suffix). The script tags the artifacts with the version from `Cargo.toml` and pushes to ACR.
 
 ```bash
 ./scripts/push-to-acr.sh <acr_name>
 ```
+
+The identity running the push needs only the `AcrPush` role on the target registry; do not use `Owner` or `Contributor` credentials. When this step is promoted to automation, use an OIDC-federated service principal scoped to `AcrPush`. The login token is revoked when the script exits.
+
+By default the script refuses to overwrite an existing tag so a published artifact is never silently replaced; set `ALLOW_OVERWRITE=true` to replace one intentionally. Each run records the pushed references and their digests to a `push-audit-<timestamp>.log` file in the component root for provenance.
 
 This pushes:
 
@@ -113,19 +115,19 @@ One operator runs one `mode` per graph node. All values are strings, matching th
 
 Validation runs at deployment (init): a field that does not apply to the selected `mode` is rejected with a message naming the field and mode, and `format`/`inputFormat` layouts are checked for unknown strftime specifiers. This gives fast, specific feedback in the operations portal instead of silently ignoring a misplaced value.
 
-| Config key    | Modes that use it                           | Purpose                                                                                                                  |
-|---------------|---------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `mode`        | all                                         | `parse` \| `format` \| `reformat` \| `duration` \| `parts`                                                               |
-| `inputSource` | parse, format, reformat, parts, duration    | `payload` (default, uses `inputPath`) \| `messageTimestamp` (message HLC, see [source notes](#message-timestamp-source)) |
-| `inputPath`   | parse, format, reformat, parts, duration    | JSON Pointer (RFC 6901) to the source field when `inputSource` is `payload`                                              |
-| `inputPath2`  | duration                                    | JSON Pointer to the second timestamp for the duration diff                                                               |
-| `outputPath`  | all                                         | JSON Pointer where the result is written                                                                                 |
-| `inputFormat` | parse, reformat, duration, parts (optional) | strftime parse layout when the input is not RFC 3339                                                                     |
-| `format`      | format, reformat                            | strftime output layout, e.g. `%Y-%m-%dT%H:%M:%S%.3fZ` or `%Y-%m-%d %H:%M`                                                |
-| `unit`        | duration                                    | `ms` \| `seconds` \| `minutes` \| `hours` (default `ms`)                                                                 |
-| `epochUnit`   | parse, format                               | `ms` \| `seconds`, epoch granularity in and out (default `ms`)                                                           |
-| `parts`       | parts                                       | comma list: `year,month,day,hour,minute,second,weekday,ordinal`                                                          |
-| `onMissing`   | all                                         | `skip` (default, passthrough with warning) \| `error` (drops the message)                                                |
+| Config key    | Modes that use it                           | Purpose                                                                                                                            |
+|---------------|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| `mode`        | all                                         | `parse` \| `format` \| `reformat` \| `duration` \| `parts`                                                                         |
+| `inputSource` | parse, format, reformat, parts, duration    | `payload` (default, uses `inputPath`) \| `messageTimestamp` (message HLC, see [source notes](#message-timestamp-source))           |
+| `inputPath`   | parse, format, reformat, parts, duration    | JSON Pointer (RFC 6901) to the source field when `inputSource` is `payload`                                                        |
+| `inputPath2`  | duration                                    | JSON Pointer to the second timestamp for the duration diff                                                                         |
+| `outputPath`  | all                                         | JSON Pointer where the result is written                                                                                           |
+| `inputFormat` | parse, reformat, duration, parts (optional) | strftime parse layout when the input is not RFC 3339                                                                               |
+| `format`      | format, reformat                            | strftime output layout, e.g. `%Y-%m-%dT%H:%M:%S%.3fZ` or `%Y-%m-%d %H:%M`                                                          |
+| `unit`        | duration                                    | `ms` \| `seconds` \| `minutes` \| `hours` (default `ms`)                                                                           |
+| `epochUnit`   | parse, format                               | `ms` \| `seconds`, epoch granularity in and out (default `ms`)                                                                     |
+| `parts`       | parts                                       | comma list: `year,month,day,hour,minute,second,weekday,ordinal`                                                                    |
+| `onMissing`   | all                                         | `skip` (default, passthrough with warning; downstream must tolerate the derived field being absent) \| `error` (drops the message) |
 
 ### Mode Semantics
 

@@ -48,7 +48,7 @@ moduleConfigurations:
       onMissing:
         name: onMissing
         default: "skip"
-        description: "Behavior when the input field is missing or malformed: skip (default, pass the message through unchanged with a warning) | error (drop the message)."
+        description: "Behavior when the input field is missing or malformed: skip (default, pass the message through unchanged with a warning) | error (drop the message). With skip, downstream consumers MUST tolerate the derived output field being absent. Set onMissing=error for graphs where the derived field is load-bearing."
 
 operations:
   - operationType: "source"

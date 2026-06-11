@@ -575,13 +575,17 @@ fn datetime_from_path(
 fn parse_string_datetime(input: &str, input_format: Option<&str>) -> Result<DateTime<Utc>, String> {
     match input_format {
         Some(fmt) => {
-            let naive = NaiveDateTime::parse_from_str(input, fmt)
-                .map_err(|e| format!("failed to parse '{input}' with format '{fmt}': {e}"))?;
+            let naive = NaiveDateTime::parse_from_str(input, fmt).map_err(|e| {
+                format!(
+                    "failed to parse input ({} chars) with format '{fmt}': {e}",
+                    input.len()
+                )
+            })?;
             Ok(DateTime::<Utc>::from_naive_utc_and_offset(naive, Utc))
         }
         None => DateTime::parse_from_rfc3339(input)
             .map(|dt| dt.with_timezone(&Utc))
-            .map_err(|e| format!("failed to parse RFC 3339 timestamp '{input}': {e}")),
+            .map_err(|e| format!("failed to parse RFC 3339 timestamp ({} chars): {e}", input.len())),
     }
 }
 
