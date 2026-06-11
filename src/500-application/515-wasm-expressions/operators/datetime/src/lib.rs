@@ -233,15 +233,18 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
         None => InputSource::Payload,
     };
 
-    // Reject fields that do not apply to the selected mode before parsing them,
-    // so the error names the field and the active mode (see the module table).
+    // Reject fields that do not apply to the selected mode so the error names the
+    // field and the active mode (see the module table). A graph default declared
+    // in the WASM graph definition is materialized as a configuration property on
+    // every node regardless of mode, so an empty value counts as absent and only a
+    // non-empty value marks the field as in use.
     let label = mode_label(mode);
     let has_input_path = get("inputPath").is_some_and(|value| !value.is_empty());
-    let has_input_path2 = get("inputPath2").is_some();
+    let has_input_path2 = get("inputPath2").is_some_and(|value| !value.is_empty());
     let has_format = get("format").is_some_and(|value| !value.is_empty());
     let has_input_format = get("inputFormat").is_some_and(|value| !value.is_empty());
-    let has_unit = get("unit").is_some();
-    let has_epoch_unit = get("epochUnit").is_some();
+    let has_unit = get("unit").is_some_and(|value| !value.is_empty());
+    let has_epoch_unit = get("epochUnit").is_some_and(|value| !value.is_empty());
     let has_parts = get("parts")
         .is_some_and(|value| value.split(',').any(|entry| !entry.trim().is_empty()));
 
@@ -300,7 +303,7 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
             .to_string());
     }
 
-    let input_path2 = match get("inputPath2") {
+    let input_path2 = match get("inputPath2").filter(|path| !path.is_empty()) {
         Some(path) if path.starts_with('/') => Some(path),
         Some(other) => {
             return Err(format!(
@@ -344,7 +347,7 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
         validate_strftime("format", layout)?;
     }
 
-    let unit = match get("unit") {
+    let unit = match get("unit").filter(|value| !value.is_empty()) {
         Some(value) => match value.as_str() {
             "ms" | "seconds" | "minutes" | "hours" => value,
             other => {
@@ -356,7 +359,7 @@ fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, Strin
         None => "ms".to_string(),
     };
 
-    let epoch_unit = match get("epochUnit") {
+    let epoch_unit = match get("epochUnit").filter(|value| !value.is_empty()) {
         Some(value) => match value.as_str() {
             "ms" | "seconds" => value,
             other => {
@@ -1076,6 +1079,25 @@ mod tests {
             error.contains("Invalid inputFormat layout"),
             "error should reject the unknown specifier: {error}"
         );
+    }
+
+    #[test]
+    fn given_empty_inapplicable_fields_when_parse_config_then_ignored() {
+        // Graph defaults are injected on every node regardless of mode; an empty
+        // value must be treated as absent rather than an inapplicable-field error.
+        let config = parse_config(&props(&[
+            ("mode", "format"),
+            ("inputPath", "/epoch"),
+            ("outputPath", "/display"),
+            ("format", "%Y-%m-%d"),
+            ("unit", ""),
+            ("inputPath2", ""),
+            ("parts", ""),
+        ]))
+        .expect("empty inapplicable fields should be ignored");
+
+        assert_eq!(config.mode, Mode::Format, "mode should be Format");
+        assert_eq!(config.unit, "ms", "empty unit should fall back to default");
     }
 
     #[test]

@@ -38,12 +38,10 @@ moduleConfigurations:
         description: "REQUIRED for mode=format and mode=reformat. strftime layout for the output string. Examples: %Y-%m-%dT%H:%M:%S%.3fZ or %Y-%m-%d %H:%M. Not used by other modes."
       unit:
         name: unit
-        default: "ms"
-        description: "Optional for mode=duration only. Output unit of the diff: ms (default) | seconds | minutes | hours. Not used by other modes."
+        description: "Optional for mode=duration only. Output unit of the diff: ms (default) | seconds | minutes | hours. Leave empty for other modes."
       epochUnit:
         name: epochUnit
-        default: "ms"
-        description: "Optional for mode=parse and mode=format only. Epoch granularity in and out: ms (default) | seconds. Not used by other modes."
+        description: "Optional for mode=parse and mode=format only. Epoch granularity in and out: ms (default) | seconds. Leave empty for other modes."
       parts:
         name: parts
         description: "REQUIRED for mode=parts only. Comma list of components to extract: year,month,day,hour,minute,second,weekday,ordinal. Example: year,month,day. Not used by other modes."
