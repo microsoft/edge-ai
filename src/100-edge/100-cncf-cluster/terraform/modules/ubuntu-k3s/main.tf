@@ -15,9 +15,12 @@ locals {
     ARC_RESOURCE_GROUP_NAME = var.aio_resource_group.name
     ARC_RESOURCE_NAME       = var.arc_resource_name
 
-    K3S_URL     = coalesce(local.cluster_server_url, "$${K3S_URL}")
-    K3S_TOKEN   = try(coalesce(var.cluster_server_token, random_string.cluster_server_token[0].result), "$${K3S_TOKEN}")
-    K3S_VERSION = "$${K3S_VERSION}"
+    K3S_URL                   = coalesce(local.cluster_server_url, "$${K3S_URL}")
+    K3S_TOKEN                 = try(coalesce(var.cluster_server_token, random_string.cluster_server_token[0].result), "$${K3S_TOKEN}")
+    K3S_VERSION               = "$${K3S_VERSION}"
+    K3S_INSTALL_SCRIPT_SHA256 = "$${K3S_INSTALL_SCRIPT_SHA256}"
+    KUBECTL_VERSION           = "$${KUBECTL_VERSION}"
+    KUBECTL_SHA256            = "$${KUBECTL_SHA256}"
 
     // TODO: Support AKV in Terraform for token secrets, must add role assignments for AKV to arc onboarding identity.
     AKV_NAME             = "$${AKV_NAME}"
