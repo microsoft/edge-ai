@@ -405,6 +405,7 @@ jobs:
       - code-quality-lint
       - powershell-lint
       - security-scan
+      - permissions-scan
       - yaml-lint
       - docs-automation
       - docusaurus-tests

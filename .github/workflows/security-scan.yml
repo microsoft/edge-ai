@@ -105,6 +105,16 @@ jobs:
           set -euo pipefail
           if ! grype dir:. --config .grype.yaml 2>&1 | tee security-results/grype-results.txt; then
             echo "GRYPE_FAILED=true" >> "$GITHUB_ENV"
+
+            first_finding=$(awk '
+              / fixed in / || /GO-[0-9]{4}-[0-9]+/ || /(Critical|High)/ {print; exit}
+            ' security-results/grype-results.txt)
+
+            if [ -n "${first_finding}" ]; then
+              echo "::error title=Grype vulnerability threshold failed::${first_finding}"
+            else
+              echo "::error title=Grype vulnerability threshold failed::Grype found vulnerabilities at or above the .grype.yaml fail-on-severity threshold"
+            fi
           fi
 
       - name: Setup Node.js
@@ -156,6 +166,22 @@ jobs:
             fi
             if [ "${GRYPE_FAILED:-}" = "true" ]; then
               echo "- :x: Grype: vulnerabilities found"
+              echo ""
+              echo "### Grype failure details"
+              echo ""
+              echo "Grype failed because at least one discovered vulnerability met or exceeded the .grype.yaml fail-on-severity threshold."
+              echo ""
+              if [ -s security-results/grype-results.txt ]; then
+                echo '```text'
+                awk '
+                  /^NAME[[:space:]]+/ {print; next}
+                  / fixed in / || /GO-[0-9]{4}-[0-9]+/ || /(Critical|High)/ {print}
+                ' security-results/grype-results.txt | head -n 40
+                echo '```'
+                echo "Full output is available in the security-scan-results artifact at security-results/grype-results.txt."
+              else
+                echo "No Grype output file was captured."
+              fi
             else
               echo "- :white_check_mark: Grype: passed"
             fi
@@ -167,7 +193,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail on Security Violations
-        if: always() && (env.GITLEAKS_FAILED == 'true' || env.GRYPE_FAILED == 'true' || env.SECRETLINT_FAILED == 'true')
+        if: always()
         shell: bash
         env:
           SOFT_FAIL: ${{ inputs.soft-fail }}
@@ -182,13 +208,25 @@ jobs:
               echo "::warning::Grype vulnerabilities found (grype-soft-fail enabled, Gitleaks/Secretlint remain enforced)"
             else
               HARD_FAILURE="true"
+              echo "::group::Grype failure details"
+              echo "Grype found vulnerabilities at or above the .grype.yaml fail-on-severity threshold."
+              echo "Top Grype findings:"
+              if [ -s security-results/grype-results.txt ]; then
+                awk '
+                  /^NAME[[:space:]]+/ {print; next}
+                  / fixed in / || /GO-[0-9]{4}-[0-9]+/ || /(Critical|High)/ {print}
+                ' security-results/grype-results.txt | head -n 40
+              else
+                echo "No Grype output file was captured."
+              fi
+              echo "::endgroup::"
             fi
           fi
           if [ "$HARD_FAILURE" = "true" ]; then
             if [ "$SOFT_FAIL" = "true" ]; then
               echo "::warning::Security scan violations found (soft-fail enabled)"
             else
-              echo "::error::Security scan violations found"
+              echo "::error title=Security scan violations found::Review the failing scanner details above and the security scan job summary."
               exit 1
             fi
           fi
