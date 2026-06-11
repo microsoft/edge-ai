@@ -138,6 +138,34 @@
       "isBackground": false,
       "problemMatcher": [],
       "detail": "Runs scripts/az-sub-init.sh then terraform plan with required vars for testing terraform plan, in folder for current focused file"
+    },
+    {
+      "type": "func",
+      "label": "func: host start",
+      "command": "host start",
+      "problemMatcher": "$func-node-watch",
+      "isBackground": true,
+      "dependsOn": "npm install (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/src/500-application/513-tiered-notification-service"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "npm install (functions)",
+      "command": "npm install",
+      "options": {
+        "cwd": "${workspaceFolder}/src/500-application/513-tiered-notification-service"
+      }
+    },
+    {
+      "type": "shell",
+      "label": "npm prune (functions)",
+      "command": "npm prune --production",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}/src/500-application/513-tiered-notification-service"
+      }
     }
   ]
 }

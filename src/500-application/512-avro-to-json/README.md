@@ -67,7 +67,7 @@ The operator receives Avro binary payloads from the dataflow source, transforms 
 
 ### Step 1: Deploy the Full Stack
 
-Deploy the [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint using [dataflow-graphs-avro-json.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-avro-json.tfvars.example) as the starting point for your `terraform.tfvars`.
+Deploy the [Full Multi-Node Cluster](../../../blueprints/full-multi-node-cluster/) blueprint using [dataflow-graphs-avro-json.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs-avro-json.tfvars.example) as the starting point for your `terraform.tfvars`.
 
 This creates the complete infrastructure including ACR, the AIO cluster, and a [Kafka DataflowEndpoint](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-configure-kafka-endpoint?tabs=portal) (`kafka-source`) connecting to your Kafka broker. It also provisions the dataflow graph referencing the WASM module. The graph will temporarily reference an ACR artifact that does not yet exist — this is expected. The graph enters a pending state until Steps 2–4 publish the module.
 

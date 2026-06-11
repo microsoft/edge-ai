@@ -158,7 +158,7 @@ blueprints/{solution_name}/
 
 **Blueprint Categories**:
 
-* **Complete Deployments**: Full infrastructure solutions (`full-single-node-cluster`, `full-multi-node-cluster`)
+* **Complete Deployments**: Full infrastructure solutions (`full-multi-node-cluster`, `minimum-single-node-cluster`)
 * **Partial Deployments**: Subset of components (`only-cloud-single-node-cluster`, `only-edge-iot-ops`)
 * **Specialized Solutions**: Domain-specific implementations (`fabric`, `fabric-rti`)
 * **Utility Blueprints**: Script generation and development tools (`only-output-cncf-cluster-script`)
@@ -220,7 +220,7 @@ blueprints/{solution_name}/
 
 **Composition Examples**:
 
-* **Base + Extension**: Deploy `full-single-node-cluster` then layer `fabric-rti` for additional capabilities
+* **Base + Extension**: Deploy `full-multi-node-cluster` then layer `fabric-rti` for additional capabilities
 * **Partial + Complete**: Start with `only-cloud-single-node-cluster` then add edge components
 * **Combine Blueprints**: Build new blueprints by copying from existing blueprints
 
@@ -236,7 +236,7 @@ blueprints/{solution_name}/
 
 * **Location**: `/blueprints/{solution_name}/{framework}/`
 * **Purpose**: Orchestrates multiple components for end-to-end solutions
-* **Usage**: For full or partial environment provisioning. Blueprints can be layered on top of each others (e.g. `blueprints/fabric-rti` can be applied after a `blueprints/full-single-node-cluster` with matching variables and parameters)
+* **Usage**: For full or partial environment provisioning. Blueprints can be layered on top of each others (e.g. `blueprints/fabric-rti` can be applied after a `blueprints/full-multi-node-cluster` with matching variables and parameters)
 * **Component Integration**: References component outputs as blueprint inputs
 
 ### Component Modification Workflow
@@ -269,7 +269,7 @@ When modifying any component, follow this validation sequence:
 
 * **Security Foundation**: `/src/000-cloud/010-security-identity/`
 * **Edge IoT Operations**: `/src/100-edge/110-iot-ops/`
-* **Complete Blueprint**: `/blueprints/full-single-node-cluster/`
+* **Complete Blueprint**: `/blueprints/full-multi-node-cluster/`
 
 Use these as templates when creating new components or understanding expected patterns.
 <!-- </component-and-blueprint-structure> -->
@@ -302,12 +302,12 @@ Blueprints contain sets of components for deploying stamps of IaC:
 ### Blueprint Organization
 
 * Template: `**/blueprints/{blueprint_name}/{framework}`
-* Example: `**/blueprints/full-single-node-cluster/terraform`
+* Example: `**/blueprints/full-multi-node-cluster/terraform`
 
 ### Blueprint Conventions
 
 * Follow existing patterns for a blueprint when working in a blueprint directory
-  * Reference: `**/blueprints/full-single-node-cluster`
+  * Reference: `**/blueprints/full-multi-node-cluster`
 * Read component README.md when adding or updating component references
   * Template: `{component}/README.md`
 * Use outputs from components as inputs to other components
@@ -434,8 +434,7 @@ blueprints/
 ├── dual-peered-single-node-cluster/          # Dual-peered single node cluster configuration
 ├── fabric/                                   # Microsoft Fabric only deployment
 ├── fabric-rti/                               # Microsoft Fabric Real-Time Intelligence only
-├── full-multi-node-cluster/                  # Complete multi-node cluster (option for Arc servers)
-├── full-single-node-cluster/                 # Complete single-node cluster (all non-Fabric)
+├── full-multi-node-cluster/                  # Complete cluster (single- or multi-node; VM or Arc machine targeting)
 ├── minimum-single-node-cluster/              # Minimal single-node cluster
 ├── only-cloud-single-node-cluster/           # Cloud-only components
 ├── only-edge-iot-ops/                        # Edge-only IoT Operations

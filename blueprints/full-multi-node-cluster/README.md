@@ -244,7 +244,6 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 
 ## Related Blueprints
 
-- **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment on a single-node cluster
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
 
