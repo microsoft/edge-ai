@@ -105,6 +105,7 @@ Describe 'Invoke-GoTestCore' -Tag 'Unit' {
         $observedLocation = $null
         $runner = {
             param([string[]]$Arguments)
+            $null = $Arguments
             $script:observedLocation = (Get-Location).Path
             return 0
         }
@@ -117,6 +118,7 @@ Describe 'Invoke-GoTestCore' -Tag 'Unit' {
     It 'propagates Go test failure exit codes' {
         $runner = {
             param([string[]]$Arguments)
+            $null = $Arguments
             return 7
         }
 
@@ -129,6 +131,7 @@ Describe 'Invoke-GoTestCore' -Tag 'Unit' {
         New-Item -Path $missingRepo -ItemType Directory -Force | Out-Null
         $runner = {
             param([string[]]$Arguments)
+            $null = $Arguments
             throw 'go should not be invoked'
         }
 
@@ -139,6 +142,7 @@ Describe 'Invoke-GoTestCore' -Tag 'Unit' {
         $script:invoked = $false
         $runner = {
             param([string[]]$Arguments)
+            $null = $Arguments
             $script:invoked = $true
             return 0
         }
@@ -153,6 +157,7 @@ Describe 'Invoke-GoTestCore' -Tag 'Unit' {
         $script:invoked = $false
         $runner = {
             param([string[]]$Arguments)
+            $null = $Arguments
             $script:invoked = $true
             return 0
         }
