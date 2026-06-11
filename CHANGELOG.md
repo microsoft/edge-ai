@@ -1,5 +1,63 @@
 # Changelog
 
+## [4.1.0](https://github.com/microsoft/edge-ai/compare/v4.0.3...v4.1.0) (2026-06-11)
+
+
+### Features
+
+* **deps:** add gomod Dependabot ecosystem and remediate Go module CVEs ([#593](https://github.com/microsoft/edge-ai/issues/593)) ([8528e1d](https://github.com/microsoft/edge-ai/commit/8528e1d1f295724d914be1de4c53d86ed83c7524))
+* leak detection scenario with end-to-end data pipeline ([#466](https://github.com/microsoft/edge-ai/issues/466)) ([41b933a](https://github.com/microsoft/edge-ai/commit/41b933aae728965e0266175e6d8a82d778acab7b))
+* **terraform:** prefer write-only PostgreSQL password arguments ([#481](https://github.com/microsoft/edge-ai/issues/481)) ([ddeac27](https://github.com/microsoft/edge-ai/commit/ddeac27583d8a1bd8d6c3421c6068aa8e1e32035))
+
+
+### Bug Fixes
+
+* **terraform:** ignore platform-managed ForceNew attributes on public IPs ([#607](https://github.com/microsoft/edge-ai/issues/607)) ([6536527](https://github.com/microsoft/edge-ai/commit/653652749746df8e2583adf3fd1c1b553170b8cd))
+* **tests:** foundation for Go static contract tests ([#562](https://github.com/microsoft/edge-ai/issues/562) 1/4) ([#571](https://github.com/microsoft/edge-ai/issues/571)) ([2087f45](https://github.com/microsoft/edge-ai/commit/2087f45dcd4386a261e380b5c1840d8092170be0))
+* **workflows:** apply deny-all top-level permissions to all workflows ([#504](https://github.com/microsoft/edge-ai/issues/504)) ([5d494ce](https://github.com/microsoft/edge-ai/commit/5d494ce060730a098ca5ab1b29f349afb33ef867))
+* **workflows:** grant pages-deploy test caller `contents: read` for nested workflow chain ([#597](https://github.com/microsoft/edge-ai/issues/597)) ([b648d67](https://github.com/microsoft/edge-ai/commit/b648d67f0563d41230f1e4098093a2671839ce93))
+
+
+### Build System
+
+* **application:** preserve Rust release debug info ([#557](https://github.com/microsoft/edge-ai/issues/557)) ([d85c68e](https://github.com/microsoft/edge-ai/commit/d85c68e80772774e246303f28a56fd6e324276ad))
+
+
+### Miscellaneous Chores
+
+* **cloud:** resolve AzureRM provider deprecation warnings and Grafana version error ([#591](https://github.com/microsoft/edge-ai/issues/591)) ([2f36dbc](https://github.com/microsoft/edge-ai/commit/2f36dbcfc0ab07ef707ef5c5c4b792d26d3c8ee0))
+* **copilot:** align local assets with HVE Core ([#522](https://github.com/microsoft/edge-ai/issues/522)) ([86da320](https://github.com/microsoft/edge-ai/commit/86da32021df9d92a19944662a292bf28817e6933))
+* **deps-dev:** bump the npm group across 2 directories with 3 updates ([#546](https://github.com/microsoft/edge-ai/issues/546)) ([68c8dbc](https://github.com/microsoft/edge-ai/commit/68c8dbc13fdf186a3b68d89ec34fbd885f2e6d33))
+* **deps-dev:** bump ts-jest from 29.4.10 to 29.4.11 in /docs/docusaurus in the npm group across 1 directory ([#560](https://github.com/microsoft/edge-ai/issues/560)) ([3d1946b](https://github.com/microsoft/edge-ai/commit/3d1946ba3bc9f42f4ffc25a3f9da35d00613b257))
+* **deps-dev:** bump vitest and @vitest/coverage-v8 in /src/500-application/513-tiered-notification-service ([#577](https://github.com/microsoft/edge-ai/issues/577)) ([e47c03e](https://github.com/microsoft/edge-ai/commit/e47c03e697a7199aa1cf88113a545058ef7ac959))
+* **deps:** bump aiohttp from 3.13.5 to 3.14.0 ([#584](https://github.com/microsoft/edge-ai/issues/584)) ([675c3f4](https://github.com/microsoft/edge-ai/commit/675c3f433d209a9e2c1fa72cce39b669b5b15e17))
+* **deps:** bump aiohttp from 3.13.5 to 3.14.0 in /src/500-application/509-sse-connector/services/connector-test-client ([#585](https://github.com/microsoft/edge-ai/issues/585)) ([32ded90](https://github.com/microsoft/edge-ai/commit/32ded90f38aab2c4842cf1dd71e23bf60afb66e1))
+* **deps:** bump aiohttp from 3.13.5 to 3.14.0 in /src/500-application/509-sse-connector/services/sse-server ([#586](https://github.com/microsoft/edge-ai/issues/586)) ([e4e8658](https://github.com/microsoft/edge-ai/commit/e4e86588a6d9920f446001a78d963f69744c8c74))
+* **deps:** bump aiohttp from 3.13.5 to 3.14.0 in /src/500-application/510-onvif-connector/services/onvif-connector-client ([#582](https://github.com/microsoft/edge-ai/issues/582)) ([d60dc84](https://github.com/microsoft/edge-ai/commit/d60dc84c66cb05272a998fabbdf4bb0597f15c89))
+* **deps:** bump idna from 3.11 to 3.15 ([#535](https://github.com/microsoft/edge-ai/issues/535)) ([feeb690](https://github.com/microsoft/edge-ai/commit/feeb690368a3d2e394ada74bc625774914e91832))
+* **deps:** bump idna from 3.11 to 3.15 in /.github/requirements ([#554](https://github.com/microsoft/edge-ai/issues/554)) ([39feab1](https://github.com/microsoft/edge-ai/commit/39feab12bf2d05908d6afde20250f43384e48ec6))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/505-akri-rest-http-connector/services/authenticated-device ([#552](https://github.com/microsoft/edge-ai/issues/552)) ([2e86f20](https://github.com/microsoft/edge-ai/commit/2e86f20ed44e66297af81015df8ef89e0b377790))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/505-akri-rest-http-connector/services/connector-test-client ([#538](https://github.com/microsoft/edge-ai/issues/538)) ([4b5e573](https://github.com/microsoft/edge-ai/commit/4b5e573eebf8d6ab80d62d1fa80ed3a285a5102d))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/505-akri-rest-http-connector/services/sensor-simulator ([#551](https://github.com/microsoft/edge-ai/issues/551)) ([9ff8030](https://github.com/microsoft/edge-ai/commit/9ff803086a4ffeab2ffe052a65645f964ff18cfd))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/505-akri-rest-http-connector/services/weather-station ([#550](https://github.com/microsoft/edge-ai/issues/550)) ([95ef4c0](https://github.com/microsoft/edge-ai/commit/95ef4c011c59de2c86422490f9954cb08fc7c9db))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/509-sse-connector/services/connector-test-client ([#549](https://github.com/microsoft/edge-ai/issues/549)) ([7262cf8](https://github.com/microsoft/edge-ai/commit/7262cf85521136f2e20d23140b4e091016552890))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/509-sse-connector/services/sse-server ([#536](https://github.com/microsoft/edge-ai/issues/536)) ([44a5b43](https://github.com/microsoft/edge-ai/commit/44a5b43cf9cb48e1928f2df5d59a79085d4e64af))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/510-onvif-connector/services/onvif-camera-simulator ([#534](https://github.com/microsoft/edge-ai/issues/534)) ([7865607](https://github.com/microsoft/edge-ai/commit/786560726bd3ec6894f9b887f94d60c0fc70ae19))
+* **deps:** bump idna from 3.11 to 3.15 in /src/500-application/510-onvif-connector/services/onvif-connector-client ([#537](https://github.com/microsoft/edge-ai/issues/537)) ([e327562](https://github.com/microsoft/edge-ai/commit/e3275629041a38c28398adade0d2fd91916be93b))
+* **deps:** bump idna from 3.13 to 3.15 in /src/500-application/510-onvif-connector/services/camera-dashboard ([#539](https://github.com/microsoft/edge-ai/issues/539)) ([dd575e5](https://github.com/microsoft/edge-ai/commit/dd575e511fb879ced438a6e00c40c3ec5943dd09))
+* **deps:** bump openssl from 0.10.79 to 0.10.80 in /src/500-application/501-rust-telemetry/services/sender ([#545](https://github.com/microsoft/edge-ai/issues/545)) ([bd4b3e8](https://github.com/microsoft/edge-ai/commit/bd4b3e8c50c4488a57c5f9b4c565f37d663e98dc))
+* **deps:** bump openssl from 0.10.79 to 0.10.80 in /src/500-application/502-rust-http-connector/services/broker ([#544](https://github.com/microsoft/edge-ai/issues/544)) ([58cd52e](https://github.com/microsoft/edge-ai/commit/58cd52e742a08053d4a942dc19927ef9b6a90229))
+* **deps:** bump openssl from 0.10.79 to 0.10.80 in /src/500-application/503-media-capture-service/services/media-capture-service ([#555](https://github.com/microsoft/edge-ai/issues/555)) ([2036f95](https://github.com/microsoft/edge-ai/commit/2036f95b32ea5b4821ca18dcd011c30ca9b44def))
+* **deps:** bump openssl from 0.10.79 to 0.10.80 in /src/500-application/507-ai-inference/services/ai-edge-inference ([#543](https://github.com/microsoft/edge-ai/issues/543)) ([b825278](https://github.com/microsoft/edge-ai/commit/b8252780052972e6989d15a3f94279dd23cbcbbd))
+* **deps:** bump openssl from 0.10.79 to 0.10.80 in /src/500-application/507-ai-inference/services/ai-edge-inference-crate ([#556](https://github.com/microsoft/edge-ai/issues/556)) ([69237de](https://github.com/microsoft/edge-ai/commit/69237de54df0eddd577103b4deaeb9a958a30db4))
+* **deps:** bump starlette from 1.0.0 to 1.0.1 in /src/500-application/510-onvif-connector/services/camera-dashboard ([#587](https://github.com/microsoft/edge-ai/issues/587)) ([a0a59c6](https://github.com/microsoft/edge-ai/commit/a0a59c647945c2a35e8fe8d2a3a073637decf7a4))
+* **deps:** bump tar and [@jazzer](https://github.com/jazzer).js/core in /src/500-application/513-tiered-notification-service ([#595](https://github.com/microsoft/edge-ai/issues/595)) ([8b468a3](https://github.com/microsoft/edge-ai/commit/8b468a366482a7f987671017e15675204767eab6))
+* **deps:** bump the github-actions group across 1 directory with 4 updates ([#589](https://github.com/microsoft/edge-ai/issues/589)) ([1e9db71](https://github.com/microsoft/edge-ai/commit/1e9db7178603f5e1f49942b843fce5332f392557))
+* **deps:** bump the github-actions group with 2 updates ([#561](https://github.com/microsoft/edge-ai/issues/561)) ([c236b08](https://github.com/microsoft/edge-ai/commit/c236b0844a83da3ca83a675dfb8388002b67b5d5))
+* **deps:** bump the npm group across 2 directories with 8 updates ([#588](https://github.com/microsoft/edge-ai/issues/588)) ([5cb7e77](https://github.com/microsoft/edge-ai/commit/5cb7e77c816964d9ef37de99024fbd179aea3c86))
+* **deps:** fix Grype Critical/High findings in transitive deps (shell-quote, qs, aiohttp, openssl) ([#601](https://github.com/microsoft/edge-ai/issues/601)) ([c18c344](https://github.com/microsoft/edge-ai/commit/c18c344468549b221a44bc40f796cc0fc556ea94))
+* **deps:** upgrade Azure IoT Operations to v1.3.105 (AIO 2605) ([#566](https://github.com/microsoft/edge-ai/issues/566)) ([d4fedc9](https://github.com/microsoft/edge-ai/commit/d4fedc92a220dd341b1004761857734b8bbdb7cf))
+
 ## [4.0.3](https://github.com/microsoft/edge-ai/compare/v4.0.2...v4.0.3) (2026-05-21)
 
 
