@@ -88,5 +88,5 @@
     "/Users/vscode/repos/prompts": true,
     ".copilot-tracking/prompts": true
   },
-  "rust-analyzer.linkedProjects": ["src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml", "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml", "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml", "src/500-application/515-wasm-expressions/operators/datetime/Cargo.toml"]
 }
