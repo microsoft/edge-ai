@@ -137,6 +137,10 @@ Validation runs at deployment (init): a field that does not apply to the selecte
 * `duration`: two timestamps (`inputPath`, `inputPath2`, either may be the message HLC timestamp via `inputSource`) to a numeric diff in `unit` at `outputPath`. Computes datediff and age since the message timestamp without a wall clock.
 * `parts`: timestamp string at `inputPath` to an object of the requested `parts` at `outputPath`.
 
+> [!NOTE]
+> There is no numeric unit-conversion mode. No mode reads a number and re-emits it as the same value in a different unit (for example, an `age_ms` field into an `age_minutes` field). `format` converts an epoch *number* to a date *string*, not to another numeric unit, and `unit` is honored only by `duration`.
+> To emit one duration in several units (such as both milliseconds and minutes), use one `duration` node per unit; each node recomputes the diff from the original two timestamps rather than reading another node's numeric output. To divide or rescale an existing numeric field, use a built-in map transform or do it in the consuming application.
+
 ## Example: Lot Age Enrichment
 
 This example extends the food manufacturing lot traceability use case from
