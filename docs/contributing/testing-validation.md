@@ -13,6 +13,7 @@ keywords:
   - terraform testing
   - bicep testing
   - pester
+  - terraform test
   - terratest
   - checkov
   - security testing
@@ -31,10 +32,11 @@ To maintain code quality and the OSSF Best Practices Badge, we enforce the follo
 
 | Technology     | Framework               | Minimum Requirement                                   |
 |:---------------|:------------------------|:------------------------------------------------------|
-| **Terraform**  | native `terraform test` | One `.tftest.hcl` per component with `command = plan` |
-| **Rust**       | `cargo test`            | `#[cfg(test)]` module covering core logic             |
-| **.NET**       | xUnit / NUnit           | Test project covering business logic                  |
-| **JavaScript** | vitest                  | Test file with 80% coverage threshold                 |
+| **Terraform components** | native `terraform test` | One `.tftest.hcl` per component with `command = plan`     |
+| **Blueprint IaC**        | Go / Terratest           | Contract and deployment tests under blueprint `tests/`    |
+| **Rust**                 | `cargo test`             | `#[cfg(test)]` module covering core logic                 |
+| **.NET**                 | xUnit / NUnit            | Test project covering business logic                      |
+| **JavaScript**           | Jest / TypeScript        | Docs tests and `tsc --noEmit` checks                      |
 
 ## Testing Philosophy
 
@@ -85,22 +87,27 @@ tflint --config=.tflint.hcl
 tflint main.tf variables.tf
 ```
 
-#### Testing Framework
+#### Native Terraform Tests
 
-Use Terratest for integration testing:
+Use Terraform's native test framework for component tests. Place `.tftest.hcl`
+files under the component's `terraform/tests/` directory and use `command = plan`
+for fast validation that does not deploy Azure resources.
 
 ```bash
-# Navigate to test directory
-cd src/000-cloud/010-security-identity/tests
+# Navigate to a component Terraform directory
+cd src/000-cloud/000-resource-group/terraform
 
-# Run Go tests
-go test -v -timeout 30m
+# Initialize providers and modules
+terraform init
 
-# Run specific test
-go test -v -run TestTerraformSecurityIdentity
+# Run the component's .tftest.hcl files
+terraform test
 
-# Run tests with verbose output
-go test -v -timeout 30m ./...
+# Run through the repository npm helper
+npm run tf-test -- src/000-cloud/000-resource-group/terraform
+
+# Run all Terraform tests
+npm run tf-test-all
 ```
 
 ### Bicep Testing
@@ -136,6 +143,41 @@ az bicep lint --file main.bicep
 
 # Check for security issues
 az bicep lint --file main.bicep --level Error
+```
+
+### Rust Testing
+
+Rust services in this repository are tested from their service directories. The
+root `Cargo.toml` intentionally has no workspace members, so run `cargo test`
+from the crate that changed.
+
+```bash
+# Navigate to the changed Rust service
+cd src/500-application/512-avro-to-json/operators/avro-to-json
+
+# Run unit and integration tests for that crate
+cargo test
+
+# Optional static checks for Rust changes
+cargo fmt --check
+cargo clippy --all-targets --all-features
+```
+
+### JavaScript and Docs Testing
+
+The Docusaurus docs package uses Jest for docs tests and TypeScript for static
+type validation.
+
+```bash
+# Run docs tests through the root helper
+npm run docs:test
+
+# Run tests and type checks directly from the docs package
+npm run --prefix docs/docusaurus test
+npm run --prefix docs/docusaurus typecheck
+
+# Build the docs site before publishing larger docs changes
+npm run docs:build
 ```
 
 ## Validation Tools
@@ -192,10 +234,10 @@ Maintain documentation quality:
 npm run cspell
 
 # Check specific file
-npx cspell docs/contributor/testing-validation.md
+npx cspell docs/contributing/testing-validation.md
 
 # Add words to project dictionary
-echo "terratest" >> .cspell-dictionary.txt
+echo "Docusaurus" >> .cspell-dictionary.txt
 ```
 
 ## Pre-Commit Validation
@@ -251,13 +293,12 @@ src/000-cloud/010-security-identity/
 ├── terraform/
 │   ├── main.tf
 │   ├── variables.tf
-│   └── outputs.tf
-├── tests/
-│   ├── go.mod
-│   ├── go.sum
-│   ├── terraform_test.go
-│   └── fixtures/
-│       └── test-parameters.tfvars
+│   ├── outputs.tf
+│   └── tests/
+│       ├── naming-convention.tftest.hcl
+│       ├── output-validation.tftest.hcl
+│       └── setup/
+│           └── main.tf
 └── ci/
     └── terraform/
         ├── main.tf
@@ -266,51 +307,65 @@ src/000-cloud/010-security-identity/
 
 ### Writing Component Tests
 
-Create comprehensive test coverage:
+Create comprehensive test coverage with `.tftest.hcl` files:
 
-```go
-// Example: tests/terraform_test.go
-package test
+```hcl
+# Example: terraform/tests/naming-convention.tftest.hcl
+provider "azurerm" {
+  storage_use_azuread = true
+  features {}
+}
 
-import (
-    "testing"
-    "github.com/gruntwork-io/terratest/modules/terraform"
-    "github.com/stretchr/testify/assert"
-)
+# Call the setup module to create a random resource prefix
+run "setup_tests" {
+  module {
+    source = "./tests/setup"
+  }
+}
 
-func TestTerraformSecurityIdentity(t *testing.T) {
-    t.Parallel()
+run "naming_with_different_environments" {
+  command = plan
 
-    terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-        TerraformDir: "../terraform",
-        VarFiles:     []string{"fixtures/test-parameters.tfvars"},
-    })
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    environment     = "prod"
+    location        = "eastus2"
+    instance        = "001"
+  }
 
-    defer terraform.Destroy(t, terraformOptions)
-
-    // Apply the Terraform configuration
-    terraform.InitAndApply(t, terraformOptions)
-
-    // Validate outputs
-    keyVaultName := terraform.Output(t, terraformOptions, "key_vault_name")
-    assert.NotEmpty(t, keyVaultName)
-
-    // Additional validations
-    resourceGroupName := terraform.Output(t, terraformOptions, "resource_group_name")
-    assert.Contains(t, resourceGroupName, "test")
+  assert {
+    condition     = azurerm_resource_group.new[0].name == "rg-${run.setup_tests.resource_prefix}-prod-001"
+    error_message = "Resource group name should follow convention with environment = prod"
+  }
 }
 ```
 
 ### Test Data Management
 
-Use fixture files for test parameters:
+Use test setup modules or inline `variables` blocks for test data. The resource
+group component provides a setup module for generated prefixes:
 
 ```hcl
-# tests/fixtures/test-parameters.tfvars
-prefix = "test"
-environment = "dev"
-location = "East US"
-enable_monitoring = true
+# terraform/tests/setup/main.tf
+terraform {
+  required_providers {
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.5.1"
+    }
+  }
+  required_version = ">= 1.12.0, < 2.0"
+}
+
+resource "random_string" "prefix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
+output "resource_prefix" {
+  value = "a${random_string.prefix.id}"
+}
 ```
 
 ## Blueprint Testing
@@ -505,17 +560,8 @@ The CI/CD pipeline includes comprehensive testing:
 #### Test Stage
 
 ```yaml
-- task: GoTool@0
-  displayName: 'Use Go 1.19'
-  inputs:
-    version: '1.19'
-
-- task: Go@0
-  displayName: 'Run Infrastructure Tests'
-  inputs:
-    command: 'test'
-    arguments: '-v -timeout 30m ./tests/...'
-    workingDirectory: '$(System.DefaultWorkingDirectory)'
+- name: Run Terraform tests
+  run: npm run tf-test-all
 ```
 
 ### Quality Gates
@@ -567,11 +613,11 @@ az account set --subscription "your-subscription-id"
 #### Test Timeout Issues
 
 ```bash
-# Increase timeout for long-running tests
-go test -v -timeout 60m ./tests/...
+# Narrow the run to one Terraform test file while debugging
+terraform test -filter=tests/naming-convention.tftest.hcl
 
-# Run tests in parallel with limited concurrency
-go test -v -parallel 2 ./tests/...
+# Run one component at a time through the helper
+npm run tf-test -- src/000-cloud/000-resource-group/terraform
 ```
 
 ### Debugging Test Failures
@@ -601,11 +647,10 @@ az deployment group create \
 #### Test Data Investigation
 
 ```bash
-# Preserve test resources for investigation
-export SKIP_teardown=true
-go test -v -run TestSpecificCase
+# Inspect a plan before applying it
+terraform plan -var-file="test.tfvars" -out=tfplan
 
-# Manual cleanup after investigation
+# Clean up after investigation
 terraform destroy -auto-approve
 ```
 
@@ -631,11 +676,11 @@ az deployment group show \
 Optimize test execution time:
 
 ```bash
-# Run tests in parallel
-go test -v -parallel 4 ./tests/...
+# Run all Terraform tests through the parallel repository helper
+npm run tf-test-all
 
-# Profile test performance
-go test -v -cpuprofile=cpu.prof -memprofile=mem.prof ./tests/...
+# Run a single component while narrowing a failure
+npm run tf-test -- src/000-cloud/000-resource-group/terraform
 ```
 
 ## Best Practices
@@ -652,7 +697,7 @@ go test -v -cpuprofile=cpu.prof -memprofile=mem.prof ./tests/...
 ### Best Practices for Test Data
 
 - **Use parameterized tests** for multiple scenarios
-- **Clean up test resources** automatically (set `CLEANUP_RESOURCES=true`)
+- **Clean up test resources** with `terraform destroy` after deployment validation
 - **Isolate test environments** to prevent interference
 - **Use realistic test data** that represents production scenarios
 - **Run contract tests first** to catch errors before expensive deployments
