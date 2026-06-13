@@ -14,6 +14,7 @@ keywords:
   - bicep testing
   - pester
   - terraform test
+  - terratest
   - checkov
   - security testing
 ---
@@ -31,10 +32,11 @@ To maintain code quality and the OSSF Best Practices Badge, we enforce the follo
 
 | Technology     | Framework               | Minimum Requirement                                   |
 |:---------------|:------------------------|:------------------------------------------------------|
-| **Terraform**  | native `terraform test` | One `.tftest.hcl` per component with `command = plan` |
-| **Rust**       | `cargo test`            | `#[cfg(test)]` module covering core logic             |
-| **.NET**       | xUnit / NUnit           | Test project covering business logic                  |
-| **JavaScript** | Jest / TypeScript       | Docs tests and `tsc --noEmit` checks                  |
+| **Terraform components** | native `terraform test` | One `.tftest.hcl` per component with `command = plan`     |
+| **Blueprint IaC**        | Go / Terratest           | Contract and deployment tests under blueprint `tests/`    |
+| **Rust**                 | `cargo test`             | `#[cfg(test)]` module covering core logic                 |
+| **.NET**                 | xUnit / NUnit            | Test project covering business logic                      |
+| **JavaScript**           | Jest / TypeScript        | Docs tests and `tsc --noEmit` checks                      |
 
 ## Testing Philosophy
 
@@ -368,32 +370,26 @@ output "resource_prefix" {
 
 ## Blueprint Testing
 
-Blueprint testing should follow the same layered approach as component testing:
-fast static validation first, then optional deployment validation when Azure
-credentials and cost controls are available.
+Some blueprints include comprehensive test suites using Go and the Terratest framework. The testing infrastructure validates both IaC declarations and actual deployments.
 
-### Terraform Test Reference
-
-The resource group component is the current concrete Terraform test reference.
-Blueprint tests should follow the same layered approach: fast static validation
-first, then optional deployment validation when Azure credentials and cost
-controls are available.
+### Blueprint Test Architecture
 
 **Shared Test Utilities:** [src/900-tools-utilities/904-test-utilities/](https://github.com/microsoft/edge-ai/tree/main/src/900-tools-utilities/904-test-utilities/)
 
-Provides reusable testing functions for blueprints including:
+Provides reusable testing functions for all blueprints including:
 
 - Contract validation functions for Terraform and Bicep
 - Deployment and cleanup utilities
 - Output normalization across frameworks
 
-**Terraform Reference Implementation:** [src/000-cloud/000-resource-group/terraform/tests/](https://github.com/microsoft/edge-ai/tree/main/src/000-cloud/000-resource-group/terraform/tests/)
+**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/)
 
 Complete test suite demonstrating:
 
-- Native Terraform test files using `command = plan`
-- Naming, tag, boundary, and output assertions
-- Shared setup module usage for generated test values
+- Contract tests for both Terraform and Bicep
+- End-to-end deployment validation
+- Helper scripts for test execution
+- Output contract definitions
 
 ### Contract Testing
 
@@ -409,12 +405,17 @@ Complete test suite demonstrating:
 **Running Contract Tests:**
 
 ```bash
-cd src/000-cloud/000-resource-group/terraform
-terraform init
-terraform test
+cd blueprints/full-single-node-cluster/tests
 
-# Or run through the repository helper
-npm run tf-test -- src/000-cloud/000-resource-group/terraform
+# Test both frameworks
+./run-contract-tests.sh both
+
+# Test specific framework
+./run-contract-tests.sh terraform
+./run-contract-tests.sh bicep
+
+# Direct Go execution
+go test -v -run Contract
 ```
 
 ### Deployment Testing
@@ -431,40 +432,43 @@ npm run tf-test -- src/000-cloud/000-resource-group/terraform
 **Running Deployment Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-single-node-cluster/tests
 
-# Terraform deployment check
-terraform init
-terraform plan -var-file="test.tfvars"
-# Requires ARM_* credentials; provisions billable Azure resources.
-terraform apply -var-file="test.tfvars" -auto-approve
+# Enable automatic cleanup
+export CLEANUP_RESOURCES=true
 
-# Clean up billable resources after validation
-terraform destroy -var-file="test.tfvars" -auto-approve
+# Test specific framework
+./run-deployment-tests.sh terraform
+./run-deployment-tests.sh bicep
+
+# Direct Go execution
+go test -v -run TestTerraformFullSingleNodeClusterDeploy -timeout 2h
+go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 2h
 ```
 
 **Environment Variables:**
 
-- `ARM_CLIENT_ID`, `ARM_CLIENT_SECRET`, `ARM_TENANT_ID`, `ARM_SUBSCRIPTION_ID` - Azure credentials for non-interactive Terraform runs
+- `CLEANUP_RESOURCES` - Auto-delete resources after test (default: `false`)
 - `TEST_ENVIRONMENT` - Environment name (default: `dev`)
 - `TEST_LOCATION` - Azure region (default: `eastus2`)
 - `TEST_RESOURCE_PREFIX` - Resource naming prefix (default: `t6`)
+- `SKIP_BICEP_DEPLOYMENT` - Use existing deployment (default: `false`)
 
 ### Blueprint Test Organization
 
 Each blueprint test suite includes:
 
 ```text
-blueprints/{blueprint-name}/terraform/
-├── main.tf
-├── variables.tf
-├── outputs.tf
-├── tests/
-│   ├── contract.tftest.hcl        # Fast plan-time contract validation
-│   ├── output-validation.tftest.hcl
-│   └── setup/
-│       └── main.tf                # Optional shared setup values
-└── test.tfvars                    # Optional deployment validation values
+blueprints/{blueprint-name}/tests/
+├── outputs.go                     # Output contract definition
+├── contract_terraform_test.go     # Terraform contract validation
+├── contract_bicep_test.go         # Bicep contract validation
+├── deploy_terraform_test.go       # Terraform deployment test
+├── deploy_bicep_test.go           # Bicep deployment test
+├── validation.go                  # Shared validation functions
+├── setup.go                       # Post-deployment setup
+├── run-contract-tests.sh          # Contract test runner
+└── run-deployment-tests.sh        # Deployment test runner
 ```
 
 ### Blueprint Integration Testing
@@ -491,11 +495,11 @@ terraform destroy -var-file="test.tfvars" -auto-approve
 
 When creating a new blueprint, add comprehensive test coverage:
 
-1. **Define output assertions** in `.tftest.hcl` files
-2. **Create plan-time contract tests** with `command = plan`
-3. **Create deployment validation steps** for scenarios that require Azure resources
-4. **Use setup modules** for generated test values that are shared across runs
-5. **Document test requirements** in the blueprint README
+1. **Define output contract** in `tests/outputs.go` with struct tags for both frameworks
+2. **Create contract tests** for static validation
+3. **Create deployment tests** for end-to-end validation
+4. **Add helper scripts** for simplified test execution
+5. **Document test requirements** in blueprint README
 
 **See:** [Blueprint Developer Guide](../getting-started/blueprint-developer.md#testing-and-validation) for detailed instructions
 
