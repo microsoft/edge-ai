@@ -72,7 +72,7 @@ export function useSpeechRecognition(options: UseSpeechRecognitionOptions): UseS
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       stream.getTracks().forEach(t => t.stop())
-    } catch (err) {
+    } catch {
       setError('Microphone access denied. Check browser permissions.')
       isStartingRef.current = false
       return

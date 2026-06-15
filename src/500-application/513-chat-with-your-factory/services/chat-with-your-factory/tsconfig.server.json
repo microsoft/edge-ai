@@ -12,5 +12,5 @@
     "declaration": false,
     "resolveJsonModule": true
   },
-  "include": ["src/server/**/*.ts", "src/shared/**/*.ts"]
+  "include": ["src/server/**/*.ts", "src/shared/**/*.ts", "src/provisioning/**/*.ts"]
 }

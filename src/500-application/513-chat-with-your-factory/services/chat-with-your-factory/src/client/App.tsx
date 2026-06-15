@@ -8,6 +8,11 @@ import { useTeamsTheme } from './hooks/useTeamsTheme.js'
 import { useTeamsUser } from './hooks/useTeamsUser.js'
 import { useSessionMessages } from './hooks/useSessionMessages.js'
 import type { Session, TranscriptMessage } from '../shared/types.js'
+import {
+  addParticipantErrorCodeFromStatus,
+  isAddParticipantError,
+  toAddParticipantError,
+} from '../shared/addParticipantErrors.js'
 import { apiFetch } from './utils/apiFetch.js'
 
 declare const __SPEECH_PROVIDER__: string
@@ -199,18 +204,40 @@ export function App() {
 
   const handleAddParticipant = useCallback(async (userId: string, displayName: string): Promise<void> => {
     if (!activeSessionId) {
-      throw new Error('No active session')
+      throw toAddParticipantError('NO_ACTIVE_SESSION', 'No active session')
     }
-    const resp = await apiFetch(`/api/sessions/${activeSessionId}/participants`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, displayName }),
-    })
-    if (!resp.ok) {
-      throw new Error(`Add participant failed: ${resp.status}`)
+
+    try {
+      const resp = await apiFetch(`/api/sessions/${activeSessionId}/participants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, displayName }),
+      })
+
+      if (!resp.ok) {
+        let serverMessage = 'Failed to add participant'
+        try {
+          const body = await resp.json() as { error?: string }
+          if (typeof body?.error === 'string' && body.error.trim().length > 0) {
+            serverMessage = body.error
+          }
+        } catch {
+          // non-JSON response, keep default message
+        }
+
+        const code = addParticipantErrorCodeFromStatus(resp.status)
+
+        throw toAddParticipantError(code, serverMessage, resp.status)
+      }
+
+      const updated: Session = await resp.json()
+      setSessions(prev => prev.map(s => s.id === updated.id ? updated : s))
+    } catch (err) {
+      if (isAddParticipantError(err)) {
+        throw err
+      }
+      throw toAddParticipantError('NETWORK', 'Network error while adding participant')
     }
-    const updated: Session = await resp.json()
-    setSessions(prev => prev.map(s => s.id === updated.id ? updated : s))
   }, [activeSessionId, currentUser])
 
   const sendMessage = useCallback(async (text: string, source: 'voice' | 'text') => {
@@ -299,8 +326,6 @@ export function App() {
       setIsLoading(false)
     }
   }, [activeSessionId, isLoading, currentUser])
-
-  const activeSession = sessions.find(s => s.id === activeSessionId)
 
   const ensureSession = useCallback(async (): Promise<string | null> => {
     if (activeSessionId) return activeSessionId

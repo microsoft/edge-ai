@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: Architecture overview, technology stack, data flow, and API routes for the Voice Agent Tab
+description: Architecture overview, technology stack, data flow, and API routes for Chat With Factory
 ms.date: 2026-04-15
 ms.topic: concept
 ---

@@ -34,7 +34,9 @@ export function useAzureSpeech(options: UseAzureSpeechOptions): UseSpeechRecogni
 
   useEffect(() => {
     return () => {
-      refreshTimerRef.current && clearInterval(refreshTimerRef.current)
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current)
+      }
       recognizerRef.current?.close()
     }
   }, [])
@@ -146,7 +148,9 @@ export function useAzureSpeech(options: UseAzureSpeechOptions): UseSpeechRecogni
     isStartingRef.current = false
     setIsListening(false)
     setTranscript('')
-    refreshTimerRef.current && clearInterval(refreshTimerRef.current)
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current)
+    }
     refreshTimerRef.current = null
 
     const recognizer = recognizerRef.current

@@ -1,22 +1,22 @@
 ---
-title: Voice Agent Tab
-description: A Teams tab for voice-driven maintenance assistance powered by Azure AI Foundry Agents or Copilot Studio
-ms.date: 2026-04-15
+title: Chat With Factory
+description: A voice-enabled AI agent web application for industrial environments powered by Azure AI Foundry Agents or Copilot Studio
+ms.date: 2026-04-29
 ms.topic: overview
 keywords:
-  - teams tab
+  - chat with factory
   - voice agent
   - azure ai foundry
   - copilot studio
   - agents sdk
   - direct line
   - speech-to-text
-  - field service
+  - industrial
 ---
 
-# Voice Agent Tab
+# Chat With Factory
 
-A Microsoft Teams tab app (personal and group chat) that captures voice input, sends recognized text to an AI agent, and displays the conversation in a chat panel. Designed for field service technicians who need hands-free access to maintenance guidance while working on industrial equipment.
+A web application that captures voice input, sends recognized text to an AI agent, and displays the conversation in a chat panel. Designed for hands-free access to AI-powered guidance in industrial environments. Runs standalone or optionally inside Microsoft Teams.
 
 The app supports three configurable agent backends:
 
@@ -40,10 +40,10 @@ The app supports bringing other people into an active agent session — useful f
 
 ### How it works
 
-1. A technician starts a conversation with the agent in their personal tab (e.g., diagnosing a TruLaser pierce failure).
+1. A user starts a conversation with the agent (e.g., diagnosing equipment issues).
 2. When they need to bring someone else in, they click the **Add to session** button (person+ icon) in the session bar.
 3. They enter the colleague's email address and click **Add**.
-4. Teams opens a new group chat with that person and the MIKEBOT Voice Agent tab pre-installed.
+4. In Teams mode, a new group chat opens with that person and the Chat With Factory tab pre-installed.
 5. Both users now have the tab in a shared group chat context, with the native Teams **People** panel available for roster management.
 
 ### Planned enhancements
@@ -59,7 +59,7 @@ See [Architecture](docs/architecture.md) for diagrams, technology stack, data fl
 ## Project Structure
 
 ```text
-src/
+services/chat-with-your-factory/src/
   server/
     index.ts              Express server, static files, shutdown hooks
     agentsClient.ts       Foundry SDK client initialization

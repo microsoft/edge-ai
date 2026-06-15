@@ -13,6 +13,25 @@ import { mintTicket } from './wsTicketStore.js'
 import { mintSseTicket } from './sseTicketStore.js'
 import { getAuthorizedSession } from './aclHelper.js'
 
+function assertHostedAuthConfig(): void {
+  if (process.env.SKIP_AUTH === 'true' || process.env.AUTH_REQUIRED === 'false') {
+    return
+  }
+
+  const missing: string[] = []
+  if (!process.env.TEAMS_APP_ID) missing.push('TEAMS_APP_ID')
+  if (!process.env.TEAMS_AUTH_AUDIENCES) missing.push('TEAMS_AUTH_AUDIENCES')
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required auth environment variable(s): ${missing.join(', ')}. ` +
+        'Set explicit Teams token audiences via TEAMS_AUTH_AUDIENCES (comma-separated).',
+    )
+  }
+}
+
+assertHostedAuthConfig()
+
 const app = express()
 const PORT = parseInt(process.env.PORT || '3978', 10)
 
@@ -28,6 +47,11 @@ app.use((_req, res, next) => {
 
 // Serve static frontend files
 app.use(express.static(path.join(import.meta.dirname, '../../public')))
+
+// App Service health check must remain unauthenticated.
+app.get('/api/healthz', (_req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
 
 // Authenticate all other API requests
 app.use('/api', requireAuth)
@@ -110,7 +134,7 @@ app.post('/api/voice-live/ticket', (req, res) => {
   // backend would fail inside the silence-debounced timer (see dispatchChat).
   // Reject ticket-mint up front with an actionable error for copilotstudio.
   // Other backends (for example directline/foundry) can run without SSO.
-  const agentBackend = process.env.AGENT_BACKEND || 'copilotstudio'
+  const agentBackend = process.env.AGENT_BACKEND || 'foundry'
   const ssoToken = req.ssoToken
   if (!ssoToken && agentBackend === 'copilotstudio') {
     res.status(400).json({
@@ -184,7 +208,7 @@ app.get('/{*splat}', (_req, res) => {
 })
 
 const httpServer = app.listen(PORT, () => {
-  console.log(`Voice Agent Tab server running on http://localhost:${PORT}`)
+  console.log(`Chat With Factory server running on http://localhost:${PORT}`)
 })
 
 // Conditionally attach the Voice Live WebSocket bridge

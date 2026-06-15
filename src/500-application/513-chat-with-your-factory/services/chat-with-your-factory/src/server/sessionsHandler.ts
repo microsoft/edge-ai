@@ -4,12 +4,19 @@ import { sseRegistry } from './sseRegistry.js'
 import { getAuthorizedSession } from './aclHelper.js'
 import { sessionStore } from './sessionStore.js'
 
-const AGENT_BACKEND = process.env.AGENT_BACKEND || 'copilotstudio'
+const AGENT_BACKEND = process.env.AGENT_BACKEND || 'foundry'
 
 /** Strip control characters and limit displayName length for defense-in-depth. */
 export function sanitizeDisplayName(raw: string | undefined, fallback = 'Unknown'): string {
   if (!raw || typeof raw !== 'string') return fallback
-  return raw.replace(/[\x00-\x1f\x7f-\x9f]/g, '').trim().slice(0, 100) || fallback
+  const sanitized = Array.from(raw)
+    .filter((ch) => {
+      const code = ch.charCodeAt(0)
+      return code >= 0x20 && !(code >= 0x7f && code <= 0x9f)
+    })
+    .join('')
+    .trim()
+  return sanitized.slice(0, 100) || fallback
 }
 
 export async function listSessions(req: Request, res: Response): Promise<void> {

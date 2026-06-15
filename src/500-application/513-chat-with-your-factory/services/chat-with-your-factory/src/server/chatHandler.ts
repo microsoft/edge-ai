@@ -4,7 +4,7 @@ import { getAuthorizedSession } from './aclHelper.js'
 import { sessionStore } from './sessionStore.js'
 import { sseRegistry } from './sseRegistry.js'
 
-const AGENT_BACKEND = process.env.AGENT_BACKEND || 'copilotstudio'
+const AGENT_BACKEND = process.env.AGENT_BACKEND || 'foundry'
 
 export interface DispatchContext {
   userId: string

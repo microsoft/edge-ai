@@ -1,0 +1,46 @@
+---
+# Default values for chat-with-your-factory
+replicaCount: 1
+
+image:
+  repository: your-registry.azurecr.io/chat-with-your-factory
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets:
+  - name: acr-auth
+
+nameOverride: ""
+fullnameOverride: ""
+
+namespace: default
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3978
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  AGENT_BACKEND: "foundry"
+  PORT: "3978"
+  # Foundry backend (AGENT_BACKEND=foundry): point at the 085-ai-foundry component.
+  # FOUNDRY_ENDPOINT is the Foundry project endpoint; FOUNDRY_AGENT_ID is the deployed agent.
+  # Create the agent reproducibly with `npm run provision:agent` (needs FOUNDRY_MODEL_DEPLOYMENT).
+  # FOUNDRY_ENDPOINT: "https://<aif-account>.services.ai.azure.com/api/projects/<project>"
+  # FOUNDRY_AGENT_ID: "<your-foundry-agent-id>"
+  # AZURE_TENANT_ID: "<your-tenant-id>"
+  # Auth: set AUTH_REQUIRED="false" for a Teams-less standalone/demo deployment
+  # (synthesizes a dev user — insecure, non-production). Otherwise the server
+  # requires TEAMS_APP_ID and TEAMS_AUTH_AUDIENCES and will fail to start without them.
+  AUTH_REQUIRED: "false"
+  # SKIP_AUTH="true" only bypasses auth for true loopback traffic, not in-cluster requests.
+  # TEAMS_APP_ID: "<your-teams-app-id>"
+  # TEAMS_AUTH_AUDIENCES: "<audience-1>,<audience-2>"

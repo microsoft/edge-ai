@@ -8,6 +8,10 @@ import {
 } from '@fluentui/react-components'
 import { DismissRegular, PersonAdd24Regular } from '@fluentui/react-icons'
 import * as microsoftTeams from '@microsoft/teams-js'
+import {
+  addParticipantErrorUserMessage,
+  isAddParticipantError,
+} from '../../shared/addParticipantErrors.js'
 
 interface AddToSessionDialogProps {
   disabled?: boolean
@@ -30,11 +34,13 @@ export function AddToSessionDialog({ disabled, onAdd }: AddToSessionDialogProps)
   // interrupt the user's flow.
   const [skippedNames, setSkippedNames] = useState<string[]>([])
   const [failedNames, setFailedNames] = useState<string[]>([])
+  const [failedDetails, setFailedDetails] = useState<string[]>([])
 
   const handleClick = async () => {
     setIsAdding(true)
     setSkippedNames([])
     setFailedNames([])
+    setFailedDetails([])
     try {
       const selected = await microsoftTeams.people.selectPeople({
         singleSelect: false,
@@ -71,14 +77,22 @@ export function AddToSessionDialog({ disabled, onAdd }: AddToSessionDialogProps)
         toAdd.map(p => onAdd(p.userId, p.displayName)),
       )
       const failed: string[] = []
+      const details: string[] = []
       results.forEach((result, i) => {
         if (result.status === 'rejected') {
           console.error('Add participant failed:', result.reason)
-          failed.push(toAdd[i].displayName || toAdd[i].userId)
+          const displayName = toAdd[i].displayName || toAdd[i].userId
+          failed.push(displayName)
+          if (isAddParticipantError(result.reason)) {
+            details.push(`${displayName}: ${addParticipantErrorUserMessage(result.reason)}`)
+          } else {
+            details.push(`${displayName}: Unexpected error while adding participant.`)
+          }
         }
       })
       if (failed.length > 0) {
         setFailedNames(failed)
+        setFailedDetails(details)
       }
     } catch {
       // User cancelled the picker
@@ -101,7 +115,7 @@ export function AddToSessionDialog({ disabled, onAdd }: AddToSessionDialogProps)
         <MessageBar intent="warning" politeness="polite">
           <MessageBarBody>
             <MessageBarTitle>
-              Couldn&apos;t add {skippedNames.length === 1 ? 'this person' : 'these people'}
+              {"Couldn't"} add {skippedNames.length === 1 ? 'this person' : 'these people'}
             </MessageBarTitle>
             {' '}
             No Microsoft Entra account was resolved for: {skippedNames.join(', ')}.
@@ -125,7 +139,13 @@ export function AddToSessionDialog({ disabled, onAdd }: AddToSessionDialogProps)
               Failed to add {failedNames.length === 1 ? 'participant' : 'participants'}
             </MessageBarTitle>
             {' '}
-            The server rejected: {failedNames.join(', ')}. Please try again.
+            The server rejected: {failedNames.join(', ')}.
+            {failedDetails.length > 0 && (
+              <>
+                {' '}
+                Details: {failedDetails.join(' | ')}.
+              </>
+            )}
           </MessageBarBody>
           <MessageBarActions
             containerAction={
@@ -133,7 +153,10 @@ export function AddToSessionDialog({ disabled, onAdd }: AddToSessionDialogProps)
                 aria-label="Dismiss"
                 appearance="transparent"
                 icon={<DismissRegular />}
-                onClick={() => setFailedNames([])}
+                onClick={() => {
+                  setFailedNames([])
+                  setFailedDetails([])
+                }}
               />
             }
           />

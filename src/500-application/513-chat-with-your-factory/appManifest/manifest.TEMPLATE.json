@@ -14,8 +14,8 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "MIKEBOT Voice Agent",
-    "full": "MIKEBOT Voice-First Agent Tab"
+    "short": "Chat With Factory",
+    "full": "Chat With Factory - Voice-Enabled AI Agent"
   },
   "description": {
     "short": "Voice-to-text agent in a Teams tab",
@@ -29,7 +29,7 @@
   "staticTabs": [
     {
       "entityId": "voiceAgent",
-      "name": "Voice Agent",
+      "name": "Chat With Factory",
       "contentUrl": "https://<DEV_TUNNEL_HOSTNAME>",
       "scopes": ["personal", "groupChat", "team"],
       "context": ["personalTab", "channelTab", "privateChatTab", "meetingSidePanel", "meetingChatTab", "meetingDetailsTab"]

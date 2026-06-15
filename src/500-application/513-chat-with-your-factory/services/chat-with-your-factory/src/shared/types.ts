@@ -46,3 +46,20 @@ export interface UserContext {
   tenantId?: string
   chatId?: string | null
 }
+
+export type AddParticipantErrorCode =
+  | 'NO_ACTIVE_SESSION'
+  | 'INVALID_INPUT'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'SERVER'
+  | 'NETWORK'
+  | 'UNKNOWN'
+
+export interface AddParticipantError {
+  kind: 'add-participant-error'
+  code: AddParticipantErrorCode
+  message: string
+  status?: number
+}

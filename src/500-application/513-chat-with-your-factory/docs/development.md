@@ -1,6 +1,6 @@
 ---
 title: Development Guide
-description: Local development, Teams testing, npm scripts, and known limitations for the Voice Agent Tab
+description: Local development, Teams testing, npm scripts, and known limitations for Chat With Factory
 ms.date: 2026-04-15
 ms.topic: how-to
 ---
@@ -16,7 +16,7 @@ ms.topic: how-to
 2. Copy the environment template and fill in your values (see [Setup Guide](setup-guide.md) for details):
 
    ```bash
-   cp env.TEMPLATE .env
+   cp .env.template .env
    ```
 
 3. Build and start the server:
@@ -63,12 +63,12 @@ ms.topic: how-to
    * Select `manifest.zip` and click **Add**.
 
 5. Open as a **personal tab** (default sidebar experience):
-   * Open the **Voice Agent** personal tab from the left sidebar.
+   * Open the **Chat With Factory** personal tab from the left sidebar.
 
 6. Or add to a **group chat** (enables the native People panel):
    * Open or create a group chat in Teams.
    * Click the **+** (Add a tab) button in the group chat header.
-   * Search for **MIKEBOT Voice Agent** and add it.
+   * Search for **Chat With Factory** and add it.
    * The native Teams **People** panel (roster icon in the header) is available automatically.
 
 7. Grant microphone access when prompted by the browser.

@@ -5,6 +5,16 @@ let teamsContext: { userId: string; displayName: string } | null = null
 let contextPromise: Promise<void> | null = null
 let ssoToken: string | null = null
 
+function isLocalFallbackHost(): boolean {
+  const hostname = window.location.hostname.toLowerCase()
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname.endsWith('.use.devtunnels.ms')
+  )
+}
+
 function resolveTeamsContext(): Promise<void> {
   if (!contextPromise) {
     contextPromise = microsoftTeams.app.initialize()
@@ -36,8 +46,8 @@ export async function apiFetch(url: string, init?: RequestInit): Promise<Respons
 
   if (ssoToken) {
     headers.set('Authorization', `Bearer ${ssoToken}`)
-  } else if (teamsContext) {
-    // SSO unavailable — fall back to identity headers for SKIP_AUTH mode
+  } else if (teamsContext && isLocalFallbackHost()) {
+    // SSO unavailable — allow fallback identity headers only for local/devtunnel hosts.
     headers.set('x-user-id', teamsContext.userId)
     headers.set('x-user-name', teamsContext.displayName)
   }

@@ -1,6 +1,6 @@
 ---
 title: Setup Guide
-description: Azure resource setup, environment configuration, and Copilot Studio Direct Line integration for the Voice Agent Tab
+description: Azure resource setup, environment configuration, and Copilot Studio Direct Line integration for Chat With Factory
 ms.date: 2026-04-15
 ms.topic: how-to
 ---
@@ -58,15 +58,15 @@ Create the app registration, expose the `access_as_user` scope, and authorize Te
 ```powershell
 # Create the registration with User.Read permission
 az ad app create `
-  --display-name "voice-agent-tab-sso" `
+  --display-name "chat-with-your-factory-sso" `
   --sign-in-audience AzureADMyOrg `
   --enable-id-token-issuance true `
   --requested-access-token-version 2 `
   --required-resource-accesses '[{\"resourceAppId\":\"00000003-0000-0000-c000-000000000000\",\"resourceAccess\":[{\"id\":\"e1fe6dd8-ba31-4d61-89e7-88639da4683d\",\"type\":\"Scope\"}]}]'
 
 # Capture the IDs
-$CLIENT_ID = az ad app list --display-name "voice-agent-tab-sso" --query "[0].appId" -o tsv
-$OBJECT_ID = az ad app list --display-name "voice-agent-tab-sso" --query "[0].id" -o tsv
+$CLIENT_ID = az ad app list --display-name "chat-with-your-factory-sso" --query "[0].appId" -o tsv
+$OBJECT_ID = az ad app list --display-name "chat-with-your-factory-sso" --query "[0].id" -o tsv
 $TENANT_ID = az account show --query tenantId -o tsv
 
 # Set the Application ID URI
@@ -84,12 +84,12 @@ $tempFile = Join-Path $env:TEMP "graph-body.json"
 @{
   api = @{
     oauth2PermissionScopes = @(@{
-      adminConsentDescription = "Allow Teams to access the voice agent APIs as the signed-in user"
+      adminConsentDescription = "Allow the application to access Chat With Factory APIs as the signed-in user"
       adminConsentDisplayName = "Access as user"
       id                      = $SCOPE_ID
       isEnabled               = $true
       type                    = "User"
-      userConsentDescription  = "Allow Teams to call voice agent APIs on your behalf"
+      userConsentDescription  = "Allow the application to call Chat With Factory APIs on your behalf"
       userConsentDisplayName  = "Access as user"
       value                   = "access_as_user"
     })
@@ -105,12 +105,12 @@ az rest --method PATCH `
 @{
   api = @{
     oauth2PermissionScopes = @(@{
-      adminConsentDescription = "Allow Teams to access the voice agent APIs as the signed-in user"
+      adminConsentDescription = "Allow the application to access Chat With Factory APIs as the signed-in user"
       adminConsentDisplayName = "Access as user"
       id                      = $SCOPE_ID
       isEnabled               = $true
       type                    = "User"
-      userConsentDescription  = "Allow Teams to call voice agent APIs on your behalf"
+      userConsentDescription  = "Allow the application to call Chat With Factory APIs on your behalf"
       userConsentDisplayName  = "Access as user"
       value                   = "access_as_user"
     })
@@ -163,10 +163,10 @@ Write-Host "AZURE_TENANT_ID=$TENANT_ID"
 Create the Foundry resource, project, and model deployment:
 
 ```powershell
-$RG_NAME   = "rg-voice-agent"
+$RG_NAME   = "rg-chat-with-your-factory"
 $LOCATION  = "eastus"
-$AI_NAME   = "voice-agent-ai"
-$PROJECT   = "voice-agent-project"
+$AI_NAME   = "chat-factory-ai"
+$PROJECT   = "chat-factory-project"
 
 az group create --name $RG_NAME --location $LOCATION
 
@@ -268,7 +268,7 @@ The Agents SDK backend connects to a Copilot Studio agent using `@microsoft/agen
 
 #### App registration: add a client secret
 
-1. In Azure Portal, go to **App registrations** > your voice-agent-tab registration.
+1. In Azure Portal, go to **App registrations** > your chat-with-your-factory registration.
 2. Under **Certificates & secrets** > **Client secrets**, click **New client secret**.
 3. Copy the secret value and set `TEAMS_APP_CLIENT_SECRET` in your `.env`.
 
@@ -297,7 +297,7 @@ https://copilotstudio.microsoft.com/environments/<ENVIRONMENT_ID>/agents/...
 
 1. In [Power Apps](https://make.powerapps.com/), go to **Solutions** > **Default Solution**.
 2. Filter by **Copilot** type and find your agent.
-3. The **Name** column shows the schema name (for example, `crd49_MIKEBOT`). Use this as `CPS_AGENT_IDENTIFIER`.
+3. The **Name** column shows the schema name (for example, `crd49_YourAgent`). Use this as `CPS_AGENT_IDENTIFIER`.
 
 #### Find your CPS_DIRECT_CONNECT_URL (optional)
 
@@ -336,7 +336,7 @@ Open the app in Teams (OBO exchange requires a real Teams SSO token; `SKIP_AUTH=
 
 ### Environment variables (`.env`)
 
-Copy from `env.TEMPLATE` if the file does not exist.
+Copy from `.env.template` if the file does not exist.
 
 | Variable              | Required     | Description                                                  |
 |-----------------------|--------------|--------------------------------------------------------------|
@@ -349,7 +349,7 @@ Copy from `env.TEMPLATE` if the file does not exist.
 | `DIRECT_LINE_SECRET`  | DL only      | Copilot Studio web channel secret                            |
 | `DIRECT_LINE_ENDPOINT`| No           | Regional DL endpoint (default: `directline.botframework.com`)|
 | `CPS_ENVIRONMENT_ID`  | CPS only     | Power Platform environment ID                                |
-| `CPS_AGENT_IDENTIFIER`| CPS only     | Copilot agent schema name (e.g., `crd49_MIKEBOT`)            |
+| `CPS_AGENT_IDENTIFIER`| CPS only     | Copilot agent schema name (e.g., `crd49_YourAgent`)            |
 | `CPS_DIRECT_CONNECT_URL` | No        | Direct connect URL from Copilot Studio Channels > Web app (overrides `CPS_ENVIRONMENT_ID` and `CPS_AGENT_IDENTIFIER`) |
 | `TEAMS_APP_CLIENT_SECRET` | CPS only  | Client secret from app registration (for OBO exchange)       |
 | `PORT`                | No           | Server port (default: `3978`)                                |

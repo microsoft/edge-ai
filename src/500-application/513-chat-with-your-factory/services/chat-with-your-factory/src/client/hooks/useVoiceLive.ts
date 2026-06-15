@@ -64,18 +64,25 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
     typeof AudioWorkletNode !== 'undefined'
 
   const cleanup = useCallback(() => {
-    workletRef.current?.disconnect()
+    const worklet = workletRef.current
     workletRef.current = null
-    streamRef.current?.getTracks().forEach(t => t.stop())
+    worklet?.disconnect()
+
+    const stream = streamRef.current
     streamRef.current = null
-    if (audioCtxRef.current?.state !== 'closed') {
-      audioCtxRef.current?.close().catch(() => {})
-    }
+    stream?.getTracks().forEach(t => t.stop())
+
+    const audioCtx = audioCtxRef.current
     audioCtxRef.current = null
-    if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {
-      wsRef.current.close()
+    if (audioCtx?.state !== 'closed') {
+      audioCtx.close().catch(() => {})
     }
+
+    const ws = wsRef.current
     wsRef.current = null
+    if (ws?.readyState === WebSocket.OPEN || ws?.readyState === WebSocket.CONNECTING) {
+      ws.close()
+    }
   }, [])
 
   // Cleanup on unmount
@@ -135,7 +142,29 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
         }
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints })
+      let stream: MediaStream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints })
+      } catch (err) {
+        // Device list can change between enumerateDevices() and getUserMedia()
+        // (for example USB/Bluetooth headset unplugged). Retry once without an
+        // exact deviceId to let the browser pick the current default input.
+        if (err instanceof DOMException && err.name === 'OverconstrainedError') {
+          if (debugEnabled()) {
+            console.warn('[VoiceLive] Preferred mic unavailable, retrying with default input')
+          }
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              channelCount: 1,
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
+          })
+        } else {
+          throw err
+        }
+      }
       streamRef.current = stream
 
       // 2. Create AudioContext at system default sample rate
