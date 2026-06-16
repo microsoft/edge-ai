@@ -29,6 +29,7 @@
 # - changesInApplications: true/false indicating if any Application folders have changed (when includeApplications=true)
 # - changedApplicationFolders: JSON object with Application folder details for matrix strategy (when includeApplications=true)
 # - changesInRust: true/false indicating if any Rust-related files have changed (gates the rust-tests workflow)
+# - changesInGoContractTests: true/false indicating if static Go contract-test files have changed (gates the go-tests workflow)
 #
 # Usage Examples:
 # ```yaml
@@ -156,6 +157,9 @@ on:  # yamllint disable-line rule:truthy
       changesInRust:
         description: 'Whether any Rust-relevant files have changed (gates rust-tests)'
         value: ${{ jobs.map-outputs.outputs.changesInRust }}
+      changesInGoContractTests:
+        description: 'Whether any static Go contract-test relevant files have changed (gates go-tests)'
+        value: ${{ jobs.map-outputs.outputs.changesInGoContractTests }}
 
 permissions: {}
 
@@ -182,6 +186,7 @@ jobs:
       changesInFuzzJs: ${{ steps.detect.outputs.changesInFuzzJs }}
       changedFuzzJsFolders: ${{ steps.detect.outputs.changedFuzzJsFolders }}
       changesInRust: ${{ steps.detect.outputs.changesInRust }}
+      changesInGoContractTests: ${{ steps.detect.outputs.changesInGoContractTests }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -243,6 +248,11 @@ jobs:
             'changedFuzzJsFolders={"folderName":[]}' >> $env:GITHUB_OUTPUT
           }
           "changesInRust=$($jsonData.rust.has_changes)" >> $env:GITHUB_OUTPUT
+          if ($jsonData.PSObject.Properties.Name -contains 'goContractTests') {
+            "changesInGoContractTests=$($jsonData.goContractTests.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          } else {
+            "changesInGoContractTests=false" >> $env:GITHUB_OUTPUT
+          }
 
           # Display results for debugging
           Write-Host "Detection results:"
@@ -262,6 +272,11 @@ jobs:
             Write-Host "Fuzz JS changes: $($jsonData.fuzz.js.has_changes)"
           }
           Write-Host "Rust changes: $($jsonData.rust.has_changes)"
+          if ($jsonData.PSObject.Properties.Name -contains 'goContractTests') {
+            Write-Host "Go contract test changes: $($jsonData.goContractTests.has_changes)"
+          } else {
+            Write-Host "Go contract test changes: false"
+          }
 
   # Map outputs from the detection job to maintain backward compatibility
   map-outputs:
@@ -286,6 +301,7 @@ jobs:
       changesInFuzzJs: ${{ needs.detect-changes.outputs.changesInFuzzJs }}
       changedFuzzJsFolders: ${{ needs.detect-changes.outputs.changedFuzzJsFolders }}
       changesInRust: ${{ needs.detect-changes.outputs.changesInRust }}
+      changesInGoContractTests: ${{ needs.detect-changes.outputs.changesInGoContractTests }}
     steps:
       - name: Map outputs for backward compatibility
         run: echo "Mapping outputs from detection job for backward compatibility"

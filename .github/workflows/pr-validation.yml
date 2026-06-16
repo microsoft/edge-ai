@@ -258,6 +258,16 @@ jobs:
     uses: ./.github/workflows/rust-tests.yml
     secrets: inherit
 
+  # Static Go contract tests for full-single-node-cluster blueprint outputs
+  go-tests:
+    name: Go Tests
+    needs: [matrix-changes]
+    if: github.event_name != 'pull_request' || needs.matrix-changes.outputs.changesInGoContractTests == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/go-tests.yml
+    secrets: inherit
+
   # Dependency advisory audit (cargo-audit + govulncheck) for PRs
   dep-audit:
     name: Dependency Audit
@@ -413,6 +423,7 @@ jobs:
       - aio-version-check
       - rust-clippy
       - rust-tests
+      - go-tests
       - dep-audit
       - fuzz
       - matrix-changes
