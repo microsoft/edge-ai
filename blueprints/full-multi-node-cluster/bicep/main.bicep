@@ -278,6 +278,38 @@ param dataflows messagingTypes.Dataflow[] = []
 param dataflowEndpoints messagingTypes.DataflowEndpoint[] = []
 
 /*
+  Notification Parameters (045-notification)
+*/
+
+@description('Whether to deploy the 045-notification Logic App for alert deduplication and Teams posting.')
+param shouldDeployNotification bool = false
+
+@description('Name of the Event Hub for inference alerts. Otherwise, \'evh-{resourcePrefix}-alerts-{environment}-{instance}\'.')
+param alertEventHubName string = 'evh-${common.resourcePrefix}-alerts-${common.environment}-${common.instance}'
+
+@description('JSON schema object for parsing Event Hub events in the Logic App Parse_Event action.')
+param notificationEventSchema object = {}
+
+@description('HTML template for new-event Teams notifications. Supports the `\${close_session_url}` placeholder and Logic App expression syntax for dynamic event fields.')
+param notificationMessageTemplate string = '<p>New alert event detected.</p>'
+
+@description('HTML message body for session-closure Teams notifications. Supports Logic App expression syntax for dynamic fields.')
+param closureMessageTemplate string = '<p>Session closed for event.</p>'
+
+@description('Event schema field name used as the Table Storage partition key for session state deduplication lookups.')
+param notificationPartitionKeyField string = 'event_id'
+
+@description('Teams chat or channel thread ID for posting event notifications.')
+@secure()
+param teamsRecipientId string = ''
+
+@description('Microsoft 365 Group ID (Team ID) for posting to a Teams channel. Required when teamsPostLocation is \'Channel\'.')
+param teamsGroupId string?
+
+@description('Teams posting location: \'Channel\' or \'Group chat\'.')
+param teamsPostLocation ('Channel' | 'Group chat') = 'Channel'
+
+/*
   Local Variables
 */
 
@@ -413,6 +445,25 @@ module cloudMessaging '../../../src/000-cloud/040-messaging/bicep/main.bicep' = 
   params: {
     common: common
     aioIdentityName: cloudSecurityIdentity.outputs.aioIdentityName
+  }
+}
+
+module cloudNotification '../../../src/000-cloud/045-notification/bicep/main.bicep' = if (shouldDeployNotification) {
+  name: '${deployment().name}-cn45'
+  scope: resourceGroup(resourceGroupName)
+  dependsOn: [cloudResourceGroup]
+  params: {
+    common: common
+    eventhubNamespaceName: cloudMessaging.outputs.eventHubNamespaceName
+    eventhubName: alertEventHubName
+    storageAccountName: cloudData.outputs.storageAccountName
+    eventSchema: notificationEventSchema
+    notificationMessageTemplate: notificationMessageTemplate
+    closureMessageTemplate: closureMessageTemplate
+    partitionKeyField: notificationPartitionKeyField
+    teamsRecipientId: teamsRecipientId
+    teamsGroupId: teamsGroupId
+    teamsPostLocation: teamsPostLocation
   }
 }
 
@@ -746,12 +797,16 @@ output messaging object = {
     : 'Not deployed'
 }
 
-@description('Alert notification pipeline resources. Bicep deployment does not currently wire the 045-notification component; output is stubbed for parity with Terraform.')
+@description('Alert notification pipeline resources.')
 output notification object = {
-  logicApp: 'Not deployed'
-  closeLogicApp: 'Not deployed'
-  closeSessionEndpoint: 'Not deployed'
-  storageAccount: 'Not deployed'
+  logicApp: shouldDeployNotification ? cloudNotification.?outputs.?logicApp ?? 'Not deployed' : 'Not deployed'
+  closeLogicApp: shouldDeployNotification ? cloudNotification.?outputs.?closeLogicApp ?? 'Not deployed' : 'Not deployed'
+  closeSessionEndpoint: shouldDeployNotification
+    ? cloudNotification.?outputs.?closeSessionEndpoint ?? 'Not deployed'
+    : 'Not deployed'
+  storageAccount: shouldDeployNotification
+    ? cloudNotification.?outputs.?storageAccount ?? 'Not deployed'
+    : 'Not deployed'
 }
 
 @description('Map of dataflow graph resources by name.')
