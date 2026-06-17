@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::signal;
 use tracing::{info, warn, error, span, Level};
@@ -48,14 +49,28 @@ async fn main() -> Result<()> {
     // Initialize AI inference engine using the crate library
     let inference_config = config.create_inference_config();
     let mut inference_engine = InferenceEngine::new(inference_config).await?;
-    
+
     // Initialize the inference engine and load models
     if let Err(e) = inference_engine.initialize().await {
         error!("Failed to initialize inference engine: {}", e);
         return Err(e.into());
     }
     info!("AI inference engine initialized successfully");
-    
+
+    let models_dir = PathBuf::from(
+        std::env::var("MODELS_DIRECTORY").unwrap_or_else(|_| "/models".to_string()),
+    );
+    if let Err(e) = inference_engine.initialize_yaml_config_system(models_dir) {
+        warn!("Failed to initialize YAML config system: {}", e);
+    }
+
+    if let Ok(config_path) = std::env::var("MODEL_CONFIG_PATH") {
+        match inference_engine.load_model_from_yaml(&config_path).await {
+            Ok(model_name) => info!("Loaded model '{}' from YAML config", model_name),
+            Err(e) => warn!("Failed to load model from YAML config: {}", e),
+        }
+    }
+
     // Wrap in Arc after initialization
     let inference_engine = Arc::new(inference_engine);
 
@@ -69,7 +84,7 @@ async fn main() -> Result<()> {
 
     // Extract the MQTT session — its event loop must run concurrently for the connection to work
     let mqtt_session = mqtt_publisher.take_session()
-        .expect("MQTT session must be available");
+        .ok_or_else(|| anyhow::anyhow!("MQTT session must be available"))?;
 
     #[allow(clippy::arc_with_non_send_sync)]
     let mqtt_publisher = Arc::new(mqtt_publisher);
@@ -116,10 +131,10 @@ async fn main() -> Result<()> {
     }
 
     info!("AI Edge MQTT Publisher Service shutting down gracefully");
-    
+
     // Perform cleanup
     cleanup_resources().await;
-    
+
     info!("Shutdown complete");
     Ok(())
 }
@@ -127,14 +142,14 @@ async fn main() -> Result<()> {
 /// Perform cleanup before shutdown
 async fn cleanup_resources() {
     info!("Cleaning up resources...");
-    
+
     // Add any necessary cleanup logic here
     // For example:
     // - Flush pending metrics
     // - Close database connections
     // - Save state to disk
     // - Gracefully disconnect from MQTT broker
-    
+
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
     info!("Resource cleanup completed");
 }

@@ -43,20 +43,20 @@
     "docs:clear": "npm run --prefix docs/docusaurus clear"
   },
   "dependencies": {
-    "cspell": "^10.0.0",
-    "eslint": "^10.4.0",
+    "cspell": "^10.0.1",
+    "eslint": "^10.5.0",
     "glob": "^13.0.0",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.2.0",
     "markdown-table-formatter": "1.7.0",
-    "markdownlint": "0.40.0",
+    "markdownlint": "0.41.0",
     "markdownlint-cli": "0.48.0",
-    "prettier": "^3.8.3"
+    "prettier": "^3.8.4"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "markdown-link-check": "3.14.2",
-    "marked": "^18.0.4",
+    "marked": "^18.0.5",
     "secretlint": "13.0.2",
     "tftest-to-junitxml": "0.2.0"
   },

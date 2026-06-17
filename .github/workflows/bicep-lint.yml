@@ -6,6 +6,8 @@
 #
 # Parameters:
 # - soft-fail: When true, lint violations are reported but do not fail the workflow (default: false)
+# - full-validation: When true, validates every Bicep file in the repository (default: true)
+# - bicep-folders-json: JSON object emitted by matrix-folder-check for scoped validation
 #
 # Usage Examples:
 # ```yaml
@@ -30,6 +32,16 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: false
+      full-validation:
+        description: 'Whether to validate every Bicep file in the repository'
+        required: false
+        type: boolean
+        default: true
+      bicep-folders-json:
+        description: 'JSON object of Bicep folders to validate when full-validation is false'
+        required: false
+        type: string
+        default: '{}'
 
 permissions: {}
 
@@ -41,7 +53,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
@@ -71,41 +83,17 @@ jobs:
 
       - name: Find and validate Bicep files
         id: bicep-build
-        shell: bash
+        shell: pwsh
+        env:
+          BICEP_FOLDERS_JSON: ${{ inputs.bicep-folders-json }}
+          FULL_VALIDATION: ${{ inputs.full-validation }}
         run: |
-          set -euo pipefail
-          FAILED=0
-          FILES_CHECKED=0
-          FAILURES=""
-
-          while IFS= read -r -d '' file; do
-            if [[ "$file" == *node_modules* ]] || [[ "$file" == *.copilot-tracking* ]]; then
-              continue
-            fi
-            FILES_CHECKED=$((FILES_CHECKED + 1))
-            echo "::group::Validating: $file"
-            if ! az bicep build --file "$file" --stdout > /dev/null 2>&1; then
-              FAILED=$((FAILED + 1))
-              FAILURES="${FAILURES}\n- ${file}"
-              echo "::error file=${file}::Bicep build failed for ${file}"
-              az bicep build --file "$file" --stdout 2>&1 || true
-            fi
-            echo "::endgroup::"
-          done < <(find . -name '*.bicep' -print0)
-
-          echo "files-checked=${FILES_CHECKED}" >> "$GITHUB_OUTPUT"
-          echo "failures=${FAILED}" >> "$GITHUB_OUTPUT"
-
-          SUMMARY="## Bicep Lint Results\n\n- **Files checked:** ${FILES_CHECKED}\n- **Failures:** ${FAILED}"
-          if [ "$FAILED" -gt 0 ]; then
-            SUMMARY="${SUMMARY}\n\n### Failed files\n${FAILURES}"
-          fi
-          echo -e "$SUMMARY" >> "$GITHUB_STEP_SUMMARY"
-          echo -e "$SUMMARY" > bicep-lint-output.txt
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "BICEP_LINT_FAILED=true" >> "$GITHUB_ENV"
-          fi
+          ./scripts/build/Invoke-BicepLint.ps1 `
+            -Platform github `
+            -FullValidation $env:FULL_VALIDATION `
+            -BicepFoldersJson $env:BICEP_FOLDERS_JSON `
+            -ResultsDir bicep-lint-results `
+            -OutputFile bicep-lint-output.txt
 
       - name: Upload lint results
         if: always()
@@ -117,14 +105,15 @@ jobs:
           if-no-files-found: ignore
 
       - name: Fail on violations
-        if: env.BICEP_LINT_FAILED == 'true'
-        shell: bash
+        if: steps.bicep-build.outputs.failures != '0'
+        shell: pwsh
         env:
           SOFT_FAIL: ${{ inputs.soft-fail }}
         run: |
-          if [ "$SOFT_FAIL" = "true" ]; then
-            echo "::warning::Bicep lint found violations (soft-fail enabled)"
-          else
-            echo "::error::Bicep lint found violations"
+          if ($env:SOFT_FAIL -eq 'true') {
+            Write-Output '::warning::Bicep lint found violations (soft-fail enabled)'
+          }
+          else {
+            Write-Output '::error::Bicep lint found violations'
             exit 1
-          fi
+          }
