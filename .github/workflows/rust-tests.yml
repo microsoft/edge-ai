@@ -185,14 +185,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]] && grep -q 'registry = "aio-sdks"' Cargo.toml; then
+          if [[ -z "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]] && grep -v '^\s*#' Cargo.toml | grep -q 'registry = "aio-sdks"'; then
             echo "Skipping ${{ matrix.crate }} (requires aio-sdks registry token)"
             exit 0
           fi
           cargo llvm-cov --locked --cobertura --output-path coverage.xml
 
       - name: Upload to Codecov
-        if: success()
+        if: success() && hashFiles(format('{0}/coverage.xml', matrix.crate)) != ''
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
         with:
           files: ${{ matrix.crate }}/coverage.xml
