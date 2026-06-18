@@ -27,6 +27,19 @@ To maintain code quality and the OSSF Best Practices Badge, we enforce the follo
 1. **New Functionality**: All new major functionality requires corresponding automated tests.
 2. **Bug Fixes**: Bug fixes require regression tests that verify the fix.
 
+### Regression Test Tracking
+
+Bug-fix pull requests should include a regression test unless the change is documentation-only, configuration-only, or cannot be covered by a stable automated test. A regression test should reproduce the failing behavior and pass only after the fix. It can be implemented as a unit, contract, integration, deployment, or component test using the framework listed below.
+
+For tracking, bug-fix PRs should state whether a regression test is included in the validation notes. Maintainers can apply the `regression-test` label when the PR includes one. If a bug fix does not include a regression test, the PR should explain the exception so the gap can be reviewed.
+
+To measure the OSSF target that at least 50% of bug fixes include regression tests, compare merged bug-fix PRs that have the label against all merged bug-fix PRs over the review window:
+
+```text
+is:pr is:merged label:bug label:regression-test
+is:pr is:merged label:bug -label:regression-test
+```
+
 ### Technology Requirements
 
 | Technology     | Framework               | Minimum Requirement                                   |
