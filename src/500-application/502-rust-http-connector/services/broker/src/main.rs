@@ -1,7 +1,7 @@
 use azure_iot_operations_mqtt::session::{
-    Session, SessionConnectionMonitor, SessionManagedClient, SessionOptionsBuilder,
+    Session, SessionManagedClient, SessionMonitor, SessionOptionsBuilder,
 };
-use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
+use azure_iot_operations_mqtt::aio::connection_settings::MqttConnectionSettingsBuilder;
 use std::str;
 use std::time::Duration;
 
@@ -41,7 +41,7 @@ async fn read_sensor(
     json_schema: Value,
     device_id: &str,
     client: SessionManagedClient,
-    monitor: SessionConnectionMonitor,
+    monitor: SessionMonitor,
 ) {
     info!("Reading sensor data");
 
@@ -223,7 +223,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create a new MQTT session
     let session = Session::new(session_options)?;
-    let monitor = session.create_connection_monitor();
+    let monitor = session.create_session_monitor();
     let client = session.create_managed_client();
 
     // Spawn tasks for sending and receiving messages using managed clients
