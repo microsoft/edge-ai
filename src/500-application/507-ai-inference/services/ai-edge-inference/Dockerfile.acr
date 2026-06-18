@@ -1,27 +1,33 @@
 # Single-platform ACR build for ai-edge-inference (amd64 only)
 # Build with: az acr build --registry <acr> --image ai-edge-inference:latest --file ai-edge-inference/Dockerfile.acr --build-arg BACKEND=onnx .
 
-# Build stage
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS build
+ARG BUILDPLATFORM=linux/amd64
+ARG TARGETPLATFORM=linux/amd64
 
+# Build stage (force amd64; this Dockerfile is single-platform by design)
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS build
+
+# Pin package versions for reproducible builds and stable SBOMs (OSSF Pinned-Dependencies).
+# Versions resolved against the digest-pinned Azure Linux 3.0 base image above.
 RUN tdnf install -y \
-    openssl-devel-1.1.1k-36.cm2 \
-    gcc-11.2.0-8.cm2 \
-    make-4.3-3.cm2 \
-    binutils-2.37-16.cm2 \
-    glibc-devel-2.35-7.cm2 \
-    curl-8.8.0-6.cm2 \
-    ca-certificates-2.0.0-22.cm2 \
-    clang-12.0.1-4.cm2 \
-    pkgconf-pkg-config-1.8.0-3.cm2 \
-    protobuf-devel-3.17.3-4.cm2 \
-    tar-1.34-3.cm2 \
+    openssl-devel-3.3.5-5.azl3 \
+    gcc-13.2.0-7.azl3 \
+    make-4.4.1-2.azl3 \
+    binutils-2.41-12.azl3 \
+    glibc-devel-2.38-20.azl3 \
+    kernel-headers-6.6.139.1-1.azl3 \
+    curl-8.11.1-6.azl3 \
+    ca-certificates-3.0.0-14.azl3 \
+    clang-18.1.8-1.azl3 \
+    pkgconf-pkg-config-2.0.2-1.azl3 \
+    protobuf-devel-25.3-7.azl3 \
+    tar-1.35-2.azl3 \
     && tdnf clean all
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Rust via rustup-init with sha256 verification (OSSF Pinned-Dependencies)
-ARG RUST_TOOLCHAIN=1.88.0
+ARG RUST_TOOLCHAIN=1.90.0
 RUN set -eux; \
     case "$(uname -m)" in \
         x86_64)  RUSTUP_ARCH="x86_64-unknown-linux-gnu" ;; \
@@ -41,31 +47,21 @@ RUN set -eux; \
 
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+ARG CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+ARG CARGO_PROFILE_RELEASE_STRIP=none
+ENV CARGO_PROFILE_RELEASE_DEBUG=$CARGO_PROFILE_RELEASE_DEBUG
+ENV CARGO_PROFILE_RELEASE_STRIP=$CARGO_PROFILE_RELEASE_STRIP
+
 ARG BACKEND=onnx
-
-RUN mkdir -p /installroot/usr/local/bin /build/bin /installroot/bin \
-    /installroot/opt/onnxruntime /installroot/etc /installroot/lib64 \
-    /installroot/usr/lib64 /installroot/tmp
-
-RUN cp -a /lib64/ld-linux-x86-64.so.* /installroot/lib64/ && \
-    cp -a /usr/lib64/libssl.so.* /installroot/usr/lib64/ && \
-    cp -a /usr/lib64/libcrypto.so.* /installroot/usr/lib64/ && \
-    cp -a /lib64/libc.so.* /installroot/lib64/ && \
-    cp -a /lib64/libdl.so.* /installroot/lib64/ && \
-    cp -a /lib64/libpthread.so.* /installroot/lib64/ && \
-    cp -a /lib64/libm.so.* /installroot/lib64/ && \
-    cp -a /lib64/librt.so.* /installroot/lib64/ && \
-    cp -a /usr/lib64/libz.so.* /installroot/usr/lib64/
 
 WORKDIR /tmp
 RUN if [ "$BACKEND" = "onnx" ]; then \
         mkdir -p /opt/onnxruntime && \
-        curl --proto '=https' --tlsv1.2 -fsSL -o "onnxruntime-linux-x64-1.17.0.tgz" "https://github.com/microsoft/onnxruntime/releases/download/v1.17.0/onnxruntime-linux-x64-1.17.0.tgz" && \
-        tar -xzf "onnxruntime-linux-x64-1.17.0.tgz" && \
-        cp -r onnxruntime-linux-x64-1.17.0/* /opt/onnxruntime/ && \
-        rm -rf onnxruntime-linux-x64-1.17.0.tgz onnxruntime-linux-x64-1.17.0 && \
-        mkdir -p /installroot/opt/onnxruntime && \
-        cp -r /opt/onnxruntime/* /installroot/opt/onnxruntime/; \
+    curl --proto '=https' --tlsv1.2 -fsSL -o "onnxruntime-linux-x64-1.24.4.tgz" "https://github.com/microsoft/onnxruntime/releases/download/v1.24.4/onnxruntime-linux-x64-1.24.4.tgz" && \
+    echo "3a211fbea252c1e66290658f1b735b772056149f28321e71c308942cdb54b747  onnxruntime-linux-x64-1.24.4.tgz" | sha256sum -c - && \
+    tar -xzf "onnxruntime-linux-x64-1.24.4.tgz" && \
+    cp -r onnxruntime-linux-x64-1.24.4/* /opt/onnxruntime/ && \
+    rm -rf onnxruntime-linux-x64-1.24.4.tgz onnxruntime-linux-x64-1.24.4; \
     fi
 
 WORKDIR /app
@@ -90,7 +86,12 @@ COPY ./ai-edge-inference-crate ../ai-edge-inference-crate
 
 COPY ./ai-edge-inference/src ./src
 COPY ./ai-edge-inference/Cargo.toml ./Cargo.toml
+COPY ./ai-edge-inference/Cargo.lock ./Cargo.lock
 COPY ./ai-edge-inference/.cargo ./.cargo
+
+ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"
+ENV ORT_PREFER_DYNAMIC_LINK="1"
+ENV ORT_STRATEGY="system"
 
 RUN if [ "$BACKEND" = "candle" ]; then \
         cargo build --release --features candle --no-default-features; \
@@ -103,14 +104,19 @@ RUN if [ "$BACKEND" = "candle" ]; then \
 RUN echo "backend=${BACKEND}" > /app/build-info.txt && \
     echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> /app/build-info.txt
 
-# Runtime stage
-FROM mcr.microsoft.com/cbl-mariner/base/core:2.0@sha256:3ea2978438516bea837ebcf2140d487c1305317c2acea100393b775365b0d7f5 AS runtime
+# Runtime stage (force amd64 to match build stage)
+FROM --platform=$TARGETPLATFORM mcr.microsoft.com/azurelinux/base/core:3.0.20250910@sha256:919cfecd0ffe136adff3bea7030f3e6abc6633a4069a6de44b2070bb86c40c81 AS runtime
 ARG BACKEND=onnx
 
+# Pin runtime package versions to match the build stage and keep SBOMs reproducible.
+# No `tdnf upgrade` here: it would re-introduce non-determinism by pulling whatever
+# the repo serves at build time. Rely on scheduled rebuilds + base image digest bumps
+# to pick up security updates.
 RUN tdnf install -y \
-    ca-certificates-2.0.0-22.cm2 \
-    shadow-utils-4.9-14.cm2 \
-    tar-1.34-3.cm2 \
+    ca-certificates-3.0.0-14.azl3 \
+    ncurses-libs-6.4-3.azl3 \
+    shadow-utils-4.14.3-2.azl3 \
+    tar-1.35-2.azl3 \
     && tdnf clean all && \
     groupadd -r appuser && useradd -r -g appuser appuser
 
@@ -126,7 +132,7 @@ RUN chown -R appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher /app && \
     chmod +x /usr/local/bin/ai-edge-mqtt-publisher
 
 ENV RUST_LOG=info
-ENV MODEL_DIRECTORY=/models
+ENV MODELS_DIRECTORY=/models
 ENV METRICS_PORT=8080
 ENV HEALTH_PORT=8081
 ENV LD_LIBRARY_PATH="/opt/onnxruntime/lib"

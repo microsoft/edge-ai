@@ -123,6 +123,12 @@ on:  # yamllint disable-line rule:truthy
       changedBicepFolders:
         description: 'JSON matrix of Bicep folders that have changed'
         value: ${{ jobs.map-outputs.outputs.changedBicepFolders }}
+      bicepFullValidationRequired:
+        description: 'Whether Bicep validation must run across all folders'
+        value: ${{ jobs.map-outputs.outputs.bicepFullValidationRequired }}
+      bicepFullValidationReasons:
+        description: 'JSON array of reasons that require full Bicep validation'
+        value: ${{ jobs.map-outputs.outputs.bicepFullValidationReasons }}
       changesInApplications:
         description: 'Whether any Application folders have changed'
         value: ${{ jobs.map-outputs.outputs.changesInApplications }}
@@ -165,6 +171,8 @@ jobs:
       changedTfFolders: ${{ steps.detect.outputs.changedTfFolders }}
       changesInBicepInstall: ${{ steps.detect.outputs.changesInBicepInstall }}
       changedBicepFolders: ${{ steps.detect.outputs.changedBicepFolders }}
+      bicepFullValidationRequired: ${{ steps.detect.outputs.bicepFullValidationRequired }}
+      bicepFullValidationReasons: ${{ steps.detect.outputs.bicepFullValidationReasons }}
       changesInApplications: ${{ steps.detect.outputs.changesInApplications }}
       changedApplicationFolders: ${{ steps.detect.outputs.changedApplicationFolders }}
       changesInFuzzRust: ${{ steps.detect.outputs.changesInFuzzRust }}
@@ -176,7 +184,7 @@ jobs:
       changesInRust: ${{ steps.detect.outputs.changesInRust }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0  # Needed to get all history for comparing changes
 
@@ -213,8 +221,10 @@ jobs:
           "powershellChanges=$($jsonData.subscription.powershell_changes)" >> $env:GITHUB_OUTPUT
           "changesInTerraformInstall=$($jsonData.terraform.has_changes)" >> $env:GITHUB_OUTPUT
           "changedTfFolders=$($jsonData.terraform.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
-          "changesInBicepInstall=$($jsonData.bicep.has_changes)" >> $env:GITHUB_OUTPUT
+          "changesInBicepInstall=$($jsonData.bicep.has_changes.ToString().ToLower())" >> $env:GITHUB_OUTPUT
           "changedBicepFolders=$($jsonData.bicep.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
+          "bicepFullValidationRequired=$($jsonData.bicep.full_validation_required.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          "bicepFullValidationReasons=$($jsonData.bicep.full_validation_reasons | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
           "changesInApplications=$($jsonData.applications.has_changes)" >> $env:GITHUB_OUTPUT
           "changedApplicationFolders=$($jsonData.applications.folders | ConvertTo-Json -Compress)" >> $env:GITHUB_OUTPUT
           if ($jsonData.PSObject.Properties.Name -contains 'fuzz') {
@@ -242,6 +252,8 @@ jobs:
           Write-Host "Terraform folders: $($jsonData.terraform.folders | ConvertTo-Json)"
           Write-Host "Bicep changes: $($jsonData.bicep.has_changes)"
           Write-Host "Bicep folders: $($jsonData.bicep.folders | ConvertTo-Json)"
+          Write-Host "Bicep full validation required: $($jsonData.bicep.full_validation_required)"
+          Write-Host "Bicep full validation reasons: $($jsonData.bicep.full_validation_reasons | ConvertTo-Json)"
           Write-Host "Application changes: $($jsonData.applications.has_changes)"
           Write-Host "Application folders: $($jsonData.applications.folders | ConvertTo-Json)"
           if ($jsonData.PSObject.Properties.Name -contains 'fuzz') {
@@ -263,6 +275,8 @@ jobs:
       changedTfFolders: ${{ needs.detect-changes.outputs.changedTfFolders }}
       changesInBicepInstall: ${{ needs.detect-changes.outputs.changesInBicepInstall }}
       changedBicepFolders: ${{ needs.detect-changes.outputs.changedBicepFolders }}
+      bicepFullValidationRequired: ${{ needs.detect-changes.outputs.bicepFullValidationRequired }}
+      bicepFullValidationReasons: ${{ needs.detect-changes.outputs.bicepFullValidationReasons }}
       changesInApplications: ${{ needs.detect-changes.outputs.changesInApplications }}
       changedApplicationFolders: ${{ needs.detect-changes.outputs.changedApplicationFolders }}
       changesInFuzzRust: ${{ needs.detect-changes.outputs.changesInFuzzRust }}

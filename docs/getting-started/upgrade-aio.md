@@ -28,11 +28,11 @@ The reconciliation steps differ between Terraform (stateful) and Bicep (stateles
 
 ## Version matrix
 
-This repository currently targets the **AIO 2604** release. The table below maps `az iot ops` CLI versions to the component versions pinned in edge-ai:
+This repository currently targets the **AIO 2605** release. The table below maps `az iot ops` CLI versions to the component versions pinned in edge-ai:
 
 | CLI extension (`azure-iot-ops`) | AIO release | cert-manager | secret-sync-controller | iotOperations |
 |---------------------------------|-------------|--------------|------------------------|---------------|
-| 2.5.0                           | 2604        | 0.11.0       | 1.4.0                  | 1.3.70        |
+| 2.5.0                           | 2605        | 0.12.0       | 1.4.1                  | 1.3.105       |
 
 For the full upstream compatibility matrix, see [Supported versions — Azure IoT Operations](https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions).
 

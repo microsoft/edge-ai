@@ -33,6 +33,10 @@ A production-ready AI inference service that provides dual-backend machine learn
 2. **Manual setup** (if not using devcontainer):
    - Docker and Docker Compose
    - Rust 1.89+ toolchain
+   - Protocol Buffers compiler (`protoc`)
+     - macOS: `brew install protobuf`
+     - Ubuntu/Debian: `sudo apt-get install protobuf-compiler`
+     - RHEL/Fedora: `sudo dnf install protobuf-devel`
    - MQTT broker (Mosquitto) for local testing
 
 ### For Production Deployment

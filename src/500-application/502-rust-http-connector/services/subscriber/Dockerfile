@@ -37,6 +37,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Rust toolchain is provided pinned by the base image (azurelinux/base/rust:1.86.0).
 # Avoid running rustup to prevent pulling an unpinned upstream toolchain.
 
+ARG CARGO_PROFILE_RELEASE_DEBUG=line-tables-only
+ARG CARGO_PROFILE_RELEASE_STRIP=none
+ENV CARGO_PROFILE_RELEASE_DEBUG=$CARGO_PROFILE_RELEASE_DEBUG
+ENV CARGO_PROFILE_RELEASE_STRIP=$CARGO_PROFILE_RELEASE_STRIP
+
 ARG USE_REPLACE_WITH=false
 
 # Build the Rust application in release mode
