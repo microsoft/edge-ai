@@ -29,7 +29,7 @@ pub async fn mqtt_publish_message(
 
     let topic_for_log = topic.clone();
 
-    let publish_result = Retry::spawn(retry_strategy, {
+    let publish_result = Retry::start(retry_strategy, {
         let topic = topic.clone();
         let payload = payload.clone();
         let client = client.clone();
