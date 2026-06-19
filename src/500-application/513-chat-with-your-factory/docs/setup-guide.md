@@ -57,6 +57,8 @@ Create the app registration, expose the `access_as_user` scope, and authorize Te
 
 ```powershell
 # Create the registration with User.Read permission
+# resourceAppId 00000003-... is the well-known public Microsoft Graph app ID;
+# the scope id e1fe6dd8-... is Graph's well-known User.Read delegated permission.
 az ad app create `
   --display-name "chat-with-your-factory-sso" `
   --sign-in-audience AzureADMyOrg `
@@ -114,9 +116,11 @@ az rest --method PATCH `
       userConsentDisplayName  = "Access as user"
       value                   = "access_as_user"
     })
+    # The two appIds below are Microsoft's well-known, public Teams first-party
+    # client IDs (not tenant-specific) and are required for Teams SSO pre-auth.
     preAuthorizedApplications = @(
-      @{ appId = "1fec8e78-bce4-4aaf-ab1b-5451cc387264"; delegatedPermissionIds = @($SCOPE_ID) }
-      @{ appId = "5e3ce6c0-2b1f-4285-8d4b-75ee78787346"; delegatedPermissionIds = @($SCOPE_ID) }
+      @{ appId = "1fec8e78-bce4-4aaf-ab1b-5451cc387264"; delegatedPermissionIds = @($SCOPE_ID) }  # Teams web client
+      @{ appId = "5e3ce6c0-2b1f-4285-8d4b-75ee78787346"; delegatedPermissionIds = @($SCOPE_ID) }  # Teams desktop/mobile client
     )
   }
 } | ConvertTo-Json -Depth 5 | Out-File -FilePath $tempFile -Encoding utf8NoBOM -Force
@@ -141,7 +145,7 @@ Grant admin consent for `User.Read` (requires Global Admin or Privileged Role Ad
 ```powershell
 az ad app permission grant `
   --id $(az ad sp show --id $CLIENT_ID --query id -o tsv) `
-  --api $(az ad sp show --id "00000003-0000-0000-c000-000000000000" --query id -o tsv) `
+  --api $(az ad sp show --id "00000003-0000-0000-c000-000000000000" --query id -o tsv) ` # well-known Microsoft Graph app ID
   --scope "User.Read"
 ```
 
@@ -276,10 +280,10 @@ The Agents SDK backend connects to a Copilot Studio agent using `@microsoft/agen
 
 1. In Azure Portal, go to **App registrations** > your app > **API permissions**.
 2. Click **Add a permission** > **APIs my organization uses**.
-3. Search for **Power Platform API** (app ID `8578e004-a5c6-46e7-913e-12f58912df43`). If it does not appear, create the service principal first:
+3. Search for **Power Platform API** (well-known public Microsoft app ID `8578e004-a5c6-46e7-913e-12f58912df43`). If it does not appear, create the service principal first:
 
    ```powershell
-   az ad sp create --id 8578e004-a5c6-46e7-913e-12f58912df43
+   az ad sp create --id 8578e004-a5c6-46e7-913e-12f58912df43  # well-known Power Platform API app ID
    ```
 
 4. Select **Delegated permissions**, check the default scope, and click **Add permissions**.
