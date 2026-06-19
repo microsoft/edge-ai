@@ -478,3 +478,6 @@ megalinter-reports/
 
 # C# language server / Dev Kit project cache
 *.lscache
+
+# HVE-Core local tooling install (not part of this repo)
+.hve-core/
