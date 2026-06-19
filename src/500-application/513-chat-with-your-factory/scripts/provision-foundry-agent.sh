@@ -35,6 +35,10 @@ Optional environment variables:
   FOUNDRY_AGENT_NAME          Agent name (default: chat-with-your-factory)
   FOUNDRY_AGENT_INSTRUCTIONS  System instructions override
 
+The provisioned agent attaches the query_factory_ontology tool. The tool's Fabric
+lakehouse vars (FABRIC_WORKSPACE_ID / FABRIC_LAKEHOUSE_ID or FABRIC_SQL_ENDPOINT,
+and FABRIC_LAKEHOUSE_DATABASE) are read at SERVICE RUNTIME, not during provisioning.
+
 Example:
   export FOUNDRY_ENDPOINT="https://<account>.services.ai.azure.com/api/projects/<project>"
   export FOUNDRY_MODEL_DEPLOYMENT="gpt-4o"

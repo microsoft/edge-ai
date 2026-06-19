@@ -21,10 +21,32 @@ A web application that captures voice input, sends recognized text to an AI agen
 The app supports three configurable agent backends:
 
 * **Copilot Studio via Agents SDK** (default) with OBO token exchange and streaming responses
-* **Azure AI Foundry Agents** with synchronous `createAndPoll`
+* **Azure AI Foundry Agents** with a tool-calling run loop (handles `requires_action` for the factory ontology tool)
 * **Copilot Studio via Direct Line API 3.0** with asynchronous WebSocket relay
 
 Set `AGENT_BACKEND` in `.env` to `copilotstudio`, `foundry`, or `directline` to choose.
+
+## Factory Ontology Tool
+
+When using the Foundry backend, the agent is provisioned with a read-only
+`query_factory_ontology` function tool. The tool answers robot questions by
+querying the static CORA/CORAX ontology in the `RoboticsOntologyLH` Fabric
+lakehouse (deployed by [033-fabric-ontology](../../000-cloud/033-fabric-ontology/README.md)).
+The service runs the tool call in the backend during the agent run and submits
+the result back to Foundry.
+
+* Intents: `list_robots` (enumerate robots) and `robot_position` (a robot's pose).
+* Sample questions and the seed entity catalog: [docs/factory-tool-grounding.md](docs/factory-tool-grounding.md).
+* Future live-data path (interface-stable): [docs/factory-tool-live-data.md](docs/factory-tool-live-data.md).
+
+### Prerequisites
+
+* Provision the agent with `npm run provision:agent` (attaches the tool).
+* Set the Fabric connection env vars: `FABRIC_WORKSPACE_ID` + `FABRIC_LAKEHOUSE_ID`
+  (host discovery via Fabric REST) or `FABRIC_SQL_ENDPOINT` (explicit host), plus
+  optional `FABRIC_LAKEHOUSE_DATABASE` (default `RoboticsOntologyLH`).
+* RBAC: the backend identity (`DefaultAzureCredential`) needs lakehouse read access;
+  the SQL connection uses scope `https://database.windows.net/.default`.
 
 ## Documentation
 

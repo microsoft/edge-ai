@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express'
+import { isOutputOfType } from '@azure/ai-agents'
+import type { SubmitToolOutputsAction, RequiredFunctionToolCall, ToolOutput } from '@azure/ai-agents'
 import * as directLine from './directLineClient.js'
 import { getAuthorizedSession } from './aclHelper.js'
+import { handleFactoryTool } from './factoryTool.js'
 import { sessionStore } from './sessionStore.js'
 import { sseRegistry } from './sseRegistry.js'
 
@@ -116,11 +119,40 @@ export async function dispatchChat(
     }
 
     await agentsClient.messages.create(threadId, 'user', text)
-    const run = await agentsClient.runs.createAndPoll(threadId, agentId)
+    let run = await agentsClient.runs.create(threadId, agentId)
 
-    if (run.status !== 'completed') {
-      console.error('Agent run failed:', run.status, run.lastError)
-      throw new Error('Agent run did not complete')
+    while (['queued', 'in_progress', 'requires_action'].includes(run.status)) {
+      await new Promise(r => setTimeout(r, 1000))
+      run = await agentsClient.runs.get(threadId, run.id)
+
+      if (
+        run.status === 'requires_action' &&
+        run.requiredAction &&
+        isOutputOfType<SubmitToolOutputsAction>(run.requiredAction, 'submit_tool_outputs')
+      ) {
+        const toolOutputs: ToolOutput[] = []
+        for (const toolCall of run.requiredAction.submitToolOutputs.toolCalls) {
+          if (isOutputOfType<RequiredFunctionToolCall>(toolCall, 'function')) {
+            const args = toolCall.function.arguments
+              ? JSON.parse(toolCall.function.arguments)
+              : {}
+            let result: unknown
+            if (toolCall.function.name === 'query_factory_ontology') {
+              result = await handleFactoryTool(args)
+            } else {
+              result = { error: `unknown tool: ${toolCall.function.name}` }
+            }
+            toolOutputs.push({ toolCallId: toolCall.id, output: JSON.stringify(result ?? null) })
+          }
+        }
+        if (toolOutputs.length) {
+          await agentsClient.runs.submitToolOutputs(threadId, run.id, toolOutputs)
+        }
+      }
+
+      if (run.status === 'failed') {
+        throw new Error(`Agent run failed: ${run.lastError?.code} ${run.lastError?.message}`)
+      }
     }
 
     const messages = agentsClient.messages.list(threadId, { order: 'desc', limit: 1 })

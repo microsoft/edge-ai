@@ -27,6 +27,10 @@ SPEECH_PROVIDER="${SPEECH_PROVIDER:-azure}"
 HELM_RELEASE="${HELM_RELEASE:-chat-with-your-factory}"
 AGENT_BACKEND="${AGENT_BACKEND:-foundry}"
 FOUNDRY_AGENT_ID="${FOUNDRY_AGENT_ID:-}"
+FABRIC_WORKSPACE_ID="${FABRIC_WORKSPACE_ID:-}"
+FABRIC_LAKEHOUSE_ID="${FABRIC_LAKEHOUSE_ID:-}"
+FABRIC_SQL_ENDPOINT="${FABRIC_SQL_ENDPOINT:-}"
+FABRIC_LAKEHOUSE_DATABASE="${FABRIC_LAKEHOUSE_DATABASE:-}"
 
 usage() {
   cat <<EOF
@@ -47,6 +51,12 @@ Optional environment variables:
   NAMESPACE        Kubernetes namespace (default: ${DEFAULT_NAMESPACE})
   SPEECH_PROVIDER  Speech provider for client build (default: azure)
   HELM_RELEASE     Helm release name (default: chat-with-your-factory)
+
+  Factory ontology tool (foundry backend) - read at service runtime:
+  FABRIC_WORKSPACE_ID       Fabric workspace id (host discovery via Fabric REST)
+  FABRIC_LAKEHOUSE_ID       Fabric lakehouse id (host discovery via Fabric REST)
+  FABRIC_SQL_ENDPOINT       Explicit lakehouse SQL host (overrides discovery)
+  FABRIC_LAKEHOUSE_DATABASE Lakehouse SQL database (default: RoboticsOntologyLH)
 
 Example:
   export ACR_NAME="myacr"
@@ -126,6 +136,10 @@ deploy() {
     --set "image.repository=${acr_login_server}/${IMAGE_NAME}" \
     --set "image.tag=${IMAGE_VERSION}" \
     ${FOUNDRY_AGENT_ID:+--set "env.FOUNDRY_AGENT_ID=${FOUNDRY_AGENT_ID}"} \
+    ${FABRIC_WORKSPACE_ID:+--set "env.FABRIC_WORKSPACE_ID=${FABRIC_WORKSPACE_ID}"} \
+    ${FABRIC_LAKEHOUSE_ID:+--set "env.FABRIC_LAKEHOUSE_ID=${FABRIC_LAKEHOUSE_ID}"} \
+    ${FABRIC_SQL_ENDPOINT:+--set "env.FABRIC_SQL_ENDPOINT=${FABRIC_SQL_ENDPOINT}"} \
+    ${FABRIC_LAKEHOUSE_DATABASE:+--set "env.FABRIC_LAKEHOUSE_DATABASE=${FABRIC_LAKEHOUSE_DATABASE}"} \
     --wait \
     --timeout 300s
 

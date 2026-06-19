@@ -14,6 +14,11 @@ FOUNDRY_MODEL_DEPLOYMENT=${FOUNDRY_MODEL_DEPLOYMENT:-<your-model-deployment-name
 AZURE_TENANT_ID=${AZURE_TENANT_ID:-<your-tenant-id>}
 AGENT_BACKEND=${AGENT_BACKEND:-foundry}
 
+FABRIC_WORKSPACE_ID=${FABRIC_WORKSPACE_ID:-<your-fabric-workspace-id>}
+FABRIC_LAKEHOUSE_ID=${FABRIC_LAKEHOUSE_ID:-<your-fabric-lakehouse-id>}
+FABRIC_SQL_ENDPOINT=${FABRIC_SQL_ENDPOINT:-}
+FABRIC_LAKEHOUSE_DATABASE=${FABRIC_LAKEHOUSE_DATABASE:-RoboticsOntologyLH}
+
 CPS_ENVIRONMENT_ID=${CPS_ENVIRONMENT_ID:-<power-platform-environment-id>}
 CPS_AGENT_IDENTIFIER=${CPS_AGENT_IDENTIFIER:-<copilot-schema-name>}
 
@@ -37,6 +42,14 @@ AZURE_TENANT_ID=${AZURE_TENANT_ID}
 
 # Agent backend: "foundry" (default), "copilotstudio", or "directline"
 AGENT_BACKEND=${AGENT_BACKEND}
+
+# Factory ontology tool (query_factory_ontology) - RoboticsOntologyLH lakehouse reads.
+# Provide FABRIC_SQL_ENDPOINT or FABRIC_WORKSPACE_ID + FABRIC_LAKEHOUSE_ID.
+# Backend identity needs lakehouse read (SQL scope https://database.windows.net/.default).
+FABRIC_WORKSPACE_ID=${FABRIC_WORKSPACE_ID}
+FABRIC_LAKEHOUSE_ID=${FABRIC_LAKEHOUSE_ID}
+FABRIC_SQL_ENDPOINT=${FABRIC_SQL_ENDPOINT}
+FABRIC_LAKEHOUSE_DATABASE=${FABRIC_LAKEHOUSE_DATABASE}
 
 # Copilot Studio Agents SDK
 CPS_ENVIRONMENT_ID=${CPS_ENVIRONMENT_ID}

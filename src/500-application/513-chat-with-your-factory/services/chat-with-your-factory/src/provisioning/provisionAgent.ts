@@ -1,5 +1,6 @@
 import { AgentsClient } from '@azure/ai-agents'
 import { DefaultAzureCredential } from '@azure/identity'
+import { factoryTool } from '../server/factoryTool.js'
 
 // Reproducible provisioning for the Chat With Factory Foundry agent.
 //
@@ -17,7 +18,10 @@ const DEFAULT_AGENT_NAME = 'chat-with-your-factory'
 const DEFAULT_INSTRUCTIONS = [
   'You are the Chat With Factory assistant for an industrial edge environment.',
   'Answer questions about factory assets, line status, and telemetry concisely and accurately.',
-  'When you do not have data to answer, say so plainly rather than guessing.',
+  'Use the query_factory_ontology tool whenever a question concerns robots or their state in the factory.',
+  'Call it with intent "list_robots" to enumerate the robots on the line, or intent "robot_position" with the robotName to report a specific robot\'s current pose.',
+  'Ground every robot answer in the tool result; do not invent robots, names, or positions.',
+  'When the tool returns an error or no data, say so plainly rather than guessing.',
 ].join(' ')
 
 function requireEnv(name: string): string {
@@ -52,11 +56,11 @@ async function main(): Promise<void> {
 
   let agentId: string
   if (existingId) {
-    const updated = await client.updateAgent(existingId, { model, name, instructions })
+    const updated = await client.updateAgent(existingId, { model, name, instructions, tools: [factoryTool] })
     agentId = updated.id
     console.error(`Updated existing agent "${name}" (${agentId}).`)
   } else {
-    const created = await client.createAgent(model, { name, instructions })
+    const created = await client.createAgent(model, { name, instructions, tools: [factoryTool] })
     agentId = created.id
     console.error(`Created agent "${name}" (${agentId}).`)
   }

@@ -472,3 +472,9 @@ crates/
 # Docusaurus build artifacts
 docs/docusaurus/.docusaurus/
 docs/docusaurus/build/
+
+# MegaLinter generated reports
+megalinter-reports/
+
+# C# language server / Dev Kit project cache
+*.lscache
