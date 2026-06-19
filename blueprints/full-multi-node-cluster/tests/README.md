@@ -295,6 +295,22 @@ Implemented in `validateMessagingInfrastructure()` (Terraform only):
 - ✅ Message format and schema validation
 - ✅ End-to-end data flow verification
 
+### Intentionally Uncovered Scenarios
+
+The deployment tests intentionally exercise only the single-node, VM-backed default topology. The following scenarios are **not** covered, by design:
+
+- **Multi-node topology (`host_machine_count > 1` / `hostMachineCount > 1`).** Despite the `MultiNode` test name, the tests deploy a single node
+  because that is the unified blueprint's default. Exercising a true multi-node cluster requires supplying a cluster `server_token` / `serverToken`
+  and provisioning additional VMs, which multiplies billable compute on every run without validating distinct test logic — node-count fan-out is
+  owned by the `100-cncf-cluster` component, not the blueprint. Override `host_machine_count` manually when validating multi-node changes.
+- **Arc-machine targeting (`should_use_arc_machines` / `shouldUseArcMachines`).** This path consumes **pre-existing** Arc-enabled machines that the test cannot create or tear down, so it has no self-contained fixture. `validation.go` is already Arc-aware (it skips VM-host assertions when `vm_host` is null), but no test drives the Arc path end to end. Validate it against a manually onboarded machine.
+- **Notification module (`should_deploy_notification` / `shouldDeployNotification`).** The `notification` output is contract-validated (it must
+  exist in both IaC implementations) but the feature is left disabled in deployment tests, so there is no functional `ValidateNotification` sub test.
+  Deploying it provisions a Logic App plus Teams wiring that needs external Microsoft 365 configuration to verify meaningfully, which is out of scope
+  for infrastructure tests. Enable `should_deploy_notification` manually to exercise it.
+
+These gaps are coverage decisions driven by cost and external-dependency constraints, not defects. Each scenario can be enabled by overriding the corresponding variable/parameter when running a targeted deployment test.
+
 ## Key Differences: Terraform vs Bicep Tests
 
 | Feature                  | Terraform                                 | Bicep                                     |

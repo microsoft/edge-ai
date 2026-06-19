@@ -254,3 +254,53 @@ output "security_identity" {
     key_vault_uri  = try(module.cloud_security_identity.key_vault.vault_uri, "Not deployed")
   }
 }
+
+output "kubernetes" {
+  description = "Azure Kubernetes Service resources."
+  value       = try(module.cloud_kubernetes[0].aks, null)
+}
+
+output "function_app" {
+  description = "Azure Function App for alert notifications."
+  value       = try(module.cloud_messaging.function_app, null)
+}
+
+output "azureml_workspace" {
+  description = "Azure Machine Learning workspace resources."
+  value       = try(module.cloud_azureml[0].azureml_workspace, null)
+}
+
+output "azureml_compute_cluster" {
+  description = "Azure Machine Learning compute cluster resources."
+  value       = try(module.cloud_azureml[0].compute_cluster, null)
+}
+
+output "azureml_extension" {
+  description = "Azure Machine Learning extension for AKS cluster integration."
+  value       = try(module.cloud_azureml[0].azureml_extension, null)
+}
+
+output "azureml_inference_cluster" {
+  description = "Azure Machine Learning inference cluster compute target for AKS integration."
+  value       = try(module.cloud_azureml[0].inference_cluster_compute_target, null)
+}
+
+output "vpn_gateway" {
+  description = "VPN Gateway configuration when enabled."
+  value       = try(module.cloud_vpn_gateway[0].vpn_gateway, null)
+}
+
+output "vpn_gateway_public_ip" {
+  description = "VPN Gateway public IP address for client configuration."
+  value       = try(module.cloud_vpn_gateway[0].vpn_gateway_public_ip, null)
+}
+
+output "vpn_client_connection_info" {
+  description = "VPN client connection information including download URLs."
+  value       = try(module.cloud_vpn_gateway[0].client_connection_info, null)
+}
+
+output "private_resolver_dns_ip" {
+  description = "Private Resolver DNS IP address for VPN client configuration."
+  value       = try(module.cloud_networking.dns_server_ip, null)
+}

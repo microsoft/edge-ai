@@ -68,7 +68,7 @@ data "azurerm_arc_machine" "arc_machines" {
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -151,7 +151,7 @@ module "cloud_vpn_gateway" {
 module "cloud_observability" {
   source = "../../../src/000-cloud/020-observability/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -255,7 +255,7 @@ module "cloud_managed_redis" {
 module "cloud_messaging" {
   source = "../../../src/000-cloud/040-messaging/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   resource_group  = module.cloud_resource_group.resource_group
   aio_identity    = module.cloud_security_identity.aio_identity
   environment     = var.environment
@@ -437,7 +437,7 @@ module "cloud_ai_foundry" {
   count  = var.should_deploy_ai_foundry ? 1 : 0
   source = "../../../src/000-cloud/085-ai-foundry/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   environment     = var.environment
   resource_prefix = var.resource_prefix
   location        = var.location
@@ -481,10 +481,10 @@ module "edge_cncf_cluster" {
   )
   cluster_node_machine_count = local.cluster_node_machine_count
 
-  cluster_server_ip = try(coalesce(var.cluster_server_ip, local.vm_host_private_ips[0]), null)
+  cluster_server_ip = var.host_machine_count > 1 || local.should_use_arc_machines ? try(coalesce(var.cluster_server_ip, local.vm_host_private_ips[0]), null) : var.cluster_server_ip
 
   should_deploy_arc_machines            = local.should_use_arc_machines
-  should_generate_cluster_server_token  = true
+  should_generate_cluster_server_token  = var.host_machine_count > 1 || local.should_use_arc_machines
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
   cluster_admin_group_oid               = var.cluster_admin_group_oid

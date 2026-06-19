@@ -203,6 +203,10 @@ VM or a pre-existing Arc-enabled machine.
 | arc\_connected\_cluster          | Azure Arc connected cluster resources.                                                                            |
 | assets                           | IoT asset resources.                                                                                              |
 | azure\_iot\_operations           | Azure IoT Operations deployment details.                                                                          |
+| azureml\_compute\_cluster        | Azure Machine Learning compute cluster resources.                                                                 |
+| azureml\_extension               | Azure Machine Learning extension for AKS cluster integration.                                                     |
+| azureml\_inference\_cluster      | Azure Machine Learning inference cluster compute target for AKS integration.                                      |
+| azureml\_workspace               | Azure Machine Learning workspace resources.                                                                       |
 | cluster\_connection              | Commands and information to connect to the deployed cluster.                                                      |
 | container\_registry              | Azure Container Registry resources.                                                                               |
 | data\_storage                    | Data storage resources.                                                                                           |
@@ -214,6 +218,8 @@ VM or a pre-existing Arc-enabled machine.
 | event\_grid\_topic\_name         | Event Grid topic name.                                                                                            |
 | eventhub\_name                   | Event Hub name.                                                                                                   |
 | eventhub\_namespace\_name        | Event Hub namespace name.                                                                                         |
+| function\_app                    | Azure Function App for alert notifications.                                                                       |
+| kubernetes                       | Azure Kubernetes Service resources.                                                                               |
 | managed\_redis                   | Azure Managed Redis cache object.                                                                                 |
 | managed\_redis\_connection\_info | Azure Managed Redis connection information.                                                                       |
 | messaging                        | Cloud messaging resources (aggregate, mirrors bicep/main.bicep `messaging` output for cross-IaC contract parity). |
@@ -224,6 +230,10 @@ VM or a pre-existing Arc-enabled machine.
 | postgresql\_connection\_info     | PostgreSQL connection information.                                                                                |
 | postgresql\_databases            | Map of PostgreSQL databases.                                                                                      |
 | postgresql\_server               | PostgreSQL Flexible Server object.                                                                                |
+| private\_resolver\_dns\_ip       | Private Resolver DNS IP address for VPN client configuration.                                                     |
 | security\_identity               | Security and identity resources.                                                                                  |
 | vm\_host                         | Virtual machine host resources.                                                                                   |
+| vpn\_client\_connection\_info    | VPN client connection information including download URLs.                                                        |
+| vpn\_gateway                     | VPN Gateway configuration when enabled.                                                                           |
+| vpn\_gateway\_public\_ip         | VPN Gateway public IP address for client configuration.                                                           |
 <!-- END_TF_DOCS -->
