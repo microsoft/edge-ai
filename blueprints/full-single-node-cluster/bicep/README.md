@@ -191,7 +191,7 @@ Deploys Azure observability resources including Azure Monitor Workspace, Log Ana
 | tags                             | Additional tags to add to the resources.                                                      | `object`                           | {}                                                                                                                                                                                                                                                                                                                                                    | no       |
 | logRetentionInDays               | Log Analytics Workspace retention in days                                                     | `int`                              | 30                                                                                                                                                                                                                                                                                                                                                    | no       |
 | dailyQuotaInGb                   | Log Analytics Workspace daily quota in GB                                                     | `int`                              | 10                                                                                                                                                                                                                                                                                                                                                    | no       |
-| grafanaMajorVersion              | Grafana major version                                                                         | `string`                           | 11                                                                                                                                                                                                                                                                                                                                                    | no       |
+| grafanaMajorVersion              | Grafana major version                                                                         | `string`                           | 12                                                                                                                                                                                                                                                                                                                                                    | no       |
 | grafanaAdminPrincipalId          | The principalId (objectId) of the user or service principal to assign the Grafana Admin role. | `string`                           | n/a                                                                                                                                                                                                                                                                                                                                                   | no       |
 | logsDataCollectionRuleNamespaces | List of cluster namespaces to be exposed in the log analytics workspace                       | `array`                            | ['kube-system', 'gatekeeper-system', 'azure-arc', 'azure-iot-operations']                                                                                                                                                                                                                                                                             | no       |
 | logsDataCollectionRuleStreams    | List of streams to be enabled in the log analytics workspace                                  | `array`                            | ['Microsoft-ContainerLog', 'Microsoft-ContainerLogV2', 'Microsoft-KubeEvents', 'Microsoft-KubePodInventory', 'Microsoft-KubeNodeInventory', 'Microsoft-KubePVInventory', 'Microsoft-KubeServices', 'Microsoft-KubeMonAgentEvents', 'Microsoft-InsightsMetrics', 'Microsoft-ContainerInventory', 'Microsoft-ContainerNodeInventory', 'Microsoft-Perf'] | no       |
@@ -2112,32 +2112,33 @@ Common settings for the components.
 
 ## Outputs
 
-| Name                    | Type     | Description                                                        |
-|:------------------------|:---------|:-------------------------------------------------------------------|
-| azureIotOperations      | `object` | Azure IoT Operations deployment details.                           |
-| assets                  | `object` | IoT asset resources.                                               |
-| clusterConnection       | `object` | Commands and information to connect to the deployed cluster.       |
-| containerRegistry       | `object` | Azure Container Registry resources.                                |
-| acrNetworkPosture       | `object` | Azure Container Registry network posture metadata.                 |
-| kubernetes              | `object` | Azure Kubernetes Service resources.                                |
-| dataStorage             | `object` | Data storage resources.                                            |
-| deploymentSummary       | `object` | Summary of the deployment configuration.                           |
-| natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.      |
-| natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name. |
-| messaging               | `object` | Cloud messaging resources.                                         |
-| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                           |
-| dataflows               | `array`  | Map of dataflow resources by name.                                 |
-| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                        |
-| aiFoundry               | `object` | Azure AI Foundry account resources.                                |
-| aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                |
-| aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                |
-| vmHost                  | `array`  | Virtual machine host resources.                                    |
-| arcConnectedCluster     | `object` | Azure Arc connected cluster resources.                             |
-| observability           | `object` | Monitoring and observability resources.                            |
-| securityIdentity        | `object` | Security and identity resources.                                   |
-| vpnGateway              | `object` | VPN Gateway configuration when enabled.                            |
-| vpnGatewayPublicIp      | `string` | VPN Gateway public IP address for client configuration.            |
-| vpnClientConnectionInfo | `object` | VPN client connection information including download URLs.         |
-| privateResolverDnsIp    | `string` | Private Resolver DNS IP address for VPN client configuration.      |
+| Name                    | Type     | Description                                                                                                                                                  |
+|:------------------------|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| azureIotOperations      | `object` | Azure IoT Operations deployment details.                                                                                                                     |
+| assets                  | `object` | IoT asset resources.                                                                                                                                         |
+| clusterConnection       | `object` | Commands and information to connect to the deployed cluster.                                                                                                 |
+| containerRegistry       | `object` | Azure Container Registry resources.                                                                                                                          |
+| acrNetworkPosture       | `object` | Azure Container Registry network posture metadata.                                                                                                           |
+| kubernetes              | `object` | Azure Kubernetes Service resources.                                                                                                                          |
+| dataStorage             | `object` | Data storage resources.                                                                                                                                      |
+| deploymentSummary       | `object` | Summary of the deployment configuration.                                                                                                                     |
+| natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.                                                                                                |
+| natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name.                                                                                           |
+| messaging               | `object` | Cloud messaging resources.                                                                                                                                   |
+| notification            | `object` | Alert notification pipeline resources. Bicep deployment does not currently wire the 045-notification component; output is stubbed for parity with Terraform. |
+| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                                                                                                                     |
+| dataflows               | `array`  | Map of dataflow resources by name.                                                                                                                           |
+| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                                                                                                                  |
+| aiFoundry               | `object` | Azure AI Foundry account resources.                                                                                                                          |
+| aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                                                                                                          |
+| aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                                                                                                          |
+| vmHost                  | `array`  | Virtual machine host resources.                                                                                                                              |
+| arcConnectedCluster     | `object` | Azure Arc connected cluster resources.                                                                                                                       |
+| observability           | `object` | Monitoring and observability resources.                                                                                                                      |
+| securityIdentity        | `object` | Security and identity resources.                                                                                                                             |
+| vpnGateway              | `object` | VPN Gateway configuration when enabled.                                                                                                                      |
+| vpnGatewayPublicIp      | `string` | VPN Gateway public IP address for client configuration.                                                                                                      |
+| vpnClientConnectionInfo | `object` | VPN client connection information including download URLs.                                                                                                   |
+| privateResolverDnsIp    | `string` | Private Resolver DNS IP address for VPN client configuration.                                                                                                |
 
 <!-- END_BICEP_DOCS -->

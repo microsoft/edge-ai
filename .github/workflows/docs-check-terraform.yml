@@ -77,40 +77,36 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 0  # Full git history for comparison
-
-      - name: Setup PowerShell
-        run: |
-          echo "PowerShell Version: $($PSVersionTable.PSVersion)"
-          echo "PowerShell Edition: $($PSVersionTable.PSEdition)"
-        shell: pwsh
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Install terraform-docs
         run: |
           ./scripts/install-terraform-docs.sh -v "${{ inputs.terraformDocsVersion }}"
         shell: bash
 
-      - name: Check for changes in documentation
-        run: |
-          # Call tf-docs-check.sh script to check for changes
-          ./scripts/tf-docs-check.sh
-          readme_changed=$(tail -n 1 $(pwd)/scripts/tf-docs-check.sh)
-
-          # Check if there are any changes in the documentation
-          if [ "$readme_changed" = true ]; then
-            echo "Updates are required for documentation."
-            echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
-            echo "::warning::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
-            if [[ "${{ inputs.break_build }}" == "true" ]]; then
-              echo "::error::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
-              exit 1
-            fi
-          else
-            echo "No updates detected in the documentation."
-          fi
+      - name: Check Terraform docs drift
+        id: tf_docs_drift
         shell: bash
+        run: |
+          set -euo pipefail
+          # tf-docs-check.sh writes progress to stdout and ends with `echo $readme_changed` (true|false)
+          readme_changed="$(./scripts/tf-docs-check.sh | tail -n 1)"
+          echo "changed=${readme_changed}" >> "$GITHUB_OUTPUT"
+
+      - name: Report Terraform docs drift
+        if: steps.tf_docs_drift.outputs.changed == 'true'
+        shell: bash
+        run: |
+          echo "Updates are required for documentation."
+          echo "Please go into the project's src directory, run the update-all-terraform-docs.sh script, and commit changes."
+          echo "::warning::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+
+      - name: Fail when Terraform docs are out of date
+        if: steps.tf_docs_drift.outputs.changed == 'true' && inputs.break_build == true
+        shell: bash
+        run: |
+          echo "::error::Documentation needs to be updated. Please run the update-all-terraform-docs.sh script and commit the changes."
+          exit 1
 
       - name: Check for language path segments in links
         id: link-lang-check

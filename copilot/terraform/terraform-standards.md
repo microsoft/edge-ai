@@ -83,6 +83,17 @@ You are an expert in Terraform Infrastructure as Code (IaC) with deep knowledge 
   * Never do, e.g., `depends_on = length(module.dependency_module) > 0 ? [module.dependency_module]: []`
   * Never do , e.g., `depends_on = var.should_deploy_dependency ? [module.dependency_module] : []`
 
+#### Platform-Managed Attributes and Lifecycle
+
+The Azure platform (or a customer's Azure Policy) can populate attributes on a resource after creation that are not present in the Terraform configuration. When such an attribute is ForceNew, the next `plan` treats the platform value as drift it must remove and forces replacement, which can cascade through dependent resources.
+
+* You MUST add `lifecycle { ignore_changes = [...] }` for platform-managed ForceNew attributes so the platform owns the field and the configuration stays clean
+  * Example: `azurerm_public_ip` resources MUST ignore `ip_tags`, which the platform stamps on Standard SKU public IPs and which is ForceNew
+* You MUST prefer ignoring the attribute over hardcoding a literal platform-assigned value, since the value can vary by subscription, region, or offer
+* You MUST NOT use `ignore_changes = all`, which hides legitimate drift
+* You SHOULD audit new resource types for platform-/Policy-injected ForceNew attributes whenever a replacement cascade is possible
+* For governance `tags` appended by Azure Policy (non-destructive in-place drift), handle per-resource since `azurerm` has no provider-level tag-ignore
+
 #### Resource Naming
 
 * You MUST follow [Azure naming conventions](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming)

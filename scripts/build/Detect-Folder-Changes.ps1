@@ -1,24 +1,11 @@
+#!/usr/bin/env pwsh
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: MIT
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
-    Detects changes in repository.EXAMPLE
-    # Include all Terraform and Bicep folders for security scanning:
-    .\Detect-Folder-Changes.ps1 -IncludeAllIaC
-
-.EXAMPLE
-    # Compare against a different branch with application detection:
-    .\Detect-Folder-Changes.ps1 -BaseBranch origi    if (-not [string]::IsNullOrWhiteSpace($repoRoot) -and $resolvedApplicationPath.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $relativeApplicationPath = $resolvedApplicationPath.Substring($repoRoot.Length) -replace '^[/\\]+', ''
-    }
-    else {
-        $relativeApplicationPath = ($ApplicationPath -replace '^[/\\]+', '')
-    }
-}
-else {
-    $relativeApplicationPath = ($ApplicationPath -replace '^[/\\]+', '') -IncludeAllApplications
-
-.EXAMPLE
-    # Write output to a file with application detection:
-    .\Detect-Folder-Changes.ps1 -OutputFile "changes.json" -IncludeAllApplications
+    Detects changed repository folders and files for CI validation.
 
 .DESCRIPTION
     This script detects changes in the repository's folders and files, providing a structured
@@ -53,9 +40,6 @@ else {
 .PARAMETER ApplicationPath
     Path to applications directory (default: src/500-application)
 
-.PARAMETER DependencyFile
-    Path to application dependency configuration (default: src/500-application/dependency-graph.json)
-
 .EXAMPLE
     # Default: Check both infrastructure and application changes:
     .\Detect-Folder-Changes.ps1
@@ -79,6 +63,9 @@ else {
 .EXAMPLE
     # Write output to a file with default detection:
     .\Detect-Folder-Changes.ps1 -OutputFile "changes.json"
+
+.NOTES
+    Used by matrix-folder-check workflows to scope CI validation.
 
 .OUTPUTS
     A JSON object with the following structure:
@@ -330,6 +317,8 @@ $terraformHasChanges = $false
 $terraformFolders = @{}
 $bicepHasChanges = $false
 $bicepFolders = @{}
+$bicepFullValidationRequired = $false
+$bicepFullValidationReasons = @()
 $fuzzRustHasChanges = $false
 $fuzzRustFolders = [PSCustomObject]@{ folderName = @() }
 $fuzzPythonHasChanges = $false
@@ -544,6 +533,91 @@ function Test-ProviderRegChange {
     return @{ Shell = $shellChanges; PowerShell = $pwshChanges }
 }
 
+function Get-BicepFullValidationReason {
+    param (
+        [string[]]$Files
+    )
+
+    $reasons = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($file in $Files) {
+        $normalizedFile = $file -replace '\\', '/'
+
+        if ($normalizedFile -eq 'bicepconfig.json') {
+            $reasons.Add('bicepconfig')
+        }
+        elseif ($normalizedFile -match '^blueprints/modules/') {
+            $reasons.Add('shared-blueprint-modules')
+        }
+        elseif ($normalizedFile -match '^scripts/build/Detect-Folder-Changes\.ps1$') {
+            $reasons.Add('change-detector')
+        }
+        elseif ($normalizedFile -match '^\.github/workflows/(bicep-lint|matrix-folder-check|pr-validation|main)\.yml$') {
+            $reasons.Add('github-workflow')
+        }
+    }
+
+    return $reasons | Select-Object -Unique
+}
+
+function Get-AllBicepFolderPath {
+    $bicepFiles = git ls-files 'src/**/*.bicep' 'blueprints/**/*.bicep' 2>$null
+
+    if (-not $bicepFiles) {
+        return @()
+    }
+
+    return Get-FilePathData -Paths $bicepFiles
+}
+
+function Get-DependentBicepBlueprintPath {
+    param (
+        [string[]]$ChangedPaths,
+        [string]$BlueprintRoot = (Join-Path $PSScriptRoot '../../blueprints')
+    )
+
+    if (-not $ChangedPaths -or $ChangedPaths.Count -eq 0) {
+        return @()
+    }
+
+    $dependentBlueprints = @()
+    $blueprintMainFiles = Get-ChildItem -Path "$BlueprintRoot/*/bicep/main.bicep" -ErrorAction SilentlyContinue
+
+    if (-not $blueprintMainFiles) {
+        return @()
+    }
+
+    foreach ($changedPath in $ChangedPaths) {
+        if ($changedPath -notmatch '^src/') {
+            continue
+        }
+
+        $componentPath = $changedPath -replace '/bicep(/.*)?$', ''
+        Write-Verbose "Checking for blueprints that depend on component: $componentPath"
+
+        foreach ($blueprintFile in $blueprintMainFiles) {
+            $content = Get-Content $blueprintFile.FullName -Raw -ErrorAction SilentlyContinue
+
+            if (-not $content) {
+                continue
+            }
+
+            $escapedComponentPath = [regex]::Escape($componentPath)
+            $pattern = "module\s+\w+\s+'(\.\./)+$escapedComponentPath/bicep/main\.bicep'"
+
+            if ($content -match $pattern) {
+                $blueprintPath = $blueprintFile.Directory.Parent.FullName -replace '\\', '/'
+                $blueprintRelativePath = $blueprintPath -replace '^.*?/blueprints/', 'blueprints/'
+
+                Write-Verbose "  Found dependent blueprint: $blueprintRelativePath"
+                $dependentBlueprints += $blueprintRelativePath
+            }
+        }
+    }
+
+    return $dependentBlueprints | Select-Object -Unique
+}
+
 # Function to convert paths to JSON object structure
 function Convert-PathsToJson {
     param (
@@ -565,6 +639,9 @@ function Convert-PathsToJson {
 
 # Get changed files for IaC detection
 $changedFiles = Get-ChangedFileData -IncludeAll:$IncludeAllIaC -BaseBranch $BaseBranch
+
+$bicepFullValidationReasons = @(Get-BicepFullValidationReason -Files $changedFiles)
+$bicepFullValidationRequired = $bicepFullValidationReasons.Count -gt 0
 
 # Get all changed files for application detection if needed
 $allChangedFiles = $changedFiles
@@ -689,47 +766,19 @@ if ($tfFiles) {
     }
 }
 
-if ($bicepFiles) {
+if ($bicepFullValidationRequired) {
+    $bicepHasChanges = $true
+    $bicepPaths = Get-AllBicepFolderPath
+    Write-Verbose "Full Bicep validation required: $($bicepFullValidationReasons -join ', ')"
+    Write-Verbose "Total Bicep folders to validate: $($bicepPaths.Count)"
+    $bicepFolders = Convert-PathsToJson -Paths $bicepPaths
+}
+elseif ($bicepFiles) {
     $bicepPaths = Get-FilePathData -Paths $bicepFiles
     if ($bicepPaths.Count -gt 0) {
         $bicepHasChanges = $true
 
-        # Detect dependent blueprints when components change
-        $dependentBlueprints = @()
-
-        foreach ($changedPath in $bicepPaths) {
-            # Check if changed file is in src/ (a component)
-            if ($changedPath -match '^src/') {
-                # Extract component path (e.g., "src/000-cloud/010-security-identity")
-                $componentPath = $changedPath -replace '/bicep(/.*)?$', ''
-
-                Write-Verbose "Checking for blueprints that depend on component: $componentPath"
-
-                # Search all blueprint main.bicep files for this component
-                $blueprintMainFiles = Get-ChildItem -Path "$PSScriptRoot/../../blueprints/*/bicep/main.bicep" -ErrorAction SilentlyContinue
-
-                foreach ($blueprintFile in $blueprintMainFiles) {
-                    $content = Get-Content $blueprintFile.FullName -Raw -ErrorAction SilentlyContinue
-
-                    if ($content) {
-                        # Check if blueprint references this component
-                        # Pattern matches: module ... '../../../src/000-cloud/010-security-identity/bicep/main.bicep'
-                        $escapedComponentPath = [regex]::Escape($componentPath)
-                        $pattern = "module\s+\w+\s+'(\.\./)+$escapedComponentPath/bicep/main\.bicep'"
-
-                        if ($content -match $pattern) {
-                            # Extract blueprint path (e.g., "blueprints/full-single-node-cluster")
-                            $blueprintPath = $blueprintFile.Directory.Parent.FullName
-                            $blueprintRelativePath = $blueprintPath -replace '.*[/\\]blueprints[/\\]', 'blueprints/'
-                            $blueprintRelativePath = $blueprintRelativePath -replace '\\', '/'
-
-                            Write-Verbose "  Found dependent blueprint: $blueprintRelativePath"
-                            $dependentBlueprints += $blueprintRelativePath
-                        }
-                    }
-                }
-            }
-        }
+        $dependentBlueprints = Get-DependentBicepBlueprintPath -ChangedPaths $bicepPaths
 
         # Combine direct changes and dependent blueprints, removing duplicates
         $allPaths = @($bicepPaths) + @($dependentBlueprints) | Select-Object -Unique
@@ -784,8 +833,10 @@ $jsonOutput | Add-Member -MemberType NoteProperty -Name "terraform" -Value ([PSC
     })
 
 $jsonOutput | Add-Member -MemberType NoteProperty -Name "bicep" -Value ([PSCustomObject]@{
-        has_changes = [bool]$bicepHasChanges
-        folders     = $bicepFolders
+    has_changes              = [bool]$bicepHasChanges
+    folders                  = $bicepFolders
+    full_validation_required = [bool]$bicepFullValidationRequired
+    full_validation_reasons  = @($bicepFullValidationReasons)
     })
 
 $jsonOutput | Add-Member -MemberType NoteProperty -Name "applications" -Value ([PSCustomObject]@{

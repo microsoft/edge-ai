@@ -44,7 +44,7 @@ jobs:
             crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Install base system build dependencies
         shell: bash
@@ -185,7 +185,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]] && grep -q 'registry = "aio-sdks"' Cargo.toml; then
+          if [[ -z "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]] && grep -v '^\s*#' Cargo.toml | grep -q 'registry = "aio-sdks"'; then
             echo "Skipping ${{ matrix.crate }} (requires aio-sdks registry token)"
             exit 0
           fi
@@ -193,7 +193,7 @@ jobs:
 
       - name: Upload to Codecov
         if: success()
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: ${{ matrix.crate }}/coverage.xml
           use_oidc: true
@@ -222,7 +222,7 @@ jobs:
           - name: 901-video-to-gif
     steps:
       - name: Checkout (sparse, for .grype.yaml)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           sparse-checkout: |
             .grype.yaml

@@ -49,14 +49,22 @@ pub async fn mqtt_publish_message(
                             Err(e) => {
                                 event!(
                                     Level::ERROR,
-                                    error_code = "MQTT_PUBLISH_ERROR",
-                                    "Invalid mqtt topic {} using SessionManagedClient: {:?}", topic, e
+                                    error_code = "MQTT_INVALID_TOPIC",
+                                    "Invalid MQTT topic '{}': {:?}",
+                                    topic,
+                                    e
                                 );
                                 return Err(());
                             }
                         };
+
                         match client
-                            .publish_qos1(topic_name, false, payload.clone(), PublishProperties::default())
+                            .publish_qos1(
+                                topic_name,
+                                false,
+                                payload.clone(),
+                                PublishProperties::default(),
+                            )
                             .await
                         {
                             Ok(comp_token) => match comp_token.await {
