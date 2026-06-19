@@ -11,9 +11,9 @@ edition = "2021"
 tokio = { version = "1.14.0", features = ["full"] }
 
 # Azure IoT Operations dependencies
-azure_iot_operations_protocol = { version = "1.0.0", registry = "aio-sdks" }
-azure_iot_operations_mqtt = { version = "1.0.2", registry = "aio-sdks" }
-azure_iot_operations_services = { version = "1.2.0", features = ["state_store"], registry = "aio-sdks" }
+azure_iot_operations_protocol = { version = "1.0.0" }
+azure_iot_operations_mqtt = { version = "1.0.2" }
+azure_iot_operations_services = { version = "1.2.0", features = ["state_store"] }
 
 # Serialization/deserialization
 serde = { version = "1.0.130", features = ["derive"] }
