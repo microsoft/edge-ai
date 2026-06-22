@@ -11,7 +11,7 @@ experimental_trace_batch_span_processor_with_async_runtime = [
 
 [dependencies]
 anyhow = "1.0"
-azure_iot_operations_mqtt = { version = "1.0.2" }
+azure_iot_operations_mqtt = "1.0.2"
 futures = "0.3.17"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.73"
