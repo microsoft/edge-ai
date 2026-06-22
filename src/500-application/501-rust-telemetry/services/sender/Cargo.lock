@@ -111,16 +111,15 @@ dependencies = [
 
 [[package]]
 name = "azure_iot_operations_services"
-version = "1.2.0"
+version = "1.3.0-beta1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea13526602869d29adcbdd5666a81cdec466a144bfdd1a9d6accd4173e6b8f84"
+checksum = "ded382c0116c350a55ef3c3ac41b57ca230b92bebff55ada3ddf31543836defb"
 dependencies = [
  "azure_iot_operations_mqtt",
  "azure_iot_operations_protocol",
  "data-encoding",
  "derive_builder",
  "log",
- "serde_repr",
  "thiserror",
  "tokio",
 ]
@@ -1779,17 +1778,6 @@ dependencies = [
  "serde",
  "serde_core",
  "zmij",
-]
-
-[[package]]
-name = "serde_repr"
-version = "0.1.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
