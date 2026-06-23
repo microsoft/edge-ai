@@ -73,12 +73,12 @@ changed_files=$(
 )
 readme_changed=false
 for file in $changed_files; do
-  if [[ $file == src/*/terraform/README.md || \
-    $file == src/*/terraform/modules/*/README.md || \
-    $file == src/*/ci/terraform/README.md || \
-    $file == blueprints/*/terraform/README.md || \
-    $file == blueprints/*/terraform/modules/*/README.md || \
-    $file == deploy/azdo/README.md || \
+  if [[ $file == src/*/terraform/README.md ||
+    $file == src/*/terraform/modules/*/README.md ||
+    $file == src/*/ci/terraform/README.md ||
+    $file == blueprints/*/terraform/README.md ||
+    $file == blueprints/*/terraform/modules/*/README.md ||
+    $file == deploy/azdo/README.md ||
     $file == deploy/azdo/modules/*/README.md ]]; then
     if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
       echo "Updates required for: ./$file"
