@@ -14,8 +14,6 @@ keywords:
   - industrial
 ---
 
-# Chat With Factory
-
 A web application that captures voice input, sends recognized text to an AI agent, and displays the conversation in a chat panel. Designed for hands-free access to AI-powered guidance in industrial environments. Runs standalone or optionally inside Microsoft Teams.
 
 The app supports three configurable agent backends:
@@ -50,11 +48,11 @@ the result back to Foundry.
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Setup Guide](docs/setup-guide.md) | Azure resources, environment variables, Copilot Studio configuration |
-| [Architecture](docs/architecture.md) | Architecture diagrams, technology stack, data flow, API routes |
-| [Development Guide](docs/development.md) | Local testing, Teams testing, npm scripts, known limitations |
+| Document                                 | Description                                                          |
+|------------------------------------------|----------------------------------------------------------------------|
+| [Setup Guide](docs/setup-guide.md)       | Azure resources, environment variables, Copilot Studio configuration |
+| [Architecture](docs/architecture.md)     | Architecture diagrams, technology stack, data flow, API routes       |
+| [Development Guide](docs/development.md) | Local testing, Teams testing, npm scripts, known limitations         |
 
 ## Session Sharing and Collaboration
 

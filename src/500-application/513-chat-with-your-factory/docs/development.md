@@ -85,23 +85,23 @@ If the mic button shows "Microphone access denied," check that your browser has 
 
 ## npm Scripts
 
-| Script                          | Description                                             |
-|---------------------------------|---------------------------------------------------------|
-| `npm start`                     | Build (server + Azure-Speech client) and start the server (port 3978) |
-| `npm run start:voicelive`       | Build server + Voice Live client and start the server   |
-| `npm run start:webspeech`       | Build server + Web Speech client and start the server   |
-| `npm run build`                 | Compile server (tsc) and bundle client (esbuild, Azure default) |
-| `npm run build:voicelive`       | Compile server and bundle client with Voice Live        |
-| `npm run build:webspeech`       | Compile server and bundle client with Web Speech API    |
-| `npm run build:server`          | Compile server TypeScript only                          |
-| `npm run build:client`          | Bundle client with default speech provider (Azure)      |
-| `npm run build:client:webspeech`| Bundle client with browser Web Speech API               |
-| `npm run build:client:azure`    | Bundle client with Azure Speech SDK                     |
-| `npm run build:client:voicelive`| Bundle client with Voice Live (preview)                 |
-| `npm run dev:server`            | Build server and start with `--watch` for auto-restart  |
-| `npm run dev:client`            | Bundle client in watch mode (Azure Speech SDK)          |
-| `npm run dev:client:webspeech`  | Bundle client in watch mode (Web Speech API)            |
-| `npm run dev:client:voicelive`  | Bundle client in watch mode (Voice Live)                |
+| Script                           | Description                                                           |
+|----------------------------------|-----------------------------------------------------------------------|
+| `npm start`                      | Build (server + Azure-Speech client) and start the server (port 3978) |
+| `npm run start:voicelive`        | Build server + Voice Live client and start the server                 |
+| `npm run start:webspeech`        | Build server + Web Speech client and start the server                 |
+| `npm run build`                  | Compile server (tsc) and bundle client (esbuild, Azure default)       |
+| `npm run build:voicelive`        | Compile server and bundle client with Voice Live                      |
+| `npm run build:webspeech`        | Compile server and bundle client with Web Speech API                  |
+| `npm run build:server`           | Compile server TypeScript only                                        |
+| `npm run build:client`           | Bundle client with default speech provider (Azure)                    |
+| `npm run build:client:webspeech` | Bundle client with browser Web Speech API                             |
+| `npm run build:client:azure`     | Bundle client with Azure Speech SDK                                   |
+| `npm run build:client:voicelive` | Bundle client with Voice Live (preview)                               |
+| `npm run dev:server`             | Build server and start with `--watch` for auto-restart                |
+| `npm run dev:client`             | Bundle client in watch mode (Azure Speech SDK)                        |
+| `npm run dev:client:webspeech`   | Bundle client in watch mode (Web Speech API)                          |
+| `npm run dev:client:voicelive`   | Bundle client in watch mode (Voice Live)                              |
 
 ## Known Limitations
 

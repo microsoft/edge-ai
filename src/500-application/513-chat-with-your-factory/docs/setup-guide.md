@@ -35,7 +35,7 @@ devtunnel create --allow-anonymous
 devtunnel port create -p 3978
 ```
 
-Note the tunnel ID from the output (for example, `amusing-fog-wskvf9k`). The hostname follows the pattern `<tunnel-id>-3978.use.devtunnels.ms`.
+Note the tunnel ID from the output (for example, `happy-forest-1234`). The hostname follows the pattern `<tunnel-id>-3978.use.devtunnels.ms`.
 
 ```powershell
 # Every time you develop: rehost the existing tunnel (hostname stays the same)
@@ -45,7 +45,7 @@ devtunnel host <tunnel-id>
 Set the hostname variable in a separate terminal for the remaining steps:
 
 ```powershell
-$TUNNEL_HOST = "<tunnel-id>-3978.use.devtunnels.ms"   # e.g. amusing-fog-wskvf9k-3978.use.devtunnels.ms
+$TUNNEL_HOST = "<tunnel-id>-3978.use.devtunnels.ms"   # e.g. happy-forest-1234-3978.use.devtunnels.ms
 ```
 
 > [!TIP]
@@ -256,12 +256,12 @@ Open the app (localhost or via dev tunnel). Create a session; the server logs `[
 
 #### Troubleshooting
 
-| Error                               | Cause                                  | Fix                                                               |
-|-------------------------------------|----------------------------------------|-------------------------------------------------------------------|
-| `LatestPublishedVersionNotFound`    | Agent not published                    | Publish the agent in Copilot Studio                               |
-| `AuthenticationNotConfigured`       | Agent's knowledge source auth missing  | Configure authentication in Copilot Studio Settings > Security    |
-| `Failed to start Direct Line conversation: 403` | Invalid or expired secret     | Copy a fresh secret from Copilot Studio Channels > Custom website |
-| `DIRECT_LINE_SECRET is required`    | Env var missing                        | Add `DIRECT_LINE_SECRET` to `.env`                                |
+| Error                                           | Cause                                 | Fix                                                               |
+|-------------------------------------------------|---------------------------------------|-------------------------------------------------------------------|
+| `LatestPublishedVersionNotFound`                | Agent not published                   | Publish the agent in Copilot Studio                               |
+| `AuthenticationNotConfigured`                   | Agent's knowledge source auth missing | Configure authentication in Copilot Studio Settings > Security    |
+| `Failed to start Direct Line conversation: 403` | Invalid or expired secret             | Copy a fresh secret from Copilot Studio Channels > Custom website |
+| `DIRECT_LINE_SECRET is required`                | Env var missing                       | Add `DIRECT_LINE_SECRET` to `.env`                                |
 
 ### 5. Copilot Studio (Agents SDK)
 
@@ -311,7 +311,7 @@ If you prefer to use the direct connect URL instead of environment ID and agent 
 2. Copy the **Direct connect URL**.
 3. Set `CPS_DIRECT_CONNECT_URL` in your `.env`. When set, this overrides `CPS_ENVIRONMENT_ID` and `CPS_AGENT_IDENTIFIER`.
 
-#### Configure the environment
+#### Configure the environment for Copilot Studio
 
 Set these variables in `.env`:
 
@@ -322,7 +322,7 @@ CPS_AGENT_IDENTIFIER=<copilot-schema-name>
 TEAMS_APP_CLIENT_SECRET=<client-secret-from-app-registration>
 ```
 
-#### Verify the connection
+#### Verify the Copilot Studio connection
 
 ```bash
 npm start
@@ -342,36 +342,36 @@ Open the app in Teams (OBO exchange requires a real Teams SSO token; `SKIP_AUTH=
 
 Copy from `.env.template` if the file does not exist.
 
-| Variable              | Required     | Description                                                  |
-|-----------------------|--------------|--------------------------------------------------------------|
-| `FOUNDRY_ENDPOINT`    | Foundry only | Azure AI Foundry project endpoint                            |
-| `FOUNDRY_AGENT_ID`    | Foundry only | Foundry agent/assistant ID                                   |
-| `AZURE_TENANT_ID`     | Yes          | Entra ID tenant                                              |
-| `TEAMS_APP_ID`        | Yes          | Entra app registration client ID                             |
-| `DEVTUNNEL_DOMAIN`    | Teams dev    | Dev tunnel hostname, e.g. `abc123-3978.use.devtunnels.ms`    |
-| `AGENT_BACKEND`       | No           | `copilotstudio`, `directline`, or `foundry` (default: `copilotstudio`) |
-| `DIRECT_LINE_SECRET`  | DL only      | Copilot Studio web channel secret                            |
-| `DIRECT_LINE_ENDPOINT`| No           | Regional DL endpoint (default: `directline.botframework.com`)|
-| `CPS_ENVIRONMENT_ID`  | CPS only     | Power Platform environment ID                                |
-| `CPS_AGENT_IDENTIFIER`| CPS only     | Copilot agent schema name (e.g., `crd49_YourAgent`)            |
-| `CPS_DIRECT_CONNECT_URL` | No        | Direct connect URL from Copilot Studio Channels > Web app (overrides `CPS_ENVIRONMENT_ID` and `CPS_AGENT_IDENTIFIER`) |
-| `TEAMS_APP_CLIENT_SECRET` | CPS only  | Client secret from app registration (for OBO exchange)       |
-| `PORT`                | No           | Server port (default: `3978`)                                |
-| `SKIP_AUTH`           | No           | Set `true` for local dev without Teams                       |
-| `AZURE_SPEECH_REGION` | Speech only  | Azure Speech Services region                                 |
-| `AZURE_SPEECH_RESOURCE_ID` | Speech only | Azure Speech resource name                              |
+| Variable                   | Required     | Description                                                                                                           |
+|----------------------------|--------------|-----------------------------------------------------------------------------------------------------------------------|
+| `FOUNDRY_ENDPOINT`         | Foundry only | Azure AI Foundry project endpoint                                                                                     |
+| `FOUNDRY_AGENT_ID`         | Foundry only | Foundry agent/assistant ID                                                                                            |
+| `AZURE_TENANT_ID`          | Yes          | Entra ID tenant                                                                                                       |
+| `TEAMS_APP_ID`             | Yes          | Entra app registration client ID                                                                                      |
+| `DEVTUNNEL_DOMAIN`         | Teams dev    | Dev tunnel hostname, e.g. `abc123-3978.use.devtunnels.ms`                                                             |
+| `AGENT_BACKEND`            | No           | `copilotstudio`, `directline`, or `foundry` (default: `copilotstudio`)                                                |
+| `DIRECT_LINE_SECRET`       | DL only      | Copilot Studio web channel secret                                                                                     |
+| `DIRECT_LINE_ENDPOINT`     | No           | Regional DL endpoint (default: `directline.botframework.com`)                                                         |
+| `CPS_ENVIRONMENT_ID`       | CPS only     | Power Platform environment ID                                                                                         |
+| `CPS_AGENT_IDENTIFIER`     | CPS only     | Copilot agent schema name (e.g., `crd49_YourAgent`)                                                                   |
+| `CPS_DIRECT_CONNECT_URL`   | No           | Direct connect URL from Copilot Studio Channels > Web app (overrides `CPS_ENVIRONMENT_ID` and `CPS_AGENT_IDENTIFIER`) |
+| `TEAMS_APP_CLIENT_SECRET`  | CPS only     | Client secret from app registration (for OBO exchange)                                                                |
+| `PORT`                     | No           | Server port (default: `3978`)                                                                                         |
+| `SKIP_AUTH`                | No           | Set `true` for local dev without Teams                                                                                |
+| `AZURE_SPEECH_REGION`      | Speech only  | Azure Speech Services region                                                                                          |
+| `AZURE_SPEECH_RESOURCE_ID` | Speech only  | Azure Speech resource name                                                                                            |
 
 ### Teams manifest (`appManifest/manifest.json`)
 
 Copy from `manifest.TEMPLATE.json` and fill in:
 
-| Field                          | Value                                     |
-|--------------------------------|-------------------------------------------|
-| `id`                           | A new GUID (`[guid]::NewGuid()`)          |
-| `staticTabs[0].contentUrl`     | `https://<tunnel-hostname>`               |
-| `validDomains[0]`              | `<tunnel-hostname>`                       |
-| `webApplicationInfo.id`        | `$CLIENT_ID`                              |
-| `webApplicationInfo.resource`  | `api://<tunnel-hostname>/$CLIENT_ID`      |
+| Field                         | Value                                |
+|-------------------------------|--------------------------------------|
+| `id`                          | A new GUID (`[guid]::NewGuid()`)     |
+| `staticTabs[0].contentUrl`    | `https://<tunnel-hostname>`          |
+| `validDomains[0]`             | `<tunnel-hostname>`                  |
+| `webApplicationInfo.id`       | `$CLIENT_ID`                         |
+| `webApplicationInfo.resource` | `api://<tunnel-hostname>/$CLIENT_ID` |
 
 ### Switching Tenants or Subscriptions
 

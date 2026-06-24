@@ -17,18 +17,18 @@ data.
 
 | Intent           | Required arguments | Returns                                              |
 |------------------|--------------------|------------------------------------------------------|
-| `list_robots`    | none               | Id, Name, Description for every robot on the line     |
+| `list_robots`    | none               | Id, Name, Description for every robot on the line    |
 | `robot_position` | `robotName`        | Current pose (X, Y, Z, Roll, Pitch, Yaw) for a robot |
 
 ### Seed Entity Catalog
 
 #### Robots (`dbo.robot`)
 
-| Id       | Name          | Description    |
-|----------|---------------|----------------|
-| `robot1` | ABB IRB 6700  | ABB robot      |
-| `robot2` | KUKA KR 16    | KUKA robot     |
-| `robot3` | Fanuc M-20iA  | Fanuc robot    |
+| Id       | Name         | Description |
+|----------|--------------|-------------|
+| `robot1` | ABB IRB 6700 | ABB robot   |
+| `robot2` | KUKA KR 16   | KUKA robot  |
+| `robot3` | Fanuc M-20iA | Fanuc robot |
 
 #### Pose (`dbo.posemeasure`)
 
@@ -52,7 +52,7 @@ and the agent states that plainly.
 
 ### Canonical Sample Questions
 
-| Question                                          | Intent           | Arguments                       | Expected answer                          |
-|---------------------------------------------------|------------------|---------------------------------|------------------------------------------|
-| "What robots do we have?"                         | `list_robots`    | none                            | ABB IRB 6700, KUKA KR 16, Fanuc M-20iA   |
-| "What is the current position of the KUKA KR 16?" | `robot_position` | `robotName` = `KUKA KR 16`      | X 4.5, Y 2.0, Z 0.6, Roll/Pitch/Yaw 0    |
+| Question                                          | Intent           | Arguments                  | Expected answer                        |
+|---------------------------------------------------|------------------|----------------------------|----------------------------------------|
+| "What robots do we have?"                         | `list_robots`    | none                       | ABB IRB 6700, KUKA KR 16, Fanuc M-20iA |
+| "What is the current position of the KUKA KR 16?" | `robot_position` | `robotName` = `KUKA KR 16` | X 4.5, Y 2.0, Z 0.6, Roll/Pitch/Yaw 0  |
