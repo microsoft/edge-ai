@@ -3,9 +3,6 @@ name: rust-tests
 
 on:
   workflow_call:
-    secrets:
-      CARGO_REGISTRIES_AIO_SDKS_TOKEN:
-        required: false
 
 permissions: {}
 
