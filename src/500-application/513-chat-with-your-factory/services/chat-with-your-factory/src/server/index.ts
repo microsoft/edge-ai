@@ -1,4 +1,5 @@
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 import path from 'path'
 import { DefaultAzureCredential } from '@azure/identity'
 import { chatHandler } from './chatHandler.js'
@@ -35,7 +36,22 @@ assertHostedAuthConfig()
 const app = express()
 const PORT = parseInt(process.env.PORT || '3978', 10)
 
+// App Service terminates TLS at a reverse proxy, so the real client IP arrives
+// in X-Forwarded-For. Trust the first hop so the rate limiter keys on the
+// caller rather than the proxy.
+app.set('trust proxy', 1)
+
 const credential = new DefaultAzureCredential()
+
+// Throttle API and file-serving routes to mitigate brute-force / DoS abuse.
+// Registered after the unauthenticated health probe below so platform health
+// checks stay unthrottled.
+const apiLimiter = rateLimit({
+  windowMs: 60_000,
+  limit: 300,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+})
 
 app.use(express.json())
 
@@ -52,6 +68,10 @@ app.use(express.static(path.join(import.meta.dirname, '../../public')))
 app.get('/api/healthz', (_req, res) => {
   res.status(200).json({ status: 'ok' })
 })
+
+// Rate-limit everything past the health probe: the authorized API routes and
+// the SPA fallback file serving.
+app.use(apiLimiter)
 
 // Authenticate all other API requests
 app.use('/api', requireAuth)

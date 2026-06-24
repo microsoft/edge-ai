@@ -43,6 +43,7 @@
     "@microsoft/agents-copilotstudio-client": "^1.4.2",
     "@microsoft/teams-js": "^2.49.0",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "jose": "^6.2.1",
     "microsoft-cognitiveservices-speech-sdk": "^1.48.0",
     "mssql": "^12.5.5",
@@ -58,14 +59,14 @@
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^3.0.0",
+    "esbuild": "^0.25.12",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^5.0.0",
-    "esbuild": "^0.25.12",
     "globals": "^15.0.0",
-    "vitest": "^3.0.0",
-    "@vitest/coverage-v8": "^3.0.0",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.0.0",
-    "typescript": "^5.9.3"
+    "vitest": "^3.0.0"
   }
 }
