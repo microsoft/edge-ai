@@ -178,24 +178,32 @@ The operator tries parsing strategies in this order:
 
 ## Avro Type Mapping
 
-| Avro Type             | JSON Type | Notes                                                                |
-|-----------------------|-----------|----------------------------------------------------------------------|
-| null                  | null      |                                                                      |
-| boolean               | boolean   |                                                                      |
-| int, long             | number    |                                                                      |
-| float, double         | number    |                                                                      |
-| string                | string    |                                                                      |
-| bytes, fixed          | string    | UTF-8 if valid, otherwise base64-encoded                             |
-| enum                  | string    | Symbol name                                                          |
-| array                 | array     | Recursive conversion                                                 |
-| map                   | object    | Recursive conversion                                                 |
-| record                | object    | Field names as keys                                                  |
-| union                 | (varies)  | Unwrapped to selected variant                                        |
-| decimal               | number    | Unscaled integer value (scale information not preserved from schema) |
-| bigdecimal            | string    | String representation preserving all decimal places                  |
-| date, time, timestamp | number    | Epoch-based numeric value                                            |
-| duration              | object    | `{ months, days, millis }`                                           |
-| uuid                  | string    | Standard UUID format                                                 |
+| Avro Type          | JSON Type | Notes                                                                |
+|--------------------|-----------|----------------------------------------------------------------------|
+| null               | null      |                                                                      |
+| boolean            | boolean   |                                                                      |
+| int, long          | number    |                                                                      |
+| float, double      | number    |                                                                      |
+| string             | string    |                                                                      |
+| bytes, fixed       | string    | UTF-8 if valid, otherwise base64-encoded                             |
+| enum               | string    | Symbol name                                                          |
+| array              | array     | Recursive conversion                                                 |
+| map                | object    | Recursive conversion                                                 |
+| record             | object    | Field names as keys                                                  |
+| union              | (varies)  | Unwrapped to selected variant                                        |
+| decimal            | number    | Unscaled integer value (scale information not preserved from schema) |
+| bigdecimal         | string    | String representation preserving all decimal places                  |
+| date               | string    | ISO-8601 date (`YYYY-MM-DD`)                                         |
+| time-millis/micros | string    | ISO-8601 time of day (`HH:MM:SS[.fff]`)                              |
+| timestamp-*        | string    | ISO-8601 / RFC 3339 UTC (`YYYY-MM-DDTHH:MM:SS[.fff]Z`)               |
+| local-timestamp-*  | string    | ISO-8601 without zone designator (`YYYY-MM-DDTHH:MM:SS[.fff]`)       |
+| duration           | object    | `{ months, days, millis }`                                           |
+| uuid               | string    | Standard UUID format                                                 |
+
+> [!IMPORTANT]
+> Date and time conversion is driven by the Avro **logical type**, not the field name. Only fields declared with a logical type (for example `{ "type": "long", "logicalType": "timestamp-millis" }`) decode to ISO-8601 strings. A plain `long`/`int` carrying an epoch value (even one documented as a timestamp) is emitted as a number, unchanged. To get ISO-8601 output for such a field, declare its logical type in the producer schema.
+>
+> This matches how Kafka UIs render logical types and preserves existing numeric output for non-logical fields. Sub-second fractions are preserved and trailing zeros trimmed (for example `.5`, `.045`); whole-second values omit the fraction entirely.
 
 ## Sample Schema
 
