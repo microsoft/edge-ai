@@ -68,6 +68,8 @@ cameras:
 Required fields per camera: `ip`, `username`, `password`
 Optional fields: `label` (defaults to `camera-{ip}` if omitted)
 
+> **Security:** The `password` field MUST use environment variable reference syntax (`${ENV_VAR_NAME}`). Never paste literal passwords — they will be stored in conversation history and potentially logged. The agent will reject any password value that does not match the `${...}` pattern.
+
 ## Output Schema (Full Discovery Manifest)
 
 After discovery, each camera entry is populated with ~25 fields:
@@ -136,6 +138,7 @@ Validation:
 - Each camera has `ip`, `username`, `password`
 - IP addresses are valid IPv4 format
 - Site metadata (`name`, `location`) is present
+- **Credential format**: every `password` value must match `^\$\{.+\}$` (environment variable reference). If a literal password is detected, reject the input immediately with: "Literal passwords are not accepted. Use environment variable references (e.g. `${CAMERA_PASSWORD}`) to avoid credential exposure in chat history."
 
 Output: validated camera list ready for discovery.
 
@@ -189,9 +192,23 @@ When a camera fails discovery, include it in the manifest with an error field an
 - Credentials in output manifest: always masked (replace password portion of RTSP URLs with `****`)
 - Session tokens: never persisted to output
 - Network scanning: only IPs explicitly listed in input (no subnet sweeps)
-- Credentials in input: user's responsibility to secure the file
+- Credentials in input: must use env var references; user's responsibility to secure the input file
+- **Generated configs must use credential references only** (from Phase 4). Never interpolate raw passwords into Terraform, env files, or any output artifact.
+- **Manifest classification**: discovery manifests contain network topology, device fingerprints, and MAC addresses. Treat as CONFIDENTIAL. Never commit to source control.
 
-Output: full site manifest YAML with all discovered fields populated. Present summary table to user and offer to save manifest to a file.
+Output: full site manifest YAML with all discovered fields populated. Prepend the security classification header (see below). Present summary table to user and offer to save manifest to a file.
+
+#### Manifest Classification Header
+
+All generated manifest files must include this YAML comment header:
+
+```yaml
+# CLASSIFICATION: CONFIDENTIAL
+# Contains network topology, device identifiers, and physical security layout.
+# Do NOT commit this file to source control.
+# Recommended path: .local/camera-discovery/ (gitignored by default)
+# Generated: {ISO-8601 timestamp}
+```
 
 ### Phase 3: Target App Selection
 
@@ -360,18 +377,29 @@ After generating configs:
    - 508 configs: `src/500-application/508-media-connector/terraform/` or CI vars file
    - 510 configs: `src/500-application/510-onvif-connector/terraform/` or CI vars file
    - Dashboard env: `src/500-application/510-onvif-connector/.env` or Docker Compose override
+   - **Discovery manifests**: `.local/camera-discovery/` (untracked by default)
 2. Offer to write configs directly to workspace files
-3. Provide deployment commands:
+3. **Before writing any file**, check if the destination path is gitignored. If not:
+   - For manifests and env files containing stream URLs: warn the user and suggest `.local/camera-discovery/` instead
+   - Offer to append the path to `.gitignore`
+4. Provide deployment commands:
    - Terraform: `terraform plan` / `terraform apply` for device/asset provisioning
    - Docker Compose: `docker compose up -d` for local development
    - Helm: value overrides for production deployment
+5. Recommend adding this to the project `.gitignore` if not already present:
+   ```gitignore
+   # Camera discovery artifacts (contain network topology)
+   .local/camera-discovery/
+   **/site-manifest.yaml
+   ```
 
 Validation:
 
 - Generated Terraform HCL is syntactically valid
 - Camera labels are sanitized to valid Terraform identifiers (lowercase, hyphens, no spaces)
-- RTSP URLs preserved exactly from manifest (with credentials masked)
-- Credential references point to valid secret structures
+- RTSP URLs in output configs use credential-reference placeholders, never literal passwords
+- Credential references point to valid secret structures from Phase 4
+- No literal IP addresses with credentials appear in any generated output
 
 ## Field Mapping Reference
 
