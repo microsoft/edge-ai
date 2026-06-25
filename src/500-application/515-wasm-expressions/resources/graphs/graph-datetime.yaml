@@ -1,6 +1,6 @@
 metadata:
   $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
-  name: "DateTime"
+  name: "graph-datetime"
   description: "Parse, format, reformat, datediff, and extract parts from UTC timestamps; outputs new fields to continue the graph"
   version: "${VERSION}"
   vendor: "Microsoft"
@@ -10,7 +10,7 @@ moduleRequirements:
   runtimeVersion: "1.1.0"
 
 moduleConfigurations:
-  - name: datetime
+  - name: module-datetime/map
     parameters:
       mode:
         name: mode
@@ -55,7 +55,7 @@ operations:
     name: "source"
 
   - operationType: "map"
-    name: "datetime"
+    name: "module-datetime/map"
     module: "datetime:${VERSION}"
 
   - operationType: "sink"
@@ -65,8 +65,8 @@ connections:
   - from:
       name: "source"
     to:
-      name: "datetime"
+      name: "module-datetime/map"
   - from:
-      name: "datetime"
+      name: "module-datetime/map"
     to:
       name: "sink"
