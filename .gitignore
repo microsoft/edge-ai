@@ -425,6 +425,7 @@ venv/
 
 # Bicep compiled ARM templates
 **/.arm/
+**/bicep/main.json
 
 # Mac finder files
 .DS_Store

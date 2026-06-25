@@ -139,12 +139,11 @@ If you prefer local development, install these tools:
 
 Blueprints are pre-configured deployment templates. Here is a quick overview of the common blueprints available:
 
-| Blueprint                                              | Description                     | Use Case                          |
-|--------------------------------------------------------|---------------------------------|-----------------------------------|
-| [full-single-node-cluster][blueprint-full-single]      | Complete single-node deployment | Testing, small deployments        |
-| [full-multi-node-cluster][blueprint-full-multi]        | Production multi-node cluster   | Production environments           |
-| [minimum-single-node-cluster][blueprint-minimum]       | Minimal single-node setup       | Resource-constrained environments |
-| [only-cloud-single-node-cluster][blueprint-cloud-only] | Cloud components only           | Cloud-first deployments           |
+| Blueprint                                              | Description                   | Use Case                          |
+|--------------------------------------------------------|-------------------------------|-----------------------------------|
+| [full-multi-node-cluster][blueprint-full-multi]        | Production multi-node cluster | Production environments           |
+| [minimum-single-node-cluster][blueprint-minimum]       | Minimal single-node setup     | Resource-constrained environments |
+| [only-cloud-single-node-cluster][blueprint-cloud-only] | Cloud components only         | Cloud-first deployments           |
 
 > **📋 More Blueprints Available**: Additional blueprints are available including `fabric`, `fabric-rti`, `dual-peered-single-node-cluster`, `only-edge-iot-ops`, `azureml`, and more. Check the [`/blueprints`](/blueprints/) directory for the complete list and detailed descriptions.
 
@@ -152,9 +151,6 @@ Blueprints are pre-configured deployment templates. Here is a quick overview of 
 
 ```text
 blueprints/
-├── full-single-node-cluster/
-│   ├── terraform/
-│   └── bicep/
 ├── full-multi-node-cluster/
 │   ├── terraform/
 │   └── bicep/
@@ -172,7 +168,7 @@ blueprints/
 1. **Navigate to your chosen blueprint**:
 
    ```bash
-   cd blueprints/full-single-node-cluster/terraform
+   cd blueprints/full-multi-node-cluster/terraform
    ```
 
 2. **Create your configuration file**:
@@ -257,7 +253,7 @@ blueprints/
 **Navigate to your chosen blueprint**:
 
    ```bash
-   cd blueprints/full-single-node-cluster/bicep
+   cd blueprints/full-multi-node-cluster/bicep
    ```
 
 **Login to Azure and set up environment**:
@@ -348,7 +344,7 @@ Use GitHub Copilot throughout your deployment for interactive help:
 ### Quick Copilot Commands
 
 - **"@workspace How do I troubleshoot deployment errors?"**
-- **"Explain the blueprint structure in /blueprints/full-single-node-cluster"**
+- **"Explain the blueprint structure in /blueprints/full-multi-node-cluster"**
 - **"Help me configure terraform.tfvars for my environment"**
 - **"What Azure resources will be created by this blueprint?"**
 
@@ -563,7 +559,6 @@ _This guide is part of the AI on Edge Flagship Accelerator project. For the late
 [terraform-install]: https://learn.hashicorp.com/tutorials/terraform/install-cli
 [kubectl-install]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [docker-install]: https://docs.docker.com/get-docker/
-[blueprint-full-single]: /blueprints/full-single-node-cluster/
 [blueprint-full-multi]: /blueprints/full-multi-node-cluster/
 [blueprint-minimum]: /blueprints/minimum-single-node-cluster/
 [blueprint-cloud-only]: /blueprints/only-cloud-single-node-cluster/

@@ -138,12 +138,12 @@ While instructions are automatically applied, you may want to manually add them 
 
 The instruction system uses sophisticated pattern matching to automatically apply relevant guidance:
 
-| Working On                                             | Auto-Applied Instructions                                         |
-|--------------------------------------------------------|-------------------------------------------------------------------|
-| `src/000-cloud/010-security/terraform/main.tf`         | HVE Core Terraform instructions                                   |
-| `blueprints/full-single-node-cluster/bicep/main.bicep` | HVE Core Bicep instructions                                       |
-| `scripts/deploy-infrastructure.py`                     | HVE Core Python scripting instructions                            |
-| `src/500-application/501-rust-telemetry/README.md`     | HVE Core Markdown instructions and local Application instructions |
+| Working On                                            | Auto-Applied Instructions                                         |
+|-------------------------------------------------------|-------------------------------------------------------------------|
+| `src/000-cloud/010-security/terraform/main.tf`        | HVE Core Terraform instructions                                   |
+| `blueprints/full-multi-node-cluster/bicep/main.bicep` | HVE Core Bicep instructions                                       |
+| `scripts/deploy-infrastructure.py`                    | HVE Core Python scripting instructions                            |
+| `src/500-application/501-rust-telemetry/README.md`    | HVE Core Markdown instructions and local Application instructions |
 
 ### Best Practices
 

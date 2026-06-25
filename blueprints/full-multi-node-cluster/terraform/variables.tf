@@ -70,6 +70,12 @@ variable "arc_machine_name_prefix" {
   default     = null
 }
 
+variable "arc_machine_name" {
+  type        = string
+  description = "Exact name of a single existing Arc-enabled machine to target; honored when arc_machine_count is 1 in place of the name-prefix model"
+  default     = null
+}
+
 variable "arc_machine_resource_group_name" {
   type        = string
   description = "Resource group name that contains the Arc-enabled servers when should_use_arc_machines is true"
@@ -117,7 +123,7 @@ variable "should_get_custom_locations_oid" {
 variable "host_machine_count" {
   type        = number
   description = "Number of edge host virtual machines to create for the multi-node cluster"
-  default     = 3
+  default     = 1
 }
 
 variable "cluster_server_host_machine_username" {
@@ -346,7 +352,7 @@ variable "should_create_anonymous_broker_listener" {
 variable "should_deploy_resource_sync_rules" {
   type        = bool
   description = "Whether to deploy resource sync rules"
-  default     = false
+  default     = true
 }
 
 variable "should_enable_opc_ua_simulator" {
@@ -362,6 +368,42 @@ variable "should_enable_otel_collector" {
 }
 
 /*
+ * Alert Dataflow Parameters
+ */
+
+variable "alert_eventhub_name" {
+  type        = string
+  description = "Name of the Event Hub for inference alerts. Otherwise, 'evh-{resource_prefix}-alerts-{environment}-{instance}'"
+  default     = null
+}
+
+variable "alert_eventhub_consumer_group" {
+  type        = string
+  description = "Consumer group for the alert notification Function App Event Hub trigger. Otherwise, '$Default'"
+  default     = "$Default"
+}
+
+variable "eventhubs" {
+  description = <<-EOF
+    Per-Event Hub configuration. Keys are Event Hub names.
+
+    - **Message retention**: Specifies the number of days to retain events for this Event Hub, from 1 to 7.
+    - **Partition count**: Specifies the number of partitions for the Event Hub. Valid values are from 1 to 32.
+    - **Consumer group user metadata**: A placeholder to store user-defined string data with maximum length 1024.
+      It can be used to store descriptive data, such as list of teams and their contact information,
+      or user-defined configuration settings.
+  EOF
+  type = map(object({
+    message_retention = optional(number, 1)
+    partition_count   = optional(number, 1)
+    consumer_groups = optional(map(object({
+      user_metadata = optional(string, null)
+    })), {})
+  }))
+  default = {}
+}
+
+/*
  * Azure Functions Parameters
  */
 
@@ -371,6 +413,71 @@ variable "should_create_azure_functions" {
   default     = false
 }
 
+variable "function_app_settings" {
+  type        = map(string)
+  description = "Application settings for the Function App deployed by the messaging component"
+  default     = {}
+  sensitive   = true
+}
+
+/*
+ * Notification Parameters (045-notification)
+ */
+
+variable "should_deploy_notification" {
+  type        = bool
+  description = "Whether to deploy the 045-notification Logic App for alert deduplication and Teams posting"
+  default     = false
+}
+
+variable "closure_message_template" {
+  type        = string
+  description = "HTML message body for session-closure Teams notifications. Supports Logic App expression syntax for dynamic fields"
+  default     = "<p>Session closed for event.</p>"
+}
+
+variable "notification_event_schema" {
+  type        = any
+  description = "JSON schema object for parsing Event Hub events in the Logic App Parse_Event action"
+  default     = {}
+}
+
+variable "notification_message_template" {
+  type        = string
+  description = "HTML template for new-event Teams notifications. Supports Terraform template variable: close_session_url. Supports Logic App expression syntax for dynamic event fields"
+  default     = "<p>New alert event detected.</p>"
+}
+
+variable "notification_partition_key_field" {
+  type        = string
+  description = "Caller's event schema field name to use as the Table Storage partition key for session-state deduplication lookups (e.g. \"event_id\", \"asset_id\"). Must be set by the scenario tfvars."
+  default     = "event_id"
+}
+
+variable "teams_recipient_id" {
+  type        = string
+  description = "Teams chat or channel thread ID for posting event notifications"
+  sensitive   = true
+  default     = null
+}
+
+variable "teams_group_id" {
+  type        = string
+  description = "Microsoft 365 Group ID (Team ID) for posting to a Teams channel. Required when teams_post_location is 'Channel'"
+  default     = null
+}
+
+variable "teams_post_location" {
+  type        = string
+  description = "Teams posting location type for the notification message: 'Channel' for a Teams channel or 'Group chat' for a group chat"
+  default     = "Channel"
+
+  validation {
+    condition     = contains(["Channel", "Group chat"], var.teams_post_location)
+    error_message = "teams_post_location must be 'Channel' or 'Group chat'"
+  }
+}
+
 /*
  * Azure Kubernetes Service Parameters
  */
@@ -378,7 +485,7 @@ variable "should_create_azure_functions" {
 variable "aks_should_enable_private_cluster" {
   type        = bool
   description = "Whether to enable private cluster mode for AKS"
-  default     = false
+  default     = true
 }
 
 variable "aks_should_enable_private_cluster_public_fqdn" {

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestTerraformFullSingleNodeClusterDeploy performs full Terraform deployment and validation.
+// TestTerraformFullMultiNodeClusterDeploy performs full Terraform deployment and validation.
 //
 // WARNING: Deploys real Azure resources that incur costs.
 //
@@ -17,7 +17,7 @@ import (
 //	Required:
 //	  ARM_SUBSCRIPTION_ID, TEST_ENVIRONMENT, TEST_LOCATION,
 //	  TEST_RESOURCE_PREFIX, TEST_RESOURCE_GROUP_NAME
-func TestTerraformFullSingleNodeClusterDeploy(t *testing.T) {
+func TestTerraformFullMultiNodeClusterDeploy(t *testing.T) {
 	t.Parallel()
 
 	terraformDir := "../terraform"

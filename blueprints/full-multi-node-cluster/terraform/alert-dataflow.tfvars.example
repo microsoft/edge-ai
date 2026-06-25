@@ -1,7 +1,7 @@
 /*
- * Full Single Node Cluster with Alert Dataflow
+ * Full Multi Node Cluster with Alert Dataflow
  *
- * Deploys the complete single-node cluster infrastructure and enables
+ * Deploys the complete cluster infrastructure and enables
  * alert dataflow routing from MQTT inference topics to a dedicated Event Hub.
  */
 

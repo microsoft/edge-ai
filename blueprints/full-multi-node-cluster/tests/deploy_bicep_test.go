@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestBicepFullSingleNodeClusterDeploy performs full Bicep deployment and validation.
+// TestBicepFullMultiNodeClusterDeploy performs full Bicep deployment and validation.
 //
 // WARNING: Deploys real Azure resources that incur costs.
 //
@@ -24,7 +24,7 @@ import (
 //	Optional:
 //	  SKIP_BICEP_DEPLOYMENT=true (use existing deployment outputs)
 //	  BICEP_DEPLOYMENT_NAME=<name> (defaults to "bicep-deployment-test")
-func TestBicepFullSingleNodeClusterDeploy(t *testing.T) {
+func TestBicepFullMultiNodeClusterDeploy(t *testing.T) {
 	t.Parallel()
 
 	bicepDir := "../bicep"
