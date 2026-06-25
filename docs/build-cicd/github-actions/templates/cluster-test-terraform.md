@@ -69,7 +69,7 @@ terraform-tests:
   name: Terraform Configuration Tests
   uses: ./.github/workflows/cluster-test-terraform.yml
   with:
-    working-directory: 'blueprints/terraform/full-single-cluster'
+    working-directory: 'blueprints/full-multi-node-cluster/terraform'
     terraform-version: '1.5.7'
 ```
 
@@ -80,7 +80,7 @@ terraform-tests:
   name: Terraform Configuration Tests
   uses: ./.github/workflows/cluster-test-terraform.yml
   with:
-    working-directory: 'blueprints/terraform/full-single-cluster'
+    working-directory: 'blueprints/full-multi-node-cluster/terraform'
     terraform-version: '1.6.0'
     backend-config: '{"key": "my-state-file", "bucket": "my-tf-state"}'
     terraform-vars-file: './test/fixtures/test.tfvars'

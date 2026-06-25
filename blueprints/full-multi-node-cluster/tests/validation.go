@@ -1,4 +1,4 @@
-// Package test provides validation and testing utilities for the full-single-node-cluster blueprint.
+// Package test provides validation and testing utilities for the full-multi-node-cluster blueprint.
 // This file contains shared validation logic used by both Terraform and Bicep deployment tests.
 package test
 
@@ -189,11 +189,15 @@ func runValidationTests(t *testing.T, outputs *BlueprintOutputs, subscriptionID,
 			"Event Grid endpoint should be valid Azure Event Grid endpoint")
 	})
 
-	// Validate VM host resources
+	// Validate VM host resources (vm_host is null in Arc machine mode where no VMs are created)
 	t.Run("ValidateVMHost", func(t *testing.T) {
 		vmHost := outputs.VmHost
 
-		require.NotNil(t, vmHost, "VM host output should exist")
+		if vmHost == nil {
+			t.Log("vm_host output is null (Arc machine mode); skipping VM host validation")
+			return
+		}
+
 		vmHosts := vmHost.([]any)
 		assert.NotEmpty(t, vmHosts, "At least one VM host should be deployed")
 
