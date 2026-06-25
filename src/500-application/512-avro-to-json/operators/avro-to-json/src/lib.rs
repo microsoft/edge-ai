@@ -81,7 +81,7 @@ fn avro_to_json(avro_value: &AvroValue) -> JsonValue {
                 .collect();
             JsonValue::Object(json_map)
         }
-        AvroValue::Date(d) => json!(d),
+        AvroValue::Date(d) => json!(format_date(i64::from(*d))),
         AvroValue::Decimal(decimal) => {
             // Decimal wraps big-endian two's-complement bytes (unscaled integer)
             // Without schema-level scale info here, render as unscaled integer
@@ -96,14 +96,14 @@ fn avro_to_json(avro_value: &AvroValue) -> JsonValue {
                 json!(value.to_string())
             }
         }
-        AvroValue::TimeMillis(t) => json!(t),
-        AvroValue::TimeMicros(t) => json!(t),
-        AvroValue::TimestampMillis(t) => json!(t),
-        AvroValue::TimestampMicros(t) => json!(t),
-        AvroValue::TimestampNanos(t) => json!(t),
-        AvroValue::LocalTimestampMillis(t) => json!(t),
-        AvroValue::LocalTimestampMicros(t) => json!(t),
-        AvroValue::LocalTimestampNanos(t) => json!(t),
+        AvroValue::TimeMillis(t) => json!(format_time_of_day(i64::from(*t), 1_000, 3)),
+        AvroValue::TimeMicros(t) => json!(format_time_of_day(*t, 1_000_000, 6)),
+        AvroValue::TimestampMillis(t) => json!(format_timestamp(*t, 1_000, 3, true)),
+        AvroValue::TimestampMicros(t) => json!(format_timestamp(*t, 1_000_000, 6, true)),
+        AvroValue::TimestampNanos(t) => json!(format_timestamp(*t, 1_000_000_000, 9, true)),
+        AvroValue::LocalTimestampMillis(t) => json!(format_timestamp(*t, 1_000, 3, false)),
+        AvroValue::LocalTimestampMicros(t) => json!(format_timestamp(*t, 1_000_000, 6, false)),
+        AvroValue::LocalTimestampNanos(t) => json!(format_timestamp(*t, 1_000_000_000, 9, false)),
         AvroValue::Duration(d) => {
             json!({
                 "months": u32::from(d.months()),
@@ -154,6 +154,70 @@ fn base64_encode(bytes: &[u8]) -> String {
     }
 
     result
+}
+
+/// Converts a count of days since the Unix epoch (1970-01-01) to a `(year, month, day)`
+/// civil date using Howard Hinnant's algorithm. Valid for the full proleptic Gregorian range.
+fn civil_from_days(days: i64) -> (i64, u32, u32) {
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = (doy - (153 * mp + 2) / 5 + 1) as u32;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;
+    (if m <= 2 { y + 1 } else { y }, m, d)
+}
+
+/// Builds a fractional-second suffix (e.g. `.123`) for the given sub-second value,
+/// trimming trailing zeros. Returns an empty string when `frac` is zero.
+fn fraction_suffix(frac: u64, digits: usize) -> String {
+    if frac == 0 {
+        return String::new();
+    }
+    let padded = format!("{frac:0digits$}");
+    format!(".{}", padded.trim_end_matches('0'))
+}
+
+/// Formats a count of days since the Unix epoch as an ISO-8601 date (`YYYY-MM-DD`).
+fn format_date(days: i64) -> String {
+    let (y, m, d) = civil_from_days(days);
+    format!("{y:04}-{m:02}-{d:02}")
+}
+
+/// Formats an Avro timestamp (count of `subsec_per_sec` units since the Unix epoch)
+/// as an ISO-8601 / RFC 3339 string. When `utc` is true a trailing `Z` is appended,
+/// matching the `timestamp-*` logical types; local timestamps omit the designator.
+fn format_timestamp(value: i64, subsec_per_sec: i64, digits: usize, utc: bool) -> String {
+    let seconds = value.div_euclid(subsec_per_sec);
+    let frac = value.rem_euclid(subsec_per_sec) as u64;
+    let days = seconds.div_euclid(86_400);
+    let sod = seconds.rem_euclid(86_400);
+    let (y, m, d) = civil_from_days(days);
+    let hh = sod / 3_600;
+    let mm = (sod % 3_600) / 60;
+    let ss = sod % 60;
+    format!(
+        "{y:04}-{m:02}-{d:02}T{hh:02}:{mm:02}:{ss:02}{frac}{zone}",
+        frac = fraction_suffix(frac, digits),
+        zone = if utc { "Z" } else { "" }
+    )
+}
+
+/// Formats an Avro time-of-day (count of `subsec_per_sec` units since midnight)
+/// as an ISO-8601 time string (`HH:MM:SS[.fff]`).
+fn format_time_of_day(value: i64, subsec_per_sec: i64, digits: usize) -> String {
+    let seconds = value.div_euclid(subsec_per_sec);
+    let frac = value.rem_euclid(subsec_per_sec) as u64;
+    let hh = seconds / 3_600;
+    let mm = (seconds % 3_600) / 60;
+    let ss = seconds % 60;
+    format!(
+        "{hh:02}:{mm:02}:{ss:02}{frac}",
+        frac = fraction_suffix(frac, digits)
+    )
 }
 
 /// Strips the Confluent Schema Registry wire format prefix if present.
@@ -644,12 +708,143 @@ mod tests {
 
     #[test]
     fn avro_timestamp_types_to_json() {
-        assert_eq!(avro_to_json(&AvroValue::Date(19000)), json!(19000));
-        assert_eq!(avro_to_json(&AvroValue::TimeMillis(43200000)), json!(43200000));
-        assert_eq!(avro_to_json(&AvroValue::TimeMicros(43200000000)), json!(43200000000_i64));
-        assert_eq!(avro_to_json(&AvroValue::TimestampMillis(1700000000000)), json!(1700000000000_i64));
-        assert_eq!(avro_to_json(&AvroValue::TimestampMicros(1700000000000000)), json!(1700000000000000_i64));
+        // Logical date/time types render as ISO-8601 strings (matching the Kafka UI view).
+        assert_eq!(avro_to_json(&AvroValue::Date(19000)), json!("2022-01-08"));
+        assert_eq!(avro_to_json(&AvroValue::TimeMillis(43200000)), json!("12:00:00"));
+        assert_eq!(avro_to_json(&AvroValue::TimeMicros(43200000000)), json!("12:00:00"));
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampMillis(1700000000000)),
+            json!("2023-11-14T22:13:20Z")
+        );
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampMicros(1700000000000000)),
+            json!("2023-11-14T22:13:20Z")
+        );
     }
+
+    #[test]
+    fn avro_plain_long_stays_epoch() {
+        // A non-logical long (raw epoch number) must remain a number, not an ISO string.
+        assert_eq!(avro_to_json(&AvroValue::Long(1700000000000)), json!(1700000000000_i64));
+        assert_eq!(avro_to_json(&AvroValue::Int(19000)), json!(19000));
+    }
+
+    #[test]
+    fn avro_timestamp_millis_with_fraction() {
+        // 1700000000123 ms -> sub-second .123 preserved.
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampMillis(1700000000123)),
+            json!("2023-11-14T22:13:20.123Z")
+        );
+    }
+
+    #[test]
+    fn avro_timestamp_micros_with_fraction_trims_trailing_zeros() {
+        // 500_000 micros -> .5 (trailing zeros trimmed).
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampMicros(1700000000500000)),
+            json!("2023-11-14T22:13:20.5Z")
+        );
+    }
+
+    #[test]
+    fn avro_timestamp_nanos_to_json() {
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampNanos(1700000000000000007)),
+            json!("2023-11-14T22:13:20.000000007Z")
+        );
+    }
+
+    #[test]
+    fn avro_local_timestamp_has_no_zone_designator() {
+        assert_eq!(
+            avro_to_json(&AvroValue::LocalTimestampMillis(1700000000000)),
+            json!("2023-11-14T22:13:20")
+        );
+        assert_eq!(
+            avro_to_json(&AvroValue::LocalTimestampMicros(1700000000000000)),
+            json!("2023-11-14T22:13:20")
+        );
+        assert_eq!(
+            avro_to_json(&AvroValue::LocalTimestampNanos(1700000000000000000)),
+            json!("2023-11-14T22:13:20")
+        );
+    }
+
+    #[test]
+    fn avro_timestamp_epoch_zero() {
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampMillis(0)),
+            json!("1970-01-01T00:00:00Z")
+        );
+        assert_eq!(avro_to_json(&AvroValue::Date(0)), json!("1970-01-01"));
+    }
+
+    #[test]
+    fn avro_timestamp_before_epoch() {
+        // -1 ms before epoch -> 1969-12-31T23:59:59.999Z.
+        assert_eq!(
+            avro_to_json(&AvroValue::TimestampMillis(-1)),
+            json!("1969-12-31T23:59:59.999Z")
+        );
+        assert_eq!(avro_to_json(&AvroValue::Date(-1)), json!("1969-12-31"));
+    }
+
+    #[test]
+    fn avro_time_of_day_with_fraction() {
+        // 1 hour, 2 minutes, 3 seconds, 45 ms.
+        let millis = (3600 + 120 + 3) * 1000 + 45;
+        assert_eq!(avro_to_json(&AvroValue::TimeMillis(millis)), json!("01:02:03.045"));
+    }
+
+    #[test]
+    fn avro_nullable_timestamp_union_to_json() {
+        // Mirrors the customer schema: ["null", {"type":"long","logicalType":"timestamp-millis"}].
+        let present = AvroValue::Union(1, Box::new(AvroValue::TimestampMillis(1700000000000)));
+        assert_eq!(avro_to_json(&present), json!("2023-11-14T22:13:20Z"));
+
+        let absent = AvroValue::Union(0, Box::new(AvroValue::Null));
+        assert_eq!(avro_to_json(&absent), serde_json::Value::Null);
+    }
+
+    #[test]
+    fn avro_record_with_nullable_timestamp_field() {
+        // Mirrors the PalletResults entry with a nullable DateValue timestamp-millis field.
+        let record = AvroValue::Record(vec![
+            ("IdParamResultat".to_string(), AvroValue::String("3450".to_string())),
+            (
+                "DateValue".to_string(),
+                AvroValue::Union(1, Box::new(AvroValue::TimestampMillis(1700000000000))),
+            ),
+        ]);
+        let json = avro_to_json(&record);
+        assert_eq!(json["IdParamResultat"], "3450");
+        assert_eq!(json["DateValue"], "2023-11-14T22:13:20Z");
+    }
+
+    // --- format helper tests ---
+
+    #[test]
+    fn civil_from_days_known_dates() {
+        assert_eq!(civil_from_days(0), (1970, 1, 1));
+        assert_eq!(civil_from_days(31), (1970, 2, 1));
+        assert_eq!(civil_from_days(-1), (1969, 12, 31));
+        // 2020-02-29 (leap day) is 18321 days after epoch.
+        assert_eq!(civil_from_days(18321), (2020, 2, 29));
+    }
+
+    #[test]
+    fn fraction_suffix_zero_is_empty() {
+        assert_eq!(fraction_suffix(0, 3), "");
+    }
+
+    #[test]
+    fn fraction_suffix_pads_and_trims() {
+        assert_eq!(fraction_suffix(5, 3), ".005");
+        assert_eq!(fraction_suffix(120, 3), ".12");
+        assert_eq!(fraction_suffix(123456, 6), ".123456");
+    }
+
 
     // --- Regression tests for R01 (Decimal) and R02 (Duration) ---
 
