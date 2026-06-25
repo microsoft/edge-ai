@@ -5,28 +5,30 @@ metadata description = 'Assigns the required Kubernetes Cluster - Azure Arc Onbo
   Identity Parameters
 */
 
-@description('The Principal ID for the identity that will be assigned the Arc Onboarding role.')
-param arcOnboardingPrincipalId string
+@description('The Principal IDs for the identities that will be assigned the Arc Onboarding role.')
+param arcOnboardingPrincipalIds string[]
 
 /*
   Resources
 */
 
-resource arcOnboardingRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, arcOnboardingPrincipalId, '34e09817-6cbe-4d01-b1a2-e0eac5743d41')
-  properties: {
-    principalId: arcOnboardingPrincipalId
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '34e09817-6cbe-4d01-b1a2-e0eac5743d41'
-    ) // Kubernetes Cluster - Azure Arc Onboarding role
-    principalType: 'ServicePrincipal'
+resource arcOnboardingRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for principalId in arcOnboardingPrincipalIds: {
+    name: guid(resourceGroup().id, principalId, '34e09817-6cbe-4d01-b1a2-e0eac5743d41')
+    properties: {
+      principalId: principalId
+      roleDefinitionId: subscriptionResourceId(
+        'Microsoft.Authorization/roleDefinitions',
+        '34e09817-6cbe-4d01-b1a2-e0eac5743d41'
+      ) // Kubernetes Cluster - Azure Arc Onboarding role
+      principalType: 'ServicePrincipal'
+    }
   }
-}
+]
 
 /*
   Outputs
 */
 
-@description('The ID of the role assignment for Kubernetes Cluster - Azure Arc Onboarding.')
-output roleAssignmentId string = arcOnboardingRoleAssignment.id
+@description('The IDs of the role assignments for Kubernetes Cluster - Azure Arc Onboarding.')
+output roleAssignmentIds string[] = [for (principalId, index) in arcOnboardingPrincipalIds: arcOnboardingRoleAssignment[index].id]

@@ -1,4 +1,4 @@
-module github.com/microsoft/edge-ai/blueprints/full-single-node-cluster/tests
+module github.com/microsoft/edge-ai/blueprints/full-multi-node-cluster/tests
 
 go 1.26
 

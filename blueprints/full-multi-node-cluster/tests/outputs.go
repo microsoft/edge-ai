@@ -1,4 +1,4 @@
-// Package test provides validation and testing utilities for the full-single-node-cluster blueprint.
+// Package test provides validation and testing utilities for the full-multi-node-cluster blueprint.
 // This file defines the strongly-typed output contract between IaC and tests.
 package test
 

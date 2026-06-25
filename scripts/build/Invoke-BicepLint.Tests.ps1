@@ -26,15 +26,15 @@ Describe 'Get-BicepFolderPathFromJson' -Tag 'Unit' {
             'src/000-cloud/010-security-identity/bicep' = @{
                 folderName = 'src/000-cloud/010-security-identity/bicep'
             }
-            'blueprints/full-single-node-cluster/bicep' = @{
-                folderName = 'blueprints/full-single-node-cluster/bicep'
+            'blueprints/full-multi-node-cluster/bicep' = @{
+                folderName = 'blueprints/full-multi-node-cluster/bicep'
             }
         } | ConvertTo-Json -Depth 4 -Compress
 
         $result = @(Get-BicepFolderPathFromJson -BicepFoldersJson $json)
 
         $result | Should -Contain 'src/000-cloud/010-security-identity/bicep'
-        $result | Should -Contain 'blueprints/full-single-node-cluster/bicep'
+        $result | Should -Contain 'blueprints/full-multi-node-cluster/bicep'
         $result | Should -HaveCount 2
     }
 
@@ -64,7 +64,7 @@ Describe 'Get-BicepValidationFile' -Tag 'Unit' {
         New-Item -ItemType Directory -Path $script:RepoRoot -Force | Out-Null
 
         $componentFolder = Join-Path $script:RepoRoot 'src/000-cloud/010-security-identity/bicep'
-        $blueprintFolder = Join-Path $script:RepoRoot 'blueprints/full-single-node-cluster/bicep'
+        $blueprintFolder = Join-Path $script:RepoRoot 'blueprints/full-multi-node-cluster/bicep'
         $nodeFolder = Join-Path $script:RepoRoot 'node_modules/package/bicep'
         $trackingFolder = Join-Path $script:RepoRoot '.copilot-tracking/generated/bicep'
 
@@ -79,7 +79,7 @@ Describe 'Get-BicepValidationFile' -Tag 'Unit' {
         $result = @(Get-BicepValidationFile -RepoRoot $script:RepoRoot -FullValidation $true)
 
         $result | Should -Contain 'src/000-cloud/010-security-identity/bicep/main.bicep'
-        $result | Should -Contain 'blueprints/full-single-node-cluster/bicep/main.bicep'
+        $result | Should -Contain 'blueprints/full-multi-node-cluster/bicep/main.bicep'
         $result | Should -Not -Contain 'node_modules/package/bicep/ignored.bicep'
         $result | Should -Not -Contain '.copilot-tracking/generated/bicep/ignored.bicep'
         $result | Should -HaveCount 2
@@ -93,7 +93,7 @@ Describe 'Get-BicepValidationFile' -Tag 'Unit' {
         $result = @(Get-BicepValidationFile -RepoRoot $script:RepoRoot -FullValidation $false -BicepFoldersJson $json)
 
         $result | Should -Contain 'src/000-cloud/010-security-identity/bicep/main.bicep'
-        $result | Should -Not -Contain 'blueprints/full-single-node-cluster/bicep/main.bicep'
+        $result | Should -Not -Contain 'blueprints/full-multi-node-cluster/bicep/main.bicep'
         $result | Should -HaveCount 1
     }
 

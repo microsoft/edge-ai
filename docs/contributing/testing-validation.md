@@ -340,7 +340,7 @@ Provides reusable testing functions for all blueprints including:
 - Deployment and cleanup utilities
 - Output normalization across frameworks
 
-**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/)
+**Reference Implementation:** [blueprints/full-multi-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-multi-node-cluster/tests/)
 
 Complete test suite demonstrating:
 
@@ -363,7 +363,7 @@ Complete test suite demonstrating:
 **Running Contract Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/tests
+cd blueprints/full-multi-node-cluster/tests
 
 # Test both frameworks
 ./run-contract-tests.sh both
@@ -390,7 +390,7 @@ go test -v -run Contract
 **Running Deployment Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/tests
+cd blueprints/full-multi-node-cluster/tests
 
 # Enable automatic cleanup
 export CLEANUP_RESOURCES=true
@@ -400,8 +400,8 @@ export CLEANUP_RESOURCES=true
 ./run-deployment-tests.sh bicep
 
 # Direct Go execution
-go test -v -run TestTerraformFullSingleNodeClusterDeploy -timeout 2h
-go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 2h
+go test -v -run TestTerraformFullMultiNodeClusterDeploy -timeout 2h
+go test -v -run TestBicepFullMultiNodeClusterDeploy -timeout 2h
 ```
 
 **Environment Variables:**
@@ -433,7 +433,7 @@ blueprints/{blueprint-name}/tests/
 
 ```bash
 # Navigate to blueprint directory
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Initialize with test backend
 terraform init -backend-config="container_name=test-tfstate"

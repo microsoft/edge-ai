@@ -30,8 +30,7 @@ to build complex multi-stage solutions that meet your specific requirements.
 | Blueprint                                                                      | Description                                                                                                                                        |
 |--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Minimum Single Cluster](./minimum-single-node-cluster/README.md)              | Minimum deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster, omitting observability, messaging, and ACR components |
-| [Full Single Cluster](./full-single-node-cluster/README.md)                    | Complete deployment of Azure IoT Operations on a single-node, Arc-enabled Kubernetes cluster                                                       |
-| [Full Multi-node Cluster](./full-multi-node-cluster/README.md)                 | Complete deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster                                                        |
+| [Full Cluster](./full-multi-node-cluster/README.md)                            | Complete deployment of Azure IoT Operations on a single- or multi-node, Arc-enabled Kubernetes cluster (VM or pre-existing Arc machine targeting)  |
 | [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md)        | Generates scripts for cluster creation without deploying resources                                                                                 |
 | [Azure Fabric Environment](./fabric/terraform/README.md)                       | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
 | [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                         |
@@ -60,8 +59,7 @@ Each blueprint in this repository follows a consistent structure:
 
 ## Blueprint Selection Guide
 
-- **Full Single Cluster**: Best for development, testing, and proof-of-concept deployments
-- **Full Multi-node Cluster**: Recommended for general purpose lab and production-grade deployments requiring high availability
+- **Full Cluster**: The canonical cluster blueprint — supports single-node (VM or pre-existing Arc machine) for development, testing, and proof-of-concept through multi-node production-grade deployments requiring high availability
 - **CNCF Cluster Script Only**: Ideal for environments with existing infrastructure or custom deployment processes
 - **Azure Fabric Environment**: For users looking to provision Azure Fabric environments with options to deploy Lakehouse, EventStream, and Fabric workspace
 
@@ -76,7 +74,7 @@ Selected blueprints include comprehensive test suites for validation and quality
 
 **Blueprints with Test Coverage:**
 
-- [Full Single Cluster](./full-single-node-cluster/tests/) - Complete test suite for Terraform and Bicep
+- [Full Cluster](./full-multi-node-cluster/tests/) - Complete test suite for Terraform and Bicep
 
 See individual blueprint `tests/` directories for detailed testing documentation, setup instructions, and maintainer guidelines.
 
@@ -232,7 +230,7 @@ Ensure your Azure CLI is logged in and your subscription context is set correctl
 
    ```sh
    # Navigate to the terraform directory
-   cd ./full-single-node-cluster/terraform
+   cd ./full-multi-node-cluster/terraform
    ```
 
 2. Set up required environment variables:
@@ -309,7 +307,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
 
    ```sh
    # Navigate to the bicep directory
-   cd ./full-single-node-cluster/bicep
+   cd ./full-multi-node-cluster/bicep
    ```
 
 2. Use the Azure CLI to get the Custom Locations OID:
@@ -344,7 +342,7 @@ Bicep provides an alternative Infrastructure as Code (IaC) approach that's nativ
    Edit the generated `main.bicepparam` file to customize your deployment parameters:
 
    ```bicep
-   // Parameters for full-single-node-cluster blueprint
+   // Parameters for full-multi-node-cluster blueprint
    using './main.bicep'
 
    // Required parameters for the common object
