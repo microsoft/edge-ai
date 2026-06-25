@@ -14,8 +14,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    env:
-      CARGO_REGISTRIES_AIO_SDKS_TOKEN: ${{ secrets.CARGO_REGISTRIES_AIO_SDKS_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -152,16 +150,6 @@ jobs:
           rustup toolchain install stable --profile minimal --component llvm-tools-preview
           rustup default stable
 
-      - name: Configure aio-sdks registry authentication
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -n "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]]; then
-            cargo login --registry aio-sdks "${CARGO_REGISTRIES_AIO_SDKS_TOKEN}"
-          else
-            echo "CARGO_REGISTRIES_AIO_SDKS_TOKEN is not set; crates that require aio-sdks will be skipped."
-          fi
-
       - name: Cache cargo registry and build
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -180,13 +168,7 @@ jobs:
       - name: Generate Cobertura coverage
         working-directory: ${{ matrix.crate }}
         shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -z "${CARGO_REGISTRIES_AIO_SDKS_TOKEN:-}" ]] && grep -v '^\s*#' Cargo.toml | grep -q 'registry = "aio-sdks"'; then
-            echo "Skipping ${{ matrix.crate }} (requires aio-sdks registry token)"
-            exit 0
-          fi
-          cargo llvm-cov --locked --cobertura --output-path coverage.xml
+        run: cargo llvm-cov --locked --cobertura --output-path coverage.xml
 
       - name: Upload to Codecov
         if: success()
