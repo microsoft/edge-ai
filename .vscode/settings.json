@@ -88,5 +88,13 @@
     "/Users/vscode/repos/prompts": true,
     ".copilot-tracking/prompts": true
   },
-  "rust-analyzer.linkedProjects": ["src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml", "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml", "src/500-application/514-wasm-msg-to-dss/operators/msg-to-dss-key/Cargo.toml", "src/500-application/514-wasm-msg-to-dss/operators/dss-enricher-key/Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["src/500-application/511-rust-embedded-wasm-provider/operators/custom-provider/Cargo.toml", "src/500-application/511-rust-embedded-wasm-provider/operators/map/Cargo.toml", "src/500-application/514-wasm-msg-to-dss/operators/msg-to-dss-key/Cargo.toml", "src/500-application/514-wasm-msg-to-dss/operators/dss-enricher-key/Cargo.toml", "src/500-application/515-wasm-expressions/operators/datetime/Cargo.toml"],
+  "azureFunctions.deploySubpath": "src/500-application/513-tiered-notification-service",
+  "azureFunctions.postDeployTask": "npm install (functions)",
+  "azureFunctions.projectLanguage": "JavaScript",
+  "azureFunctions.projectRuntime": "~4",
+  "debug.internalConsoleOptions": "neverOpen",
+  "azureFunctions.projectLanguageModel": 4,
+  "azureFunctions.projectSubpath": "src/500-application/513-tiered-notification-service",
+  "azureFunctions.preDeployTask": "npm prune (functions)"
 }

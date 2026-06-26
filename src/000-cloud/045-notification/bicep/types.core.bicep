@@ -1,6 +1,5 @@
-/*
-  Core Type Definitions
-*/
+metadata name = 'Notification Component Core Types'
+metadata description = 'Core type definitions for the Notification Component, including Common type.'
 
 @export()
 @description('Common settings for the components.')

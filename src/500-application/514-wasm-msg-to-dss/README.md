@@ -95,7 +95,7 @@ Because the lookup key is derived from attacker-influenceable message content, `
 
 ### Step 1: Deploy the Full Stack
 
-Deploy the [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint using [dataflow-graphs-msg-to-dss.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-msg-to-dss.tfvars.example) as the starting point for your `terraform.tfvars`.
+Deploy the [Full Multi-Node Cluster](../../../blueprints/full-multi-node-cluster/) blueprint using [dataflow-graphs-msg-to-dss.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs-msg-to-dss.tfvars.example) as the starting point for your `terraform.tfvars`.
 The example defines Pipeline A for the write side (`msg-to-dss-key`) and an optional Pipeline B for the read and enrich side (`dss-enricher-key`). Remove the second pipeline from `dataflow_graphs` to deploy the write side only.
 
 This creates the complete infrastructure including ACR, the AIO cluster, and the dataflow graphs referencing the WASM modules. The graphs will temporarily reference ACR artifacts that do not yet exist. They enter a pending state until Steps 2-4 publish the modules.

@@ -33,7 +33,7 @@ The connector enables Azure IoT Operations to maintain persistent connections to
 and forward real-time events to destinations such as MQTT brokers or state stores as they occur.
 
 > **💡 RECOMMENDED APPROACH**: For production deployments, use the Terraform-based configuration in
-> the `full-single-node-cluster` blueprint with the `sse-connector-assets.tfvars.example` file as a
+> the `full-multi-node-cluster` blueprint with the `sse-connector-assets.tfvars.example` file as a
 > reference for configuring your SSE connector assets.
 
 ## What is Server-Sent Events (SSE)?
@@ -93,10 +93,10 @@ For Azure IoT Operations deployments, the component uses:
 
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
-- **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with SSE connector variables
+- **Blueprint Deployment**: Use `full-multi-node-cluster` blueprint with SSE connector variables
 - **Terraform**: Version 1.12.0 or later
 - **Azure Subscription**: Active subscription with appropriate permissions
-- **Example Configuration**: Reference `blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example`
+- **Example Configuration**: Reference `blueprints/full-multi-node-cluster/terraform/sse-connector-assets.tfvars.example`
 
 ## Quick Start
 
@@ -190,7 +190,7 @@ INFO -   ALERT_DLQC: 10
 
 ### Setup Prerequisites
 
-1. Deploy the `full-single-node-cluster` blueprint (or another blueprint with IoT Operations)
+1. Deploy the `full-multi-node-cluster` blueprint (or another blueprint with IoT Operations)
 2. Ensure SSE endpoints are accessible from the cluster
 
 ### Terraform Configuration
@@ -198,7 +198,7 @@ INFO -   ALERT_DLQC: 10
 Create or modify `sse-connector-assets.tfvars` in the blueprint:
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Copy example configuration
 cp sse-connector-assets.tfvars.example sse-connector-assets.tfvars
@@ -235,7 +235,7 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
          --cafile /var/run/certs/ca.crt --topic 'events/#' -v"
 ```
 
-**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example`
+**Configuration Reference**: See `blueprints/full-multi-node-cluster/terraform/sse-connector-assets.tfvars.example`
 for a complete example of all available configuration options.
 
 ## SSE vs REST Connectors
@@ -513,7 +513,7 @@ If migrating from legacy SSE connector deployment scripts:
 - [Akri Connector Framework](https://github.com/Azure/iot-operations-sdks)
 - [Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 - [REST HTTP Connector](../505-akri-rest-http-connector/README.md) - Similar connector for polling endpoints
-- [Blueprint Documentation](../../../blueprints/full-single-node-cluster/README.md)
+- [Blueprint Documentation](../../../blueprints/full-multi-node-cluster/README.md)
 
 ## Contributing
 
@@ -530,7 +530,7 @@ When contributing to this component:
 For issues and questions:
 
 - Check the troubleshooting section above
-- Review `blueprints/full-single-node-cluster/terraform/sse-connector-assets.tfvars.example`
+- Review `blueprints/full-multi-node-cluster/terraform/sse-connector-assets.tfvars.example`
   for configuration reference
 - Review Azure IoT Operations documentation
 - File issues in the project repository

@@ -1,6 +1,5 @@
-use azure_iot_operations_mqtt::control_packet::QoS;
-use azure_iot_operations_mqtt::interface::MqttPubSub;
-use azure_iot_operations_mqtt::session::{SessionConnectionMonitor, SessionManagedClient};
+use azure_iot_operations_mqtt::control_packet::{PublishProperties, TopicName};
+use azure_iot_operations_mqtt::session::{SessionManagedClient, SessionMonitor};
 use std::time::Duration;
 use tokio::time::timeout;
 use tokio_retry::{strategy::ExponentialBackoff, Retry};
@@ -13,7 +12,7 @@ pub const DEFAULT_TIMEOUT: u64 = 10; // in seconds;
 /// Publishes MQTT messages with retry logic and error handling using SessionManagedClient.
 pub async fn mqtt_publish_message(
     client: SessionManagedClient,
-    monitor: SessionConnectionMonitor,
+    monitor: SessionMonitor,
     topic: String,
     payload: String,
 ) {
@@ -30,7 +29,7 @@ pub async fn mqtt_publish_message(
 
     let topic_for_log = topic.clone();
 
-    let publish_result = Retry::spawn(retry_strategy, {
+    let publish_result = Retry::start(retry_strategy, {
         let topic = topic.clone();
         let payload = payload.clone();
         let client = client.clone();
@@ -45,7 +44,29 @@ pub async fn mqtt_publish_message(
                 match timeout(Duration::from_secs(DEFAULT_TIMEOUT), monitor.connected()).await {
                     Ok(_) => {
                         event!(Level::INFO, "Connected to MQTT broker.");
-                        match client.publish(&topic, QoS::AtLeastOnce, false, payload.clone()).await {
+                        let topic_name = match TopicName::new(&topic) {
+                            Ok(topic_name) => topic_name,
+                            Err(e) => {
+                                event!(
+                                    Level::ERROR,
+                                    error_code = "MQTT_INVALID_TOPIC",
+                                    "Invalid MQTT topic '{}': {:?}",
+                                    topic,
+                                    e
+                                );
+                                return Err(());
+                            }
+                        };
+
+                        match client
+                            .publish_qos1(
+                                topic_name,
+                                false,
+                                payload.clone(),
+                                PublishProperties::default(),
+                            )
+                            .await
+                        {
                             Ok(comp_token) => match comp_token.await {
                                 Ok(_) => {
                                     event!(
