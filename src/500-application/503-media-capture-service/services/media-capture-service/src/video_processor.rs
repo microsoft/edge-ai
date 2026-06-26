@@ -5,7 +5,7 @@ use tracing::{info, warn, debug, error};
 use chrono::Utc;
 use opencv::core::Size;
 use azure_iot_operations_mqtt::{
-    MqttConnectionSettingsBuilder,
+    aio::connection_settings::MqttConnectionSettingsBuilder,
     session::{Session, SessionOptionsBuilder},
 };
 use uuid::Uuid;

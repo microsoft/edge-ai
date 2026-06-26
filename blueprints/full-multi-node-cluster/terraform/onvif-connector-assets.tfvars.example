@@ -46,15 +46,15 @@ namespaced_devices = [
           address       = "http://192.168.1.100/onvif/device_service"
           version       = "21.06"
           authentication = {
-            method = "UsernamePassword"  // Options: Anonymous, UsernamePassword, X509Certificate
-            username_password_ref = {
-              secret_name = "warehouse-camera-credentials"
-              username_ref = "username"
-              password_ref = "password"
+            method = "UsernamePassword" // Options: Anonymous, UsernamePassword, X509Certificate
+            usernamePasswordCredentials = {
+              usernameSecretName = "warehouse-camera-username"
+              passwordSecretName = "warehouse-camera-password"
             }
           }
           trustSettings = {
-            acceptUntrustedServerCertificates = false  // Set to true for self-signed certs (dev only)
+            // Name of the config map holding the trusted CA certificate(s) for the endpoint
+            trustList = "warehouse-camera-ca"
           }
         }
       }
@@ -74,10 +74,9 @@ namespaced_devices = [
           version       = "21.06"
           authentication = {
             method = "UsernamePassword"
-            username_password_ref = {
-              secret_name = "perimeter-camera-credentials"
-              username_ref = "username"
-              password_ref = "password"
+            usernamePasswordCredentials = {
+              usernameSecretName = "perimeter-camera-username"
+              passwordSecretName = "perimeter-camera-password"
             }
           }
           trustSettings = null
@@ -441,7 +440,7 @@ namespaced_assets = [
  * 7. Security:
  *    - Store credentials in Kubernetes secrets (not in this file)
  *    - Use TLS/HTTPS for production deployments
- *    - Set acceptUntrustedServerCertificates=false except for development
+ *    - Set trustSettings.trustList to a trusted CA config map for production; use null only for development
  *    - Implement network segmentation for camera VLANs
  *
  * 8. Testing:

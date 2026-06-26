@@ -60,6 +60,7 @@ mcap
 mosquitto
 mqtt
 mqttui
+mqttv5
 mrpc
 Multiprotocol
 OID

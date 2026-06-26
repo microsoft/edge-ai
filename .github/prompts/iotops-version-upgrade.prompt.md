@@ -552,7 +552,7 @@ Update any blueprints and CI configurations that use the `110-iot-ops` component
 
 **Plan Entry Format**:
 ```markdown
-- [ ] Update the `110-iot-ops` component reference in `blueprints/full-single-node-cluster/terraform/main.tf` to pass the new required parameter `schema_registry_id = module.adr_schema_registry.id`.
+- [ ] Update the `110-iot-ops` component reference in `blueprints/full-multi-node-cluster/terraform/main.tf` to pass the new required parameter `schema_registry_id = module.adr_schema_registry.id`.
 - [ ] Remove explicit `log_level = "info"` parameter from `src/100-edge/110-iot-ops/ci/terraform/main.tf` to use new default value of `"debug"`.
 ```
 

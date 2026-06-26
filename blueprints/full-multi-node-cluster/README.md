@@ -27,7 +27,7 @@ Please follow general blueprint deployment and recommendations from blueprints [
 
 This blueprint deploys:
 
-1. Multiple Linux VM hosts in Azure (default: 3 nodes) **or** uses existing Azure Arc-enabled servers
+1. One or more Linux VM hosts in Azure (default: 1 node; set `host_machine_count` higher for multi-node) **or** uses existing Azure Arc-enabled servers
 2. A K3s Kubernetes cluster with one server node and multiple worker nodes
 3. Azure Arc connection for the cluster
 4. Cloud resources required by AIO (Key Vault, Storage, etc.)
@@ -42,6 +42,28 @@ The resulting architecture provides a resilient, high-availability edge-to-cloud
 |-----------------------|-----------------------------------|---------------------------------------------------------|
 | **Azure VMs**         | Creates new Linux VMs in Azure    | Development, testing, proof-of-concept                  |
 | **Azure Arc Servers** | Uses existing Arc-enabled servers | Production edge deployments, on-premises infrastructure |
+
+### Migration Notes for Existing Multi-node Deployments
+
+This blueprint is now the single canonical cluster blueprint (the standalone `full-single-node-cluster` was consolidated here). If you previously deployed `full-multi-node-cluster`, the following default and parameter changes are **breaking** and require a reviewed `terraform plan` / `what-if` before applying:
+
+| Input                                     | Framework         | Old   | New  | Effect if you keep the default           |
+|-------------------------------------------|-------------------|-------|------|------------------------------------------|
+| `host_machine_count` / `hostMachineCount` | Terraform / Bicep | 3     | 1    | Two worker nodes are destroyed           |
+| `aks_should_enable_private_cluster`       | Terraform         | false | true | AKS control plane / networking recreated |
+| `should_deploy_resource_sync_rules`       | Terraform         | false | true | Resource sync rules deployed             |
+
+To preserve your existing multi-node topology, pin the prior values explicitly:
+
+```hcl
+host_machine_count                = 3
+aks_should_enable_private_cluster = false
+should_deploy_resource_sync_rules = false
+```
+
+Removed Bicep parameters: `shouldEnableNatGateway` and `shouldDisableDefaultOutboundAccess` are collapsed into a single `shouldEnableManagedOutboundAccess` (default `true`). Update `.bicepparam` files that set the old toggles.
+
+New inputs are additive with single-node-safe defaults (`should_use_arc_machines = false`, notification gated by `should_deploy_notification = false`) and do not change existing infrastructure unless opted into.
 
 ## Implementation Options
 
@@ -244,7 +266,6 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 
 ## Related Blueprints
 
-- **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment on a single-node cluster
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
 

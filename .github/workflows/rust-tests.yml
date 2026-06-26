@@ -167,7 +167,8 @@ jobs:
 
       - name: Generate Cobertura coverage
         working-directory: ${{ matrix.crate }}
-        run: cargo llvm-cov --cobertura --output-path coverage.xml
+        shell: bash
+        run: cargo llvm-cov --locked --cobertura --output-path coverage.xml
 
       - name: Upload to Codecov
         if: success()

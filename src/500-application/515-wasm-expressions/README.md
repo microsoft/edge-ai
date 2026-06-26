@@ -203,7 +203,7 @@ The message returned to the destination topic, with the two derived fields appen
 }
 ```
 
-A ready-to-apply dataflow graph that wires this pipeline is in [dataflow-graphs-datetime.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-datetime.tfvars.example).
+A ready-to-apply dataflow graph that wires this pipeline is in [dataflow-graphs-datetime.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs-datetime.tfvars.example).
 
 ## Updating the Version
 

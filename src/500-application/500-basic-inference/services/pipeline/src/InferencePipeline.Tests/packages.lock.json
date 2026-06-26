@@ -4,30 +4,30 @@
     "net9.0": {
       "Azure.Iot.Operations.Mqtt": {
         "type": "Direct",
-        "requested": "[0.10.0, )",
-        "resolved": "0.10.0",
-        "contentHash": "maEmLdLQuV44hMkJWROeSEvlXf71fye4KhAHEuiwJskW8/5Tuj3qVYuAnIjGJJNmoiiKDBtJ4CFaFrYfaZG4+A==",
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "f0vfr6Q6Cx/UfYOVrNCKCbU85fPAHxWEM05KWbtw0edYLUplBkXYyL+3Xox3kAOLr9Ufafse03P/KKnSu8h+cg==",
         "dependencies": {
-          "Azure.Iot.Operations.Protocol": "0.10.0",
-          "MQTTnet": "5.0.1.1416"
+          "Azure.Iot.Operations.Protocol": "1.2.0",
+          "MQTTnet": "5.1.0.1559"
         }
       },
       "Azure.Iot.Operations.Protocol": {
         "type": "Direct",
-        "requested": "[0.10.0, )",
-        "resolved": "0.10.0",
-        "contentHash": "A0j1/6aC4bvZXwNMmIhDh+IxAkTkwxsLD1Am35hueHMeMeF797+HF1IOBnm1v9VbHp4TE+QhowPcAi0t7fYxHw==",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "pcWR/5gLvqPlaS8SfEiMkUwUeJI22Q7UA1r8DRZ+E/6fv7CunIc/9wU5dEY7i74jpDwjSst2/7oXwjw1iM5p+g==",
         "dependencies": {
           "System.IdentityModel.Tokens.Jwt": "7.6.2"
         }
       },
       "Azure.Iot.Operations.Services": {
         "type": "Direct",
-        "requested": "[0.10.1, )",
-        "resolved": "0.10.1",
-        "contentHash": "aFA8m2VpwB1NsnjKj/vOGDLVjU1IaJTVaCFujCcoNWnLDFLeb2/WONseMUCezUTSHe3S5OwJ/IVbJfC4d9Xglw==",
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "RQc6HTQO8Rpnj/j1iFqhlLX9fPwyxqgzGNRCmjDWpo4iFxwzyq3kDngw+3JPhSXkPC3LFzpLiUap4d0sDyx37w==",
         "dependencies": {
-          "Azure.Iot.Operations.Protocol": "0.10.0",
+          "Azure.Iot.Operations.Protocol": "1.2.0",
           "Macross.Json.Extensions": "3.0.0"
         }
       },
@@ -439,8 +439,8 @@
       },
       "MQTTnet": {
         "type": "Transitive",
-        "resolved": "5.0.1.1416",
-        "contentHash": "ONYieEMaHiIei5dAtHXywnfJGhmrd5Av5sNJSQERp6AtZdPk3xxjCR6Cv0C5RUr/XbLeHO4/HQ0Rc2bQ5NF5Mw=="
+        "resolved": "5.1.0.1559",
+        "contentHash": "9mkk0H+76CToIzp9ru5Uj5BuC3P5hQdkhvXM+CLmmTDdZWqajjICCHuUMbDd1yVBt9BWL77Rvzt0A+/PA4WMCA=="
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
@@ -538,9 +538,9 @@
       "inferencepipeline": {
         "type": "Project",
         "dependencies": {
-          "Azure.IoT.Operations.Mqtt": "[0.10.0, )",
-          "Azure.IoT.Operations.Protocol": "[0.10.0, )",
-          "Azure.IoT.Operations.Services": "[0.10.1, )",
+          "Azure.IoT.Operations.Mqtt": "[1.1.0, )",
+          "Azure.IoT.Operations.Protocol": "[1.2.0, )",
+          "Azure.IoT.Operations.Services": "[1.2.0, )",
           "Microsoft.Extensions.DependencyInjection": "[9.0.2, )",
           "Microsoft.Extensions.Hosting": "[9.0.2, )"
         }

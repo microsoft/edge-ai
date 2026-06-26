@@ -31,7 +31,7 @@ You are an expert in Terraform and Infrastructure as Code (IaC) management.
 
 This prompt requires the following input variables:
 
-- `${input:blueprint}`: Blueprint name (e.g., `full-single-node-cluster`)
+- `${input:blueprint}`: Blueprint name (e.g., `full-multi-node-cluster`)
 - `${input:toPath}`: Target directory path (supports absolute paths, relative paths, and external directories)
 
 ### Input Validation

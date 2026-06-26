@@ -138,7 +138,7 @@ Before coding, define:
 
    ```bash
    # Create from template
-   cp ../full-single-node-cluster/README.md ./README.md
+   cp ../full-multi-node-cluster/README.md ./README.md
    # Edit to describe your blueprint
    code README.md
    ```
@@ -309,7 +309,7 @@ Selected blueprints include comprehensive test suites using Go and the Terratest
 **Available Test Infrastructure:**
 
 - **Shared utilities**: [src/900-tools-utilities/904-test-utilities/](https://github.com/microsoft/edge-ai/tree/main/src/900-tools-utilities/904-test-utilities/) - Reusable test functions for all blueprints
-- **Reference implementation**: [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/) - Complete test suite example
+- **Reference implementation**: [blueprints/full-multi-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-multi-node-cluster/tests/) - Complete test suite example
 
 ### Creating Tests for Your Blueprint
 
@@ -333,19 +333,19 @@ Selected blueprints include comprehensive test suites using Go and the Terratest
 
    Define a struct matching your blueprint's outputs with framework-specific tags.
 
-   **See:** [full-single-node-cluster/tests/outputs.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/outputs.go) for pattern
+   **See:** [full-multi-node-cluster/tests/outputs.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-multi-node-cluster/tests/outputs.go) for pattern
 
 4. **Create contract tests**:
 
    Create `contract_terraform_test.go` and `contract_bicep_test.go` that validate declared outputs match your struct.
 
-   **See:** [full-single-node-cluster/tests/contract_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/contract_terraform_test.go)
+   **See:** [full-multi-node-cluster/tests/contract_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-multi-node-cluster/tests/contract_terraform_test.go)
 
 5. **Create deployment tests**:
 
    Create `deploy_terraform_test.go` and `deploy_bicep_test.go` for end-to-end validation.
 
-   **See:** [full-single-node-cluster/tests/deploy_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/tests/deploy_terraform_test.go)
+   **See:** [full-multi-node-cluster/tests/deploy_terraform_test.go](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-multi-node-cluster/tests/deploy_terraform_test.go)
 
 6. **Add helper scripts**:
 

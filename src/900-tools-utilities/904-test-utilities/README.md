@@ -63,7 +63,7 @@ Extracts declared output names from Terraform configuration using `terraform-doc
 
 **Requirements:** `terraform-docs` installed and in PATH, valid `.tf` files in directory
 
-**See:** [contract_terraform_test.go](../../../blueprints/full-single-node-cluster/tests/contract_terraform_test.go) for usage example
+**See:** [contract_terraform_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_terraform_test.go) for usage example
 
 #### `GetBicepDeclaredOutputs(t, bicepDir) []string`
 
@@ -78,7 +78,7 @@ Extracts declared output names from Bicep configuration using `az bicep build`.
 
 **Requirements:** Azure CLI with Bicep installed, `main.bicep` file in directory
 
-**See:** [contract_bicep_test.go](../../../blueprints/full-single-node-cluster/tests/contract_bicep_test.go) for usage example
+**See:** [contract_bicep_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_bicep_test.go) for usage example
 
 #### `ValidateOutputContract(t, declaredOutputs, requiredOutputs, framework)`
 
@@ -93,7 +93,7 @@ Validates that all required outputs are declared in IaC configuration. Fails tes
 
 **Behavior:** Passes if all required outputs are declared, fails with detailed report if any are missing
 
-**See:** [contract_terraform_test.go](../../../blueprints/full-single-node-cluster/tests/contract_terraform_test.go) and [validation.go](../../../blueprints/full-single-node-cluster/tests/validation.go) for implementation
+**See:** [contract_terraform_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_terraform_test.go) and [validation.go](../../../blueprints/full-multi-node-cluster/tests/validation.go) for implementation
 
 #### `ValidateTerraformContract(t, terraformDir, requiredOutputs)`
 
@@ -103,7 +103,7 @@ Convenience function combining `GetTerraformDeclaredOutputs` and `ValidateOutput
 
 **Equivalent to:** Calling `GetTerraformDeclaredOutputs` followed by `ValidateOutputContract`
 
-**See:** [contract_terraform_test.go](../../../blueprints/full-single-node-cluster/tests/contract_terraform_test.go) for usage
+**See:** [contract_terraform_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_terraform_test.go) for usage
 
 #### `ValidateBicepContract(t, bicepDir, requiredOutputs)`
 
@@ -124,7 +124,7 @@ Automatically converts required output names from snake_case to camelCase for Bi
 
 **Behavior:** Converts required outputs to camelCase, then validates against Bicep declarations
 
-**See:** [contract_bicep_test.go](../../../blueprints/full-single-node-cluster/tests/contract_bicep_test.go) for usage
+**See:** [contract_bicep_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_bicep_test.go) for usage
 
 #### `SnakeToCamelCase(s string) string`
 
@@ -235,7 +235,7 @@ Executes complete Terraform deployment workflow: init, apply, and optional destr
 
 **Note:** Read `shouldCleanup` from `CLEANUP_RESOURCES` environment variable to avoid accidental deletion
 
-**See:** [deploy_terraform_test.go](../../../blueprints/full-single-node-cluster/tests/deploy_terraform_test.go) for complete usage pattern
+**See:** [deploy_terraform_test.go](../../../blueprints/full-multi-node-cluster/tests/deploy_terraform_test.go) for complete usage pattern
 
 ### Bicep Deployment
 
@@ -279,7 +279,7 @@ Executes complete Bicep deployment workflow at subscription scope with optional 
 - Cleanup deletes **entire resource group** and all resources
 - Converts Bicep output format to flat key-value pairs for compatibility
 
-**See:** [deploy_bicep_test.go](../../../blueprints/full-single-node-cluster/tests/deploy_bicep_test.go) for complete usage pattern
+**See:** [deploy_bicep_test.go](../../../blueprints/full-multi-node-cluster/tests/deploy_bicep_test.go) for complete usage pattern
 
 #### `GetBicepOutputs(t, deploymentName) map[string]any`
 
@@ -298,7 +298,7 @@ Use `SKIP_BICEP_DEPLOYMENT=true` and `BICEP_DEPLOYMENT_NAME=<name>` environment 
 
 **Requirements:** Azure CLI authenticated, deployment exists at subscription level, exact deployment name
 
-**See:** [deploy_bicep_test.go](../../../blueprints/full-single-node-cluster/tests/deploy_bicep_test.go) for conditional deployment pattern
+**See:** [deploy_bicep_test.go](../../../blueprints/full-multi-node-cluster/tests/deploy_bicep_test.go) for conditional deployment pattern
 
 ---
 
@@ -333,25 +333,25 @@ Executes `az group delete` to remove resource group and all contained resources.
 
 ## Usage in Blueprint Tests
 
-The [full-single-node-cluster tests](../../../blueprints/full-single-node-cluster/tests/) directory provides a complete reference implementation.
+The [full-multi-node-cluster tests](../../../blueprints/full-multi-node-cluster/tests/) directory provides a complete reference implementation.
 
 ### Step 1: Define Blueprint Outputs
 
 Create `outputs.go` with struct using `tf` and `bicep` tags to map framework-specific output names.
 
-**See:** [outputs.go](../../../blueprints/full-single-node-cluster/tests/outputs.go) for struct definition pattern
+**See:** [outputs.go](../../../blueprints/full-multi-node-cluster/tests/outputs.go) for struct definition pattern
 
 ### Step 2: Create Contract Tests
 
 Create test files calling `ValidateTerraformContract` and `ValidateBicepContract` with required output keys.
 
-**See:** [contract_terraform_test.go](../../../blueprints/full-single-node-cluster/tests/contract_terraform_test.go) and [contract_bicep_test.go](../../../blueprints/full-single-node-cluster/tests/contract_bicep_test.go)
+**See:** [contract_terraform_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_terraform_test.go) and [contract_bicep_test.go](../../../blueprints/full-multi-node-cluster/tests/contract_bicep_test.go)
 
 ### Step 3: Create Deployment Tests
 
 Create test files using `DeployTerraform` and `DeployBicep` with variables/parameters, then run validations.
 
-**See:** [deploy_terraform_test.go](../../../blueprints/full-single-node-cluster/tests/deploy_terraform_test.go) and [deploy_bicep_test.go](../../../blueprints/full-single-node-cluster/tests/deploy_bicep_test.go)
+**See:** [deploy_terraform_test.go](../../../blueprints/full-multi-node-cluster/tests/deploy_terraform_test.go) and [deploy_bicep_test.go](../../../blueprints/full-multi-node-cluster/tests/deploy_bicep_test.go)
 
 ---
 
@@ -397,7 +397,7 @@ Tests preserve resources by default for inspection. Set `CLEANUP_RESOURCES=true`
 
 Define framework-specific output names using `tf` and `bicep` struct tags mapping to same field.
 
-**See:** [outputs.go](../../../blueprints/full-single-node-cluster/tests/outputs.go) for tag pattern
+**See:** [outputs.go](../../../blueprints/full-multi-node-cluster/tests/outputs.go) for tag pattern
 
 ### 4. Naming Convention Handling
 
@@ -420,13 +420,13 @@ outputs.SecurityIdentity["key_vault_name"]       // Terraform: key_vault_name, B
 - **Bicep outputs:** camelCase (e.g., `deploymentSummary`)
 - **Struct tags:** Use snake_case, automatic conversion handles Bicep
 
-**See:** [outputs.tf](../../../blueprints/full-single-node-cluster/terraform/outputs.tf) and [main.bicep](../../../blueprints/full-single-node-cluster/bicep/main.bicep)
+**See:** [outputs.tf](../../../blueprints/full-multi-node-cluster/terraform/outputs.tf) and [main.bicep](../../../blueprints/full-multi-node-cluster/bicep/main.bicep)
 
 ### 5. Implement Reusable Validation Functions
 
 Create shared validation functions for common infrastructure testing patterns.
 
-**See:** [validation.go](../../../blueprints/full-single-node-cluster/tests/validation.go) and [setup.go](../../../blueprints/full-single-node-cluster/tests/setup.go)
+**See:** [validation.go](../../../blueprints/full-multi-node-cluster/tests/validation.go) and [setup.go](../../../blueprints/full-multi-node-cluster/tests/setup.go)
 
 ---
 
@@ -450,12 +450,12 @@ Create shared validation functions for common infrastructure testing patterns.
 
 ## Complete Working Example
 
-The [full-single-node-cluster tests](../../../blueprints/full-single-node-cluster/tests/) directory provides a complete, production-ready reference implementation.
+The [full-multi-node-cluster tests](../../../blueprints/full-multi-node-cluster/tests/) directory provides a complete, production-ready reference implementation.
 
 ### File Structure
 
 ```text
-blueprints/full-single-node-cluster/tests/
+blueprints/full-multi-node-cluster/tests/
 ├── outputs.go                     # BlueprintOutputs struct with tf/bicep tags
 ├── contract_terraform_test.go     # Terraform contract validation
 ├── contract_bicep_test.go         # Bicep contract validation
@@ -471,6 +471,6 @@ blueprints/full-single-node-cluster/tests/
 
 ## Additional Resources
 
-- [Blueprint Test README](../../../blueprints/full-single-node-cluster/tests/README.md) - Complete testing guide
+- [Blueprint Test README](../../../blueprints/full-multi-node-cluster/tests/README.md) - Complete testing guide
 - [Terratest Documentation](https://terratest.gruntwork.io/) - Underlying test framework
 - [Azure CLI Bicep Reference](https://learn.microsoft.com/cli/azure/bicep) - Bicep CLI commands
