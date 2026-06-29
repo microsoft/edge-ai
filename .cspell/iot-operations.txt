@@ -53,6 +53,7 @@ iotedge
 iotoperations
 iotops
 junitxml
+keynotify
 kubeletidentity
 Kyverno
 libmodbus
