@@ -1,5 +1,9 @@
 ---
 # Default values for chat-with-your-factory
+
+# Session state (sessions, SSE registry, SSE/WS tickets) is in-memory and
+# process-local. replicaCount MUST remain 1. Scaling beyond 1 replica requires
+# an external session store (e.g. Redis) and is not supported in this release.
 replicaCount: 1
 
 image:
