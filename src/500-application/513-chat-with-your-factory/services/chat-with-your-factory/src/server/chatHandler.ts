@@ -9,6 +9,14 @@ import { sseRegistry } from './sseRegistry.js'
 
 const AGENT_BACKEND = process.env.AGENT_BACKEND || 'foundry'
 
+// Foundry run states that warrant continued polling. Module-scoped and frozen
+// so it isn't rebuilt per request and can't be mutated.
+const POLL_STATUSES: ReadonlySet<string> = new Set(['queued', 'in_progress', 'requires_action'])
+// Hard cap on the run-polling loop. Express 5 has no request timeout, so an
+// upstream stall (quota pause, hung run) would otherwise hold the HTTP socket
+// and a worker open indefinitely.
+const MAX_POLL_MS = 120_000
+
 export interface DispatchContext {
   userId: string
   displayName?: string
@@ -121,7 +129,11 @@ export async function dispatchChat(
     await agentsClient.messages.create(threadId, 'user', text)
     let run = await agentsClient.runs.create(threadId, agentId)
 
-    while (['queued', 'in_progress', 'requires_action'].includes(run.status)) {
+    const pollDeadline = Date.now() + MAX_POLL_MS
+    while (POLL_STATUSES.has(run.status)) {
+      if (Date.now() > pollDeadline) {
+        throw new Error(`Agent run timed out after ${MAX_POLL_MS / 1000} s`)
+      }
       await new Promise(r => setTimeout(r, 1000))
       run = await agentsClient.runs.get(threadId, run.id)
 
