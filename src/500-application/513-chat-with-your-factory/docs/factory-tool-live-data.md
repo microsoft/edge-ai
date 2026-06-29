@@ -1,7 +1,7 @@
 ---
 title: Factory Tool Live-Data Path
 description: How live oven telemetry is added to the factory ontology without changing the agent tool interface
-ms.date: 2026-06-15
+ms.date: 2026-06-29
 ms.topic: concept
 ---
 

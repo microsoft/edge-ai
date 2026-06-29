@@ -1,7 +1,7 @@
 ---
 title: Factory Tool Grounding
 description: Entity catalog and canonical sample questions for the query_factory_ontology tool
-ms.date: 2026-06-15
+ms.date: 2026-06-29
 ms.topic: reference
 ---
 

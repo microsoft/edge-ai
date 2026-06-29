@@ -1,7 +1,7 @@
 ---
 title: Chat With Factory
 description: A voice-enabled AI agent web application for industrial environments powered by Azure AI Foundry Agents or Copilot Studio
-ms.date: 2026-04-29
+ms.date: 2026-06-29
 ms.topic: overview
 keywords:
   - chat with factory
