@@ -4,7 +4,7 @@
 # Creates a .env file with all required environment variables.
 # Uses current environment variables as values, with defaults for unset variables.
 
-set -e
+set -euo pipefail
 
 CURRENT_DIR=$(dirname "$0")
 
