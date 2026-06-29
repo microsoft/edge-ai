@@ -12,7 +12,7 @@ export default [
       'docs/assets/js/temp-*.js',
       // Self-contained service with its own eslint.config.js and dependencies
       // (typescript-eslint, globals) that are not installed at the repo root.
-      'src/500-application/513-chat-with-your-factory/services/chat-with-your-factory/**'
+      'src/500-application/516-chat-with-your-factory/services/chat-with-your-factory/**'
     ]
   },
   {

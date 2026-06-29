@@ -727,7 +727,7 @@ and exposes port `3978`.
 
 ### Docker Compose Quick Start
 
-From `src/500-application/513-chat-with-your-factory/` run:
+From `src/500-application/516-chat-with-your-factory/` run:
 
 ```bash
 docker compose up --build
@@ -867,7 +867,7 @@ Create the dedicated namespace first (or rely on `--create-namespace` in the com
 kubectl create namespace chat-with-your-factory
 ```
 
-From `src/500-application/513-chat-with-your-factory/` run:
+From `src/500-application/516-chat-with-your-factory/` run:
 
 ```bash
 helm upgrade --install chat-with-your-factory ./charts/chat-with-your-factory \
