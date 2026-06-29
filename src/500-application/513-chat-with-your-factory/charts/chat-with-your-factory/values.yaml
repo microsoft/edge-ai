@@ -8,8 +8,10 @@ replicaCount: 1
 
 image:
   repository: your-registry.azurecr.io/chat-with-your-factory
-  pullPolicy: Always
-  tag: "latest"
+  pullPolicy: IfNotPresent
+  # No default tag: operators must supply an explicit, auditable version at
+  # deploy time (e.g. --set image.tag=1.2.3). Rendering fails when unset.
+  tag: ""
 
 imagePullSecrets:
   - name: acr-auth
