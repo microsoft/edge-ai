@@ -1,4 +1,4 @@
-FROM node:22-slim AS builder
+FROM node:22-slim@sha256:813a7480f28fdadac1f7f5c824bcdad435b5bc1322a5968bbbdef8d058f9dff4 AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN npx esbuild src/client/index.tsx \
     --outdir=public/dist --jsx=automatic --minify \
     --define:__SPEECH_PROVIDER__="\"${SPEECH_PROVIDER}\""
 
-FROM node:22-slim AS runtime
+FROM node:22-slim@sha256:813a7480f28fdadac1f7f5c824bcdad435b5bc1322a5968bbbdef8d058f9dff4 AS runtime
 
 WORKDIR /app
 
