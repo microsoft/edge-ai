@@ -24,6 +24,17 @@ The app supports three configurable agent backends:
 
 Set `AGENT_BACKEND` in `.env` to `copilotstudio`, `foundry`, or `directline` to choose.
 
+## Prerequisites
+
+* Azure subscription with sufficient quota
+* Edge cluster, ACR, and Azure AI Foundry deployed via the
+  [full-multi-node-cluster](../../../blueprints/full-multi-node-cluster/) blueprint
+* Microsoft Fabric workspace deployed via the
+  [fabric](../../../blueprints/fabric/) blueprint
+* CORA/CORAX ontology provisioned into that workspace via
+  [033-fabric-ontology](../../000-cloud/033-fabric-ontology/README.md)
+* `kubectl` and `helm` installed locally
+
 ## Factory Ontology Tool
 
 When using the Foundry backend, the agent is provisioned with a read-only
@@ -37,7 +48,7 @@ the result back to Foundry.
 * Sample questions and the seed entity catalog: [docs/factory-tool-grounding.md](docs/factory-tool-grounding.md).
 * Future live-data path (interface-stable): [docs/factory-tool-live-data.md](docs/factory-tool-live-data.md).
 
-### Prerequisites
+### Tool Prerequisites
 
 * Provision the agent with `npm run provision:agent` (attaches the tool).
 * Set the Fabric connection env vars: `FABRIC_WORKSPACE_ID` + `FABRIC_LAKEHOUSE_ID`
