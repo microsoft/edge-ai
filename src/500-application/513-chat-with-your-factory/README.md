@@ -861,11 +861,17 @@ Update or override these keys from `values.yaml`:
 
 ### Deploy
 
+Create the dedicated namespace first (or rely on `--create-namespace` in the command below):
+
+```bash
+kubectl create namespace chat-with-your-factory
+```
+
 From `src/500-application/513-chat-with-your-factory/` run:
 
 ```bash
 helm upgrade --install chat-with-your-factory ./charts/chat-with-your-factory \
-  --namespace default \
+  --namespace chat-with-your-factory \
   --create-namespace \
   --set image.repository=<registry>/chat-with-your-factory \
   --set image.tag=1.0.0
@@ -876,7 +882,7 @@ helm upgrade --install chat-with-your-factory ./charts/chat-with-your-factory \
 Check release status:
 
 ```bash
-helm status chat-with-your-factory --namespace default
+helm status chat-with-your-factory --namespace chat-with-your-factory
 ```
 
 Check pods and service:
@@ -898,13 +904,13 @@ Upgrade by changing image tag and re-running `helm upgrade --install`.
 Rollback to previous revision:
 
 ```bash
-helm rollback chat-with-your-factory 1 --namespace default
+helm rollback chat-with-your-factory 1 --namespace chat-with-your-factory
 ```
 
 ### Uninstall
 
 ```bash
-helm uninstall chat-with-your-factory --namespace default
+helm uninstall chat-with-your-factory --namespace chat-with-your-factory
 ```
 
 ### Helm Troubleshooting

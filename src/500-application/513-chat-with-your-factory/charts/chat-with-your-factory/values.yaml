@@ -19,7 +19,9 @@ imagePullSecrets:
 nameOverride: ""
 fullnameOverride: ""
 
-namespace: default
+# Dedicated namespace scopes RBAC, NetworkPolicies, and quotas to this workload.
+# Operators may override via --set namespace=<value>.
+namespace: chat-with-your-factory
 
 service:
   type: ClusterIP
