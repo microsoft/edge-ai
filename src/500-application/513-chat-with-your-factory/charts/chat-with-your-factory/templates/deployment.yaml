@@ -25,6 +25,11 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{ include "chat-with-your-factory.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           ports:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
