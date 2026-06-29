@@ -36,9 +36,9 @@ assertHostedAuthConfig()
 const app = express()
 const PORT = parseInt(process.env.PORT || '3978', 10)
 
-// App Service terminates TLS at a reverse proxy, so the real client IP arrives
-// in X-Forwarded-For. Trust the first hop so the rate limiter keys on the
-// caller rather than the proxy.
+// A reverse proxy (App Service or Kubernetes Ingress) terminates TLS and
+// forwards the real client IP in X-Forwarded-For. Trust one hop so the rate
+// limiter keys on the caller rather than the proxy address.
 app.set('trust proxy', 1)
 
 const credential = new DefaultAzureCredential()
