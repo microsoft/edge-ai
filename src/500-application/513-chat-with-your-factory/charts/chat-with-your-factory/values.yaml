@@ -37,11 +37,13 @@ env:
   # FOUNDRY_ENDPOINT: "https://<aif-account>.services.ai.azure.com/api/projects/<project>"
   # FOUNDRY_AGENT_ID: "<your-foundry-agent-id>"
   # AZURE_TENANT_ID: "<your-tenant-id>"
-  # Auth: set AUTH_REQUIRED="false" for a Teams-less standalone/demo deployment
-  # (synthesizes a dev user — insecure, non-production). Otherwise the server
-  # requires TEAMS_APP_ID and TEAMS_AUTH_AUDIENCES and will fail to start without them.
-  AUTH_REQUIRED: "false"
-  # SKIP_AUTH="true" only bypasses auth for true loopback traffic, not in-cluster requests.
+  # Auth: the chart fails closed by default — when AUTH_REQUIRED is unset the
+  # server requires TEAMS_APP_ID and TEAMS_AUTH_AUDIENCES and will not start
+  # without them. Uncomment AUTH_REQUIRED="false" ONLY for a Teams-less
+  # standalone/demo deployment; it synthesizes a dev user (insecure,
+  # non-production) and disables auth for ALL traffic reaching the pod, not just
+  # loopback. SKIP_AUTH="true" only bypasses auth for true loopback traffic.
+  # AUTH_REQUIRED: "false"
   # TEAMS_APP_ID: "<your-teams-app-id>"
   # TEAMS_AUTH_AUDIENCES: "<audience-1>,<audience-2>"
   # Factory ontology tool (query_factory_ontology): reads the RoboticsOntologyLH
