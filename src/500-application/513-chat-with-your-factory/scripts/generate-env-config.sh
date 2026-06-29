@@ -23,7 +23,7 @@ CPS_ENVIRONMENT_ID=${CPS_ENVIRONMENT_ID:-<power-platform-environment-id>}
 CPS_AGENT_IDENTIFIER=${CPS_AGENT_IDENTIFIER:-<copilot-schema-name>}
 
 PORT=${PORT:-3978}
-AUTH_REQUIRED=${AUTH_REQUIRED:-false}
+AUTH_REQUIRED=${AUTH_REQUIRED:-true}
 
 TEAMS_APP_ID=${TEAMS_APP_ID:-<your-teams-app-id>}
 TEAMS_AUTH_AUDIENCES=${TEAMS_AUTH_AUDIENCES:-<audience-1>,<audience-2>}
