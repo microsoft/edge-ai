@@ -89,9 +89,9 @@ jobs:
       # Add Python setup task
       - task: UsePythonVersion@0
         inputs:
-          versionSpec: '3.11'
+          versionSpec: '3.12'
           addToPath: true
-        displayName: "Setup Python 3.11"
+        displayName: "Setup Python 3.12"
 
       # Install terraform-docs using the shared script with new parameter format
       - bash: |
