@@ -185,12 +185,19 @@ export async function startConversation(
 
   connectWebSocket(sessionId, streamUrl)
 
-  // Send startConversation event to trigger Copilot Studio greeting
-  await sendActivity(sessionId, {
-    type: 'event',
-    name: 'startConversation',
-    from: { id: userId },
-  } as DirectLineActivity & { name: string })
+  // Send startConversation event to trigger Copilot Studio greeting. If this
+  // bootstrap send fails, tear down the just-created conversation and socket so
+  // a failed start can't leak a live session with open reconnect machinery.
+  try {
+    await sendActivity(sessionId, {
+      type: 'event',
+      name: 'startConversation',
+      from: { id: userId },
+    } as DirectLineActivity & { name: string })
+  } catch (err) {
+    closeConversation(sessionId)
+    throw err
+  }
 
   return conversationId
 }
