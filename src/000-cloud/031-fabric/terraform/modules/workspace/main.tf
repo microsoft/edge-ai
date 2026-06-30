@@ -5,5 +5,5 @@ resource "fabric_workspace" "this" {
   display_name                   = var.workspace_display_name
   description                    = var.workspace_description
   capacity_id                    = var.capacity_id
-  skip_capacity_state_validation = true
+  skip_capacity_state_validation = var.skip_capacity_state_validation
 }
