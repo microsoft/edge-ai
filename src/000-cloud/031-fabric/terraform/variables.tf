@@ -101,3 +101,8 @@ variable "workspace_description" {
   description = "The description of the Microsoft Fabric workspace"
   default     = "Microsoft Fabric workspace for the Edge AI Accelerator solution"
 }
+
+variable "skip_capacity_state_validation" {
+  type        = bool
+  description = "When true, skips validation of Fabric capacity state during workspace provisioning. Useful for non-production environments where capacity may be paused."
+}

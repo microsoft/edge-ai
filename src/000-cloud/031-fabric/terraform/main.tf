@@ -70,9 +70,10 @@ module "fabric_workspace" {
 
   source = "./modules/workspace"
 
-  workspace_display_name = local.fabric_workspace_name
-  workspace_description  = var.workspace_description
-  capacity_id            = local.capacity_id
+  workspace_display_name         = local.fabric_workspace_name
+  workspace_description          = var.workspace_description
+  capacity_id                    = local.capacity_id
+  skip_capacity_state_validation = var.skip_capacity_state_validation
 }
 
 module "fabric_lakehouse" {
