@@ -854,10 +854,15 @@ Update or override these keys from `values.yaml`:
 * `service.port` and `service.targetPort`
 * `resources.requests` and `resources.limits`
 * `env` map for runtime, non-secret settings
+* `secrets` map for credential-bearing variables (rendered into a separate Secret)
 
 > [!IMPORTANT]
-> Do not place secrets in `values.yaml` or ConfigMap-backed `env` values. Use
-> Kubernetes Secrets and reference them from the deployment.
+> Do not place secrets in `values.yaml` `env` — those become a plaintext
+> ConfigMap. Put `DIRECT_LINE_SECRET` and `TEAMS_APP_CLIENT_SECRET` in the
+> `secrets` map, which renders a separate Kubernetes Secret consumed via
+> `secretRef`. Prefer injecting them at deploy time (for example
+> `--set-string secrets.TEAMS_APP_CLIENT_SECRET=...`) or via an external/sealed
+> secret rather than committing values.
 
 ### Deploy
 

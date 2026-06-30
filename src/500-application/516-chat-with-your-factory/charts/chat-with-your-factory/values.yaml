@@ -62,3 +62,13 @@ env:
   # FABRIC_LAKEHOUSE_ID: "<your-fabric-lakehouse-id>"
   # FABRIC_SQL_ENDPOINT: "<your-lakehouse-sql-endpoint-host>"
   # FABRIC_LAKEHOUSE_DATABASE: "RoboticsOntologyLH"
+
+# Sensitive credentials render into a separate Kubernetes Secret (not the
+# ConfigMap above). Put credential-bearing variables here only — never in `env`.
+# Prefer injecting these at deploy time (for example
+# `--set-string secrets.TEAMS_APP_CLIENT_SECRET=...`) or via an external/sealed
+# secret rather than committing values to this file. When `secrets` is empty no
+# Secret object is created.
+secrets: {}
+  # DIRECT_LINE_SECRET: "<copilot-studio-web-channel-secret>"
+  # TEAMS_APP_CLIENT_SECRET: "<client-secret-from-app-registration>"

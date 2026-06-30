@@ -37,6 +37,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "chat-with-your-factory.fullname" . }}
+            {{- if .Values.secrets }}
+            - secretRef:
+                name: {{ include "chat-with-your-factory.fullname" . }}
+            {{- end }}
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
