@@ -100,7 +100,6 @@ updates:
     directories:
       - "/"
       - "/src/500-application/**"
-    python-version: "3.12"
     schedule:
       interval: "weekly"
       day: "monday"
