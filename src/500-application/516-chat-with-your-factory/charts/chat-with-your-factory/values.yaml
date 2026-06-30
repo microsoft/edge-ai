@@ -1,0 +1,74 @@
+---
+# Default values for chat-with-your-factory
+
+# Session state (sessions, SSE registry, SSE/WS tickets) is in-memory and
+# process-local. replicaCount MUST remain 1. Scaling beyond 1 replica requires
+# an external session store (e.g. Redis) and is not supported in this release.
+replicaCount: 1
+
+image:
+  repository: your-registry.azurecr.io/chat-with-your-factory
+  pullPolicy: IfNotPresent
+  # Tag defaults to the chart appVersion (a pinned, auditable semver) when unset.
+  # Override with an explicit version at deploy time (e.g. --set image.tag=1.2.3).
+  tag: ""
+
+imagePullSecrets:
+  - name: acr-auth
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Dedicated namespace scopes RBAC, NetworkPolicies, and quotas to this workload.
+# Operators may override via --set namespace=<value>.
+namespace: chat-with-your-factory
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3978
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  AGENT_BACKEND: "foundry"
+  PORT: "3978"
+  # Foundry backend (AGENT_BACKEND=foundry): point at the 085-ai-foundry component.
+  # FOUNDRY_ENDPOINT is the Foundry project endpoint; FOUNDRY_AGENT_ID is the deployed agent.
+  # Create the agent reproducibly with `npm run provision:agent` (needs FOUNDRY_MODEL_DEPLOYMENT).
+  # FOUNDRY_ENDPOINT: "https://<aif-account>.services.ai.azure.com/api/projects/<project>"
+  # FOUNDRY_AGENT_ID: "<your-foundry-agent-id>"
+  # AZURE_TENANT_ID: "<your-tenant-id>"
+  # Auth: the chart fails closed by default — when AUTH_REQUIRED is unset the
+  # server requires TEAMS_APP_ID and TEAMS_AUTH_AUDIENCES and will not start
+  # without them. Uncomment AUTH_REQUIRED="false" ONLY for a Teams-less
+  # standalone/demo deployment; it synthesizes a dev user (insecure,
+  # non-production) and disables auth for ALL traffic reaching the pod, not just
+  # loopback. SKIP_AUTH="true" only bypasses auth for true loopback traffic.
+  # AUTH_REQUIRED: "false"
+  # TEAMS_APP_ID: "<your-teams-app-id>"
+  # TEAMS_AUTH_AUDIENCES: "<audience-1>,<audience-2>"
+  # Factory ontology tool (query_factory_ontology): reads the RoboticsOntologyLH
+  # Fabric lakehouse (src/000-cloud/033-fabric-ontology). Provide FABRIC_SQL_ENDPOINT
+  # OR FABRIC_WORKSPACE_ID + FABRIC_LAKEHOUSE_ID for host discovery. The pod identity
+  # needs lakehouse read (SQL scope https://database.windows.net/.default).
+  # FABRIC_WORKSPACE_ID: "<your-fabric-workspace-id>"
+  # FABRIC_LAKEHOUSE_ID: "<your-fabric-lakehouse-id>"
+  # FABRIC_SQL_ENDPOINT: "<your-lakehouse-sql-endpoint-host>"
+  # FABRIC_LAKEHOUSE_DATABASE: "RoboticsOntologyLH"
+
+# Sensitive credentials render into a separate Kubernetes Secret (not the
+# ConfigMap above). Put credential-bearing variables here only — never in `env`.
+# Prefer injecting these at deploy time (for example
+# `--set-string secrets.TEAMS_APP_CLIENT_SECRET=...`) or via an external/sealed
+# secret rather than committing values to this file. When `secrets` is empty no
+# Secret object is created.
+secrets: {}
+  # DIRECT_LINE_SECRET: "<copilot-studio-web-channel-secret>"
+  # TEAMS_APP_CLIENT_SECRET: "<client-secret-from-app-registration>"

@@ -1,0 +1,88 @@
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+
+# Future / interface-stable example: adding live telemetry to an existing entity.
+#
+# This shows that wiring live data is an ENTITY change, not a tool change. The
+# Oven entity keeps its static lakehouse binding AND gains a second timeseries
+# eventhouse binding. The query_factory_ontology agent tool name and input
+# parameters are unchanged (Option A) - only the read-layer query gains a KQL
+# join on correlationColumn ordered by timestampColumn.
+#
+# Placeholders (resolved at the live-data deployment, see
+# docs/factory-tool-live-data.md):
+#   - eventhouse.database / table names are Eventstream-configured (032-fabric-rti,
+#     auto-created when unspecified).
+#   - correlationColumn must be projected during Eventstream/KQL processing because
+#     the AIO MQTT payload has no explicit entity-key field.
+
+metadata:
+  name: "CORA_CORAX_Dimensional_TimeSeries"
+  description: "Dual-binding (static lakehouse + timeseries eventhouse) example for the Oven entity"
+  version: "1.0.0"
+
+dataSources:
+  lakehouse:
+    name: "RoboticsOntologyLH"
+    tables:
+      - name: "oven"
+        format: "csv"
+  eventhouse:
+    name: "RoboticsOntologyEH"      # placeholder - Eventstream-configured
+    database: "RoboticsOntologyKQL"  # placeholder - auto-created if unspecified
+    tables:
+      - name: "oven_telemetry"
+        format: "json"
+        schema:
+          - name: "AssetId"
+            type: "string"
+          - name: "SourceTimestamp"
+            type: "datetime"
+          - name: "Temperature"
+            type: "double"
+          - name: "FillWeight"
+            type: "double"
+          - name: "EnergyUse"
+            type: "double"
+
+entityTypes:
+  - name: "Oven"
+    key: "Id"
+    displayName: "Name"
+    # Two bindings on the SAME entity: static descriptive data + live telemetry.
+    dataBindings:
+      - type: "static"
+        source: "lakehouse"
+        table: "oven"
+      - type: "timeseries"
+        source: "eventhouse"
+        table: "oven_telemetry"
+        timestampColumn: "SourceTimestamp"   # most-recent reading
+        correlationColumn: "AssetId"          # links telemetry rows to the Oven key
+    properties:
+      - name: "Id"
+        type: "string"
+        sourceColumn: "Id"
+        binding: "static"
+      - name: "Name"
+        type: "string"
+        sourceColumn: "Name"
+        binding: "static"
+      - name: "Description"
+        type: "string"
+        sourceColumn: "Description"
+        binding: "static"
+      # Live data points mirror the 111-assets oven simulator (Temperature,
+      # FillWeight, EnergyUse) - added as timeseries-bound properties.
+      - name: "Temperature"
+        type: "double"
+        sourceColumn: "Temperature"
+        binding: "timeseries"
+      - name: "FillWeight"
+        type: "double"
+        sourceColumn: "FillWeight"
+        binding: "timeseries"
+      - name: "EnergyUse"
+        type: "double"
+        sourceColumn: "EnergyUse"
+        binding: "timeseries"
