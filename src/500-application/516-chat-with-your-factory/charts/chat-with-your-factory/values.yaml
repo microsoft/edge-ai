@@ -9,8 +9,8 @@ replicaCount: 1
 image:
   repository: your-registry.azurecr.io/chat-with-your-factory
   pullPolicy: IfNotPresent
-  # No default tag: operators must supply an explicit, auditable version at
-  # deploy time (e.g. --set image.tag=1.2.3). Rendering fails when unset.
+  # Tag defaults to the chart appVersion (a pinned, auditable semver) when unset.
+  # Override with an explicit version at deploy time (e.g. --set image.tag=1.2.3).
   tag: ""
 
 imagePullSecrets:

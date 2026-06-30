@@ -59,6 +59,5 @@ Create the namespace name
 Create the image name
 */}}
 {{- define "chat-with-your-factory.image" -}}
-{{- $tag := required "image.tag is required: set an explicit semver tag or digest at deploy time (e.g. --set image.tag=1.2.3)" .Values.image.tag -}}
-{{- printf "%s:%s" .Values.image.repository $tag }}
+{{- printf "%s:%s" .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) }}
 {{- end }}
