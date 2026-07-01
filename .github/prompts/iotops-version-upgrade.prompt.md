@@ -26,11 +26,11 @@ This prompt analyzes and updates the following IoT Operations-related components
 
 The AIO manifests publish component versions under `variables.VERSIONS`/`variables.TRAINS`. These map to codebase variables as follows (kept in sync by `scripts/aio-version-checker.py`):
 
-| Manifest key | Manifest file | Terraform | Bicep |
-|---|---|---|---|
-| `certManager` | enablement | `109-arc-extensions/terraform/variables.tf` (`arc_extensions.cert_manager_extension.version`) | `109-arc-extensions/bicep/types.bicep` (`certManagerExtensionDefaults`) |
-| `secretStore` | enablement | `110-iot-ops/terraform/variables.init.tf` (`secret_sync_controller`) | `110-iot-ops/bicep/types.bicep` (`secretStoreExtensionDefaults`) |
-| `iotOperations` | instance | `110-iot-ops/terraform/variables.instance.tf` (`operations_config`) | `110-iot-ops/bicep/types.bicep` (`aioExtensionDefaults`) |
+| Manifest key    | Manifest file | Terraform                                                                                     | Bicep                                                                   |
+|-----------------|---------------|-----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `certManager`   | enablement    | `109-arc-extensions/terraform/variables.tf` (`arc_extensions.cert_manager_extension.version`) | `109-arc-extensions/bicep/types.bicep` (`certManagerExtensionDefaults`) |
+| `secretStore`   | enablement    | `110-iot-ops/terraform/variables.init.tf` (`secret_sync_controller`)                          | `110-iot-ops/bicep/types.bicep` (`secretStoreExtensionDefaults`)        |
+| `iotOperations` | instance      | `110-iot-ops/terraform/variables.instance.tf` (`operations_config`)                           | `110-iot-ops/bicep/types.bicep` (`aioExtensionDefaults`)                |
 
 If a new manifest key appears (e.g. container storage returns, or a new dependency extension is added), add it to both the codebase and the `aio-version-checker.py` mappings (`TERRAFORM_COMPONENTS`, `BICEP_COMPONENTS`, `BICEP_COMPONENT_FILES`, and any dedicated extractor) so future CI catches drift.
 
