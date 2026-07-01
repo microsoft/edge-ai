@@ -2,7 +2,7 @@
 title: Upgrade Azure IoT Operations
 description: How to upgrade Azure IoT Operations (AIO) and reconcile the upgrade with the edge-ai Terraform or Bicep deployments
 author: Edge AI Team
-ms.date: 2026-05-05
+ms.date: 2026-07-01
 ms.topic: how-to
 estimated_reading_time: 5
 keywords:
@@ -28,18 +28,18 @@ The reconciliation steps differ between Terraform (stateful) and Bicep (stateles
 
 ## Version matrix
 
-This repository currently targets the **AIO 2605** release. The table below maps `az iot ops` CLI versions to the component versions pinned in edge-ai:
+This repository currently targets the **AIO 2606** release. The table below maps `az iot ops` CLI versions to the component versions pinned in edge-ai:
 
 | CLI extension (`azure-iot-ops`) | AIO release | cert-manager | secret-sync-controller | iotOperations |
 |---------------------------------|-------------|--------------|------------------------|---------------|
-| 2.5.0                           | 2605        | 0.12.0       | 1.4.1                  | 1.3.105       |
+| 2.7.0                           | 2606        | 0.13.3       | 1.5.0                  | 1.3.137       |
 
 For the full upstream compatibility matrix, see [Supported versions — Azure IoT Operations](https://learn.microsoft.com/azure/iot-operations/deploy-iot-ops/howto-upgrade?tabs=portal#supported-versions).
 
 ## Prerequisites
 
 - Azure CLI logged in to the target subscription.
-- `azure-iot-ops` CLI extension installed (this repo expects version `2.5.0`).
+- `azure-iot-ops` CLI extension installed (this repo expects version `2.7.0`).
 - `<RESOURCE_GROUP_NAME>` — the resource group containing the AIO instance.
 - `<INSTANCE_NAME>` — the AIO instance name (for edge-ai blueprints this is typically `iotops-arck-<resource_prefix>-<environment>-<instance>`).
 
