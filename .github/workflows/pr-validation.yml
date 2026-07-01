@@ -96,12 +96,7 @@ jobs:
       - name: Dependency Review
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
-          fail-on-severity: high
-          # ecdsa Minerva timing attack (P-256); no upstream fix, transitive via checkov.
-          # Re-evaluate when checkov drops the ecdsa dependency. See issue #641.
-          allow-ghsas: GHSA-wj6h-64fc-37mp
-          warn-on-openssf-scorecard-level: 3
-          comment-summary-in-pr: on-failure
+          config-file: ./.github/dependency-review-config.yml
 
   # Shell script linting
   shell-lint:

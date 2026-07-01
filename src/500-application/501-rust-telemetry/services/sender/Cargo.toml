@@ -25,10 +25,10 @@ chrono = { version = "0.4", features = ["serde"] }
 # Logging and telemetry
 tracing = { version = "0.1", features = ["std", "attributes"] }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "registry", "std", "fmt"] }
-tracing-opentelemetry = "0.30"
-opentelemetry = { version = "0.29" }
-opentelemetry_sdk = { version = "0.29", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.29", features = ["grpc-tonic"] }
+tracing-opentelemetry = "0.33"
+opentelemetry = { version = "0.32" }
+opentelemetry_sdk = { version = "0.32.1" }
+opentelemetry-otlp = { version = "0.32", features = ["grpc-tonic"] }
 
 # Other
 async-trait = "0.1.88"
