@@ -177,7 +177,7 @@ terraform destroy -var-file="terraform.tfvars"
 ## Related Blueprints
 
 - **fabric-rti**: Real-Time Intelligence integration with Azure IoT Operations (EventStream + dataflow)
-- **full-single-node-cluster**: Complete AIO deployment with cloud and edge infrastructure
+- **full-multi-node-cluster**: Complete AIO deployment with cloud and edge infrastructure
 - **only-cloud-single-node-cluster**: Cloud-only AIO resources without edge components
 
 ## External References

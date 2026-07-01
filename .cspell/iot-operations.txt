@@ -53,6 +53,7 @@ iotedge
 iotoperations
 iotops
 junitxml
+keynotify
 kubeletidentity
 Kyverno
 libmodbus
@@ -60,6 +61,7 @@ mcap
 mosquitto
 mqtt
 mqttui
+mqttv5
 mrpc
 Multiprotocol
 OID

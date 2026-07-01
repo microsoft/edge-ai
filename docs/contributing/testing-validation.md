@@ -2,7 +2,7 @@
 title: Testing and Validation
 description: Comprehensive guide to testing infrastructure components and validating changes, covering testing strategies, validation procedures, and quality assurance practices
 author: Edge AI Team
-ms.date: 2025-06-06
+ms.date: 2026-06-19
 ms.topic: how-to
 estimated_reading_time: 7
 keywords:
@@ -26,6 +26,19 @@ To maintain code quality and the OSSF Best Practices Badge, we enforce the follo
 
 1. **New Functionality**: All new major functionality requires corresponding automated tests.
 2. **Bug Fixes**: Bug fixes require regression tests that verify the fix.
+
+### Regression Test Tracking
+
+Bug-fix pull requests should include a regression test unless the change is documentation-only, configuration-only, or cannot be covered by a stable automated test. A regression test should reproduce the failing behavior and pass only after the fix. It can be implemented as a unit, contract, integration, deployment, or component test using the framework listed below.
+
+For tracking, bug-fix PRs should state whether a regression test is included in the validation notes. Maintainers can apply the `regression-test` label when the PR includes one. Bug-fix PRs should also have the `bug` label at merge time so the tracking queries return meaningful data. If a bug fix does not include a regression test, the PR should explain the exception so the gap can be reviewed.
+
+To measure the OSSF target that at least 50% of bug fixes include regression tests, compare merged bug-fix PRs that have the label against all merged bug-fix PRs over the review window:
+
+```text
+is:pr is:merged repo:microsoft/edge-ai label:bug label:regression-test
+is:pr is:merged repo:microsoft/edge-ai label:bug -label:regression-test
+```
 
 ### Technology Requirements
 
@@ -327,7 +340,7 @@ Provides reusable testing functions for all blueprints including:
 - Deployment and cleanup utilities
 - Output normalization across frameworks
 
-**Reference Implementation:** [blueprints/full-single-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-single-node-cluster/tests/)
+**Reference Implementation:** [blueprints/full-multi-node-cluster/tests/](https://github.com/microsoft/edge-ai/tree/main/blueprints/full-multi-node-cluster/tests/)
 
 Complete test suite demonstrating:
 
@@ -350,7 +363,7 @@ Complete test suite demonstrating:
 **Running Contract Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/tests
+cd blueprints/full-multi-node-cluster/tests
 
 # Test both frameworks
 ./run-contract-tests.sh both
@@ -377,7 +390,7 @@ go test -v -run Contract
 **Running Deployment Tests:**
 
 ```bash
-cd blueprints/full-single-node-cluster/tests
+cd blueprints/full-multi-node-cluster/tests
 
 # Enable automatic cleanup
 export CLEANUP_RESOURCES=true
@@ -387,8 +400,8 @@ export CLEANUP_RESOURCES=true
 ./run-deployment-tests.sh bicep
 
 # Direct Go execution
-go test -v -run TestTerraformFullSingleNodeClusterDeploy -timeout 2h
-go test -v -run TestBicepFullSingleNodeClusterDeploy -timeout 2h
+go test -v -run TestTerraformFullMultiNodeClusterDeploy -timeout 2h
+go test -v -run TestBicepFullMultiNodeClusterDeploy -timeout 2h
 ```
 
 **Environment Variables:**
@@ -420,7 +433,7 @@ blueprints/{blueprint-name}/tests/
 
 ```bash
 # Navigate to blueprint directory
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Initialize with test backend
 terraform init -backend-config="container_name=test-tfstate"

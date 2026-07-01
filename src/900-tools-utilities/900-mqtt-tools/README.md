@@ -55,24 +55,30 @@ kubectl get pods -n azure-iot-operations -l app=mqtt-tools
 
 ### Connect to Tools Pod
 
-```bash
-# Connect to the MQTT tools pod
-kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -- sh
+The pod runs two containers (`mqtt-tools` and `opcua-tools`), so target the MQTT container explicitly with `-c mqtt-tools`:
 
-# Test MQTT connection (inside pod)
-mosquitto_sub -h aio-broker -t "test/topic" --cafile /var/run/certs/ca.crt \
+```bash
+# Connect to the MQTT tools container
+kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -c mqtt-tools -- sh
+
+# Test MQTT connection (inside pod) against the authenticated TLS listener
+mosquitto_sub -h aio-broker -p 18883 -t "test/topic" -V mqttv5 --cafile /var/run/certs/ca.crt \
   -D CONNECT authentication-method 'K8S-SAT' \
   -D CONNECT authentication-data $(cat /var/run/secrets/tokens/broker-sat)
 ```
 
 ### Interactive MQTT Monitoring
 
+`mqttui` provides an interactive terminal UI but only supports username/password and client-certificate auth. It cannot use the `K8S-SAT` enhanced authentication required by the default `aio-broker:18883` listener, so point it at an anonymous listener instead.
+
+The anonymous listener (`aio-broker-anon:18884`) is created only when Azure IoT Operations is deployed with `shouldCreateAnonymousBrokerListener` enabled (dev/test only):
+
 ```bash
-# Launch mqttui for interactive monitoring
-mqttui -h aio-broker --ca-file /var/run/certs/ca.crt \
-  --auth-method 'K8S-SAT' \
-  --auth-data $(cat /var/run/secrets/tokens/broker-sat)
+# Launch mqttui against the anonymous listener
+mqttui --broker mqtt://aio-broker-anon:18884
 ```
+
+For the authenticated `aio-broker:18883` listener, use `mosquitto_sub`/`mosquitto_pub` with the `K8S-SAT` flags shown above and below.
 
 ## Usage Examples
 
@@ -149,7 +155,7 @@ kubectl describe pod -n azure-iot-operations -l app=mqtt-tools
 kubectl logs -n azure-iot-operations -l app=mqtt-tools
 
 # Test network connectivity
-kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -- nslookup aio-broker
+kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -c mqtt-tools -- nslookup aio-broker
 ```
 
 ## Related Components

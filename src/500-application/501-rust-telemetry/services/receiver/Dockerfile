@@ -65,24 +65,8 @@ WORKDIR /usr/src/app
 COPY ./Cargo.toml ./Cargo.toml
 COPY ./Cargo.lock ./Cargo.lock
 
-# Define a build argument to control whether to use replace-with (default to false for local builds)
-ARG USE_REPLACE_WITH=false
-
-# Create .cargo directory, config file, and dummy main.rs for dependency caching
-RUN mkdir -p .cargo && \
-    echo '[registries]' > .cargo/config.toml && \
-    echo 'aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }' >> .cargo/config.toml && \
-    echo '' >> .cargo/config.toml && \
-    if [ "$USE_REPLACE_WITH" = "true" ]; then \
-      echo '[source.crates-io]' >> .cargo/config.toml && \
-      echo 'replace-with = "aio-sdks"' >> .cargo/config.toml && \
-      echo '' >> .cargo/config.toml && \
-      echo '# Note: This requires authentication to the Azure Artifacts feed' >> .cargo/config.toml && \
-      echo '# The pipeline should provide credentials to access both Azure packages and mirrored crates.io packages' >> .cargo/config.toml; \
-    else \
-      echo '# For local development: not using replace-with to avoid authentication issues' >> .cargo/config.toml; \
-    fi && \
-    mkdir -p src && \
+# Create dummy main.rs for dependency caching
+RUN mkdir -p .cargo src && \
     echo 'fn main() { println!("dependency build"); }' > src/main.rs
 
 # First build step - compile and cache dependencies only

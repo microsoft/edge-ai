@@ -67,7 +67,7 @@ The operator receives Avro binary payloads from the dataflow source, transforms 
 
 ### Step 1: Deploy the Full Stack
 
-Deploy the [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint using [dataflow-graphs-avro-json.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-avro-json.tfvars.example) as the starting point for your `terraform.tfvars`.
+Deploy the [Full Multi-Node Cluster](../../../blueprints/full-multi-node-cluster/) blueprint using [dataflow-graphs-avro-json.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs-avro-json.tfvars.example) as the starting point for your `terraform.tfvars`.
 
 This creates the complete infrastructure including ACR, the AIO cluster, and a [Kafka DataflowEndpoint](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-configure-kafka-endpoint?tabs=portal) (`kafka-source`) connecting to your Kafka broker. It also provisions the dataflow graph referencing the WASM module. The graph will temporarily reference an ACR artifact that does not yet exist — this is expected. The graph enters a pending state until Steps 2–4 publish the module.
 
@@ -178,24 +178,32 @@ The operator tries parsing strategies in this order:
 
 ## Avro Type Mapping
 
-| Avro Type             | JSON Type | Notes                                                                |
-|-----------------------|-----------|----------------------------------------------------------------------|
-| null                  | null      |                                                                      |
-| boolean               | boolean   |                                                                      |
-| int, long             | number    |                                                                      |
-| float, double         | number    |                                                                      |
-| string                | string    |                                                                      |
-| bytes, fixed          | string    | UTF-8 if valid, otherwise base64-encoded                             |
-| enum                  | string    | Symbol name                                                          |
-| array                 | array     | Recursive conversion                                                 |
-| map                   | object    | Recursive conversion                                                 |
-| record                | object    | Field names as keys                                                  |
-| union                 | (varies)  | Unwrapped to selected variant                                        |
-| decimal               | number    | Unscaled integer value (scale information not preserved from schema) |
-| bigdecimal            | string    | String representation preserving all decimal places                  |
-| date, time, timestamp | number    | Epoch-based numeric value                                            |
-| duration              | object    | `{ months, days, millis }`                                           |
-| uuid                  | string    | Standard UUID format                                                 |
+| Avro Type          | JSON Type | Notes                                                                |
+|--------------------|-----------|----------------------------------------------------------------------|
+| null               | null      |                                                                      |
+| boolean            | boolean   |                                                                      |
+| int, long          | number    |                                                                      |
+| float, double      | number    |                                                                      |
+| string             | string    |                                                                      |
+| bytes, fixed       | string    | UTF-8 if valid, otherwise base64-encoded                             |
+| enum               | string    | Symbol name                                                          |
+| array              | array     | Recursive conversion                                                 |
+| map                | object    | Recursive conversion                                                 |
+| record             | object    | Field names as keys                                                  |
+| union              | (varies)  | Unwrapped to selected variant                                        |
+| decimal            | number    | Unscaled integer value (scale information not preserved from schema) |
+| bigdecimal         | string    | String representation preserving all decimal places                  |
+| date               | string    | ISO-8601 date (`YYYY-MM-DD`)                                         |
+| time-millis/micros | string    | ISO-8601 time of day (`HH:MM:SS[.fff]`)                              |
+| timestamp-*        | string    | ISO-8601 / RFC 3339 UTC (`YYYY-MM-DDTHH:MM:SS[.fff]Z`)               |
+| local-timestamp-*  | string    | ISO-8601 without zone designator (`YYYY-MM-DDTHH:MM:SS[.fff]`)       |
+| duration           | object    | `{ months, days, millis }`                                           |
+| uuid               | string    | Standard UUID format                                                 |
+
+> [!IMPORTANT]
+> Date and time conversion is driven by the Avro **logical type**, not the field name. Only fields declared with a logical type (for example `{ "type": "long", "logicalType": "timestamp-millis" }`) decode to ISO-8601 strings. A plain `long`/`int` carrying an epoch value (even one documented as a timestamp) is emitted as a number, unchanged. To get ISO-8601 output for such a field, declare its logical type in the producer schema.
+>
+> This matches how Kafka UIs render logical types and preserves existing numeric output for non-logical fields. Sub-second fractions are preserved and trailing zeros trimmed (for example `.5`, `.045`); whole-second values omit the fraction entirely.
 
 ## Sample Schema
 

@@ -373,6 +373,7 @@ dataset
 datasets
 datasize
 dataverse
+datediff
 datefmt
 davinci
 dbcc
@@ -1009,6 +1010,7 @@ paletteuse
 palo
 parallelization
 param
+parameterizes
 parameterless
 parquet
 passcode

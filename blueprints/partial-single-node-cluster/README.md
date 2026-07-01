@@ -32,7 +32,7 @@ This blueprint deploys:
 3. Azure Arc connection for the cluster
 4. Cloud resources required for the cluster (Key Vault, Resource Group, etc.)
 
-Unlike the full-single-node-cluster blueprint, this blueprint does NOT install:
+Unlike the full-multi-node-cluster blueprint, this blueprint does NOT install:
 
 - Edge messaging components
 - Edge observability components
