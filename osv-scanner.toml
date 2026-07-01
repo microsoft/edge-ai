@@ -20,3 +20,7 @@ reason = "rustls-pemfile 1.x: unmaintained; transitive via hyper-rustls. Resolve
 [[IgnoredVulns]]
 id = "RUSTSEC-2026-0097"
 reason = "rand: unsoundness with custom logger; awaiting upstream release."
+
+[[IgnoredVulns]]
+id = "GHSA-wj6h-64fc-37mp"
+reason = "ecdsa: Minerva timing attack (CVE-2024-23342), P-256; no upstream fix. Transitive via checkov. Re-evaluate when checkov drops the ecdsa dependency."
