@@ -1,5 +1,4 @@
-use azure_iot_operations_mqtt::control_packet::QoS;
-use azure_iot_operations_mqtt::interface::{ManagedClient, MqttPubSub, PubReceiver};
+use azure_iot_operations_mqtt::control_packet::{QoS, RetainOptions, SubscribeProperties, TopicFilter};
 use azure_iot_operations_mqtt::session::SessionManagedClient;
 use chrono::{Duration, Local};
 use opencv::core::Size;
@@ -24,16 +23,26 @@ pub async fn receive_messages<W: TimeParamWorker + Send + Sync + 'static>(
     worker: W,
 ) {
     info!("Destination path: {:?}", dest_path);
-    let mut receiver = match client.create_filtered_pub_receiver(&input_topic) {
-        Ok(receiver) => receiver,
+    let topic_filter = match TopicFilter::new(&input_topic) {
+        Ok(tf) => tf,
         Err(e) => {
-            error!("Failed to create filtered pub receiver for topic {}: {:?}", input_topic, e);
+            error!("Invalid topic filter for topic {}: {:?}", input_topic, e);
             return;
         }
     };
+    let mut receiver = client.create_filtered_pub_receiver(topic_filter.clone());
 
     info!("Subscribing to topic: {}", input_topic);
-    if let Err(e) = client.subscribe(input_topic.clone(), QoS::AtLeastOnce).await {
+    if let Err(e) = client
+        .subscribe(
+            topic_filter,
+            QoS::AtLeastOnce,
+            false,
+            RetainOptions::default(),
+            SubscribeProperties::default(),
+        )
+        .await
+    {
         error!("Failed to subscribe to topic {}: {:?}", input_topic, e);
         return;
     }
@@ -49,15 +58,15 @@ pub async fn receive_messages<W: TimeParamWorker + Send + Sync + 'static>(
                 continue;
             }
         };
-        
+
         // Create a new JSON value with the topic included
         let mut payload_with_topic = payload.clone();
         if let serde_json::Value::Object(ref mut map) = payload_with_topic {
             map.insert("__mqtt_topic".to_string(), serde_json::Value::String(input_topic.clone()));
         }
-        
+
         // Process the message with the enhanced payload
-        process_message(&payload_with_topic, worker.clone(), buffer.clone(), dest_path.clone(), 
+        process_message(&payload_with_topic, worker.clone(), buffer.clone(), dest_path.clone(),
             &filename_format, &video_format, fps, frame_size).await;
     }
 }
@@ -80,7 +89,7 @@ async fn process_message<W: TimeParamWorker + Send + Sync + 'static>(
             return;
         }
     };
-    
+
     let time_param = params_with_id.time_param;
     let event_id = params_with_id.event_id.clone();
     let event_type = params_with_id.event_type.clone();

@@ -1,6 +1,6 @@
 ---
-title: Message to DSS Key Writer WASM Module
-description: WASM map operator that writes any JSON message to the AIO Distributed State Store with configurable key extraction and TTL
+title: AIO DSS Write and Enrich WASM Operators
+description: Two WASM map operators for AIO Distributed State Store interactions over MQTT, a write side that stores JSON messages under a configurable key and a read side that enriches messages from a dynamically constructed key
 author: Edge AI Team
 ms.date: 2026-04-07
 ms.topic: reference
@@ -11,30 +11,51 @@ keywords:
   - azure-iot-operations
   - dataflow
   - enrichment
-estimated_reading_time: 8
+estimated_reading_time: 12
 ---
 
-## Message to DSS Key Writer WASM Module
+## AIO DSS Write and Enrich WASM Operators
 
-WASM map operator that writes any incoming JSON message to the AIO Distributed State Store (DSS) under a configurable key extracted via JSON Pointer, with configurable TTL and full passthrough behavior.
+Two WASM map operators for AIO Distributed State Store (DSS) interactions over MQTT. The write side stores any incoming JSON message under a configurable key extracted via JSON Pointer, with a configurable TTL and full passthrough behavior. The read side enriches incoming messages with data read from the DSS using a key constructed dynamically from message content.
 
 ```text
-input → [msg_to_dss_key] → output
+write:  input → [msg_to_dss_key]   → output   (message stored in DSS)
+enrich: input → [dss_enricher_key] → output   (message enriched from DSS)
 ```
 
 > [!TIP]
-> After writing state with this operator, downstream pipelines can read back the stored data using AIO's built-in enrichment transforms with `datasets` and `$context` syntax. No additional WASM development is required for the read side. See [Using Built-in Enrichment to Read from DSS](#using-built-in-enrichment-to-read-from-dss).
+> When the lookup key is static and known at deployment time, downstream pipelines can read stored data using AIO's built-in enrichment transforms with `datasets` and `$context` syntax, with no additional WASM development required.
+> See [Using Built-in Enrichment to Read from DSS](#using-built-in-enrichment-to-read-from-dss). When the key is derived from message content, use the `dss-enricher-key` operator described below.
+
+## Operators
+
+This component packages two complementary operators that share the same key construction logic, building the DSS key as `{keyPrefix}{value-at-keyPath}`.
+
+### Write side: `msg-to-dss-key`
+
+Writes each incoming JSON message to the DSS under the constructed key with a TTL, then passes the original message through unchanged. Use it to populate entity state such as device configuration, lot metadata, or lookup tables for later reads.
+
+### Read and enrich side: `dss-enricher-key`
+
+Reads a stored DSS record using a key built dynamically from the incoming message, then merges selected fields into the outgoing message. Use it when the lookup key is derived from message content, the key space is large or dynamic, or a single pipeline must handle messages that reference different entities.
+
+When both operators share the same `keyPath` and `keyPrefix`, the read pipeline automatically finds data written by the write pipeline with no custom code required beyond configuration.
 
 ## Architecture
 
-This component implements a single `#[map_operator]` using the [Azure IoT Operations WASM SDK](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust).
+Each operator implements a single `#[map_operator]` using the [Azure IoT Operations WASM SDK](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust). Both follow a two-phase lifecycle.
 
-The operator follows a two-phase lifecycle:
+The init phase reads and validates parameters from `ModuleConfiguration.properties`, returning `false` to halt the dataflow when validation fails for fast-fail at deployment time, and stores configuration in a `OnceLock` for write-once, read-many access. The process phase runs once per incoming message.
 
-* **Init phase**: Reads `keyPath`, `keyPrefix`, `ttlSeconds`, and `onMissing` from `ModuleConfiguration.properties`. Validates that required parameters are present and well-formed. Returns `false` to halt the dataflow if validation fails, providing fast-fail at deployment time. Configuration is stored in a `OnceLock` for write-once, read-many access.
-* **Process phase**: For each incoming message, parses the JSON payload, extracts the key value at the configured JSON Pointer path, writes the full message to the DSS under `{keyPrefix}{extractedKey}` with the configured TTL, and returns the original message unchanged.
+### Write operator process phase
 
-State store write errors are logged but do not drop the message, ensuring pipeline continuity. The original message is always returned to downstream nodes regardless of state store outcomes.
+The `msg-to-dss-key` operator parses the JSON payload, extracts the key value at the configured JSON Pointer path, writes the full message to the DSS under `{keyPrefix}{extractedKey}` with the configured TTL, and returns the original message unchanged. State store write errors are logged but do not drop the message, ensuring pipeline continuity. The original message is always returned to downstream nodes regardless of state store outcomes.
+
+### Enrich operator process phase
+
+The `dss-enricher-key` operator parses the JSON payload, extracts the key value at the configured JSON Pointer path, constructs the DSS key as `{keyPrefix}{extractedKey}`, reads the stored record with `state_store::get`, extracts the selected fields, and merges them into the outgoing message. The operator is passthrough-first: state store errors and missing keys never drop messages by default, and the read is a pure lookup with no side effects on DSS state.
+
+Because the lookup key is derived from attacker-influenceable message content, `keyPrefix` is **required** and must be non-empty. The prefix scopes every read to a single namespace, preventing a crafted message from reading records written under unrelated prefixes. Always set `keyPrefix` to the same value used by the write pipeline.
 
 ## Folder Structure
 
@@ -44,17 +65,23 @@ State store write errors are logged but do not drop the message, ensuring pipeli
 │   └── config.toml                 # WASM target and AIO SDK registry
 ├── README.md                       # This file
 ├── operators/
-│   └── msg-to-dss-key/
+│   ├── msg-to-dss-key/
+│   │   ├── Cargo.lock              # Dependency lock file (generated)
+│   │   ├── Cargo.toml              # Package definition (cdylib)
+│   │   └── src/
+│   │       └── lib.rs              # Write map operator implementation
+│   └── dss-enricher-key/
 │       ├── Cargo.lock              # Dependency lock file (generated)
 │       ├── Cargo.toml              # Package definition (cdylib)
 │       └── src/
-│           └── lib.rs              # Map operator implementation
+│           └── lib.rs              # Enrich map operator implementation
 ├── resources/
 │   └── graphs/
-│       └── graph-msg-to-dss-key.yaml # WASM graph definition (OCI artifact)
+│       ├── graph-msg-to-dss-key.yaml   # Write graph definition (OCI artifact)
+│       └── graph-dss-enricher-key.yaml # Enrich graph definition (OCI artifact)
 └── scripts/
-    ├── build-wasm.sh               # Build WASM module
-    └── push-to-acr.sh             # Push module and graph to ACR
+    ├── build-wasm.sh               # Build WASM modules
+    └── push-to-acr.sh             # Push modules and graphs to ACR
 ```
 
 ## Prerequisites
@@ -68,9 +95,10 @@ State store write errors are logged but do not drop the message, ensuring pipeli
 
 ### Step 1: Deploy the Full Stack
 
-Deploy the [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint using [dataflow-graphs-msg-to-dss.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs-msg-to-dss.tfvars.example) as the starting point for your `terraform.tfvars`.
+Deploy the [Full Multi-Node Cluster](../../../blueprints/full-multi-node-cluster/) blueprint using [dataflow-graphs-msg-to-dss.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs-msg-to-dss.tfvars.example) as the starting point for your `terraform.tfvars`.
+The example defines Pipeline A for the write side (`msg-to-dss-key`) and an optional Pipeline B for the read and enrich side (`dss-enricher-key`). Remove the second pipeline from `dataflow_graphs` to deploy the write side only.
 
-This creates the complete infrastructure including ACR, the AIO cluster, and the dataflow graph referencing the WASM module. The graph will temporarily reference an ACR artifact that does not yet exist. The graph enters a pending state until Steps 2-4 publish the module.
+This creates the complete infrastructure including ACR, the AIO cluster, and the dataflow graphs referencing the WASM modules. The graphs will temporarily reference ACR artifacts that do not yet exist. They enter a pending state until Steps 2-4 publish the modules.
 
 > [!NOTE]
 > If the full stack is already deployed from a previous run, skip to Step 2.
@@ -81,58 +109,77 @@ This creates the complete infrastructure including ACR, the AIO cluster, and the
 rustup target add wasm32-wasip2
 ```
 
-### Step 3: Build the Module
+### Step 3: Build the Modules
 
-Run the build script from the application root:
+Run the build script from the application root to build both operators:
 
 ```bash
 ./scripts/build-wasm.sh
 ```
 
-The compiled WASM module is output to `operators/msg-to-dss-key/target/wasm32-wasip2/release/msg_to_dss_key.wasm`.
+To build a single operator, pass its name:
+
+```bash
+./scripts/build-wasm.sh msg-to-dss-key
+./scripts/build-wasm.sh dss-enricher-key
+```
+
+The compiled WASM modules are output to:
+
+* `operators/msg-to-dss-key/target/wasm32-wasip2/release/msg_to_dss_key.wasm`
+* `operators/dss-enricher-key/target/wasm32-wasip2/release/dss_enricher_key.wasm`
 
 ### Step 4: Push to Azure Container Registry
 
-Push the compiled module and graph definition to your Azure Container Registry using the provided script. Pass your ACR name as an argument (without the `.azurecr.io` suffix). The script tags the artifacts with the version from `Cargo.toml` and pushes to ACR.
+Push the compiled modules and graph definitions to your Azure Container Registry using the provided script. Pass your ACR name as an argument (without the `.azurecr.io` suffix). The script tags the artifacts with the version from each operator's `Cargo.toml` and pushes to ACR.
 
 ```bash
 ./scripts/push-to-acr.sh <acr_name>
 ```
 
-This pushes:
+To push a single operator, pass its name after the ACR name:
 
-* `<acr_name>.azurecr.io/msg-to-dss-key:<version>` : WASM module
-* `<acr_name>.azurecr.io/msg-to-dss-key-graph:<version>` : Graph definition
+```bash
+./scripts/push-to-acr.sh <acr_name> msg-to-dss-key
+./scripts/push-to-acr.sh <acr_name> dss-enricher-key
+```
 
-Once the artifacts are available in ACR, the dataflow graph resolves and begins processing.
+This pushes four artifacts:
+
+* `<acr_name>.azurecr.io/msg-to-dss-key:<version>` : write WASM module
+* `<acr_name>.azurecr.io/msg-to-dss-key-graph:<version>` : write graph definition
+* `<acr_name>.azurecr.io/dss-enricher-key:<version>` : enrich WASM module
+* `<acr_name>.azurecr.io/dss-enricher-key-graph:<version>` : enrich graph definition
+
+Once the artifacts are available in ACR, the dataflow graphs resolve and begin processing.
 
 ## Updating the Version
 
-To release a new version of the module:
+Each operator is versioned independently from its own `Cargo.toml`. To release a new version of an operator:
 
-1. Increment the version in [operators/msg-to-dss-key/Cargo.toml](operators/msg-to-dss-key/Cargo.toml):
+1. Increment the version in the operator's `Cargo.toml` (for example [operators/dss-enricher-key/Cargo.toml](operators/dss-enricher-key/Cargo.toml)):
 
    ```toml
    [package]
    version = "2.0.0"
    ```
 
-2. Update the graph artifact reference in your `terraform.tfvars` to match the new version:
+2. Update the matching graph artifact reference in your `terraform.tfvars`:
 
    ```hcl
-   artifact = "msg-to-dss-key-graph:2.0.0"
+   artifact = "dss-enricher-key-graph:2.0.0"
    ```
 
-3. Rebuild and push the updated artifacts:
+3. Rebuild and push the updated operator:
 
    ```bash
-   ./scripts/build-wasm.sh
-   ./scripts/push-to-acr.sh <acr_name>
+   ./scripts/build-wasm.sh dss-enricher-key
+   ./scripts/push-to-acr.sh <acr_name> dss-enricher-key
    ```
 
 ## Configuration
 
-### Graph Definition Parameters
+### Write Operator Parameters (`msg-to-dss-key`)
 
 | Parameter    | Required | Default | Description                                                                                                               |
 |--------------|----------|---------|---------------------------------------------------------------------------------------------------------------------------|
@@ -236,6 +283,62 @@ This pattern is useful when:
 
 Reference: [Filter and route data in data flow graphs](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-filter-route?tabs=portal)
 
+### Enrich Operator Parameters (`dss-enricher-key`)
+
+| Parameter    | Required | Default | Description                                                                                                                                                                                           |
+|--------------|----------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `keyPath`    | Yes      | (none)  | RFC 6901 JSON Pointer to the field used as the DSS lookup key. Examples: `/id`, `/data/entityId`, `/items/0/ref`                                                                                      |
+| `keyPrefix`  | Yes      | (none)  | Required non-empty string prepended to the extracted key value for namespace isolation. Must match the writer prefix. Example: `device:` produces key `device:sensor-001`                             |
+| `outputPath` | No       | (empty) | RFC 6901 JSON Pointer (same syntax as `keyPath`) where enriched data is injected. Empty merges at root. Intermediate objects are created as needed, e.g. `/data/context` nests under `$.data.context` |
+| `fields`     | No       | `*`     | Comma-separated list of fields to extract from the stored record. `*` extracts all top-level fields. Example: `location,calibration,name`                                                             |
+| `onMissing`  | No       | `skip`  | Behavior when key is not found in DSS: `skip` (passthrough with warning), `error` (return error, drops message), `default` (inject empty object at outputPath)                                        |
+| `onError`    | No       | `skip`  | Behavior on state store errors: `skip` (passthrough with warning), `error` (return error)                                                                                                             |
+
+#### Enrich Validation Rules
+
+The init phase returns `false` and halts the dataflow when any of the following validations fail:
+
+* `keyPath` must be non-empty and start with `/` (RFC 6901)
+* `keyPrefix` must be non-empty for namespace isolation
+* `outputPath` if provided must be an RFC 6901 JSON Pointer starting with `/` (same syntax as `keyPath`)
+* `fields` if provided must be non-empty comma-separated identifiers
+* `onMissing` must be one of `skip`, `error`, or `default`
+* `onError` must be one of `skip` or `error`
+
+#### Enrich Configuration Examples
+
+Merge all stored fields at the root:
+
+```text
+keyPath=/deviceId
+keyPrefix=device:
+```
+
+* Incoming: `{"deviceId": "sensor-001", "temp": 22}` and DSS `device:sensor-001` = `{"location": "lab"}`
+* Output: `{"deviceId": "sensor-001", "temp": 22, "location": "lab"}`
+
+Select fields under a namespace:
+
+```text
+keyPath=/deviceId
+keyPrefix=device:
+outputPath=/deviceContext
+fields=name,category
+```
+
+* Incoming: `{"deviceId": "X", "value": 1}` and DSS `device:X` = `{"name": "Widget", "category": "A", "internal_code": "secret"}`
+* Output: `{"deviceId": "X", "value": 1, "deviceContext": {"name": "Widget", "category": "A"}}`
+
+Strict mode that drops messages without matching state:
+
+```text
+keyPath=/deviceId
+keyPrefix=device:
+onMissing=error
+```
+
+Messages referencing unknown device IDs are dropped with an error.
+
 ### Using Built-in Enrichment to Read from DSS
 
 After writing state with this operator, downstream pipelines can read back the stored data using AIO's built-in enrichment feature. This creates a two-pipeline stitching pattern: one pipeline writes entity state to the DSS, and a second pipeline enriches incoming events with that stored state using only built-in transforms.
@@ -278,14 +381,14 @@ map:
 
 #### Enrichment behavior reference
 
-| Aspect               | Behavior                                                                                                        |
-|----------------------|-----------------------------------------------------------------------------------------------------------------|
-| Dataset source       | DSS key specified as a static string in the DataflowGraph resource                                              |
-| Data format          | NDJSON (newline-delimited JSON). A single JSON object without a trailing newline is valid single-record NDJSON. |
-| Match expression     | Boolean expression comparing `$source` fields against `$context` fields                                         |
-| Context access       | `$context(<alias>).<field>` in map, filter, or branch expressions                                               |
-| Supported transforms | Built-in map, filter, and branch transforms                                                                     |
-| Dynamic key lookup   | Not supported by built-in enrichment. Requires a custom WASM state reader operator.                             |
+| Aspect               | Behavior                                                                                                                                     |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| Dataset source       | DSS key specified as a static string in the DataflowGraph resource                                                                           |
+| Data format          | NDJSON (newline-delimited JSON). A single JSON object without a trailing newline is valid single-record NDJSON.                              |
+| Match expression     | Boolean expression comparing `$source` fields against `$context` fields                                                                      |
+| Context access       | `$context(<alias>).<field>` in map, filter, or branch expressions                                                                            |
+| Supported transforms | Built-in map, filter, and branch transforms                                                                                                  |
+| Dynamic key lookup   | Not supported by built-in enrichment. Use the [`dss-enricher-key`](#enrich-operator-parameters-dss-enricher-key) operator in this component. |
 
 > [!NOTE]
 > The `msg-to-dss-key` operator stores each message as a single JSON object per key. This is compatible with AIO enrichment because a single JSON object is valid single-record NDJSON. For multi-record datasets (multiple entities under one key), populate the state store directly using the [AIO state store CLI](https://github.com/Azure/iot-operations-sdks/tree/main/tools/statestore-cli) with NDJSON content.
@@ -322,14 +425,35 @@ State store write errors are logged but do not drop messages. Common causes:
 * The DSS is not initialized on the cluster. Verify that AIO IoT Operations is deployed and the state store is healthy.
 * The key exceeds the maximum allowed length. Reduce `keyPrefix` length or select a shorter key field.
 
-### Init validation errors
+### Write init validation errors
 
-The operator returns `false` during init if required configuration is missing or invalid. Check the dataflow logs for specific error messages:
+The `msg-to-dss-key` operator returns `false` during init if required configuration is missing or invalid. Check the dataflow logs for specific error messages:
 
 * `Missing required configuration: 'keyPath'`: Add the `keyPath` parameter to the graph definition.
 * `Missing required configuration: 'ttlSeconds'`: Add the `ttlSeconds` parameter to the graph definition.
 * `Invalid keyPath '...'`: The value must start with `/` and follow RFC 6901 JSON Pointer syntax.
 * `Invalid onMissing value '...'`: Use `skip` or `error`.
+
+### Enriched messages pass through without enrichment
+
+When `onMissing=skip` (the default) and `onError=skip`, the `dss-enricher-key` operator returns the original message whenever the key is missing or a read fails. Check the dataflow logs for warnings:
+
+* `Key '...' not found in state store`: The write pipeline has not stored this key, or its TTL expired. Confirm the write pipeline is running and that both operators use the same `keyPath` and `keyPrefix`.
+* `keyPath '...' not found in message`: The incoming message does not contain the configured pointer path. Verify the source topic payload shape.
+* `Stored value for key '...' is not valid JSON`: The DSS record was not written as JSON. Confirm the write side stores JSON objects.
+
+### Enrich init validation errors
+
+The `dss-enricher-key` operator returns `false` during init if required configuration is missing or invalid. Check the dataflow logs for specific error messages:
+
+* `Missing required configuration: 'keyPath'`: Add the `keyPath` parameter to the graph definition.
+* `Invalid keyPath '...'`: The value must start with `/` and follow RFC 6901 JSON Pointer syntax.
+* `Missing required configuration: 'keyPrefix'` / `Invalid keyPrefix`: Provide a non-empty `keyPrefix` matching the write side namespace.
+* `Invalid outputPath '...'`: The value must start with `/` and follow RFC 6901 JSON Pointer syntax (same as `keyPath`).
+* `Invalid onMissing value '...'`: Use `skip`, `error`, or `default`.
+* `Invalid onError value '...'`: Use `skip` or `error`.
+
+The enrich operator preserves the original field order of the incoming message and appends enrichment fields, so enriched output stays visually consistent with the source message.
 
 ## Capacity and Performance Considerations
 
@@ -346,6 +470,8 @@ Before deploying, evaluate the expected message rate on the source topic and con
 * **Broker memory profile**: The MQTT broker's memory profile affects how much data can be buffered in flight. For workloads that generate sustained write volume, review the broker's memory profile (`Tiny`, `Low`, `Medium`, `High`) and consider whether disk-backed persistence is appropriate.
   See [Configure broker settings for high availability, scaling, and memory usage](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-availability-scale?tabs=portal)
   for memory profile options and sizing guidance.
+
+The `dss-enricher-key` operator carries the same constraints on the read path. It performs one synchronous `state_store::get` per message, so avoid high-speed topics where each message adds read latency and broker memory pressure. The AIO runtime caches frequently accessed keys, so repeated lookups for the same key benefit from that layer. Enriched messages are larger than originals, so monitor broker memory profiles when merging large stored records.
 
 ## Example: Food Manufacturing Lot Traceability
 
@@ -367,7 +493,7 @@ A food factory operates two production lines on different schedules. The **Filli
         ▼              │           │              ▼
   ┌──────────────┐     │           │     ┌──────────────────┐
   │ Pipeline A   │     │           │     │ Pipeline B       │
-  │ msg_to_dss   │     │           │     │ built-in enrich  │
+  │ msg_to_dss   │     │           │     │ dss_enricher_key │
   │ key          │     │           │     │ from DSS         │
   └──────┬───────┘     │           │     └────┬────────┬────┘
          │             │           │          │        │
@@ -403,7 +529,7 @@ Result: DSS key `lot:LOT-2026-04-08-0042` stores the full JSON payload.
 
 ### Pipeline B: Enrich packaging events with lot context
 
-When Line B begins packaging a lot, it publishes a lean event referencing the lot number. Pipeline B uses built-in enrichment to look up the lot metadata from the DSS and merge both records into a single consolidated message.
+When Line B begins packaging a lot, it publishes a lean event referencing the lot number. Each event references a different lot, so the DSS key is known only at runtime. Built-in enrichment cannot help here because its `datasets` configuration requires a static key string fixed at deployment time. Pipeline B uses the `dss-enricher-key` operator, which builds the lookup key dynamically from each message and merges the stored lot metadata into the outgoing event.
 
 Example message on `packaging/started`:
 
@@ -411,51 +537,16 @@ Example message on `packaging/started`:
 {
   "lotId": "LOT-2026-04-08-0042",
   "packagingLineId": "packaging-line-B",
-  "palletId": "PLT-7891",
+  "containerId": "CNT-7891",
   "startedAt": "2026-04-08T14:22:00Z"
 }
 ```
 
-The DataflowGraph for Pipeline B uses a `datasets` enrichment to read from the DSS key written by Pipeline A:
+Pipeline B configures `dss-enricher-key` to construct the same key Pipeline A wrote (`lot:` prepended to the `lotId` value) and merge the selected lot fields into the message at the root.
 
-```yaml
-datasets:
-  - key: "lot:LOT-2026-04-08-0042"
-    inputs:
-      - "$source.lotId"
-      - "$context.lotId"
-    expression: "$1 == $2"
-```
+**Graph configuration**: `keyPath=/lotId`, `keyPrefix=lot:`, `fields=productType,fillWeight,qualityGrade,completedAt`
 
-A map transform merges the stored lot fields into the outgoing message:
-
-```yaml
-map:
-  - inputs:
-      - "$source.lotId"
-    output: "lotId"
-  - inputs:
-      - "$source.packagingLineId"
-    output: "packagingLineId"
-  - inputs:
-      - "$source.palletId"
-    output: "palletId"
-  - inputs:
-      - "$source.startedAt"
-    output: "packagingStartedAt"
-  - inputs:
-      - "$context(lot).productType"
-    output: "productType"
-  - inputs:
-      - "$context(lot).fillWeight"
-    output: "fillWeight"
-  - inputs:
-      - "$context(lot).qualityGrade"
-    output: "qualityGrade"
-  - inputs:
-      - "$context(lot).completedAt"
-    output: "fillingCompletedAt"
-```
+For each packaging event the operator extracts the value at `/lotId`, reads the DSS record at `lot:<lotId>`, and merges the configured fields into the outgoing message. Source fields take precedence, so the event's own `lotId` and timestamps are preserved.
 
 The enriched output sent to the cloud:
 
@@ -463,33 +554,43 @@ The enriched output sent to the cloud:
 {
   "lotId": "LOT-2026-04-08-0042",
   "packagingLineId": "packaging-line-B",
-  "palletId": "PLT-7891",
-  "packagingStartedAt": "2026-04-08T14:22:00Z",
+  "containerId": "CNT-7891",
+  "startedAt": "2026-04-08T14:22:00Z",
   "productType": "apple-sauce-500ml",
   "fillWeight": 502.3,
   "qualityGrade": "A",
-  "fillingCompletedAt": "2026-04-08T09:14:00Z"
+  "completedAt": "2026-04-08T09:14:00Z"
 }
 ```
 
-### Why this works well with `msg-to-dss-key`
+### Why this works well with these operators
 
-* **Low message rate**: ~1,000 lots/day is well within the operator's design envelope for state store writes.
+* **Low message rate**: ~1,000 lots/day is well within each operator's design envelope for state store writes and reads.
 * **Natural TTL alignment**: A 48-hour TTL covers the typical gap between filling and packaging. Expired lots that were never packaged are automatically cleaned up.
-* **`onMissing` safety net**: If Pipeline B references a lot that hasn't been produced yet or whose TTL has expired, the `onMissing` configuration controls whether the message passes through with a warning (`skip`) or is dropped (`error`).
-* **No custom read-side code**: Pipeline B uses only built-in AIO enrichment transforms — no additional WASM development required.
+* **`onMissing` safety net**: If Pipeline B references a lot that hasn't been produced yet or whose TTL has expired, the `dss-enricher-key` `onMissing` configuration controls whether the message passes through with a warning (`skip`) or is dropped (`error`).
+* **Dynamic key lookup**: Each packaging event references a different lot, so the DSS key is known only at runtime. The `dss-enricher-key` operator builds the key from message content, which built-in enrichment with static `datasets` keys cannot do.
 
 ## Limitations
 
+### Write operator (`msg-to-dss-key`)
+
 * `onMissing=skip` is the default behavior. Messages where the `keyPath` is not found are silently passed through with only a log warning.
 * Each key stores a single JSON object. The operator does not produce multi-record NDJSON datasets.
-* Dynamic key lookup at enrichment time (where the key name is determined from the incoming message) is not supported by built-in enrichment and requires a custom WASM state reader operator.
+* Dynamic key lookup at enrichment time (where the key name is determined from the incoming message) is not supported by built-in enrichment. The [`dss-enricher-key`](#read-and-enrich-side-dss-enricher-key) operator in this component performs this dynamic-key enrichment, matching the same `keyPath` and `keyPrefix` written here.
 * Not designed for high-throughput telemetry. See [Capacity and Performance Considerations](#capacity-and-performance-considerations) for sizing guidance.
+
+### Enrich operator (`dss-enricher-key`)
+
+* Each operator invocation looks up exactly one key. Multi-key enrichment that correlates against an array of IDs requires a custom operator or multiple chained instances.
+* Only top-level field extraction is supported in `fields`. Nested field selection requires `*` (all fields) with downstream post-processing.
+* The operator does not subscribe to KEYNOTIFY. State changes are reflected only on the next `get` call, not reactively.
+* Source fields always take precedence during root-level merge. Use `outputPath` to isolate enrichment data when override behavior is needed.
 
 ## References
 
 * [Develop WASM Modules for AIO](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-develop-wasm-modules?tabs=rust)
 * [Use WASM with Data Flow Graphs](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graph-wasm?tabs=portal)
+* [WASM Module Host APIs](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concepts-wasm-modules#host-apis)
 * [Enrich Data with External Datasets](https://learn.microsoft.com/azure/iot-operations/connect-to-cloud/howto-dataflow-graphs-enrich)
 * [ORAS CLI Documentation](https://oras.land/docs/)
 * [AIO State Store Overview](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/concept-about-state-store-protocol)

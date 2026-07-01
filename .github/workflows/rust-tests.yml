@@ -88,7 +88,7 @@ jobs:
       # to fully close the supply-chain gap.
       - name: Cache Syft binary
         id: cache-syft
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /usr/local/bin/syft
           key: syft-bin-v1.17.0-linux-amd64
@@ -151,7 +151,7 @@ jobs:
           rustup default stable
 
       - name: Cache cargo registry and build
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.cargo/registry
@@ -167,7 +167,8 @@ jobs:
 
       - name: Generate Cobertura coverage
         working-directory: ${{ matrix.crate }}
-        run: cargo llvm-cov --cobertura --output-path coverage.xml
+        shell: bash
+        run: cargo llvm-cov --locked --cobertura --output-path coverage.xml
 
       - name: Upload to Codecov
         if: success()

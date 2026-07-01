@@ -70,23 +70,8 @@ RUN if [ "$BACKEND" = "onnx" ]; then \
 
 WORKDIR /app
 
-# Define a build argument to control whether to use replace-with (default to false for local builds)
-ARG USE_REPLACE_WITH=false
-
-# Create .cargo directory and config file for Azure IoT Operations SDK access
-RUN mkdir -p .cargo && \
-    echo '[registries]' > .cargo/config.toml && \
-    echo 'aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }' >> .cargo/config.toml && \
-    echo '' >> .cargo/config.toml && \
-    if [ "$USE_REPLACE_WITH" = "true" ]; then \
-      echo '[source.crates-io]' >> .cargo/config.toml && \
-      echo 'replace-with = "aio-sdks"' >> .cargo/config.toml && \
-      echo '' >> .cargo/config.toml && \
-      echo '# Note: This requires authentication to the Azure Artifacts feed' >> .cargo/config.toml && \
-      echo '# The pipeline should provide credentials to access both Azure packages and mirrored crates.io packages' >> .cargo/config.toml; \
-    else \
-      echo '# For local development: not using replace-with to avoid authentication issues' >> .cargo/config.toml; \
-    fi
+# Create .cargo directory for Cargo configuration
+RUN mkdir -p .cargo
 
 # Copy the ai-edge-inference-crate dependency to the correct relative path
 COPY ./ai-edge-inference-crate ../ai-edge-inference-crate

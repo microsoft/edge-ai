@@ -13,6 +13,22 @@ resource "azurerm_user_assigned_identity" "function_identity" {
   tags = var.tags
 }
 
+locals {
+  // Inject the Function identity client ID for Event Hub managed-identity auth when an
+  // Event Hub connection is configured. Computing it here from the identity resource avoids
+  // a module self-dependency that callers would otherwise create by feeding the client ID back
+  // in through app_settings.
+  app_settings = merge(
+    var.app_settings,
+    {
+      AZURE_CLIENT_ID = azurerm_user_assigned_identity.function_identity.client_id
+    },
+    contains(keys(var.app_settings), "EventHubConnection__fullyQualifiedNamespace") ? {
+      "EventHubConnection__clientId" = azurerm_user_assigned_identity.function_identity.client_id
+    } : {}
+  )
+}
+
 resource "azurerm_storage_account" "function_storage" {
   name                            = "st${lower(var.resource_prefix)}${lower(var.environment)}fn${var.instance}"
   resource_group_name             = var.resource_group_name
@@ -74,12 +90,7 @@ resource "azurerm_linux_function_app" "function_app" {
     }
   }
 
-  app_settings = merge(
-    var.app_settings,
-    {
-      AZURE_CLIENT_ID = azurerm_user_assigned_identity.function_identity.client_id
-    }
-  )
+  app_settings = local.app_settings
 
   depends_on = [
     azurerm_role_assignment.function_storage_blob_data_contributor,
@@ -120,12 +131,7 @@ resource "azurerm_windows_function_app" "function_app" {
     }
   }
 
-  app_settings = merge(
-    var.app_settings,
-    {
-      AZURE_CLIENT_ID = azurerm_user_assigned_identity.function_identity.client_id
-    }
-  )
+  app_settings = local.app_settings
 
   depends_on = [
     azurerm_role_assignment.function_storage_blob_data_contributor,
