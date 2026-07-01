@@ -39,6 +39,6 @@ variable "azure_ad_config" {
     audience  = optional(string, "c632b3df-fb67-4d84-bdcf-b95ad541b5c8")
     issuer    = optional(string)
   })
-  description = "Azure AD configuration for VPN Gateway authentication. tenant_id is required when should_use_azure_ad_auth is true. audience defaults to Microsoft-registered app. issuer will default to 'https://sts.windows.net/{tenant_id}/' when not provided"
+  description = "Azure AD configuration for VPN Gateway authentication. tenant_id is required when should_use_azure_ad_auth is true. audience defaults to Microsoft-registered app. issuer will default to `https://sts.windows.net/{tenant_id}/` when not provided"
   default     = {}
 }
