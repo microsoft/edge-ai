@@ -63,3 +63,9 @@ variable "should_create_fabric_workspace" {
   type        = bool
   default     = false
 }
+
+variable "skip_capacity_state_validation" {
+  type        = bool
+  description = "When true, skips validation of Fabric capacity state during workspace provisioning. Useful for non-production environments where capacity may be paused."
+  default     = true
+}
