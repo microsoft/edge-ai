@@ -1,0 +1,21 @@
+# Sparse input manifest (user provides this)
+# Contains only what the engineer knows: IP, credentials, and a label
+# The camera-onboarding agent discovers the rest
+
+site:
+  name: "Factory Floor A"
+  location: "Building 3, Level 2"
+
+cameras:
+  - ip: 192.168.1.221
+    username: admin
+    password: "${CAMERA_1_PASSWORD}"
+    label: "Loading Dock East"
+  - ip: 192.168.1.64
+    username: admin
+    password: "${CAMERA_2_PASSWORD}"
+    label: "Assembly Line 1"
+  - ip: 192.168.1.88
+    username: admin
+    password: "${CAMERA_3_PASSWORD}"
+    label: "Parking Lot North"
