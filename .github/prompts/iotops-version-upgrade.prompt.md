@@ -17,9 +17,22 @@ Use runSubagent tool for complex steps in this prompt like executing scripts, fe
 ### Components Analyzed by This Prompt
 
 This prompt analyzes and updates the following IoT Operations-related components:
-- **110-iot-ops**: Core IoT Operations instance, brokers, authentication, and listeners
+- **109-arc-extensions**: Arc dependency extensions — `cert-manager` (`certManager`) and container storage. cert-manager is tracked against the AIO manifest; container storage is **not** currently published in the manifest, so leave it unless the manifest reintroduces it.
+- **110-iot-ops**: Core IoT Operations instance, brokers, authentication, and listeners — includes the AIO instance version (`iotOperations`) and the Secret Store extension (`secretStore`).
 - **111-assets**: Azure Device Registry assets and endpoint profiles
 - **130-messaging**: Dataflow endpoints, profiles, and messaging integration
+
+### Component-to-Manifest Version Map
+
+The AIO manifests publish component versions under `variables.VERSIONS`/`variables.TRAINS`. These map to codebase variables as follows (kept in sync by `scripts/aio-version-checker.py`):
+
+| Manifest key    | Manifest file | Terraform                                                                                     | Bicep                                                                   |
+|-----------------|---------------|-----------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `certManager`   | enablement    | `109-arc-extensions/terraform/variables.tf` (`arc_extensions.cert_manager_extension.version`) | `109-arc-extensions/bicep/types.bicep` (`certManagerExtensionDefaults`) |
+| `secretStore`   | enablement    | `110-iot-ops/terraform/variables.init.tf` (`secret_sync_controller`)                          | `110-iot-ops/bicep/types.bicep` (`secretStoreExtensionDefaults`)        |
+| `iotOperations` | instance      | `110-iot-ops/terraform/variables.instance.tf` (`operations_config`)                           | `110-iot-ops/bicep/types.bicep` (`aioExtensionDefaults`)                |
+
+If a new manifest key appears (e.g. container storage returns, or a new dependency extension is added), add it to both the codebase and the `aio-version-checker.py` mappings (`TERRAFORM_COMPONENTS`, `BICEP_COMPONENTS`, `BICEP_COMPONENT_FILES`, and any dedicated extractor) so future CI catches drift.
 
 ### Workflow Overview
 
@@ -42,7 +55,7 @@ These steps must be completed immediately to gather all necessary information be
 
 ### Execution Requirements for Phase 1:
 - **Sequential Execution**: Complete steps 1-6 in order before proceeding to Phase 2
-- **Component Coverage**: Analyze ALL three components (110-iot-ops, 111-assets, 130-messaging)
+- **Component Coverage**: Analyze ALL four components (109-arc-extensions, 110-iot-ops, 111-assets, 130-messaging)
 - **API Validation**: Cross-validate with REST specifications to catch breaking changes
 - **Structural Comparison**: Detect ALL differences between JSON and codebase (new, removed, changed)
 - **Complete Analysis**: Do not skip to planning until all immediate analysis is complete
@@ -313,6 +326,27 @@ Check the following files within the `src/100-edge/110-iot-ops/` component:
 
 Before moving to the next step: update the plan file.
 
+## 4.5. Arc Extensions Component Analysis (109-arc-extensions) - EXECUTE IMMEDIATELY
+
+**EXECUTE IMMEDIATELY**: The `cert-manager` (`certManager`) dependency extension lives in `109-arc-extensions`, not `110-iot-ops`. Container storage also lives here but is currently **not** published in the enablement manifest.
+
+**Analysis Process**:
+1. Read the current cert-manager and container storage versions:
+   - Terraform: `src/100-edge/109-arc-extensions/terraform/variables.tf` (`arc_extensions.cert_manager_extension.version` and `container_storage_extension.version`)
+   - Bicep: `src/100-edge/109-arc-extensions/bicep/types.bicep` (`certManagerExtensionDefaults`, `containerStorageExtensionDefaults`)
+2. Compare the enablement manifest `variables.VERSIONS.certManager` against the codebase cert-manager version. Plan a bump (both Terraform and Bicep) when they differ.
+3. For container storage: only plan a change if the manifest reintroduces a container storage key. Otherwise leave it as-is and note this in the plan.
+4. Confirm no structural changes — these are version-default-only variables.
+
+<!-- <example-arc-extensions-plan-entries> -->
+```markdown
+- [ ] Update `certManagerExtensionDefaults.release.version` from "<old>" to "<new>" in `src/100-edge/109-arc-extensions/bicep/types.bicep` (manifest `certManager`).
+- [ ] Update `arc_extensions.cert_manager_extension.version` default from "<old>" to "<new>" in `src/100-edge/109-arc-extensions/terraform/variables.tf` (manifest `certManager`).
+```
+<!-- </example-arc-extensions-plan-entries> -->
+
+Before moving to the next step: update the plan file.
+
 ## 5. Assets Component Analysis (111-assets) - EXECUTE IMMEDIATELY
 
 **EXECUTE IMMEDIATELY**: Extend the same API version analysis to the Assets module to detect any API changes:
@@ -349,11 +383,12 @@ Before moving to the next step: update the plan file.
 - ✅ Target version configuration downloaded
 - ✅ REST API specifications cross-validated
 - ✅ Core IoT Operations component (110-iot-ops) analyzed
+- ✅ Arc extensions component (109-arc-extensions) analyzed (cert-manager)
 - ✅ Assets component (111-assets) analyzed
 - ✅ Messaging component (130-messaging) analyzed
 
 **CRITICAL**: Do not proceed to Phase 2 until ALL analysis is complete. The following are common execution pitfalls to avoid:
-- ❌ **Don't skip component analysis**: All three components must be analyzed, not just 110-iot-ops
+- ❌ **Don't skip component analysis**: All four components must be analyzed (109-arc-extensions, 110-iot-ops, 111-assets, 130-messaging), not just 110-iot-ops
 - ❌ **Don't defer REST validation**: API specifications must be validated immediately, not marked as "future work"
 - ❌ **Don't mix analysis with planning**: Complete all discovery before creating implementation plans
 
@@ -679,6 +714,8 @@ Plan validation steps to ensure comprehensive coverage of changes beyond the JSO
 ```markdown
 - [ ] VALIDATE: Test all blueprints that use `110-iot-ops` component deploy successfully.
 - [ ] VALIDATE: Verify CI tests cover new parameters and resource types.
+- [ ] VALIDATE: Run `python3 scripts/aio-version-checker.py --release-tag <target-tag>` and confirm it returns `[]` (no mismatches) for both Terraform and Bicep across 109-arc-extensions and 110-iot-ops. If the checker misses a component you changed (e.g. a newly added manifest key), update its mappings so future CI catches drift.
+- [ ] VALIDATE: Update `docs/getting-started/upgrade-aio.md` — set the target AIO release, and the version-matrix row (compatible `azure-iot-ops` CLI version, cert-manager, secret-sync-controller, iotOperations) and `ms.date`. Source the CLI↔AIO↔component mapping from the [IoT Operations versions wiki](https://github.com/Azure/azure-iot-ops-cli-extension/wiki/IoT-Operations-versions).
 ```
 
 Before moving to the next step: update the plan file.
