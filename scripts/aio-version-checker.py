@@ -592,15 +592,15 @@ def extract_tf_arc_extension_variables(
     Returns:
         List[Dict[str, str]]: A list with a single ``cert_manager`` entry when a
             version/train is found; otherwise an empty list.
+
+    Raises:
+        SystemExit: If the file cannot be read or parsed.
     """
     logger.debug(f"Reading Terraform arc-extensions file: {tf_arc_file}")
 
     try:
         with open(tf_arc_file) as f:
             parsed = hcl2.load(f)
-    except OSError as e:
-        logger.error(f"Failed to read Terraform arc-extensions file: {e}")
-        return []
     except Exception as e:
         logger.error(f"Failed to parse Terraform arc-extensions file: {e}")
         sys.exit(1)
