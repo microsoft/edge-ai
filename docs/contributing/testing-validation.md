@@ -289,7 +289,7 @@ Before committing, verify:
 Each component should include comprehensive tests:
 
 ```text
-src/000-cloud/010-security-identity/
+src/000-cloud/000-resource-group/
 ├── terraform/
 │   ├── main.tf
 │   ├── variables.tf
