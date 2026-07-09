@@ -16,6 +16,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | arcOnboardingSpClientSecret      | The Service Principal Client Secret for Arc onboarding.                                                                                                                                                                                       | `securestring`                     | n/a                                                                                                                                | no       |
 | arcOnboardingSpPrincipalId       | Service Principal Object Id used when assigning roles for Arc onboarding.                                                                                                                                                                     | `string`                           | n/a                                                                                                                                | no       |
 | arcOnboardingIdentityName        | The resource name for the identity used for Arc onboarding.                                                                                                                                                                                   | `string`                           | n/a                                                                                                                                | no       |
+| arcOnboardingPrincipalIds        | The principal IDs of the Arc-enabled machine system-assigned identities used for onboarding. (Supplied instead of arcOnboardingIdentityName when targeting pre-existing Arc machines)                                                         | `string[]`                         | n/a                                                                                                                                | no       |
 | customLocationsOid               | The object id of the Custom Locations Entra ID application for your tenant.<br>Can be retrieved using:<br><br>  <pre><code class="language-sh">  az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv<br>  </code></pre> | `string`                           | n/a                                                                                                                                | yes      |
 | shouldAddCurrentUserClusterAdmin | Whether to add the current user as a cluster admin.                                                                                                                                                                                           | `bool`                             | `true`                                                                                                                             | no       |
 | shouldEnableArcAutoUpgrade       | Whether to enable auto-upgrade for Azure Arc agents.                                                                                                                                                                                          | `bool`                             | [not(equals(parameters('common').environment, 'prod'))]                                                                            | no       |
@@ -23,10 +24,13 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | clusterAdminUpn                  | The User Principal Name that will be given cluster-admin permissions.                                                                                                                                                                         | `string`                           | n/a                                                                                                                                | no       |
 | clusterNodeVirtualMachineNames   | The node virtual machines names.                                                                                                                                                                                                              | `string[]`                         | n/a                                                                                                                                | no       |
 | clusterServerVirtualMachineName  | The server virtual machines name.                                                                                                                                                                                                             | `string`                           | n/a                                                                                                                                | no       |
+| clusterServerArcMachineName      | The name of the Arc-enabled server machine. (Used instead of clusterServerVirtualMachineName when shouldDeployArcMachines is true)                                                                                                            | `string`                           | n/a                                                                                                                                | no       |
+| clusterNodeArcMachineNames       | The names of the Arc-enabled node machines. (Used instead of clusterNodeVirtualMachineNames when shouldDeployArcMachines is true)                                                                                                             | `string[]`                         | n/a                                                                                                                                | no       |
 | clusterServerHostMachineUsername | Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)                                                                                                     | `string`                           | [parameters('common').resourcePrefix]                                                                                              | no       |
 | clusterServerIp                  | The IP address for the server for the cluster. (Needed for mult-node cluster)                                                                                                                                                                 | `string`                           | n/a                                                                                                                                | no       |
 | serverToken                      | The token that will be given to the server for the cluster or used by agent nodes.                                                                                                                                                            | `securestring`                     | n/a                                                                                                                                | no       |
 | shouldAssignRoles                | Whether to assign roles for Arc Onboarding.                                                                                                                                                                                                   | `bool`                             | `true`                                                                                                                             | no       |
+| shouldDeployArcMachines          | Whether to deploy the scripts to pre-existing Azure Arc-enabled machines instead of Azure VMs.                                                                                                                                                | `bool`                             | `false`                                                                                                                            | no       |
 | shouldDeployScriptToVm           | Whether to deploy the scripts to the VM.                                                                                                                                                                                                      | `bool`                             | `true`                                                                                                                             | no       |
 | shouldSkipInstallingAzCli        | Should skip downloading and installing Azure CLI on the server.                                                                                                                                                                               | `bool`                             | `false`                                                                                                                            | no       |
 | shouldSkipAzCliLogin             | Should skip login process with Azure CLI on the server.                                                                                                                                                                                       | `bool`                             | `false`                                                                                                                            | no       |
@@ -46,6 +50,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | roleAssignment          | `Microsoft.Resources/deployments` | 2025-04-01  |
 | keyVaultRoleAssignments | `Microsoft.Resources/deployments` | 2025-04-01  |
 | deployScriptsToVm       | `Microsoft.Resources/deployments` | 2025-04-01  |
+| deployScriptsToArc      | `Microsoft.Resources/deployments` | 2025-04-01  |
 
 ## Modules
 
@@ -55,6 +60,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | roleAssignment          | Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed identity or service principal. |
 | keyVaultRoleAssignments | Assigns appropriate roles to access Key Vault secrets.                                                          |
 | deployScriptsToVm       | Deploys a script to a virtual machine using the CustomScript extension.                                         |
+| deployScriptsToArc      | Deploys a script to an Azure Arc-enabled machine using the CustomScript machine extension.                      |
 
 ## Module Details
 
@@ -109,21 +115,21 @@ Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed
 
 #### Parameters for roleAssignment
 
-| Name                     | Description                                                                      | Type     | Default | Required |
-|:-------------------------|:---------------------------------------------------------------------------------|:---------|:--------|:---------|
-| arcOnboardingPrincipalId | The Principal ID for the identity that will be assigned the Arc Onboarding role. | `string` | n/a     | yes      |
+| Name                      | Description                                                                         | Type    | Default | Required |
+|:--------------------------|:------------------------------------------------------------------------------------|:--------|:--------|:---------|
+| arcOnboardingPrincipalIds | The Principal IDs for the identities that will be assigned the Arc Onboarding role. | `array` | n/a     | yes      |
 
 #### Resources for roleAssignment
 
-| Name                                                                                                       | Type                                      | API Version |
-|:-----------------------------------------------------------------------------------------------------------|:------------------------------------------|:------------|
-| [guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), '34e09817-6cbe-4d01-b1a2-e0eac5743d41')] | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
+| Name                        | Type                                      | API Version |
+|:----------------------------|:------------------------------------------|:------------|
+| arcOnboardingRoleAssignment | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
 
 #### Outputs for roleAssignment
 
-| Name             | Type     | Description                                                                  |
-|:-----------------|:---------|:-----------------------------------------------------------------------------|
-| roleAssignmentId | `string` | The ID of the role assignment for Kubernetes Cluster - Azure Arc Onboarding. |
+| Name              | Type    | Description                                                                    |
+|:------------------|:--------|:-------------------------------------------------------------------------------|
+| roleAssignmentIds | `array` | The IDs of the role assignments for Kubernetes Cluster - Azure Arc Onboarding. |
 
 ### keyVaultRoleAssignments
 
@@ -131,22 +137,22 @@ Assigns appropriate roles to access Key Vault secrets.
 
 #### Parameters for keyVaultRoleAssignments
 
-| Name                     | Description                                                            | Type     | Default | Required |
-|:-------------------------|:-----------------------------------------------------------------------|:---------|:--------|:---------|
-| arcOnboardingPrincipalId | The principal ID of the Arc identity that needs access to the secrets. | `string` | n/a     | yes      |
-| keyVaultName             | The name of the Key Vault containing the scripts.                      | `string` | n/a     | yes      |
-| nodeScriptSecretName     | The name for the node script secret in Key Vault.                      | `string` | n/a     | yes      |
-| serverScriptSecretName   | The name for the server script secret in Key Vault.                    | `string` | n/a     | yes      |
+| Name                      | Description                                                              | Type     | Default | Required |
+|:--------------------------|:-------------------------------------------------------------------------|:---------|:--------|:---------|
+| arcOnboardingPrincipalIds | The principal IDs of the Arc identities that need access to the secrets. | `array`  | n/a     | yes      |
+| keyVaultName              | The name of the Key Vault containing the scripts.                        | `string` | n/a     | yes      |
+| nodeScriptSecretName      | The name for the node script secret in Key Vault.                        | `string` | n/a     | yes      |
+| serverScriptSecretName    | The name for the server script secret in Key Vault.                      | `string` | n/a     | yes      |
 
 #### Resources for keyVaultRoleAssignments
 
-| Name                                                                                                                                             | Type                                      | API Version |
-|:-------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------|:------------|
-| [guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')]                                       | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
-| [guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('serverScriptSecretName'), '21090545-7ca7-4776-b22c-e363652d74d2')] | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
-| [guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('serverScriptSecretName'), '4633458b-17de-408a-b874-0445c86b69e6')] | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
-| [guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('nodeScriptSecretName'), '21090545-7ca7-4776-b22c-e363652d74d2')]   | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
-| [guid(resourceGroup().id, parameters('arcOnboardingPrincipalId'), parameters('nodeScriptSecretName'), '4633458b-17de-408a-b874-0445c86b69e6')]   | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
+| Name                            | Type                                      | API Version |
+|:--------------------------------|:------------------------------------------|:------------|
+| keyVaultSecretsOfficerRole      | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
+| keyVaultReaderServerSecret      | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
+| keyVaultSecretsUserServerSecret | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
+| keyVaultReaderNodeSecret        | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
+| keyVaultSecretsUserNodeSecret   | `Microsoft.Authorization/roleAssignments` | 2022-04-01  |
 
 ### deployScriptsToVm
 
@@ -168,6 +174,27 @@ Deploys a script to a virtual machine using the CustomScript extension.
 |:----------------------------------------------------|:-----------------------------------------------|:------------|
 | clusterServerVirtualMachine::linuxServerScriptSetup | `Microsoft.Compute/virtualMachines/extensions` | 2024-11-01  |
 | linuxNodeScriptSetup                                | `Microsoft.Compute/virtualMachines/extensions` | 2024-11-01  |
+
+### deployScriptsToArc
+
+Deploys a script to an Azure Arc-enabled machine using the CustomScript machine extension.
+
+#### Parameters for deployScriptsToArc
+
+| Name                        | Description                                                        | Type                               | Default | Required |
+|:----------------------------|:-------------------------------------------------------------------|:-----------------------------------|:--------|:---------|
+| common                      | The common component configuration.                                | `[_1.Common](#user-defined-types)` | n/a     | yes      |
+| clusterServerArcMachineName | The name of the Arc-enabled server machine.                        | `string`                           | n/a     | yes      |
+| clusterNodeArcMachineNames  | The names of the Arc-enabled node machines.                        | `array`                            | n/a     | yes      |
+| clusterNodeScript           | The script for setting up the host machine for the cluster node.   | `securestring`                     | n/a     | yes      |
+| clusterServerScript         | The script for setting up the host machine for the cluster server. | `securestring`                     | n/a     | yes      |
+
+#### Resources for deployScriptsToArc
+
+| Name                   | Type                                          | API Version |
+|:-----------------------|:----------------------------------------------|:------------|
+| linuxServerScriptSetup | `Microsoft.HybridCompute/machines/extensions` | 2025-06-01  |
+| linuxNodeScriptSetup   | `Microsoft.HybridCompute/machines/extensions` | 2025-06-01  |
 
 ## User Defined Types
 
