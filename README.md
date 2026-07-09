@@ -227,3 +227,8 @@ then carefully refined by our team of discerning human reviewers.*
 <!-- markdownlint-enable MD036 -->
 
 [responsible-ai]: https://www.microsoft.com/ai/responsible-ai
+
+## Contributing
+
+<!-- gfi-143 -->
+Thanks for considering a contribution! See open issues labeled `good first issue`.
