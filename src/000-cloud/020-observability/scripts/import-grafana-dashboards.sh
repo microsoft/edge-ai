@@ -68,8 +68,8 @@ AIO_DASHBOARD_URL="https://raw.githubusercontent.com/Azure/azure-iot-operations/
 # "Datasource ${DS_MANAGED_PROMETHEUS_INSTANCE} was not found".
 # Resolve the managed Prometheus datasource uid and bind it before importing.
 resolve_prometheus_datasource_uid() {
-  az grafana data-source list -g "$RESOURCE_GROUP_NAME" -n "$GRAFANA_NAME" -o json |
-    jq -r --arg name "$MONITOR_WORKSPACE_NAME" '
+  az grafana data-source list -g "$RESOURCE_GROUP_NAME" -n "$GRAFANA_NAME" -o json \
+    | jq -r --arg name "$MONITOR_WORKSPACE_NAME" '
       (map(select(.name == $name)) | .[0].uid)
       // (map(select(.type == "prometheus")) | .[0].uid)
       // empty
@@ -91,8 +91,8 @@ else
   trap 'rm -rf "$TMP_DIR"' EXIT
   AIO_DASHBOARD_FILE="${TMP_DIR}/aio.sample.json"
 
-  curl -fsSL "$AIO_DASHBOARD_URL" |
-    jq --arg uid "$DS_UID" '
+  curl -fsSL "$AIO_DASHBOARD_URL" \
+    | jq --arg uid "$DS_UID" '
       walk(if type == "object" and .uid == "${DS_MANAGED_PROMETHEUS_INSTANCE}" then .uid = $uid else . end)
       | del(.__inputs)
     ' >"$AIO_DASHBOARD_FILE"
