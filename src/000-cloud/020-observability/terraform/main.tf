@@ -130,8 +130,9 @@ resource "terraform_data" "apply_scripts" {
     command = "bash ${path.module}/../scripts/import-grafana-dashboards.sh"
 
     environment = {
-      GRAFANA_NAME        = azurerm_dashboard_grafana.monitor.name
-      RESOURCE_GROUP_NAME = var.azmon_resource_group.name
+      GRAFANA_NAME           = azurerm_dashboard_grafana.monitor.name
+      RESOURCE_GROUP_NAME    = var.azmon_resource_group.name
+      MONITOR_WORKSPACE_NAME = azurerm_monitor_workspace.monitor.name
     }
   }
 }
