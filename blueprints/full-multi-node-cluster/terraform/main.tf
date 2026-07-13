@@ -159,7 +159,8 @@ module "cloud_observability" {
 
   azmon_resource_group = module.cloud_resource_group.resource_group
 
-  should_enable_private_endpoints = var.should_enable_private_endpoints
+  should_enable_private_endpoints = coalesce(var.should_enable_observability_private_endpoints, var.should_enable_private_endpoints)
+  should_create_blob_dns_zone     = var.should_enable_private_endpoints
   private_endpoint_subnet_id      = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   virtual_network_id              = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
 }

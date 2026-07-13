@@ -237,11 +237,7 @@ resource dataCollectionEndpoint 'Microsoft.Insights/dataCollectionEndpoints@2023
   properties: {
     description: 'Data Collection Endpoint for Azure Monitor'
     networkAcls: {
-      // Keep the managed Prometheus metrics DCE reachable publicly. Arc-connected edge
-      // clusters have no private DNS route to the cloud VNet private endpoints, so the
-      // Azure Monitor metrics addon (ama-metrics) cannot fetch its DCR config or ingest
-      // over private link and fails with 403 (config must be accessed over private link).
-      publicNetworkAccess: 'Enabled'
+      publicNetworkAccess: shouldEnablePrivateEndpoints ? 'Disabled' : 'Enabled'
     }
   }
   tags: union(defaultTags, tags)
@@ -329,13 +325,9 @@ resource monitorPrivateLinkScope 'Microsoft.Insights/privateLinkScopes@2021-09-0
   name: monitorPrivateLinkScopeName
   location: 'global'
   properties: {
-    // Open access lets the Arc edge cluster reach the metrics DCE config/ingestion path
-    // (it cannot resolve the cloud VNet private endpoints). Scoped resources still enforce
-    // their own posture: Log Analytics and Application Insights keep public query disabled
-    // when private endpoints are enabled, so their query paths remain private.
     accessModeSettings: {
-      ingestionAccessMode: 'Open'
-      queryAccessMode: 'Open'
+      ingestionAccessMode: 'PrivateOnly'
+      queryAccessMode: 'PrivateOnly'
     }
   }
 }

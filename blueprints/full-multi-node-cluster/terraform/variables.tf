@@ -569,6 +569,12 @@ variable "should_enable_private_endpoints" {
   default     = false
 }
 
+variable "should_enable_observability_private_endpoints" {
+  type        = bool
+  description = "Override for Azure Monitor (observability) private endpoints. Defaults to should_enable_private_endpoints when null. Set false for Arc edge clusters, where the managed Prometheus metrics addon cannot fetch its config or ingest over private link and would otherwise leave dashboards empty"
+  default     = null
+}
+
 variable "should_enable_workload_identity" {
   type        = bool
   description = "Whether to enable Azure AD workload identity for the cluster"

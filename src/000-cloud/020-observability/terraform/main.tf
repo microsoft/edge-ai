@@ -29,7 +29,8 @@ resource "azurerm_log_analytics_workspace" "monitor" {
 
   // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
   internet_ingestion_enabled = true
-  internet_query_enabled     = !var.should_enable_private_endpoints
+  // Keep query private whenever the deployment is broadly private, even if the monitor private endpoints are disabled independently
+  internet_query_enabled = !(var.should_enable_private_endpoints || var.should_create_blob_dns_zone)
 
   identity {
     type = "SystemAssigned"
@@ -65,7 +66,8 @@ module "application_insights" {
 
   // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
   internet_ingestion_enabled = true
-  internet_query_enabled     = !var.should_enable_private_endpoints
+  // Keep query private whenever the deployment is broadly private, even if the monitor private endpoints are disabled independently
+  internet_query_enabled = !(var.should_enable_private_endpoints || var.should_create_blob_dns_zone)
 
   tags = var.tags
 }
@@ -219,11 +221,7 @@ resource "azurerm_monitor_data_collection_endpoint" "data_collection_endpoint" {
 
   kind = "Linux"
 
-  // Keep the managed Prometheus metrics DCE reachable publicly. Arc-connected edge
-  // clusters have no private DNS route to the cloud VNet private endpoints, so the
-  // Azure Monitor metrics addon (ama-metrics) cannot fetch its DCR config or ingest
-  // over private link and fails with 403 (config must be accessed over private link).
-  public_network_access_enabled = true
+  public_network_access_enabled = !var.should_enable_private_endpoints
 }
 
 /*
@@ -236,12 +234,8 @@ resource "azurerm_monitor_private_link_scope" "monitor_private_link_scope" {
   name                = "ampls-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name = var.azmon_resource_group.name
 
-  // Open access lets the Arc edge cluster reach the metrics DCE config/ingestion path
-  // (it cannot resolve the cloud VNet private endpoints). Scoped resources still enforce
-  // their own posture: Log Analytics and Application Insights keep internet_query_enabled
-  // disabled when private endpoints are enabled, so their query paths remain private.
-  ingestion_access_mode = "Open"
-  query_access_mode     = "Open"
+  ingestion_access_mode = "PrivateOnly"
+  query_access_mode     = "PrivateOnly"
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "log_analytics" {
@@ -334,7 +328,7 @@ resource "azurerm_private_dns_zone" "agentsvc_azure_automation_net" {
 }
 
 resource "azurerm_private_dns_zone" "blob_core_windows_net" {
-  count = var.should_enable_private_endpoints ? 1 : 0
+  count = var.should_enable_private_endpoints || var.should_create_blob_dns_zone ? 1 : 0
 
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = var.azmon_resource_group.name
@@ -382,7 +376,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "agentsvc_azure_automat
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_core_windows_net" {
-  count = var.should_enable_private_endpoints ? 1 : 0
+  count = var.should_enable_private_endpoints || var.should_create_blob_dns_zone ? 1 : 0
 
   name                  = "vnet-link-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name   = var.azmon_resource_group.name
