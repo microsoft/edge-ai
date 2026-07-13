@@ -219,7 +219,11 @@ resource "azurerm_monitor_data_collection_endpoint" "data_collection_endpoint" {
 
   kind = "Linux"
 
-  public_network_access_enabled = !var.should_enable_private_endpoints
+  // Keep the managed Prometheus metrics DCE reachable publicly. Arc-connected edge
+  // clusters have no private DNS route to the cloud VNet private endpoints, so the
+  // Azure Monitor metrics addon (ama-metrics) cannot fetch its DCR config or ingest
+  // over private link and fails with 403 (config must be accessed over private link).
+  public_network_access_enabled = true
 }
 
 /*
@@ -232,8 +236,12 @@ resource "azurerm_monitor_private_link_scope" "monitor_private_link_scope" {
   name                = "ampls-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name = var.azmon_resource_group.name
 
-  ingestion_access_mode = "PrivateOnly"
-  query_access_mode     = "PrivateOnly"
+  // Open access lets the Arc edge cluster reach the metrics DCE config/ingestion path
+  // (it cannot resolve the cloud VNet private endpoints). Scoped resources still enforce
+  // their own posture: Log Analytics and Application Insights keep internet_query_enabled
+  // disabled when private endpoints are enabled, so their query paths remain private.
+  ingestion_access_mode = "Open"
+  query_access_mode     = "Open"
 }
 
 resource "azurerm_monitor_private_link_scoped_service" "log_analytics" {
