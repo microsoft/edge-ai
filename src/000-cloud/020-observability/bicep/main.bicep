@@ -79,6 +79,9 @@ param privateEndpointSubnetId string?
 @description('Virtual network resource ID for private DNS links.')
 param virtualNetworkId string?
 
+@description('Create the shared blob private DNS zone (consumed by the storage account component) independently of the Azure Monitor private endpoints. Lets callers keep the blob zone when monitor private endpoints are disabled.')
+param shouldCreateBlobDnsZone bool = false
+
 /*
   Local Variables
 */
@@ -132,6 +135,9 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2025-02-01' = {
     features: {
       disableLocalAuth: false
     }
+    // Keep ingestion public; keep query private whenever the deployment is broadly private, even if the monitor private endpoints are disabled independently
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: shouldEnablePrivateEndpoints || shouldCreateBlobDnsZone ? 'Disabled' : 'Enabled'
   }
   identity: {
     type: 'SystemAssigned'
@@ -367,7 +373,7 @@ resource monitorPrivateDnsZoneAgentsvc 'Microsoft.Network/privateDnsZones@2020-0
   location: 'global'
 }
 
-resource monitorPrivateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+resource monitorPrivateDnsZoneBlob 'Microsoft.Network/privateDnsZones@2020-06-01' = if (shouldEnablePrivateEndpoints || shouldCreateBlobDnsZone) {
   name: blobPrivateDnsZoneName
   location: 'global'
 }
@@ -420,7 +426,7 @@ resource monitorPrivateDnsLinkAgentsvc 'Microsoft.Network/privateDnsZones/virtua
   }
 }
 
-resource monitorPrivateDnsLinkBlob 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints) {
+resource monitorPrivateDnsLinkBlob 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (shouldEnablePrivateEndpoints || shouldCreateBlobDnsZone) {
   parent: monitorPrivateDnsZoneBlob
   name: 'vnet-link-blob-${common.resourcePrefix}-${common.environment}-${common.instance}'
   location: 'global'
@@ -552,7 +558,11 @@ output monitorPrivateDnsZoneAgentsvcName string? = shouldEnablePrivateEndpoints
   : null
 
 @description('Private DNS zone name for the blob storage namespace.')
-output monitorPrivateDnsZoneBlobName string? = shouldEnablePrivateEndpoints ? monitorPrivateDnsZoneBlob.name : null
+output monitorPrivateDnsZoneBlobName string? = shouldEnablePrivateEndpoints || shouldCreateBlobDnsZone
+  ? monitorPrivateDnsZoneBlob.name
+  : null
 
 @description('Private DNS zone ID for the blob storage namespace.')
-output monitorPrivateDnsZoneBlobId string? = shouldEnablePrivateEndpoints ? monitorPrivateDnsZoneBlob.id : null
+output monitorPrivateDnsZoneBlobId string? = shouldEnablePrivateEndpoints || shouldCreateBlobDnsZone
+  ? monitorPrivateDnsZoneBlob.id
+  : null
