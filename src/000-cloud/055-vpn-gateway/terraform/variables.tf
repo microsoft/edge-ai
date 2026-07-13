@@ -4,7 +4,7 @@
 
 variable "vpn_gateway_config" {
   type = object({
-    sku                 = optional(string, "VpnGw1")
+    sku                 = optional(string, "VpnGw1AZ")
     generation          = optional(string, "Generation1")
     client_address_pool = optional(list(string), ["192.168.200.0/24"])
     protocols           = optional(list(string), ["OpenVPN", "IkeV2"])
