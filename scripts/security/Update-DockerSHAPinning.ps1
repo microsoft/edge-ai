@@ -79,10 +79,13 @@ function Set-ContentPreservePermission {
     $OriginalMode = $null
     if (Test-Path $Path) {
         try {
-            # Get file mode using ls -la (cross-platform)
-            $lsOutput = & ls -la $Path 2>$null
-            if ($LASTEXITCODE -eq 0 -and $lsOutput -match '^([drwx-]+)') {
-                $OriginalMode = $Matches[1]
+            # Get file mode using native ls when available
+            $lsCommand = Get-Command -Name 'ls' -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($null -ne $lsCommand) {
+                $lsOutput = & $lsCommand.Source -la $Path 2>$null
+                if ($LASTEXITCODE -eq 0 -and $lsOutput -match '^([drwx-]+)') {
+                    $OriginalMode = $Matches[1]
+                }
             }
         }
         catch {
