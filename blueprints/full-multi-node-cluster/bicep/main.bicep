@@ -150,6 +150,9 @@ param vpnGatewayAzureAdConfig vpnGatewayTypes.AzureAdConfig = vpnGatewayTypes.az
 @description('Whether to enable private endpoints across Key Vault, storage, and observability resources.')
 param shouldEnablePrivateEndpoints bool = false
 
+@description('Override for Azure Monitor (observability) private endpoints. Defaults to shouldEnablePrivateEndpoints when null. Set false for Arc edge clusters where the managed Prometheus metrics addon cannot fetch its config or ingest over private link and would otherwise leave dashboards empty.')
+param shouldEnableObservabilityPrivateEndpoints bool?
+
 @description('Whether to enable Azure Private Resolver for VPN client DNS resolution of private endpoints.')
 param shouldEnablePrivateResolver bool = false
 
@@ -416,7 +419,8 @@ module cloudObservability '../../../src/000-cloud/020-observability/bicep/main.b
   dependsOn: [cloudResourceGroup]
   params: {
     common: common
-    shouldEnablePrivateEndpoints: shouldEnablePrivateEndpoints
+    shouldEnablePrivateEndpoints: shouldEnableObservabilityPrivateEndpoints ?? shouldEnablePrivateEndpoints
+    shouldCreateBlobDnsZone: shouldEnablePrivateEndpoints
     privateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
     virtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
   }

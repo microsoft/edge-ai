@@ -29,7 +29,8 @@ resource "azurerm_log_analytics_workspace" "monitor" {
 
   // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
   internet_ingestion_enabled = true
-  internet_query_enabled     = !var.should_enable_private_endpoints
+  // Keep query private whenever the deployment is broadly private, even if the monitor private endpoints are disabled independently
+  internet_query_enabled = !(var.should_enable_private_endpoints || var.should_create_blob_dns_zone)
 
   identity {
     type = "SystemAssigned"
@@ -65,7 +66,8 @@ module "application_insights" {
 
   // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
   internet_ingestion_enabled = true
-  internet_query_enabled     = !var.should_enable_private_endpoints
+  // Keep query private whenever the deployment is broadly private, even if the monitor private endpoints are disabled independently
+  internet_query_enabled = !(var.should_enable_private_endpoints || var.should_create_blob_dns_zone)
 
   tags = var.tags
 }
@@ -326,7 +328,7 @@ resource "azurerm_private_dns_zone" "agentsvc_azure_automation_net" {
 }
 
 resource "azurerm_private_dns_zone" "blob_core_windows_net" {
-  count = var.should_enable_private_endpoints ? 1 : 0
+  count = var.should_enable_private_endpoints || var.should_create_blob_dns_zone ? 1 : 0
 
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = var.azmon_resource_group.name
@@ -374,7 +376,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "agentsvc_azure_automat
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_core_windows_net" {
-  count = var.should_enable_private_endpoints ? 1 : 0
+  count = var.should_enable_private_endpoints || var.should_create_blob_dns_zone ? 1 : 0
 
   name                  = "vnet-link-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
   resource_group_name   = var.azmon_resource_group.name

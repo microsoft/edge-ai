@@ -78,6 +78,12 @@ variable "virtual_network_id" {
   default     = null
 }
 
+variable "should_create_blob_dns_zone" {
+  type        = bool
+  description = "Whether to create the shared blob private DNS zone (consumed by the storage account component) independently of the Azure Monitor private endpoints. Lets callers keep the blob zone when monitor private endpoints are disabled."
+  default     = false
+}
+
 variable "tags" {
   type        = map(string)
   description = "Tags to apply to all resources"
