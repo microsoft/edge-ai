@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gruntwork-io/terratest v1.0.1
 	github.com/microsoft/edge-ai/src/900-tools-utilities/904-test-utilities v0.0.0-00010101000000-000000000000
-	github.com/microsoftgraph/msgraph-sdk-go v1.99.0
+	github.com/microsoftgraph/msgraph-sdk-go v1.100.0
 	github.com/stretchr/testify v1.11.1
 	k8s.io/api v0.36.2
 	k8s.io/apimachinery v0.36.2
