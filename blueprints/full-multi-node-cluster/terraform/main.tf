@@ -493,6 +493,9 @@ module "edge_cncf_cluster" {
 
   cluster_server_host_machine_username = var.cluster_server_host_machine_username
   key_vault                            = module.cloud_security_identity.key_vault
+
+  should_upload_to_key_vault                = var.should_upload_to_key_vault
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
 }
 
 module "edge_arc_extensions" {

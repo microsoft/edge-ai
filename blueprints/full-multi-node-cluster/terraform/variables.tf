@@ -145,6 +145,18 @@ variable "cluster_server_ip" {
   }
 }
 
+variable "should_upload_to_key_vault" {
+  type        = bool
+  description = "Whether to upload the scripts to Key Vault as secrets."
+  default     = true
+}
+
+variable "should_use_script_from_secrets_for_deploy" {
+  type        = bool
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
+  default     = true
+}
+
 /*
  * Azure IoT Operations Parameters
  */
