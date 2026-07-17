@@ -18,9 +18,12 @@ locals {
   }
   env_vars_string = join("\n", [for k, v in local.script_env_vars : "${k}=\"${v}\"" if v != ""])
 
-  // Always prepend the runtime env vars (CLIENT_ID, etc.) so identity-based onboarding works
-  // in both the inline (script_content) and Key Vault (deploy_script_secrets) delivery paths.
+  // Always prepend a bash shebang and the runtime env vars (CLIENT_ID, etc.) so identity-based
+  // onboarding works in both the inline (script_content) and Key Vault (deploy_script_secrets)
+  // delivery paths. The shebang must be line 1, otherwise the CustomScript extension falls back
+  // to /bin/sh and the bash-only onboarding script fails on [[ and set -o pipefail.
   rendered_script_to_deploy = join("\n", [
+    "#!/usr/bin/env bash",
     local.env_vars_string,
     var.should_use_script_from_secrets_for_deploy ? local.deploy_script_secrets : var.script_content,
   ])
