@@ -18,7 +18,12 @@ locals {
   }
   env_vars_string = join("\n", [for k, v in local.script_env_vars : "${k}=\"${v}\"" if v != ""])
 
-  rendered_script_to_deploy = var.should_use_script_from_secrets_for_deploy ? join("\n", [local.env_vars_string, local.deploy_script_secrets]) : var.script_content
+  // Always prepend the runtime env vars (CLIENT_ID, etc.) so identity-based onboarding works
+  // in both the inline (script_content) and Key Vault (deploy_script_secrets) delivery paths.
+  rendered_script_to_deploy = join("\n", [
+    local.env_vars_string,
+    var.should_use_script_from_secrets_for_deploy ? local.deploy_script_secrets : var.script_content,
+  ])
 }
 
 // VM Extension for Linux VMs
