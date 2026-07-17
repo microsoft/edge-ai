@@ -125,7 +125,7 @@ fi
 if [ -z "$SKIP_AZ_LOGIN" ]; then
   if [ -n "$CLIENT_ID" ]; then
     log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
-    if ! az login --identity --username "$CLIENT_ID"; then
+    if ! az login --identity --client-id "$CLIENT_ID"; then
       err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
     fi
   else
