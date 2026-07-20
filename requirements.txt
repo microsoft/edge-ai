@@ -630,9 +630,9 @@ gitdb==4.0.12 \
     --hash=sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571 \
     --hash=sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf
     # via gitpython
-gitpython==3.1.51 \
-    --hash=sha256:22c9c94bb6b0b9f3c7157c684fece45a414cea204586b600beae6cd4570dcd6d \
-    --hash=sha256:d5b29685708f3c80a56db040b665bfd69492c8e150b5848532af8013b686c5a4
+gitpython==3.1.53 \
+    --hash=sha256:06ae8d9623b0ed0d67b8adeac5c7008d0a5a404b087a9e0d0c7163bdd3a6b497 \
+    --hash=sha256:187885556b64ab357bd4ea84e2c4cce2861a613a7f4268b3f7f7ba05f2ce4ab0
     # via
     #   -r requirements.in
     #   checkov
