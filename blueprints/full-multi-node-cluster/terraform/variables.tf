@@ -760,6 +760,24 @@ variable "should_enable_key_vault_purge_protection" {
   default     = false
 }
 
+variable "should_use_network_security_perimeter" {
+  description = "Whether to secure the Key Vault and Storage Account with a Network Security Perimeter that allows the detected deployment client IP. Enable for the initial deployment; existing AzureRM-managed Storage state requires migration before enabling"
+  type        = bool
+  default     = false
+}
+
+variable "network_security_perimeter_allowed_ip_address_prefixes" {
+  description = "Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically"
+  type        = list(string)
+  default     = []
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  description = "Duration to wait after enforcing Network Security Perimeter associations before allowing Terraform data-plane operations"
+  type        = string
+  default     = "15m"
+}
+
 /*
  * Networking and Outbound Access Parameters
  */

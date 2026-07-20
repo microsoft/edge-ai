@@ -16,6 +16,15 @@ output "key_vault_private_dns_zone" {
   value       = try(module.key_vault[0].private_dns_zone, null)
 }
 
+output "network_security_perimeter" {
+  description = "The Network Security Perimeter and profile used to secure supported PaaS resources"
+  value = var.should_use_network_security_perimeter ? {
+    id                  = module.network_security_perimeter[0].id
+    profile_id          = module.network_security_perimeter[0].profile_id
+    propagation_trigger = module.network_security_perimeter[0].propagation_trigger
+  } : null
+}
+
 output "secret_sync_identity" {
   value = try(module.identity[0].secret_sync_identity, null)
 }

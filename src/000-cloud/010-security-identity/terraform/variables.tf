@@ -39,6 +39,28 @@ variable "should_enable_purge_protection" {
 }
 
 /*
+ * Network Security Perimeter - Optional
+ */
+
+variable "should_use_network_security_perimeter" {
+  description = "Whether to create a Network Security Perimeter for Key Vault and Storage Account access"
+  type        = bool
+  default     = false
+}
+
+variable "network_security_perimeter_allowed_ip_address_prefixes" {
+  description = "Additional IPv4 or IPv6 CIDR prefixes allowed to access resources associated with the Network Security Perimeter"
+  type        = list(string)
+  default     = []
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  description = "Duration to wait after enforcing Network Security Perimeter associations before allowing Terraform data-plane operations"
+  type        = string
+  default     = "15m"
+}
+
+/*
  * Key Vault Diagnostic Settings - Optional
  */
 

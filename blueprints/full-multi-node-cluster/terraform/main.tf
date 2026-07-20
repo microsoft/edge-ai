@@ -108,17 +108,20 @@ module "cloud_security_identity" {
 
   aio_resource_group = module.cloud_resource_group.resource_group
 
-  onboard_identity_type                    = var.onboard_identity_type
-  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
-  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
-  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
-  should_enable_public_network_access      = var.should_enable_key_vault_public_network_access
-  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
-  should_create_aks_identity               = var.should_create_aks_identity
-  should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
-  should_create_secret_sync_identity       = var.should_deploy_aio
-  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
-  should_enable_diagnostic_settings        = true
+  onboard_identity_type                                  = var.onboard_identity_type
+  should_create_key_vault_private_endpoint               = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id                   = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  key_vault_virtual_network_id                           = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+  should_enable_public_network_access                    = var.should_enable_key_vault_public_network_access
+  should_enable_purge_protection                         = var.should_enable_key_vault_purge_protection
+  should_create_aks_identity                             = var.should_create_aks_identity
+  should_create_ml_workload_identity                     = var.azureml_should_create_ml_workload_identity
+  should_create_secret_sync_identity                     = var.should_deploy_aio
+  log_analytics_workspace_id                             = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings                      = true
+  should_use_network_security_perimeter                  = var.should_use_network_security_perimeter
+  network_security_perimeter_allowed_ip_address_prefixes = var.network_security_perimeter_allowed_ip_address_prefixes
+  network_security_perimeter_propagation_delay           = var.network_security_perimeter_propagation_delay
 }
 
 module "cloud_vpn_gateway" {
@@ -189,6 +192,12 @@ module "cloud_data" {
   should_create_adr_namespace   = var.should_deploy_aio
 
   schemas = var.schemas
+
+  network_security_perimeter_id                  = try(module.cloud_security_identity.network_security_perimeter.id, null)
+  network_security_perimeter_profile_id          = try(module.cloud_security_identity.network_security_perimeter.profile_id, null)
+  network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
+  network_security_perimeter_propagation_trigger = try(module.cloud_security_identity.network_security_perimeter.propagation_trigger, null)
+  should_use_network_security_perimeter          = var.should_use_network_security_perimeter
 }
 
 module "cloud_postgresql" {

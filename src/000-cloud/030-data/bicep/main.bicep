@@ -47,6 +47,15 @@ param storageVirtualNetworkId string?
 @description('Whether to enable public network access for the Storage Account.')
 param shouldEnableStoragePublicNetworkAccess bool = true
 
+@description('Name of the Network Security Perimeter to associate with the Storage Account.')
+param networkSecurityPerimeterName string?
+
+@description('Resource group containing the Network Security Perimeter.')
+param networkSecurityPerimeterResourceGroupName string?
+
+@description('Name of the Network Security Perimeter profile applied to the Storage Account.')
+param networkSecurityPerimeterProfileName string?
+
 @description('Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.')
 param shouldCreateBlobPrivateDnsZone bool = true
 
@@ -107,6 +116,12 @@ resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemet
   }
 }
 
+var shouldAssociateNetworkSecurityPerimeter = networkSecurityPerimeterName != null && networkSecurityPerimeterResourceGroupName != null && networkSecurityPerimeterProfileName != null
+var hasPartialNetworkSecurityPerimeterConfiguration = networkSecurityPerimeterName != null || networkSecurityPerimeterResourceGroupName != null || networkSecurityPerimeterProfileName != null
+var validatedNetworkSecurityPerimeterConfiguration = hasPartialNetworkSecurityPerimeterConfiguration && !shouldAssociateNetworkSecurityPerimeter
+  ? fail('networkSecurityPerimeterName, networkSecurityPerimeterResourceGroupName, and networkSecurityPerimeterProfileName must all be provided together.')
+  : shouldAssociateNetworkSecurityPerimeter
+
 /*
   Modules
 */
@@ -118,7 +133,7 @@ module storageAccount 'modules/storage-account.bicep' = if (shouldCreateStorageA
     common: common
     blobPrivateDnsZoneId: blobPrivateDnsZoneId
     privateEndpointSubnetId: storagePrivateEndpointSubnetId
-    shouldCreateSchemaContainer: shouldCreateSchemaContainer
+    shouldCreateSchemaContainer: shouldCreateSchemaContainer && !validatedNetworkSecurityPerimeterConfiguration
     shouldCreateBlobPrivateDnsZone: shouldCreateBlobPrivateDnsZone
     shouldEnablePrivateEndpoint: shouldEnableStoragePrivateEndpoint
     shouldEnablePublicNetworkAccess: shouldEnableStoragePublicNetworkAccess
@@ -129,9 +144,35 @@ module storageAccount 'modules/storage-account.bicep' = if (shouldCreateStorageA
   }
 }
 
+module networkSecurityPerimeterAssociation 'modules/network-security-perimeter-association.bicep' = if (validatedNetworkSecurityPerimeterConfiguration) {
+  name: '${deployment().name}-storageNspAssociation'
+  scope: resourceGroup(networkSecurityPerimeterResourceGroupName!)
+  params: {
+    networkSecurityPerimeterName: networkSecurityPerimeterName!
+    networkSecurityPerimeterProfileName: networkSecurityPerimeterProfileName!
+    storageAccountId: resourceId(
+      subscription().subscriptionId,
+      storageAccountResourceGroupName,
+      'Microsoft.Storage/storageAccounts',
+      storageAccountName
+    )
+    storageAccountName: storageAccountName
+  }
+}
+
+module schemaContainer 'modules/schema-container.bicep' = if (shouldCreateSchemaContainer && validatedNetworkSecurityPerimeterConfiguration) {
+  name: '${deployment().name}-schemaContainer'
+  scope: resourceGroup(storageAccountResourceGroupName)
+  dependsOn: [networkSecurityPerimeterAssociation]
+  params: {
+    schemaContainerName: schemaContainerName
+    storageAccountName: storageAccountName
+  }
+}
+
 module schemaRegistry 'modules/schema-registry.bicep' = if (shouldCreateSchemaRegistry) {
   name: '${deployment().name}-schemaRegistry'
-  dependsOn: [storageAccount]
+  dependsOn: [storageAccount, schemaContainer]
   params: {
     common: common
     schemaRegistryName: schemaRegistryName
@@ -143,7 +184,7 @@ module schemaRegistry 'modules/schema-registry.bicep' = if (shouldCreateSchemaRe
 module schemaRegistryRoleAssignment 'modules/schema-registry-role-assignment.bicep' = if (shouldCreateSchemaRegistry) {
   name: '${deployment().name}-schemaRegistryRoleAssignment'
   scope: resourceGroup(storageAccountResourceGroupName)
-  dependsOn: [storageAccount]
+  dependsOn: [storageAccount, schemaContainer]
   params: {
     storageAccountName: storageAccountName
     schemaBlobContainerName: schemaContainerName

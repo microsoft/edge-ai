@@ -8,18 +8,26 @@ Create a new Azure Storage Account with the specified configuration.
 | Name      | Version          |
 |-----------|------------------|
 | terraform | >= 1.12.0, < 2.0 |
+| azapi     | >= 2.3.0         |
+| time      | >= 0.13.0        |
 
 ## Providers
 
-| Name    | Version |
-|---------|---------|
-| azurerm | n/a     |
-| random  | n/a     |
+| Name      | Version   |
+|-----------|-----------|
+| azapi     | >= 2.3.0  |
+| azurerm   | n/a       |
+| random    | n/a       |
+| terraform | n/a       |
+| time      | >= 0.13.0 |
 
 ## Resources
 
 | Name                                                                                                                                                                                  | Type     |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| [azapi_resource.blob_service](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                                                                     | resource |
+| [azapi_resource.network_security_perimeter_association](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                                           | resource |
+| [azapi_resource.storage_account](https://registry.terraform.io/providers/Azure/azapi/latest/docs/resources/resource)                                                                  | resource |
 | [azurerm_private_dns_a_record.blob_a_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record)                                    | resource |
 | [azurerm_private_dns_a_record.dfs_a_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record)                                     | resource |
 | [azurerm_private_dns_a_record.file_a_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record)                                    | resource |
@@ -34,28 +42,35 @@ Create a new Azure Storage Account with the specified configuration.
 | [azurerm_private_endpoint.storage_file_pe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint)                                          | resource |
 | [azurerm_storage_account.storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account)                                            | resource |
 | [random_string.random_clean_prefix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string)                                                            | resource |
+| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                                                                        | resource |
+| [time_sleep.network_security_perimeter_propagation](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep)                                               | resource |
 
 ## Inputs
 
-| Name                                     | Description                                                                                                                                                                      | Type                                        | Default | Required |
-|------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|---------|:--------:|
-| account\_kind                            | Defines the Kind of account (BlobStorage, BlockBlobStorage, FileStorage, Storage or StorageV2)                                                                                   | `string`                                    | n/a     |   yes    |
-| account\_replication\_type               | Defines the type of replication to use for this storage account (LRS, GRS, RAGRS, ZRS)                                                                                           | `string`                                    | n/a     |   yes    |
-| account\_tier                            | Defines the Tier to use for this storage account (Standard or Premium)                                                                                                           | `string`                                    | n/a     |   yes    |
-| blob\_soft\_delete\_retention\_days      | Number of days to retain deleted blobs                                                                                                                                           | `number`                                    | n/a     |   yes    |
-| container\_soft\_delete\_retention\_days | Number of days to retain deleted containers                                                                                                                                      | `number`                                    | n/a     |   yes    |
-| environment                              | Environment for all resources in this module: dev, test, or prod                                                                                                                 | `string`                                    | n/a     |   yes    |
-| instance                                 | Instance identifier for naming resources: 001, 002, etc                                                                                                                          | `string`                                    | n/a     |   yes    |
-| is\_hns\_enabled                         | Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts.                          | `bool`                                      | n/a     |   yes    |
-| location                                 | Azure region where all resources will be deployed                                                                                                                                | `string`                                    | n/a     |   yes    |
-| private\_endpoint\_subnet\_id            | ID of the subnet to deploy the private endpoint                                                                                                                                  | `string`                                    | n/a     |   yes    |
-| resource\_group                          | Resource group object containing name and id where resources will be deployed                                                                                                    | ```object({ id = string name = string })``` | n/a     |   yes    |
-| resource\_prefix                         | Prefix for all resources in this module                                                                                                                                          | `string`                                    | n/a     |   yes    |
-| should\_create\_blob\_dns\_zone          | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.                                                               | `bool`                                      | n/a     |   yes    |
-| should\_enable\_private\_endpoint        | Whether to create a private endpoint for the storage account                                                                                                                     | `bool`                                      | n/a     |   yes    |
-| should\_enable\_public\_network\_access  | Whether to enable public network access for the storage account                                                                                                                  | `bool`                                      | n/a     |   yes    |
-| virtual\_network\_id                     | The ID of the virtual network to link to the private DNS zones                                                                                                                   | `string`                                    | n/a     |   yes    |
-| blob\_dns\_zone                          | Blob private DNS zone object from observability component with id and name properties. If not provided, a new zone will be created when should\_create\_blob\_dns\_zone is true. | ```object({ id = string name = string })``` | `null`  |    no    |
+| Name                                               | Description                                                                                                                                                                      | Type                                        | Default | Required |
+|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|---------|:--------:|
+| account\_kind                                      | Defines the Kind of account (BlobStorage, BlockBlobStorage, FileStorage, Storage or StorageV2)                                                                                   | `string`                                    | n/a     |   yes    |
+| account\_replication\_type                         | Defines the type of replication to use for this storage account (LRS, GRS, RAGRS, ZRS)                                                                                           | `string`                                    | n/a     |   yes    |
+| account\_tier                                      | Defines the Tier to use for this storage account (Standard or Premium)                                                                                                           | `string`                                    | n/a     |   yes    |
+| blob\_soft\_delete\_retention\_days                | Number of days to retain deleted blobs                                                                                                                                           | `number`                                    | n/a     |   yes    |
+| container\_soft\_delete\_retention\_days           | Number of days to retain deleted containers                                                                                                                                      | `number`                                    | n/a     |   yes    |
+| environment                                        | Environment for all resources in this module: dev, test, or prod                                                                                                                 | `string`                                    | n/a     |   yes    |
+| instance                                           | Instance identifier for naming resources: 001, 002, etc                                                                                                                          | `string`                                    | n/a     |   yes    |
+| is\_hns\_enabled                                   | Whether to enable Hierarchical Namespace (HNS) for Azure Data Lake Storage Gen2. Note: Azure ML workspaces do not support HNS-enabled storage accounts.                          | `bool`                                      | n/a     |   yes    |
+| location                                           | Azure region where all resources will be deployed                                                                                                                                | `string`                                    | n/a     |   yes    |
+| network\_security\_perimeter\_id                   | Resource ID of the Network Security Perimeter to associate with the storage account                                                                                              | `string`                                    | n/a     |   yes    |
+| network\_security\_perimeter\_profile\_id          | Resource ID of the Network Security Perimeter profile applied to the storage account                                                                                             | `string`                                    | n/a     |   yes    |
+| network\_security\_perimeter\_propagation\_delay   | Duration to wait after enforcing the Network Security Perimeter association before allowing data-plane operations                                                                | `string`                                    | n/a     |   yes    |
+| network\_security\_perimeter\_propagation\_trigger | Value that changes when Network Security Perimeter access rules change                                                                                                           | `string`                                    | n/a     |   yes    |
+| private\_endpoint\_subnet\_id                      | ID of the subnet to deploy the private endpoint                                                                                                                                  | `string`                                    | n/a     |   yes    |
+| resource\_group                                    | Resource group object containing name and id where resources will be deployed                                                                                                    | ```object({ id = string name = string })``` | n/a     |   yes    |
+| resource\_prefix                                   | Prefix for all resources in this module                                                                                                                                          | `string`                                    | n/a     |   yes    |
+| should\_create\_blob\_dns\_zone                    | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component.                                                               | `bool`                                      | n/a     |   yes    |
+| should\_enable\_private\_endpoint                  | Whether to create a private endpoint for the storage account                                                                                                                     | `bool`                                      | n/a     |   yes    |
+| should\_enable\_public\_network\_access            | Whether to enable public network access for the storage account                                                                                                                  | `bool`                                      | n/a     |   yes    |
+| should\_use\_network\_security\_perimeter          | Whether to associate the storage account with a Network Security Perimeter                                                                                                       | `bool`                                      | n/a     |   yes    |
+| virtual\_network\_id                               | The ID of the virtual network to link to the private DNS zones                                                                                                                   | `string`                                    | n/a     |   yes    |
+| blob\_dns\_zone                                    | Blob private DNS zone object from observability component with id and name properties. If not provided, a new zone will be created when should\_create\_blob\_dns\_zone is true. | ```object({ id = string name = string })``` | `null`  |    no    |
 
 ## Outputs
 
