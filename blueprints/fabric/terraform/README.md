@@ -9,7 +9,7 @@ Deploys Microsoft Fabric capacity, workspace, lakehouse, and eventhouse resource
 |-----------|------------------|
 | terraform | >= 1.12.0, < 2.0 |
 | azurerm   | >= 4.51.0        |
-| fabric    | 1.3.0            |
+| fabric    | 1.10.0           |
 | msgraph   | >= 0.2.0         |
 
 ## Providers

@@ -10,20 +10,20 @@ Eventhouse destinations, DerivedStreams, and all available operators for flexibl
 |-----------|------------------|
 | terraform | >= 1.12.0, < 2.0 |
 | azurerm   | >= 4.51.0        |
-| fabric    | 1.3.0            |
+| fabric    | 1.10.0           |
 
 ## Providers
 
 | Name   | Version |
 |--------|---------|
-| fabric | 1.3.0   |
+| fabric | 1.10.0  |
 
 ## Resources
 
-| Name                                                                                                                                                                          | Type        |
-|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| [fabric_eventstream.rti_eventstream](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/resources/eventstream)                                               | resource    |
-| [fabric_eventstream_source_connection.custom_endpoint_source](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/eventstream_source_connection) | data source |
+| Name                                                                                                                                                                           | Type        |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| [fabric_eventstream.rti_eventstream](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/resources/eventstream)                                               | resource    |
+| [fabric_eventstream_source_connection.custom_endpoint_source](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/eventstream_source_connection) | data source |
 
 ## Inputs
 

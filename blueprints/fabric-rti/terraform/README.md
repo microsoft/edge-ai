@@ -12,7 +12,7 @@ already deployed resources.
 | terraform | >= 1.12.0, < 2.0 |
 | azapi     | >= 2.0.1         |
 | azurerm   | >= 4.51.0        |
-| fabric    | 1.3.0            |
+| fabric    | 1.10.0           |
 
 ## Providers
 
@@ -20,7 +20,7 @@ already deployed resources.
 |-----------|-----------|
 | azapi     | >= 2.0.1  |
 | azurerm   | >= 4.51.0 |
-| fabric    | 1.3.0     |
+| fabric    | 1.10.0    |
 | terraform | n/a       |
 
 ## Resources
@@ -33,8 +33,8 @@ already deployed resources.
 | [azapi_resource.dataflow_profile](https://registry.terraform.io/providers/azure/azapi/latest/docs/data-sources/resource)                        | data source |
 | [azurerm_resource_group.existing](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group)            | data source |
 | [azurerm_user_assigned_identity.aio](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/user_assigned_identity) | data source |
-| [fabric_eventhouse.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/eventhouse)                       | data source |
-| [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/workspace)                         | data source |
+| [fabric_eventhouse.existing](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/eventhouse)                      | data source |
+| [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/workspace)                        | data source |
 
 ## Modules
 

@@ -9,13 +9,13 @@ Contains all the resources needed for Fabric based resources.
 |-----------|------------------|
 | terraform | >= 1.12.0, < 2.0 |
 | azurerm   | >= 4.51.0        |
-| fabric    | 1.3.0            |
+| fabric    | 1.10.0           |
 
 ## Providers
 
 | Name      | Version |
 |-----------|---------|
-| fabric    | 1.3.0   |
+| fabric    | 1.10.0  |
 | terraform | n/a     |
 
 ## Resources
@@ -25,9 +25,9 @@ Contains all the resources needed for Fabric based resources.
 | [terraform_data.defer_fabric_capacity_created](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)  | resource    |
 | [terraform_data.defer_fabric_capacity_existing](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource    |
 | [terraform_data.defer_fabric_workspace](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)         | resource    |
-| [fabric_capacity.created](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity)                    | data source |
-| [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/capacity)                   | data source |
-| [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/data-sources/workspace)                 | data source |
+| [fabric_capacity.created](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/capacity)                   | data source |
+| [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/capacity)                  | data source |
+| [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/workspace)                | data source |
 
 ## Modules
 
@@ -60,6 +60,7 @@ Contains all the resources needed for Fabric based resources.
 | should\_create\_fabric\_eventhouse | Whether to create a Microsoft Fabric Eventhouse for real-time intelligence scenarios.                                                                                                                                                                                                 | `bool`                                                            | `false`                                                             |    no    |
 | should\_create\_fabric\_lakehouse  | Whether to create a Microsoft Fabric lakehouse.                                                                                                                                                                                                                                       | `bool`                                                            | `false`                                                             |    no    |
 | should\_create\_fabric\_workspace  | Whether to create a new Microsoft Fabric workspace or use an existing one.                                                                                                                                                                                                            | `bool`                                                            | `false`                                                             |    no    |
+| skip\_capacity\_state\_validation  | When true, skips validation of Fabric capacity state during workspace provisioning. Useful for non-production environments where capacity may be paused.                                                                                                                              | `bool`                                                            | `true`                                                              |    no    |
 | workspace\_description             | The description of the Microsoft Fabric workspace                                                                                                                                                                                                                                     | `string`                                                          | `"Microsoft Fabric workspace for the Edge AI Accelerator solution"` |    no    |
 
 ## Outputs
