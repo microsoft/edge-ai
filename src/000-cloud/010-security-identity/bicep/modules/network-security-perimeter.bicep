@@ -6,7 +6,12 @@ import * as core from '../types.core.bicep'
 @description('The common component configuration.')
 param common core.Common
 
-@description('IPv4 or IPv6 CIDR prefixes allowed to access resources associated with the perimeter.')
+// Parity note: unlike the Terraform implementation, this Bicep module does NOT auto-detect the
+// deployment client's public IP. Inbound access is limited to the current subscription rule below
+// plus whatever CIDRs the caller passes here. An operator running data-plane operations from a
+// workstation must supply their public CIDR via allowedIpAddressPrefixes, otherwise they will be
+// blocked once the perimeter is Enforced.
+@description('IPv4 or IPv6 CIDR prefixes allowed to access resources associated with the perimeter. Supply the deployment client public CIDR here when running data-plane operations from a workstation; this module does not auto-detect it (unlike the Terraform path).')
 param allowedIpAddressPrefixes string[]
 
 var networkSecurityPerimeterName = 'nsp-${common.resourcePrefix}-${common.environment}-${common.instance}'

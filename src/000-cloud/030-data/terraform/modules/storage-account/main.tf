@@ -5,7 +5,17 @@
  */
 
 locals {
-  storage_account_name             = substr(lower("st${random_string.random_clean_prefix.result}${replace(var.resource_prefix, "-", "")}${replace(var.environment, "-", "")}${var.instance}"), 0, 24)
+  storage_account_name = substr(lower("st${random_string.random_clean_prefix.result}${replace(var.resource_prefix, "-", "")}${replace(var.environment, "-", "")}${var.instance}"), 0, 24)
+  // Selects the storage-account creation path. Network Security Perimeter association is only
+  // available on the control-plane (azapi) resource, so enabling it switches from
+  // azurerm_storage_account to azapi_resource.storage_account.
+  //
+  // WARNING: toggling should_use_network_security_perimeter on an EXISTING deployment moves the
+  // account between two different resource addresses (azurerm_storage_account.storage_account ->
+  // azapi_resource.storage_account). Terraform plans this as destroy-then-create (data loss and a
+  // likely name collision); a `moved` block cannot bridge different resource types. Migrate an
+  // existing account with `terraform state rm` + `terraform import` per the runbook in the
+  // component README (030-data), never by applying the flag flip directly.
   should_use_azapi_storage_account = var.should_use_network_security_perimeter
 }
 

@@ -160,6 +160,12 @@ module networkSecurityPerimeterAssociation 'modules/network-security-perimeter-a
   }
 }
 
+// The blob container is created through the ARM control plane
+// (Microsoft.Storage/storageAccounts/blobServices/containers), which is not gated by the Network
+// Security Perimeter's data-plane enforcement, so no propagation delay is required here. This is
+// intentionally different from the Terraform path, where the deferred storage_account OUTPUT is
+// gated by a time_sleep only because its data-plane consumers (schema registry / data lake) read
+// it. Ordering after the association is sufficient for the control-plane container create.
 module schemaContainer 'modules/schema-container.bicep' = if (shouldCreateSchemaContainer && validatedNetworkSecurityPerimeterConfiguration) {
   name: '${deployment().name}-schemaContainer'
   scope: resourceGroup(storageAccountResourceGroupName)
