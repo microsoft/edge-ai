@@ -39,7 +39,7 @@ jobs:
             crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
     steps:
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install base system build dependencies
         shell: bash
@@ -201,7 +201,7 @@ jobs:
           - name: 901-video-to-gif
     steps:
       - name: Checkout (sparse, for .grype.yaml)
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
             .grype.yaml

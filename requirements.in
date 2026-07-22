@@ -15,5 +15,5 @@ urllib3>=2.7.0                   # HTTP client library
                                  # Pinned >=2.5.0 to resolve CVE-2024-37891 (SSRF vulnerability)
 requests>=2.34.2                 # HTTP client library
                                  # Pinned >=2.33.0 to resolve CVE-2025-47083 (content-type header injection)
-gitpython>=3.1.51                # Git repository interaction (transitive via checkov)
+gitpython>=3.1.53                # Git repository interaction (transitive via checkov)
                                  # Pinned >=3.1.50 to resolve GHSA-mv93-w799-cj2w

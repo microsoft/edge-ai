@@ -31,7 +31,7 @@ jobs:
           client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: chainguard-dev/actions/setup-gitsign@f0be69916b439d0fcced2451b23d0f27cd46d545 # v1.6.26
+      - uses: chainguard-dev/actions/setup-gitsign@fabe4ed3f66ceb5f8ec86ed7ae6d0c945ca362fb # v1.6.28
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
@@ -41,7 +41,7 @@ jobs:
           manifest-file: release-please-manifest.json
           skip-github-pull-request: ${{ github.event_name == 'push' && startsWith(github.event.head_commit.message, 'chore(main)') }}
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.release.outputs.release_created == 'true'
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -98,7 +98,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
           fetch-depth: 1
@@ -111,7 +111,7 @@ jobs:
           upload-release-assets: false
 
       - id: attest-sbom
-        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
         with:
           subject-path: dep-sbom.spdx.json
           predicate-type: https://spdx.dev/Document/v2.3
@@ -149,7 +149,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
 
