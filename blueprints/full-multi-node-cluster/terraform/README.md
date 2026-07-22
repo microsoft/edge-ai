@@ -12,6 +12,7 @@ VM or a pre-existing Arc-enabled machine.
 | azapi     | >= 2.3.0         |
 | azuread   | >= 3.0.2         |
 | azurerm   | >= 4.51.0        |
+| external  | >= 2.3.5         |
 | fabric    | 1.3.0            |
 | time      | >= 0.13.0        |
 
