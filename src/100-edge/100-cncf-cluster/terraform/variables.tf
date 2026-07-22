@@ -18,6 +18,11 @@ variable "should_use_script_from_secrets_for_deploy" {
   type        = bool
   description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
   default     = true
+
+  validation {
+    condition     = var.should_upload_to_key_vault || !var.should_use_script_from_secrets_for_deploy
+    error_message = "'should_use_script_from_secrets_for_deploy' cannot be true when 'should_upload_to_key_vault' is false: no script would be present in Key Vault to fetch."
+  }
 }
 
 variable "key_vault_script_secret_prefix" {
