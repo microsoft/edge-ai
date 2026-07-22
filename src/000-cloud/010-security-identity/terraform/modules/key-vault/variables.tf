@@ -47,3 +47,28 @@ variable "should_enable_diagnostic_settings" {
   type        = bool
   description = "Whether to enable diagnostic settings for the Key Vault"
 }
+
+variable "network_security_perimeter_id" {
+  description = "Resource ID of the Network Security Perimeter to associate with the Key Vault"
+  type        = string
+}
+
+variable "should_use_network_security_perimeter" {
+  description = "Whether to associate the Key Vault with a Network Security Perimeter"
+  type        = bool
+}
+
+variable "network_security_perimeter_profile_id" {
+  description = "Resource ID of the Network Security Perimeter profile applied to the Key Vault"
+  type        = string
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  description = "Duration to wait after enforcing the Network Security Perimeter association before allowing data-plane operations"
+  type        = string
+}
+
+variable "network_security_perimeter_propagation_trigger" {
+  description = "Value that changes when Network Security Perimeter access rules change"
+  type        = string
+}

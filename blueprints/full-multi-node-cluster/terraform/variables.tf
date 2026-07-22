@@ -145,6 +145,18 @@ variable "cluster_server_ip" {
   }
 }
 
+variable "should_upload_to_key_vault" {
+  type        = bool
+  description = "Whether to upload the scripts to Key Vault as secrets."
+  default     = true
+}
+
+variable "should_use_script_from_secrets_for_deploy" {
+  type        = bool
+  description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
+  default     = true
+}
+
 /*
  * Azure IoT Operations Parameters
  */
@@ -746,6 +758,24 @@ variable "should_enable_key_vault_purge_protection" {
   type        = bool
   description = "Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion"
   default     = false
+}
+
+variable "should_use_network_security_perimeter" {
+  description = "Whether to secure the Key Vault and Storage Account with a Network Security Perimeter that allows the detected deployment client IP. Enable for the initial deployment; existing AzureRM-managed Storage state requires migration before enabling"
+  type        = bool
+  default     = false
+}
+
+variable "network_security_perimeter_allowed_ip_address_prefixes" {
+  description = "Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically"
+  type        = list(string)
+  default     = []
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  description = "Duration to wait after enforcing Network Security Perimeter associations before allowing Terraform data-plane operations"
+  type        = string
+  default     = "15m"
 }
 
 /*

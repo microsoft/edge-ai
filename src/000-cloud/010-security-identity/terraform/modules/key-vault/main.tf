@@ -22,6 +22,37 @@ resource "azurerm_key_vault" "new" {
   public_network_access_enabled = var.should_enable_public_network_access
 }
 
+resource "azapi_resource" "network_security_perimeter_association" {
+  count = var.should_use_network_security_perimeter ? 1 : 0
+
+  type      = "Microsoft.Network/networkSecurityPerimeters/resourceAssociations@2025-01-01"
+  name      = "key-vault-${azurerm_key_vault.new.name}"
+  parent_id = var.network_security_perimeter_id
+
+  body = {
+    properties = {
+      accessMode = "Enforced"
+      privateLinkResource = {
+        id = azurerm_key_vault.new.id
+      }
+      profile = {
+        id = var.network_security_perimeter_profile_id
+      }
+    }
+  }
+}
+
+resource "time_sleep" "network_security_perimeter_propagation" {
+  count = var.should_use_network_security_perimeter ? 1 : 0
+
+  create_duration = var.network_security_perimeter_propagation_delay
+  triggers = {
+    network_security_perimeter = var.network_security_perimeter_propagation_trigger
+  }
+
+  depends_on = [azapi_resource.network_security_perimeter_association]
+}
+
 /*
  * Role Assignments
  */
@@ -43,7 +74,10 @@ resource "terraform_data" "defer" {
       vault_uri = azurerm_key_vault.new.vault_uri
     }
   }
-  depends_on = [azurerm_role_assignment.user_key_vault_secrets_officer]
+  depends_on = [
+    azurerm_role_assignment.user_key_vault_secrets_officer,
+    time_sleep.network_security_perimeter_propagation,
+  ]
 }
 
 /*

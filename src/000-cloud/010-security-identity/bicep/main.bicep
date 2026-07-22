@@ -48,6 +48,12 @@ param keyVaultVirtualNetworkId string?
 @description('Whether to enable public network access on the Key Vault.')
 param shouldEnableKeyVaultPublicNetworkAccess bool = true
 
+@description('Whether to create a Network Security Perimeter for Key Vault and Storage Account access.')
+param shouldUseNetworkSecurityPerimeter bool = false
+
+@description('IPv4 or IPv6 CIDR prefixes allowed to access resources associated with the Network Security Perimeter.')
+param networkSecurityPerimeterAllowedIpAddressPrefixes string[] = []
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
 
@@ -80,6 +86,14 @@ module identity 'modules/identity.bicep' = {
   }
 }
 
+module networkSecurityPerimeter 'modules/network-security-perimeter.bicep' = if (shouldUseNetworkSecurityPerimeter) {
+  name: '${deployment().name}-networkSecurityPerimeter'
+  params: {
+    common: common
+    allowedIpAddressPrefixes: networkSecurityPerimeterAllowedIpAddressPrefixes
+  }
+}
+
 module keyVault 'modules/key-vault.bicep' = if (shouldCreateKeyVault) {
   name: '${deployment().name}-keyVault'
   scope: resourceGroup(keyVaultResourceGroupName)
@@ -92,6 +106,16 @@ module keyVault 'modules/key-vault.bicep' = if (shouldCreateKeyVault) {
     privateEndpointSubnetId: keyVaultPrivateEndpointSubnetId
     virtualNetworkId: keyVaultVirtualNetworkId
     shouldEnablePublicNetworkAccess: shouldEnableKeyVaultPublicNetworkAccess
+  }
+}
+
+module keyVaultNetworkSecurityPerimeterAssociation 'modules/network-security-perimeter-association.bicep' = if (shouldCreateKeyVault && shouldUseNetworkSecurityPerimeter) {
+  name: '${deployment().name}-keyVaultNspAssociation'
+  params: {
+    associationName: 'key-vault-${keyVault!.outputs.keyVaultName}'
+    networkSecurityPerimeterName: last(split(networkSecurityPerimeter!.outputs.networkSecurityPerimeterId, '/'))
+    networkSecurityPerimeterProfileName: 'defaultprofile'
+    privateLinkResourceId: keyVault!.outputs.keyVaultId
   }
 }
 
@@ -121,6 +145,21 @@ output keyVaultPrivateDnsZoneId string? = shouldCreateKeyVault ? keyVault.?outpu
 
 @description('The Key Vault private DNS zone name when created.')
 output keyVaultPrivateDnsZoneName string? = shouldCreateKeyVault ? keyVault.?outputs.?keyVaultPrivateDnsZoneName : null
+
+@description('The resource ID of the Network Security Perimeter when created.')
+output networkSecurityPerimeterId string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.networkSecurityPerimeterId
+  : null
+
+@description('The resource group containing the Network Security Perimeter when created.')
+output networkSecurityPerimeterResourceGroupName string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.networkSecurityPerimeterResourceGroupName
+  : null
+
+@description('The resource ID of the Network Security Perimeter profile when created.')
+output networkSecurityPerimeterProfileId string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.profileId
+  : null
 
 @description('The Secret Store Extension User Assigned Managed Identity name.')
 output sseIdentityName string = identity.outputs.sseIdentityName

@@ -6,6 +6,17 @@
 
 locals {
   storage_account_name = substr(lower("st${random_string.random_clean_prefix.result}${replace(var.resource_prefix, "-", "")}${replace(var.environment, "-", "")}${var.instance}"), 0, 24)
+  // Selects the storage-account creation path. Network Security Perimeter association is only
+  // available on the control-plane (azapi) resource, so enabling it switches from
+  // azurerm_storage_account to azapi_resource.storage_account.
+  //
+  // WARNING: toggling should_use_network_security_perimeter on an EXISTING deployment moves the
+  // account between two different resource addresses (azurerm_storage_account.storage_account ->
+  // azapi_resource.storage_account). Terraform plans this as destroy-then-create (data loss and a
+  // likely name collision); a `moved` block cannot bridge different resource types. Migrate an
+  // existing account with `terraform state rm` + `terraform import` per the runbook in the
+  // component README (030-data), never by applying the flag flip directly.
+  should_use_azapi_storage_account = var.should_use_network_security_perimeter
 }
 
 /*
@@ -21,6 +32,8 @@ resource "random_string" "random_clean_prefix" {
 }
 
 resource "azurerm_storage_account" "storage_account" {
+  count = local.should_use_azapi_storage_account ? 0 : 1
+
   name                            = local.storage_account_name
   resource_group_name             = var.resource_group.name
   location                        = var.location
@@ -46,20 +59,131 @@ resource "azurerm_storage_account" "storage_account" {
   }
 }
 
+resource "azapi_resource" "storage_account" {
+  count = local.should_use_azapi_storage_account ? 1 : 0
+
+  type      = "Microsoft.Storage/storageAccounts@2024-01-01"
+  name      = local.storage_account_name
+  parent_id = var.resource_group.id
+  location  = var.location
+
+  body = {
+    kind = var.account_kind
+    sku = {
+      name = "${var.account_tier}_${var.account_replication_type}"
+    }
+    properties = merge({
+      allowBlobPublicAccess    = false
+      allowSharedKeyAccess     = false
+      isHnsEnabled             = var.is_hns_enabled
+      minimumTlsVersion        = "TLS1_2"
+      publicNetworkAccess      = var.should_enable_public_network_access ? "Enabled" : "Disabled"
+      supportsHttpsTrafficOnly = true
+      }, contains(["BlobStorage", "StorageV2"], var.account_kind) ? {
+      accessTier = "Hot"
+    } : {})
+  }
+
+  response_export_values = ["properties.primaryEndpoints"]
+}
+
+resource "azapi_resource" "blob_service" {
+  count = local.should_use_azapi_storage_account && !var.is_hns_enabled ? 1 : 0
+
+  type      = "Microsoft.Storage/storageAccounts/blobServices@2024-01-01"
+  name      = "default"
+  parent_id = azapi_resource.storage_account[0].id
+
+  body = {
+    properties = {
+      containerDeleteRetentionPolicy = {
+        enabled = true
+        days    = var.container_soft_delete_retention_days
+      }
+      deleteRetentionPolicy = {
+        enabled = true
+        days    = var.blob_soft_delete_retention_days
+      }
+    }
+  }
+}
+
+locals {
+  storage_account = local.should_use_azapi_storage_account ? {
+    id                     = azapi_resource.storage_account[0].id
+    name                   = azapi_resource.storage_account[0].name
+    primary_blob_endpoint  = azapi_resource.storage_account[0].output.properties.primaryEndpoints.blob
+    primary_file_endpoint  = azapi_resource.storage_account[0].output.properties.primaryEndpoints.file
+    primary_queue_endpoint = azapi_resource.storage_account[0].output.properties.primaryEndpoints.queue
+    primary_table_endpoint = azapi_resource.storage_account[0].output.properties.primaryEndpoints.table
+    } : {
+    id                     = azurerm_storage_account.storage_account[0].id
+    name                   = azurerm_storage_account.storage_account[0].name
+    primary_blob_endpoint  = azurerm_storage_account.storage_account[0].primary_blob_endpoint
+    primary_file_endpoint  = azurerm_storage_account.storage_account[0].primary_file_endpoint
+    primary_queue_endpoint = azurerm_storage_account.storage_account[0].primary_queue_endpoint
+    primary_table_endpoint = azurerm_storage_account.storage_account[0].primary_table_endpoint
+  }
+}
+
+resource "azapi_resource" "network_security_perimeter_association" {
+  count = var.should_use_network_security_perimeter ? 1 : 0
+
+  type      = "Microsoft.Network/networkSecurityPerimeters/resourceAssociations@2025-01-01"
+  name      = "storage-${local.storage_account.name}"
+  parent_id = var.network_security_perimeter_id
+
+  body = {
+    properties = {
+      accessMode = "Enforced"
+      privateLinkResource = {
+        id = local.storage_account.id
+      }
+      profile = {
+        id = var.network_security_perimeter_profile_id
+      }
+    }
+  }
+}
+
+resource "time_sleep" "network_security_perimeter_propagation" {
+  count = var.should_use_network_security_perimeter ? 1 : 0
+
+  create_duration = var.network_security_perimeter_propagation_delay
+  triggers = {
+    network_security_perimeter = var.network_security_perimeter_propagation_trigger
+  }
+
+  depends_on = [azapi_resource.network_security_perimeter_association]
+}
+
+resource "terraform_data" "defer" {
+  input = {
+    id                     = local.storage_account.id
+    name                   = local.storage_account.name
+    primary_blob_endpoint  = local.storage_account.primary_blob_endpoint
+    primary_file_endpoint  = local.storage_account.primary_file_endpoint
+    primary_queue_endpoint = local.storage_account.primary_queue_endpoint
+    primary_table_endpoint = local.storage_account.primary_table_endpoint
+  }
+
+  depends_on = [time_sleep.network_security_perimeter_propagation]
+}
+
 /*
  * Private Endpoints
  */
 
 resource "azurerm_private_endpoint" "storage_blob_pe" {
   count               = var.should_enable_private_endpoint ? 1 : 0
-  name                = "pe-blob-${azurerm_storage_account.storage_account.name}"
+  name                = "pe-blob-${local.storage_account.name}"
   location            = var.location
   resource_group_name = var.resource_group.name
   subnet_id           = var.private_endpoint_subnet_id
 
   private_service_connection {
     name                           = "storage-blob-privatelink"
-    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    private_connection_resource_id = local.storage_account.id
     is_manual_connection           = false
     subresource_names              = ["blob"]
   }
@@ -75,14 +199,14 @@ resource "azurerm_private_endpoint" "storage_blob_pe" {
 
 resource "azurerm_private_endpoint" "storage_file_pe" {
   count               = var.should_enable_private_endpoint ? 1 : 0
-  name                = "pe-file-${azurerm_storage_account.storage_account.name}"
+  name                = "pe-file-${local.storage_account.name}"
   location            = var.location
   resource_group_name = var.resource_group.name
   subnet_id           = var.private_endpoint_subnet_id
 
   private_service_connection {
     name                           = "storage-file-privatelink"
-    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    private_connection_resource_id = local.storage_account.id
     is_manual_connection           = false
     subresource_names              = ["file"]
   }
@@ -90,14 +214,14 @@ resource "azurerm_private_endpoint" "storage_file_pe" {
 
 resource "azurerm_private_endpoint" "storage_dfs_pe" {
   count               = var.should_enable_private_endpoint ? 1 : 0
-  name                = "pe-dfs-${azurerm_storage_account.storage_account.name}"
+  name                = "pe-dfs-${local.storage_account.name}"
   location            = var.location
   resource_group_name = var.resource_group.name
   subnet_id           = var.private_endpoint_subnet_id
 
   private_service_connection {
     name                           = "storage-dfs-privatelink"
-    private_connection_resource_id = azurerm_storage_account.storage_account.id
+    private_connection_resource_id = local.storage_account.id
     is_manual_connection           = false
     subresource_names              = ["dfs"]
   }
@@ -157,7 +281,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "dfs_vnet_link" {
 resource "azurerm_private_dns_a_record" "blob_a_record" {
   count = alltrue([var.should_enable_private_endpoint, var.should_create_blob_dns_zone]) ? 1 : 0
 
-  name                = azurerm_storage_account.storage_account.name
+  name                = local.storage_account.name
   zone_name           = try(azurerm_private_dns_zone.blob_dns_zone[0].name, var.blob_dns_zone.name, null)
   resource_group_name = var.resource_group.name
   ttl                 = 300
@@ -167,7 +291,7 @@ resource "azurerm_private_dns_a_record" "blob_a_record" {
 resource "azurerm_private_dns_a_record" "file_a_record" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
-  name                = azurerm_storage_account.storage_account.name
+  name                = local.storage_account.name
   zone_name           = azurerm_private_dns_zone.file_dns_zone[0].name
   resource_group_name = var.resource_group.name
   ttl                 = 300
@@ -177,7 +301,7 @@ resource "azurerm_private_dns_a_record" "file_a_record" {
 resource "azurerm_private_dns_a_record" "dfs_a_record" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
-  name                = azurerm_storage_account.storage_account.name
+  name                = local.storage_account.name
   zone_name           = azurerm_private_dns_zone.dfs_dns_zone[0].name
   resource_group_name = var.resource_group.name
   ttl                 = 300

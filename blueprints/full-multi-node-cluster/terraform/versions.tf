@@ -16,6 +16,14 @@ terraform {
       source  = "microsoft/fabric"
       version = "1.3.0"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = ">= 2.3.5"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.13.0"
+    }
   }
   required_version = ">= 1.12.0, < 2.0"
 }

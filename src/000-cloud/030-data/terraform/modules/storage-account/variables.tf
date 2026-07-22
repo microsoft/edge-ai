@@ -33,6 +33,31 @@ variable "should_enable_public_network_access" {
   type        = bool
 }
 
+variable "network_security_perimeter_id" {
+  description = "Resource ID of the Network Security Perimeter to associate with the storage account"
+  type        = string
+}
+
+variable "should_use_network_security_perimeter" {
+  description = "Whether to associate the storage account with a Network Security Perimeter"
+  type        = bool
+}
+
+variable "network_security_perimeter_profile_id" {
+  description = "Resource ID of the Network Security Perimeter profile applied to the storage account"
+  type        = string
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  description = "Duration to wait after enforcing the Network Security Perimeter association before allowing data-plane operations"
+  type        = string
+}
+
+variable "network_security_perimeter_propagation_trigger" {
+  description = "Value that changes when Network Security Perimeter access rules change"
+  type        = string
+}
+
 /*
  * Private Endpoint
  */
