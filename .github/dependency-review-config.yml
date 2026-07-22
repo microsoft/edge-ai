@@ -2,7 +2,11 @@
 fail-on-severity: high
 # ecdsa Minerva timing attack (P-256); no upstream fix, transitive via checkov.
 # Re-evaluate when checkov drops the ecdsa dependency.
+# fast-uri host confusion (GHSA-v2hh-gcrm-f6hx); affects every published release
+# (3.x and 4.x) with no fix available, transitive via ajv in the docs site build.
+# Mirrors the .grype.yaml ignore. Re-evaluate when a patched fast-uri ships.
 allow-ghsas:
   - GHSA-wj6h-64fc-37mp
+  - GHSA-v2hh-gcrm-f6hx
 warn-on-openssf-scorecard-level: 3
 comment-summary-in-pr: on-failure
