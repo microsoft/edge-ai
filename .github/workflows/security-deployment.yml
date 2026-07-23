@@ -183,7 +183,7 @@ jobs:
       - name: Run AIO version check
         run: |
           python scripts/aio-version-checker.py \
-            --iac-type ${{ inputs.iac-types }} \
+            --iac-type ${{ inputs.iac-types || 'all' }} \
             --error-on-mismatch \
             --verbose
 
