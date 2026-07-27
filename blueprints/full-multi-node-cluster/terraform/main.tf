@@ -96,6 +96,32 @@ module "cloud_networking" {
   nat_gateway_idle_timeout_minutes = var.nat_gateway_idle_timeout_minutes
   nat_gateway_public_ip_count      = var.nat_gateway_public_ip_count
   nat_gateway_zones                = var.nat_gateway_zones
+
+  should_use_network_security_perimeter                  = var.should_use_network_security_perimeter
+  network_security_perimeter_allowed_ip_address_prefixes = var.network_security_perimeter_allowed_ip_address_prefixes
+
+  use_existing_virtual_network = var.use_existing_networking
+  existing_resource_group_name = var.existing_networking_resource_group_name
+  virtual_network_name         = var.virtual_network_name
+  subnet_name                  = var.subnet_name
+  network_security_group_name  = var.network_security_group_name
+}
+
+// Defer computation to prevent the VPN Gateway lookup from querying for state on `terraform plan`.
+resource "terraform_data" "defer_vpn_gateway_name" {
+  count = var.use_existing_networking ? 1 : 0
+
+  input = {
+    vpn_gateway_name = coalesce(var.vpn_gateway_name, "vgw-${var.resource_prefix}-${var.environment}-${var.instance}")
+  }
+}
+
+// Informational only; the multi-node cluster does not depend on Step 1's VPN Gateway.
+data "azurerm_virtual_network_gateway" "existing" {
+  count = var.use_existing_networking ? 1 : 0
+
+  name                = terraform_data.defer_vpn_gateway_name[0].output.vpn_gateway_name
+  resource_group_name = coalesce(var.existing_networking_resource_group_name, var.resource_group_name, module.cloud_resource_group.resource_group.name)
 }
 
 module "cloud_security_identity" {
@@ -108,20 +134,23 @@ module "cloud_security_identity" {
 
   aio_resource_group = module.cloud_resource_group.resource_group
 
-  onboard_identity_type                                  = var.onboard_identity_type
-  should_create_key_vault_private_endpoint               = var.should_enable_private_endpoints
-  key_vault_private_endpoint_subnet_id                   = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
-  key_vault_virtual_network_id                           = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
-  should_enable_public_network_access                    = var.should_enable_key_vault_public_network_access
-  should_enable_purge_protection                         = var.should_enable_key_vault_purge_protection
-  should_create_aks_identity                             = var.should_create_aks_identity
-  should_create_ml_workload_identity                     = var.azureml_should_create_ml_workload_identity
-  should_create_secret_sync_identity                     = var.should_deploy_aio
-  log_analytics_workspace_id                             = module.cloud_observability.log_analytics_workspace.id
-  should_enable_diagnostic_settings                      = true
-  should_use_network_security_perimeter                  = var.should_use_network_security_perimeter
-  network_security_perimeter_allowed_ip_address_prefixes = var.network_security_perimeter_allowed_ip_address_prefixes
-  network_security_perimeter_propagation_delay           = var.network_security_perimeter_propagation_delay
+  onboard_identity_type                    = var.onboard_identity_type
+  should_create_key_vault_private_endpoint = var.should_enable_private_endpoints
+  key_vault_private_endpoint_subnet_id     = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
+  key_vault_virtual_network_id             = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
+  should_enable_public_network_access      = var.should_enable_key_vault_public_network_access
+  should_enable_purge_protection           = var.should_enable_key_vault_purge_protection
+  should_create_aks_identity               = var.should_create_aks_identity
+  should_create_ml_workload_identity       = var.azureml_should_create_ml_workload_identity
+  should_create_secret_sync_identity       = var.should_deploy_aio
+  log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
+  should_enable_diagnostic_settings        = true
+
+  network_security_perimeter_id                  = try(module.cloud_networking.network_security_perimeter.id, null)
+  network_security_perimeter_profile_id          = try(module.cloud_networking.network_security_perimeter.profile_id, null)
+  network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
+  network_security_perimeter_propagation_trigger = try(module.cloud_networking.network_security_perimeter.propagation_trigger, null)
+  should_use_network_security_perimeter          = var.should_use_network_security_perimeter
 }
 
 module "cloud_vpn_gateway" {
@@ -193,10 +222,10 @@ module "cloud_data" {
 
   schemas = var.schemas
 
-  network_security_perimeter_id                  = try(module.cloud_security_identity.network_security_perimeter.id, null)
-  network_security_perimeter_profile_id          = try(module.cloud_security_identity.network_security_perimeter.profile_id, null)
+  network_security_perimeter_id                  = try(module.cloud_networking.network_security_perimeter.id, null)
+  network_security_perimeter_profile_id          = try(module.cloud_networking.network_security_perimeter.profile_id, null)
   network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
-  network_security_perimeter_propagation_trigger = try(module.cloud_security_identity.network_security_perimeter.propagation_trigger, null)
+  network_security_perimeter_propagation_trigger = try(module.cloud_networking.network_security_perimeter.propagation_trigger, null)
   should_use_network_security_perimeter          = var.should_use_network_security_perimeter
 }
 

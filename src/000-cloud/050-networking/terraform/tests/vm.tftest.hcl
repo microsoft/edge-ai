@@ -24,19 +24,19 @@ run "create_default_network" {
 
   # Subnet assertions
   assert {
-    condition     = azurerm_subnet.main.name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_subnet.main[0].name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Subnet name does not match expected pattern"
   }
 
   # NSG assertions
   assert {
-    condition     = azurerm_network_security_group.main.name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_network_security_group.main[0].name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Network Security Group name does not match expected pattern"
   }
 
   # Virtual Network assertions
   assert {
-    condition     = azurerm_virtual_network.main.name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_virtual_network.main[0].name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Virtual Network name does not match expected pattern"
   }
 }
@@ -59,19 +59,19 @@ run "create_non_default_network" {
 
   # Subnet assertions
   assert {
-    condition     = azurerm_subnet.main.name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_subnet.main[0].name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Subnet name does not match expected pattern"
   }
 
   # NSG assertions
   assert {
-    condition     = azurerm_network_security_group.main.name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_network_security_group.main[0].name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Network Security Group name does not match expected pattern"
   }
 
   # Virtual Network assertions
   assert {
-    condition     = azurerm_virtual_network.main.name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_virtual_network.main[0].name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Virtual Network name does not match expected pattern"
   }
 }

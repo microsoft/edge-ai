@@ -286,13 +286,13 @@ output "azureml_inference_cluster" {
 }
 
 output "vpn_gateway" {
-  description = "VPN Gateway configuration when enabled."
-  value       = try(module.cloud_vpn_gateway[0].vpn_gateway, null)
+  description = "VPN Gateway configuration when enabled or referenced from existing networking."
+  value       = try(module.cloud_vpn_gateway[0].vpn_gateway, data.azurerm_virtual_network_gateway.existing[0], null)
 }
 
 output "vpn_gateway_public_ip" {
   description = "VPN Gateway public IP address for client configuration."
-  value       = try(module.cloud_vpn_gateway[0].vpn_gateway_public_ip, null)
+  value       = try(module.cloud_vpn_gateway[0].vpn_gateway_public_ip, data.azurerm_virtual_network_gateway.existing[0].ip_configuration[0].public_ip_address_id, null)
 }
 
 output "vpn_client_connection_info" {

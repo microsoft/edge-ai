@@ -419,8 +419,13 @@ module cloudSecurityIdentity '../../../src/000-cloud/010-security-identity/bicep
     shouldEnableKeyVaultPublicNetworkAccess: shouldEnableKeyVaultPublicNetworkAccess
     keyVaultPrivateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
     keyVaultVirtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
-    shouldUseNetworkSecurityPerimeter: shouldUseNetworkSecurityPerimeter
-    networkSecurityPerimeterAllowedIpAddressPrefixes: validatedNetworkSecurityPerimeterAllowedIpAddressPrefixes
+    networkSecurityPerimeterName: shouldUseNetworkSecurityPerimeter
+      ? last(split(cloudNetworking.outputs.?networkSecurityPerimeterId!, '/'))
+      : null
+    networkSecurityPerimeterResourceGroupName: shouldUseNetworkSecurityPerimeter
+      ? cloudNetworking.outputs.?networkSecurityPerimeterResourceGroupName
+      : null
+    networkSecurityPerimeterProfileName: shouldUseNetworkSecurityPerimeter ? 'defaultprofile' : null
   }
 }
 
@@ -451,10 +456,10 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
     shouldCreateBlobPrivateDnsZone: !shouldEnablePrivateEndpoints
     blobPrivateDnsZoneId: shouldEnablePrivateEndpoints ? cloudObservability.outputs.?monitorPrivateDnsZoneBlobId : null
     networkSecurityPerimeterName: shouldUseNetworkSecurityPerimeter
-      ? last(split(cloudSecurityIdentity.outputs.?networkSecurityPerimeterId!, '/'))
+      ? last(split(cloudNetworking.outputs.?networkSecurityPerimeterId!, '/'))
       : null
     networkSecurityPerimeterResourceGroupName: shouldUseNetworkSecurityPerimeter
-      ? cloudSecurityIdentity.outputs.?networkSecurityPerimeterResourceGroupName
+      ? cloudNetworking.outputs.?networkSecurityPerimeterResourceGroupName
       : null
     networkSecurityPerimeterProfileName: shouldUseNetworkSecurityPerimeter ? 'defaultprofile' : null
   }
@@ -506,6 +511,8 @@ module cloudNetworking '../../../src/000-cloud/050-networking/bicep/main.bicep' 
       subnetAddressPrefix: resolverSubnetAddressPrefix
     }
     defaultOutboundAccessEnabled: !shouldEnableManagedOutboundAccess
+    shouldUseNetworkSecurityPerimeter: shouldUseNetworkSecurityPerimeter
+    networkSecurityPerimeterAllowedIpAddressPrefixes: validatedNetworkSecurityPerimeterAllowedIpAddressPrefixes
   }
 }
 

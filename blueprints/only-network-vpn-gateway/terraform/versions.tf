@@ -8,10 +8,12 @@ terraform {
       source  = "Azure/azapi"
       version = ">= 2.3.0"
     }
-    external = {
-      source  = "hashicorp/external"
-      version = ">= 2.3.5"
-    }
   }
   required_version = ">= 1.12.0, < 2.0"
+}
+
+provider "azurerm" {
+  storage_use_azuread = true
+  partner_id          = "acce1e78-0375-4637-a593-86aa36dcfeac"
+  features {}
 }

@@ -779,6 +779,46 @@ variable "network_security_perimeter_propagation_delay" {
 }
 
 /*
+ * Existing Networking Parameters - Optional
+ */
+
+variable "use_existing_networking" {
+  type        = bool
+  description = "Whether to reference an existing virtual network, subnet, and network security group (for example, from the only-network-vpn-gateway blueprint) instead of creating new ones"
+  default     = false
+}
+
+variable "existing_networking_resource_group_name" {
+  type        = string
+  description = "Resource group name containing the existing networking resources when use_existing_networking is true. Otherwise, resource_group_name (supports the common case of Step 1 and Step 2 sharing one resource group)"
+  default     = null
+}
+
+variable "virtual_network_name" {
+  type        = string
+  description = "Name of the virtual network to create or reference. Otherwise, 'vnet-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
+variable "subnet_name" {
+  type        = string
+  description = "Name of the subnet to create or reference. Otherwise, 'snet-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
+variable "network_security_group_name" {
+  type        = string
+  description = "Name of the network security group to create or reference. Otherwise, 'nsg-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
+variable "vpn_gateway_name" {
+  type        = string
+  description = "Name of an existing VPN Gateway to look up for informational outputs when use_existing_networking is true. Otherwise, 'vgw-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
+/*
  * Networking and Outbound Access Parameters
  */
 

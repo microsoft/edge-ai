@@ -264,10 +264,22 @@ Ensure you have the following prerequisites:
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
 
+## Two-Step Networking and VPN Deployment
+
+When subscription policy blocks public network access on Key Vault or Storage, deploy
+[Only Network VPN Gateway](../only-network-vpn-gateway/README.md) first to create a virtual network and
+Point-to-Site VPN Gateway, connect over VPN, then deploy this blueprint with `use_existing_networking = true`
+to reuse that virtual network. Once connected over VPN, `should_enable_key_vault_public_network_access` and
+`should_enable_storage_public_network_access` can be safely set to `false`. See
+[Layering an Existing Network and VPN Gateway](../README.md#layering-an-existing-network-and-vpn-gateway) in
+the blueprints README for the full walkthrough, including the shared-resource-group and separate-resource-group
+variable combinations.
+
 ## Related Blueprints
 
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
+- **[Only Network VPN Gateway](../only-network-vpn-gateway/README.md)**: Pre-step deploying an existing network and VPN Gateway for this blueprint to layer on top of
 
 ---
 

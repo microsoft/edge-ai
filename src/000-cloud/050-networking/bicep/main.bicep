@@ -27,6 +27,12 @@ param privateResolverConfig types.PrivateResolverConfig = types.privateResolverC
 @description('Whether default outbound access is enabled for subnets.')
 param defaultOutboundAccessEnabled bool = false
 
+@description('Whether to create a Network Security Perimeter that allows the detected deployment client IP for supported PaaS resources.')
+param shouldUseNetworkSecurityPerimeter bool = false
+
+@description('Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically.')
+param networkSecurityPerimeterAllowedIpAddressPrefixes string[] = []
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
 
@@ -125,6 +131,14 @@ module privateResolver './modules/private-resolver.bicep' = if (privateResolverC
   }
 }
 
+module networkSecurityPerimeter './modules/network-security-perimeter.bicep' = if (shouldUseNetworkSecurityPerimeter) {
+  name: '${deployment().name}-networkSecurityPerimeter'
+  params: {
+    common: common
+    allowedIpAddressPrefixes: networkSecurityPerimeterAllowedIpAddressPrefixes
+  }
+}
+
 /*
   Outputs
 */
@@ -173,3 +187,18 @@ output subnetAddressPrefix string = networkingConfig.subnetAddressPrefix
 
 @description('The address prefix allocated to the virtual network.')
 output virtualNetworkAddressPrefix string = networkingConfig.addressPrefix
+
+@description('The resource ID of the Network Security Perimeter when created.')
+output networkSecurityPerimeterId string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.networkSecurityPerimeterId
+  : null
+
+@description('The resource group containing the Network Security Perimeter when created.')
+output networkSecurityPerimeterResourceGroupName string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.networkSecurityPerimeterResourceGroupName
+  : null
+
+@description('The resource ID of the Network Security Perimeter profile when created.')
+output networkSecurityPerimeterProfileId string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.profileId
+  : null
