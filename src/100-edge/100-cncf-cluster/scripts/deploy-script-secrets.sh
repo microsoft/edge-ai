@@ -98,7 +98,7 @@ if ! command -v "az" &>/dev/null; then
     case "$OS_TYPE" in
       ubuntu)
         # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
-        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
+        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.88.0}"
         sudo apt-get update
         sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
         sudo mkdir -p /etc/apt/keyrings
