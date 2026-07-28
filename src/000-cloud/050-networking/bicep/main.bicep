@@ -66,9 +66,25 @@ var resolvedSubnetName = subnetName ?? 'subnet-${resourceNamePrefix}'
 var resolvedExistingResourceGroupName = existingResourceGroupName ?? resourceGroup().name
 // Resource group that owns the virtual network/subnet/NSG referenced by the resolved IDs below.
 var targetResourceGroupName = useExistingVirtualNetwork ? resolvedExistingResourceGroupName : resourceGroup().name
-var resolvedVirtualNetworkId = resourceId(subscription().subscriptionId, targetResourceGroupName, 'Microsoft.Network/virtualNetworks', resolvedVirtualNetworkName)
-var resolvedNetworkSecurityGroupId = resourceId(subscription().subscriptionId, targetResourceGroupName, 'Microsoft.Network/networkSecurityGroups', resolvedNetworkSecurityGroupName)
-var resolvedSubnetId = resourceId(subscription().subscriptionId, targetResourceGroupName, 'Microsoft.Network/virtualNetworks/subnets', resolvedVirtualNetworkName, resolvedSubnetName)
+var resolvedVirtualNetworkId = resourceId(
+  subscription().subscriptionId,
+  targetResourceGroupName,
+  'Microsoft.Network/virtualNetworks',
+  resolvedVirtualNetworkName
+)
+var resolvedNetworkSecurityGroupId = resourceId(
+  subscription().subscriptionId,
+  targetResourceGroupName,
+  'Microsoft.Network/networkSecurityGroups',
+  resolvedNetworkSecurityGroupName
+)
+var resolvedSubnetId = resourceId(
+  subscription().subscriptionId,
+  targetResourceGroupName,
+  'Microsoft.Network/virtualNetworks/subnets',
+  resolvedVirtualNetworkName,
+  resolvedSubnetName
+)
 
 /*
   Resources
