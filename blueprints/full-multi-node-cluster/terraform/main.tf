@@ -35,10 +35,12 @@ locals {
     acr_resource_id                = module.cloud_acr.acr.id
     should_assign_acr_pull_for_aio = true
     authentication = {
-      method                                    = "SystemAssignedManagedIdentity"
-      system_assigned_managed_identity_settings = null
-      user_assigned_managed_identity_settings   = null
-      artifact_pull_secret_settings             = null
+      method = "SystemAssignedManagedIdentity"
+      system_assigned_managed_identity_settings = {
+        audience = "https://containerregistry.azure.net"
+      }
+      user_assigned_managed_identity_settings = null
+      artifact_pull_secret_settings           = null
     }
   }] : []
 
