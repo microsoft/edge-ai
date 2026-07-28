@@ -39,6 +39,15 @@ run "create_default_network" {
     condition     = azurerm_virtual_network.main[0].name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Virtual Network name does not match expected pattern"
   }
+
+  # Network Security Perimeter assertions
+  # should_use_network_security_perimeter defaults to false; the enabled path requires a real
+  # external IP-detection lookup (see main.tf's data "external" "deployment_client_ip") and is
+  # not covered by fast plan tests.
+  assert {
+    condition     = output.network_security_perimeter == null
+    error_message = "Network Security Perimeter output should be null when should_use_network_security_perimeter is false"
+  }
 }
 
 # Test VM with user assigned managed identity

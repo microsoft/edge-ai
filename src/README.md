@@ -38,10 +38,37 @@ engineers can deploy the `100-edge` components for on-premises cluster set-up.
 4. [(000-cloud/030-data)](./000-cloud/030-data/README.md) - Data storage and Schema Registry resources
 5. [(000-cloud/031-fabric)](./000-cloud/031-fabric/README.md) - Microsoft Fabric resources for data warehousing and
    analytics
-6. [(000-cloud/040-messaging)](./000-cloud/040-messaging/README.md) - Event Grid, Event Hubs, Service Bus and messaging
-   resources
-7. [(000-cloud/051-vm-host)](./000-cloud/051-vm-host/README.md) - VM provisioning resources with configurable host
-   operating system
+6. [(000-cloud/032-fabric-rti)](./000-cloud/032-fabric-rti/README.md) - Real-Time Intelligence EventStream resources
+   for Fabric-based Azure IoT Operations data flow integration
+7. [(000-cloud/033-fabric-ontology)](./000-cloud/033-fabric-ontology/README.md) - Schema-driven deployment of
+   Microsoft Fabric Ontology resources from portable YAML definitions
+8. [(000-cloud/035-postgresql)](./000-cloud/035-postgresql/README.md) - Azure PostgreSQL Flexible Server with
+   TimescaleDB extension support for time-series data workloads
+9. [(000-cloud/036-managed-redis)](./000-cloud/036-managed-redis/README.md) - Azure Managed Redis with private
+   endpoint support, Entra ID authentication, and customer-managed key encryption
+10. [(000-cloud/040-messaging)](./000-cloud/040-messaging/README.md) - Event Grid, Event Hubs, Service Bus and
+    messaging resources
+11. [(000-cloud/045-notification)](./000-cloud/045-notification/README.md) - Event Hub to Microsoft Teams
+    notification via consumption-tier Logic Apps with managed identity authentication
+12. [(000-cloud/050-networking)](./000-cloud/050-networking/terraform/README.md) - Virtual network, subnets, network
+    security groups, NAT gateway, Private DNS Resolver, and optional Network Security Perimeter resources
+13. [(000-cloud/051-vm-host)](./000-cloud/051-vm-host/README.md) - VM provisioning resources with configurable host
+    operating system
+14. [(000-cloud/055-vpn-gateway)](./000-cloud/055-vpn-gateway/terraform/README.md) - Point-to-Site VPN Gateway with
+    certificate-based or Azure AD (Microsoft Entra ID) authentication and optional site-to-site connections
+15. [(000-cloud/060-acr)](./000-cloud/060-acr/terraform/README.md) - Azure Container Registry resources
+16. [(000-cloud/070-kubernetes)](./000-cloud/070-kubernetes/terraform/README.md) - Azure Kubernetes Service (AKS)
+    cluster resources
+17. [(000-cloud/071-aks-host)](./000-cloud/071-aks-host/terraform/README.md) - Azure Kubernetes Service (AKS) host
+    resources
+18. [(000-cloud/072-azure-local-host)](./000-cloud/072-azure-local-host/README.md) - Arc-enabled Kubernetes cluster
+    on Azure Stack HCI (Azure Local) provisioned through a Custom Location
+19. [(000-cloud/073-vm-host)](./000-cloud/073-vm-host/README.md) - Component for onboarding a new Azure VM for the
+    purposes of installing and testing out an edge deployment including Azure VNet and Azure VM
+20. [(000-cloud/080-azureml)](./000-cloud/080-azureml/README.md) - Azure Machine Learning workspace infrastructure
+    with optional compute cluster for AI model training and deployment at the edge
+21. [(000-cloud/085-ai-foundry)](./000-cloud/085-ai-foundry/README.md) - Microsoft Foundry infrastructure with
+    accounts, projects, and model deployments for AI development and deployment scenarios
 
 ## Edge Infrastructure (100-edge)
 

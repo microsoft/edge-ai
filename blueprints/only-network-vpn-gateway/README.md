@@ -25,7 +25,17 @@ It exists to support a two-step deployment pattern for environments where subscr
 2. **Connect**: Download the VPN client profile from this blueprint's outputs and connect over VPN.
 3. **Step 2**: Deploy `full-multi-node-cluster` (or another component/blueprint) with `use_existing_networking = true` to reuse this blueprint's virtual network, then safely disable public network access on Key Vault/Storage now that the deployer is connected over the private network.
 
-> **Known deployment time**: `azurerm_virtual_network_gateway` provisioning is one of the slowest operations in Azure. Expect Step 1's `terraform apply` to take up to 30 minutes to complete, even for the default `VpnGw1AZ` SKU. This is normal Azure Gateway subnet behavior, not a sign of a stuck or failed deployment.
+> **Known deployment time**: `azurerm_virtual_network_gateway` provisioning is one of the slowest operations in
+> Azure. Expect Step 1's `terraform apply` to take up to 30 minutes to complete, even for the default `VpnGw1AZ`
+> SKU. This is normal Azure Gateway subnet behavior, not a sign of a stuck or failed deployment.
+>
+> **Not to be confused with Azure Arc Gateway**: This blueprint's VPN Gateway provides *deployer* private
+> connectivity — a path for the person or pipeline running `terraform apply`/`az deployment` to reach
+> private-endpoint-protected resources (Key Vault, Storage, ACR) during deployment and ongoing management. It is
+> unrelated to [Azure Arc Gateway](https://learn.microsoft.com/azure/azure-arc/servers/arc-gateway-overview),
+> which consolidates the *Arc-enabled cluster's own* outbound agent traffic into a small set of endpoints. This
+> repository does not deploy or configure Azure Arc Gateway; do not conflate the two when reading Azure IoT
+> Operations private connectivity documentation.
 
 Please follow general blueprint deployment and recommendations from blueprints [README.md](../README.md).
 
@@ -43,7 +53,8 @@ This blueprint deploys:
 This blueprint is available in both Terraform (`terraform/`) and Bicep (`bicep/`).
 
 - **Terraform**: Supports both Azure AD (Microsoft Entra ID) authentication and certificate-based authentication (`vpn_gateway_should_use_azure_ad_auth = false`), including a conditional Key Vault for CA certificate storage.
-- **Bicep**: Supports Azure AD (Microsoft Entra ID) authentication only. The underlying `055-vpn-gateway` Bicep component has no certificate-based authentication path because native Bicep/ARM resources cannot generate or store CA certificates the way the Terraform implementation does. This is a deliberate scope limitation, not a defect. Use the Terraform implementation if certificate-based Point-to-Site authentication is required. See [bicep/README.md](./bicep/README.md) for Bicep parameters and outputs.
+- **Bicep**: Supports Azure AD (Microsoft Entra ID) authentication only. The underlying `055-vpn-gateway` Bicep component has no certificate-based authentication path because native Bicep/ARM resources cannot generate or store CA certificates the way the Terraform implementation does.
+  This is a deliberate scope limitation, not a defect. Use the Terraform implementation if certificate-based Point-to-Site authentication is required. See [bicep/README.md](./bicep/README.md) for Bicep parameters and outputs.
 
 The rest of this document describes the Terraform implementation. Both implementations follow the same two-step deployment pattern and support reusing existing networking (`use_existing_networking` in Terraform, `useExistingNetworking` in Bicep) for `full-multi-node-cluster`.
 
@@ -252,6 +263,22 @@ Once Key Vault/Storage/ACR public network access is disabled, their FQDNs (for e
 This alone only affects name resolution for resources inside the VNet - VPN clients still resolve names using their own OS/network DNS settings, so you additionally need either enterprise DNS conditional forwarding (forward `privatelink.*` zones to the resolver's inbound endpoint IP) or per-client DNS configuration pointing at the resolver. This is the appropriate option for shared or longer-lived environments with multiple deployers.
 
 Use the hosts file workaround for a quick individual test loop; use the Private DNS Resolver plus enterprise DNS forwarding when multiple people need durable access.
+
+### Schema Registry Requires Private Connectivity Before Disabling Storage Access
+
+The Azure IoT Operations Schema Registry resource is created directly against the Storage Account (via
+`azapi_resource`) during `terraform apply`, using whatever network path the deployer currently has. Unlike the
+Bicep storage account module, the Terraform storage-account module in this repository does not configure a
+`network_rules` "AzureServices" bypass exception — so once `should_enable_storage_public_network_access = false`
+is set, **all** non-private-link access is blocked unconditionally, including the schema registry creation call
+itself.
+
+This means the deployer must already have working VPN connectivity **and** correct private DNS resolution (see
+above) to the storage account's private endpoint *before* disabling storage public access and creating/updating
+the schema registry in the same or a later `apply`. Disabling public access first and only then attempting
+schema registry creation without a validated private path will fail. Validate DNS resolution to the storage
+account's `blob`/`dfs` private endpoint FQDN (for example with `nslookup`/`dig` over the VPN connection) before
+proceeding to Step 3.
 
 ## Troubleshooting
 

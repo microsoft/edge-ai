@@ -308,6 +308,13 @@ The deployment tests intentionally exercise only the single-node, VM-backed defa
   exist in both IaC implementations) but the feature is left disabled in deployment tests, so there is no functional `ValidateNotification` sub test.
   Deploying it provisions a Logic App plus Teams wiring that needs external Microsoft 365 configuration to verify meaningfully, which is out of scope
   for infrastructure tests. Enable `should_deploy_notification` manually to exercise it.
+- **Existing networking / layered VPN deployment (`use_existing_networking` / `useExistingNetworking`).** This path reuses a VNet, subnet, NSG, and
+  VPN Gateway produced by a separately deployed `only-network-vpn-gateway` blueprint instance rather than creating networking resources itself, so
+  the deployment test has no self-contained fixture to provision and tear down. Standing up that prerequisite blueprint just to exercise this flag
+  would double the VPN Gateway provisioning cost and time (its `VpnGw1AZ` SKU alone takes roughly 30-45 minutes to deploy) on every test run without
+  validating distinct blueprint logic. Validate this path manually by deploying `only-network-vpn-gateway` first and then layering
+  `full-multi-node-cluster` with `use_existing_networking = true` per the [Two-Step Networking and VPN Deployment](../README.md#two-step-networking-and-vpn-deployment)
+  instructions.
 
 These gaps are coverage decisions driven by cost and external-dependency constraints, not defects. Each scenario can be enabled by overriding the corresponding variable/parameter when running a targeted deployment test.
 
