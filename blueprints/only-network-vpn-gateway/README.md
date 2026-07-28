@@ -2,7 +2,7 @@
 title: Only Network VPN Gateway Blueprint
 description: Standalone virtual network and Point-to-Site VPN Gateway deployment used as Step 1 of a two-step pattern that lets later blueprints reuse existing networking and connect securely before disabling public network access
 author: Edge AI Team
-ms.date: 2026-07-27
+ms.date: 2026-07-28
 ms.topic: reference
 keywords:
   - vpn gateway
@@ -11,6 +11,7 @@ keywords:
   - two-step deployment
   - network security perimeter
   - terraform
+  - bicep
 estimated_reading_time: 6
 ---
 
@@ -36,6 +37,15 @@ This blueprint deploys:
 - **Virtual Network and Subnet**: Via the `050-networking` component, including optional Azure Private Resolver and NAT gateway for managed outbound access
 - **Key Vault** (conditional): Created only when `vpn_gateway_should_use_azure_ad_auth = false`, to store the VPN Gateway's auto-generated or existing CA certificate
 - **VPN Gateway**: Point-to-Site gateway supporting either Azure AD (Microsoft Entra ID) authentication (default) or certificate-based authentication, plus optional site-to-site connections
+
+## Terraform and Bicep Implementations
+
+This blueprint is available in both Terraform (`terraform/`) and Bicep (`bicep/`).
+
+- **Terraform**: Supports both Azure AD (Microsoft Entra ID) authentication and certificate-based authentication (`vpn_gateway_should_use_azure_ad_auth = false`), including a conditional Key Vault for CA certificate storage.
+- **Bicep**: Supports Azure AD (Microsoft Entra ID) authentication only. The underlying `055-vpn-gateway` Bicep component has no certificate-based authentication path because native Bicep/ARM resources cannot generate or store CA certificates the way the Terraform implementation does. This is a deliberate scope limitation, not a defect. Use the Terraform implementation if certificate-based Point-to-Site authentication is required. See [bicep/README.md](./bicep/README.md) for Bicep parameters and outputs.
+
+The rest of this document describes the Terraform implementation. Both implementations follow the same two-step deployment pattern and support reusing existing networking (`use_existing_networking` in Terraform, `useExistingNetworking` in Bicep) for `full-multi-node-cluster`.
 
 ## Prerequisites
 

@@ -2,7 +2,7 @@
 title: Full Multi-node Cluster Blueprint
 description: Complete end-to-end deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster providing production-grade high availability edge computing environment
 author: Edge AI Team
-ms.date: 2025-06-07
+ms.date: 2025-07-28
 ms.topic: reference
 keywords:
   - azure iot operations
@@ -274,6 +274,10 @@ to reuse that virtual network. Once connected over VPN, `should_enable_key_vault
 [Layering an Existing Network and VPN Gateway](../README.md#layering-an-existing-network-and-vpn-gateway) in
 the blueprints README for the full walkthrough, including the shared-resource-group and separate-resource-group
 variable combinations.
+
+The Bicep implementation supports the same pattern via `useExistingNetworking` (mirroring the Terraform
+`use_existing_networking` variables above), reusing [Only Network VPN Gateway](../only-network-vpn-gateway/README.md#terraform-and-bicep-implementations)'s
+Bicep counterpart. The Bicep VPN Gateway only supports Azure AD (Microsoft Entra ID) authentication.
 
 ## Related Blueprints
 

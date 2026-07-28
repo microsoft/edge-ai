@@ -2,7 +2,7 @@
 title: Blueprints
 description: Infrastructure as Code composition mechanism providing ready-to-deploy end-to-end solutions for edge computing environments with Azure IoT Operations
 author: Edge AI Team
-ms.date: 2025-06-07
+ms.date: 2025-07-28
 ms.topic: reference
 keywords:
   - blueprints
@@ -166,6 +166,11 @@ should_enable_storage_public_network_access   = false
 
 See [Only Network VPN Gateway](./only-network-vpn-gateway/README.md) for the full variable and output
 reference and [Full Cluster](./full-multi-node-cluster/README.md) for the corresponding networking variables.
+
+> **Bicep**: The same two-step pattern is available in Bicep, using `useExistingNetworking` on the `full-multi-node-cluster`
+> Bicep blueprint. The Bicep `only-network-vpn-gateway` implementation supports Azure AD (Microsoft Entra ID)
+> authentication only; see [Only Network VPN Gateway](./only-network-vpn-gateway/README.md#terraform-and-bicep-implementations)
+> for why certificate-based authentication is Terraform-only.
 
 ## Required Permissions and Custom Roles
 
