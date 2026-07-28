@@ -85,3 +85,13 @@ ignore:
     package:
       name: fast-uri
       type: npm
+
+  # brace-expansion 1.1.16 - HIGH severity, no compatible fixed version
+  # Justification: Docusaurus pulls this through serve-handler and test-exclude,
+  # which require minimatch 3.x and brace-expansion ^1.1.7. The only fixed
+  # release is 5.0.8, an incompatible major version. Re-evaluate when either
+  # parent upgrades its minimatch dependency.
+  - vulnerability: GHSA-mh99-v99m-4gvg
+    package:
+      name: brace-expansion
+      type: npm
