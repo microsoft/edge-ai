@@ -114,7 +114,7 @@ resource "terraform_data" "defer_vpn_gateway_name" {
   count = var.use_existing_networking ? 1 : 0
 
   input = {
-    vpn_gateway_name = coalesce(var.vpn_gateway_name, "vgw-${var.resource_prefix}-${var.environment}-${var.instance}")
+    vpn_gateway_name = coalesce(var.vpn_gateway_name, "vng-${var.resource_prefix}-${var.environment}-${var.instance}")
   }
 }
 

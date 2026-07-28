@@ -814,7 +814,7 @@ variable "network_security_group_name" {
 
 variable "vpn_gateway_name" {
   type        = string
-  description = "Name of an existing VPN Gateway to look up for informational outputs when use_existing_networking is true. Otherwise, 'vgw-{resource_prefix}-{environment}-{instance}'"
+  description = "Name of an existing VPN Gateway to look up for informational outputs when use_existing_networking is true. Otherwise, 'vng-{resource_prefix}-{environment}-{instance}'"
   default     = null
 }
 

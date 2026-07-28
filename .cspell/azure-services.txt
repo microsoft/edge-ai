@@ -69,6 +69,7 @@ onedrive
 onenote
 pgadmin
 powerbi
+azurevpnconfig
 registryendpoints
 secretstore
 servicebus

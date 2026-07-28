@@ -24,6 +24,8 @@ It exists to support a two-step deployment pattern for environments where subscr
 2. **Connect**: Download the VPN client profile from this blueprint's outputs and connect over VPN.
 3. **Step 2**: Deploy `full-multi-node-cluster` (or another component/blueprint) with `use_existing_networking = true` to reuse this blueprint's virtual network, then safely disable public network access on Key Vault/Storage now that the deployer is connected over the private network.
 
+> **Known deployment time**: `azurerm_virtual_network_gateway` provisioning is one of the slowest operations in Azure. Expect Step 1's `terraform apply` to take up to 30 minutes to complete, even for the default `VpnGw1AZ` SKU. This is normal Azure Gateway subnet behavior, not a sign of a stuck or failed deployment.
+
 Please follow general blueprint deployment and recommendations from blueprints [README.md](../README.md).
 
 ## Architecture
@@ -181,11 +183,23 @@ location        = "westeurope"
 resource_prefix = "mycompany"
 instance        = "001"
 
+# Reuse Step 1's resource group instead of creating a new one.
 use_existing_resource_group = true
 resource_group_name         = "rg-mycompany-dev-001"
 
+# Reuse Step 1's virtual network/subnet rather than creating new ones.
 use_existing_networking = true
 
+# Step 1's networking module owns the only NAT gateway created for use_existing_networking;
+# new per-component subnets (ACR, etc.) here have nothing to associate with, so fall back to
+# default outbound access instead of managed NAT egress.
+should_enable_managed_outbound_access = false
+
+# Required whenever public network access is disabled below - without private endpoints,
+# Key Vault/Storage become completely unreachable once public access is turned off.
+should_enable_private_endpoints = true
+
+# The actual goal of this pattern: lock down public access now that the deployer is on VPN.
 should_enable_key_vault_public_network_access = false
 should_enable_storage_public_network_access   = false
 ```
@@ -204,6 +218,9 @@ existing_networking_resource_group_name = "rg-mycompany-dev-001"
 virtual_network_name                    = "vnet-mycompany-dev-001"
 subnet_name                             = "snet-mycompany-dev-001"
 
+should_enable_managed_outbound_access = false
+
+should_enable_private_endpoints               = true
 should_enable_key_vault_public_network_access = false
 should_enable_storage_public_network_access   = false
 ```
@@ -213,6 +230,18 @@ cd blueprints/full-multi-node-cluster/terraform
 terraform init
 terraform apply -var-file="terraform.tfvars"
 ```
+
+> **VPN Gateway naming**: both blueprints derive the same default name, `vng-{resource_prefix}-{environment}-{instance}`, so `vpn_gateway_name` does not need to be set explicitly above.
+
+## DNS Resolution for Private Endpoints
+
+Once Key Vault/Storage/ACR public network access is disabled, their FQDNs (for example `<name>.vault.azure.net`, `<name>.blob.core.windows.net`) must resolve to their private endpoint IPs for the VPN-connected deployer (and any private-endpoint-connected workload) to reach them. A Point-to-Site VPN client does not automatically use the VNet's DNS servers, so pick one of the following:
+
+1. **Hosts file workaround (quick, local testing only)**: After Step 3 creates the private endpoints, look up each resource's private endpoint IP (`az network private-endpoint show` / `az network nic show`) and add entries to `/etc/hosts` (or the Windows `hosts` file) mapping each FQDN to its private IP. This is fast to set up but is local to one machine, does not survive a devcontainer rebuild, and must be redone if private endpoint IPs change.
+2. **Azure Private DNS Resolver (durable, multi-user)**: Set `should_enable_private_resolver = true` on this blueprint to deploy an inbound endpoint and point the VNet's DNS servers at it.
+This alone only affects name resolution for resources inside the VNet - VPN clients still resolve names using their own OS/network DNS settings, so you additionally need either enterprise DNS conditional forwarding (forward `privatelink.*` zones to the resolver's inbound endpoint IP) or per-client DNS configuration pointing at the resolver. This is the appropriate option for shared or longer-lived environments with multiple deployers.
+
+Use the hosts file workaround for a quick individual test loop; use the Private DNS Resolver plus enterprise DNS forwarding when multiple people need durable access.
 
 ## Troubleshooting
 
