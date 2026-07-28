@@ -9,7 +9,7 @@ atheris==3.0.0 \
     --hash=sha256:510e502c57b6dc615fb174066407af620d4c7f73cf08a782c86e7761bf12c4eb \
     --hash=sha256:8a5c8a781467c187da40fd29139784193e2647058831f837f675d0bb8cbd8746 \
     --hash=sha256:a402cdca8a650d1371050b1f9552eb4cdc488d2db64950d603c4560318365eac
-    # via -r .clusterfuzzlite/fuzz-tools-requirements.in
+    # via -r fuzz-tools-requirements.in
 packaging==26.2 \
     --hash=sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e \
     --hash=sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661
@@ -29,14 +29,8 @@ pyinstaller==6.20.0 \
     --hash=sha256:bd53282c0a73e5c95573e1ddc8e5d564d4932bec91efbaed4dc5fdff9c2ae7f2 \
     --hash=sha256:bf3be4e1284ee78ddccba5e29f99443a12a7b4673168288ffc4c9d38c6f7b90e \
     --hash=sha256:d588844e890ee80c4365867f98146636e1849bbca8e4284bbf0c809aff0f161a
-    # via -r .clusterfuzzlite/fuzz-tools-requirements.in
+    # via -r fuzz-tools-requirements.in
 pyinstaller-hooks-contrib==2026.5 \
     --hash=sha256:ea1535783fbdac4626351709e83f3ea80b681d3a4745763ebb407b5e27342eb9 \
     --hash=sha256:f066dfca8f7c45ff6336c9cf9fe25b4e48bfeb322a1aa24faaedfb8a8d1b0b08
     # via pyinstaller
-setuptools==82.0.1 \
-    --hash=sha256:7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9 \
-    --hash=sha256:a59e362652f08dcd477c78bb6e7bd9d80a7995bc73ce773050228a348ce2e5bb
-    # via
-    #   pyinstaller
-    #   pyinstaller-hooks-contrib
