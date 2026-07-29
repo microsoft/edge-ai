@@ -90,3 +90,5 @@ functionalization
 servicebus
 storageaccounts
 youracr
+northeurope
+westcentralus
