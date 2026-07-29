@@ -151,6 +151,41 @@ aio_features = {
 
 ```
 
+### Network Security Perimeter and the Operations Experience
+
+When `should_use_network_security_perimeter = true`, the Key Vault and Storage Account are only reachable from the deployment client IP and any prefixes listed in `network_security_perimeter_allowed_ip_address_prefixes`. The [operations experience](https://iotoperations.azure.com) web UI calls these same resources on your behalf to manage secrets, the schema registry, and dataflow graphs.
+
+Its outbound IP addresses must also be on the allow list, or the UI returns access errors. See [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/en-us/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints) for the current list.
+
+An operations experience request typically originates from the region closest to you, but Microsoft recommends allowing every published region since the request can come from any of them:
+
+| Operations experience region | IP address       |
+|------------------------------|------------------|
+| `eastus`                     | `48.211.120.64`  |
+| `northeurope`                | `72.145.25.40`   |
+| `westcentralus`              | `128.24.193.24`  |
+| `westeurope`                 | `72.145.132.248` |
+| `westus3`                    | `57.154.126.80`  |
+
+Add the prefixes as `/32` CIDR entries:
+
+```hcl
+should_use_network_security_perimeter = true
+
+network_security_perimeter_allowed_ip_address_prefixes = [
+  "48.211.120.64/32",  # eastus
+  "72.145.25.40/32",   # northeurope
+  "128.24.193.24/32",  # westcentralus
+  "72.145.132.248/32", # westeurope
+  "57.154.126.80/32",  # westus3
+]
+```
+
+> [!NOTE]
+> Microsoft periodically updates these IP addresses. Confirm the current list in the linked troubleshooting article before relying on it for a production deployment.
+
+The Bicep version of this blueprint exposes the same options as `shouldUseNetworkSecurityPerimeter` and `networkSecurityPerimeterAllowedIpAddressPrefixes`; the same allow-list applies.
+
 ## Deploying to Azure Arc for Servers
 
 This blueprint supports deploying to existing Azure Arc-enabled servers instead of creating new Azure VMs. This mode is ideal for production edge deployments where physical or on-premises servers are already registered with Azure Arc.
