@@ -155,10 +155,10 @@ aio_features = {
 
 When `should_use_network_security_perimeter = true`, the Key Vault and Storage Account are only reachable from the deployment client IP and any prefixes listed in `network_security_perimeter_allowed_ip_address_prefixes`. The [operations experience](https://iotoperations.azure.com) web UI calls these same resources on your behalf to manage secrets, the schema registry, and dataflow graphs.
 
-Its outbound IP addresses must also be on the allow list, or the UI returns access errors. See [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/en-us/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints) for the current list.
+Its outbound IP addresses must also be on the allow list, or the UI returns access errors. See [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints) for the current list.
 
 An operations experience request typically originates from the region closest to you, but Microsoft recommends allowing every published region since the request can come from any of them:
-
+e
 | Operations experience region | IP address       |
 |------------------------------|------------------|
 | `eastus`                     | `48.211.120.64`  |
