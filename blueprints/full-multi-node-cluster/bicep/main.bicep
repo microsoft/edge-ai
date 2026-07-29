@@ -352,7 +352,9 @@ var acrRegistryEndpoint = shouldIncludeAcrRegistryEndpoint
         acrResourceId: cloudAcr.outputs.acrId
         authentication: {
           method: 'SystemAssignedManagedIdentity'
-          systemAssignedManagedIdentitySettings: {}
+          systemAssignedManagedIdentitySettings: {
+            audience: 'https://containerregistry.azure.net'
+          }
         }
       }
     ]
