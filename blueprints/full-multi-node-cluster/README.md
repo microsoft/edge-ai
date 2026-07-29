@@ -158,7 +158,7 @@ When `should_use_network_security_perimeter = true`, the Key Vault and Storage A
 Its outbound IP addresses must also be on the allow list, or the UI returns access errors. See [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints) for the current list.
 
 An operations experience request typically originates from the region closest to you, but Microsoft recommends allowing every published region since the request can come from any of them:
-e
+
 | Operations experience region | IP address       |
 |------------------------------|------------------|
 | `eastus`                     | `48.211.120.64`  |
