@@ -7,21 +7,21 @@ already deployed resources.
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azapi     | >= 2.0.1         |
-| azurerm   | >= 4.51.0        |
-| fabric    | 1.3.0            |
+| Name      | Version            |
+|-----------|--------------------|
+| terraform | >= 1.12.0, < 2.0   |
+| azapi     | >= 2.0.1           |
+| azurerm   | >= 4.51.0, < 5.0.0 |
+| fabric    | 1.3.0              |
 
 ## Providers
 
-| Name      | Version   |
-|-----------|-----------|
-| azapi     | >= 2.0.1  |
-| azurerm   | >= 4.51.0 |
-| fabric    | 1.3.0     |
-| terraform | n/a       |
+| Name      | Version            |
+|-----------|--------------------|
+| azapi     | >= 2.0.1           |
+| azurerm   | >= 4.51.0, < 5.0.0 |
+| fabric    | 1.3.0              |
+| terraform | n/a                |
 
 ## Resources
 
