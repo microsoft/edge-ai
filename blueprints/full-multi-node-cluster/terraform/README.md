@@ -13,7 +13,7 @@ VM or a pre-existing Arc-enabled machine.
 | azuread   | >= 3.0.2           |
 | azurerm   | >= 4.51.0, < 5.0.0 |
 | external  | >= 2.3.5           |
-| fabric    | 1.3.0              |
+| fabric    | 1.10.0             |
 | time      | >= 0.13.0          |
 
 ## Providers
