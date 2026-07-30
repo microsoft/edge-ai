@@ -189,7 +189,7 @@ network_security_perimeter_allowed_ip_address_prefixes = [
 > [!NOTE]
 > Microsoft periodically updates these IP addresses. Confirm the current list in the linked troubleshooting article before relying on it for a production deployment.
 
-The Bicep version of this blueprint exposes the same options as `shouldUseNetworkSecurityPerimeter` and `networkSecurityPerimeterAllowedIpAddressPrefixes`; the same allow-list applies.
+The Bicep version of this blueprint exposes the same options as `shouldUseNetworkSecurityPerimeter` and `networkSecurityPerimeterAllowedIpAddressPrefixes`, with the same default allow-list.
 
 ## Deploying to Azure Arc for Servers
 

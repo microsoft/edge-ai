@@ -767,7 +767,7 @@ variable "should_use_network_security_perimeter" {
 }
 
 variable "network_security_perimeter_allowed_ip_address_prefixes" {
-  description = "Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically. Defaults to the published operations experience (https://iotoperations.azure.com) outbound IPs, see https://learn.microsoft.com/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints"
+  description = "Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically. Defaults to the published [operations experience](https://iotoperations.azure.com) outbound IPs, see [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints)"
   type        = list(string)
   default = [
     "48.211.120.64/32",  // eastus

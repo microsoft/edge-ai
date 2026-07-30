@@ -168,8 +168,14 @@ param shouldEnableStoragePublicNetworkAccess bool = true
 @description('Whether to secure the Key Vault and Storage Account with a Network Security Perimeter.')
 param shouldUseNetworkSecurityPerimeter bool = false
 
-@description('IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter. Required when shouldUseNetworkSecurityPerimeter is true.')
-param networkSecurityPerimeterAllowedIpAddressPrefixes string[] = []
+@description('IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter. Defaults to the published [operations experience](https://iotoperations.azure.com) outbound IPs, see [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints). Must be non-empty when shouldUseNetworkSecurityPerimeter is true.')
+param networkSecurityPerimeterAllowedIpAddressPrefixes string[] = [
+  '48.211.120.64/32' // eastus
+  '72.145.25.40/32' // northeurope
+  '128.24.193.24/32' // westcentralus
+  '72.145.132.248/32' // westeurope
+  '57.154.126.80/32' // westus3
+]
 
 /*
   Existing Networking Parameters
