@@ -11,14 +11,14 @@ via Kafka-compatible interface with managed identity authentication.
 |-----------|------------------|
 | terraform | >= 1.12.0, < 2.0 |
 | azapi     | >= 2.0.1         |
-| fabric    | >= 1.3.0         |
+| fabric    | 1.10.0           |
 
 ## Providers
 
 | Name   | Version  |
 |--------|----------|
 | azapi  | >= 2.0.1 |
-| fabric | >= 1.3.0 |
+| fabric | 1.10.0   |
 
 ## Resources
 
@@ -26,7 +26,7 @@ via Kafka-compatible interface with managed identity authentication.
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
 | [azapi_resource.fabric_rti_dataflow](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource)                                                  | resource |
 | [azapi_resource.fabric_rti_endpoint](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource)                                                  | resource |
-| [fabric_workspace_role_assignment.fabric_workspace_contributor](https://registry.terraform.io/providers/microsoft/fabric/latest/docs/resources/workspace_role_assignment) | resource |
+| [fabric_workspace_role_assignment.fabric_workspace_contributor](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/resources/workspace_role_assignment) | resource |
 
 ## Inputs
 
