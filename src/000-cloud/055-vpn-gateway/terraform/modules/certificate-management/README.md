@@ -7,18 +7,18 @@ and Key Vault storage for secure certificate management.
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azurerm   | >= 4.51.0        |
-| tls       | >= 4.0.6         |
+| Name      | Version            |
+|-----------|--------------------|
+| terraform | >= 1.12.0, < 2.0   |
+| azurerm   | >= 4.51.0, < 5.0.0 |
+| tls       | >= 4.0.6           |
 
 ## Providers
 
-| Name    | Version   |
-|---------|-----------|
-| azurerm | >= 4.51.0 |
-| tls     | >= 4.0.6  |
+| Name    | Version            |
+|---------|--------------------|
+| azurerm | >= 4.51.0, < 5.0.0 |
+| tls     | >= 4.0.6           |
 
 ## Resources
 

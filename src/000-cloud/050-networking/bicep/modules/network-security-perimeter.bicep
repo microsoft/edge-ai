@@ -17,7 +17,7 @@ param allowedIpAddressPrefixes string[]
 var networkSecurityPerimeterName = 'nsp-${common.resourcePrefix}-${common.environment}-${common.instance}'
 var profileName = 'defaultprofile'
 var validatedAllowedIpAddressPrefixes = [
-  for prefix in allowedIpAddressPrefixes: contains(prefix, '/') && !empty(cidrHost(prefix, 0))
+  for prefix in allowedIpAddressPrefixes: contains(prefix, '/') && !empty(parseCidr(prefix).network)
     ? prefix
     : fail('Each Network Security Perimeter address prefix must be a valid IPv4 or IPv6 CIDR.')
 ]

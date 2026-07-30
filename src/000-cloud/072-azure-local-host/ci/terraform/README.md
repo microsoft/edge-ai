@@ -3,18 +3,18 @@
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azapi     | >= 1.13.0        |
-| azurerm   | >= 4.8.0         |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azapi     | >= 1.13.0         |
+| azurerm   | >= 4.8.0, < 5.0.0 |
 
 ## Providers
 
-| Name      | Version  |
-|-----------|----------|
-| azurerm   | >= 4.8.0 |
-| terraform | n/a      |
+| Name      | Version           |
+|-----------|-------------------|
+| azurerm   | >= 4.8.0, < 5.0.0 |
+| terraform | n/a               |
 
 ## Resources
 

@@ -2,7 +2,7 @@
 title: Blueprints
 description: Infrastructure as Code composition mechanism providing ready-to-deploy end-to-end solutions for edge computing environments with Azure IoT Operations
 author: Edge AI Team
-ms.date: 2025-06-07
+ms.date: 2025-07-28
 ms.topic: reference
 keywords:
   - blueprints
@@ -34,6 +34,7 @@ to build complex multi-stage solutions that meet your specific requirements.
 | [CNCF Cluster Script Only](./only-output-cncf-cluster-script/README.md)        | Generates scripts for cluster creation without deploying resources                                                                                 |
 | [Azure Fabric Environment](./fabric/terraform/README.md)                       | Provisions Azure Fabric environment  *Terraform only currently*                                                                                    |
 | [Dual Peered Single Node Cluster](./dual-peered-single-node-cluster/README.md) | Deploys a two single-node clusters with peered networks for proving secured communication via multiple instances of AIO MQ                         |
+| [Only Network VPN Gateway](./only-network-vpn-gateway/README.md)               | Step 1 pre-step blueprint that deploys a resource group, virtual network, and Point-to-Site VPN Gateway ahead of a full cluster deployment         |
 | *More coming soon...*                                                          |                                                                                                                                                    |
 
 ## Bicep Architecture
@@ -108,6 +109,68 @@ When using an existing resource group:
 - Verify you have appropriate permissions to deploy resources within it
 - Be aware that name conflicts may occur with existing resources
 - The existing resource group's location will be used for resources that are location-sensitive
+
+## Layering an Existing Network and VPN Gateway
+
+Subscription policies that block public network access on Key Vault and Storage require a way to reach
+those resources privately before disabling public access. The [Only Network VPN Gateway](./only-network-vpn-gateway/README.md)
+blueprint supports a two-step pattern for this scenario:
+
+1. **Step 1 — Deploy the network and VPN Gateway**: Apply `only-network-vpn-gateway` on its own to create
+   the virtual network, subnet, and a Point-to-Site VPN Gateway. Public network access on any resources it
+   creates defaults to enabled during this step.
+2. **Connect over VPN**: Generate and download the VPN client profile using the deployed gateway's `name`
+   and resource group outputs:
+
+   ```bash
+   az network vnet-gateway vpn-client generate \
+     --resource-group <resource_group.name output> \
+     --name <vpn_gateway.name output>
+
+   az network vnet-gateway vpn-client show-url \
+     --resource-group <resource_group.name output> \
+     --name <vpn_gateway.name output>
+   ```
+
+   Import the downloaded profile into the [Azure VPN Client](https://learn.microsoft.com/azure/vpn-gateway/point-to-site-entra-vpn-client-windows)
+   (or your native OS client for certificate-based authentication) and connect.
+3. **Step 2 — Layer the full cluster on the existing network**: Deploy [Full Cluster](./full-multi-node-cluster/README.md)
+   with `use_existing_networking = true` to reuse the virtual network from Step 1. Once connected over VPN,
+   optionally set `should_enable_key_vault_public_network_access = false` and
+   `should_enable_storage_public_network_access = false` to disable public access now that private connectivity
+   is available.
+
+**Shared resource group** (Step 2 reuses Step 1's resource group directly):
+
+```hcl
+use_existing_resource_group = true
+resource_group_name         = "rg-mycompany-dev-001"
+
+use_existing_networking = true
+
+should_enable_key_vault_public_network_access = false
+should_enable_storage_public_network_access   = false
+```
+
+**Separate resource groups** (Step 2 creates its own resource group but looks up Step 1's virtual network):
+
+```hcl
+use_existing_networking                 = true
+existing_networking_resource_group_name = "rg-mycompany-dev-001"
+virtual_network_name                    = "vnet-mycompany-dev-001"
+subnet_name                             = "snet-mycompany-dev-001"
+
+should_enable_key_vault_public_network_access = false
+should_enable_storage_public_network_access   = false
+```
+
+See [Only Network VPN Gateway](./only-network-vpn-gateway/README.md) for the full variable and output
+reference and [Full Cluster](./full-multi-node-cluster/README.md) for the corresponding networking variables.
+
+> **Bicep**: The same two-step pattern is available in Bicep, using `useExistingNetworking` on the `full-multi-node-cluster`
+> Bicep blueprint. The Bicep `only-network-vpn-gateway` implementation supports Azure AD (Microsoft Entra ID)
+> authentication only; see [Only Network VPN Gateway](./only-network-vpn-gateway/README.md#terraform-and-bicep-implementations)
+> for why certificate-based authentication is Terraform-only.
 
 ## Required Permissions and Custom Roles
 

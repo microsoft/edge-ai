@@ -172,6 +172,28 @@ param shouldUseNetworkSecurityPerimeter bool = false
 param networkSecurityPerimeterAllowedIpAddressPrefixes string[] = []
 
 /*
+  Existing Networking Parameters
+*/
+
+@description('Whether to reference an existing virtual network, subnet, and network security group (for example, from the only-network-vpn-gateway blueprint) instead of creating new ones.')
+param useExistingNetworking bool = false
+
+@description('Resource group name containing the existing networking resources when useExistingNetworking is true. Otherwise, resourceGroupName (supports the common case of Step 1 and Step 2 sharing one resource group).')
+param existingNetworkingResourceGroupName string?
+
+@description('Name of the virtual network to create or reference. Otherwise, computed from common naming.')
+param virtualNetworkName string?
+
+@description('Name of the subnet to create or reference. Otherwise, computed from common naming.')
+param subnetName string?
+
+@description('Name of the network security group to create or reference. Otherwise, computed from common naming.')
+param networkSecurityGroupName string?
+
+@description('Name of an existing VPN Gateway to look up for informational outputs when useExistingNetworking is true. Otherwise, computed from common naming.')
+param vpnGatewayName string?
+
+/*
   Subnet Configuration Parameters
 */
 
@@ -330,7 +352,9 @@ var acrRegistryEndpoint = shouldIncludeAcrRegistryEndpoint
         acrResourceId: cloudAcr.outputs.acrId
         authentication: {
           method: 'SystemAssignedManagedIdentity'
-          systemAssignedManagedIdentitySettings: {}
+          systemAssignedManagedIdentitySettings: {
+            audience: 'https://containerregistry.azure.net'
+          }
         }
       }
     ]
@@ -395,6 +419,11 @@ var validatedNetworkSecurityPerimeterAllowedIpAddressPrefixes = shouldUseNetwork
   ? fail('networkSecurityPerimeterAllowedIpAddressPrefixes must contain the deployment client CIDR when shouldUseNetworkSecurityPerimeter is true.')
   : networkSecurityPerimeterAllowedIpAddressPrefixes
 
+// Falls back to this deployment's own resource group when existingNetworkingResourceGroupName is unset,
+// so the common case of Step 1 and Step 2 sharing one resource group needs no extra input.
+var resolvedExistingNetworkingResourceGroupName = existingNetworkingResourceGroupName ?? resourceGroupName
+var resolvedVpnGatewayName = vpnGatewayName ?? 'vng-${common.resourcePrefix}-${common.environment}-${common.instance}'
+
 /*
   Modules
 */
@@ -419,8 +448,13 @@ module cloudSecurityIdentity '../../../src/000-cloud/010-security-identity/bicep
     shouldEnableKeyVaultPublicNetworkAccess: shouldEnableKeyVaultPublicNetworkAccess
     keyVaultPrivateEndpointSubnetId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.subnetId : null
     keyVaultVirtualNetworkId: shouldEnablePrivateEndpoints ? cloudNetworking.outputs.virtualNetworkId : null
-    shouldUseNetworkSecurityPerimeter: shouldUseNetworkSecurityPerimeter
-    networkSecurityPerimeterAllowedIpAddressPrefixes: validatedNetworkSecurityPerimeterAllowedIpAddressPrefixes
+    networkSecurityPerimeterName: shouldUseNetworkSecurityPerimeter
+      ? last(split(cloudNetworking.outputs.?networkSecurityPerimeterId!, '/'))
+      : null
+    networkSecurityPerimeterResourceGroupName: shouldUseNetworkSecurityPerimeter
+      ? cloudNetworking.outputs.?networkSecurityPerimeterResourceGroupName
+      : null
+    networkSecurityPerimeterProfileName: shouldUseNetworkSecurityPerimeter ? 'defaultprofile' : null
   }
 }
 
@@ -451,10 +485,10 @@ module cloudData '../../../src/000-cloud/030-data/bicep/main.bicep' = {
     shouldCreateBlobPrivateDnsZone: !shouldEnablePrivateEndpoints
     blobPrivateDnsZoneId: shouldEnablePrivateEndpoints ? cloudObservability.outputs.?monitorPrivateDnsZoneBlobId : null
     networkSecurityPerimeterName: shouldUseNetworkSecurityPerimeter
-      ? last(split(cloudSecurityIdentity.outputs.?networkSecurityPerimeterId!, '/'))
+      ? last(split(cloudNetworking.outputs.?networkSecurityPerimeterId!, '/'))
       : null
     networkSecurityPerimeterResourceGroupName: shouldUseNetworkSecurityPerimeter
-      ? cloudSecurityIdentity.outputs.?networkSecurityPerimeterResourceGroupName
+      ? cloudNetworking.outputs.?networkSecurityPerimeterResourceGroupName
       : null
     networkSecurityPerimeterProfileName: shouldUseNetworkSecurityPerimeter ? 'defaultprofile' : null
   }
@@ -506,7 +540,20 @@ module cloudNetworking '../../../src/000-cloud/050-networking/bicep/main.bicep' 
       subnetAddressPrefix: resolverSubnetAddressPrefix
     }
     defaultOutboundAccessEnabled: !shouldEnableManagedOutboundAccess
+    shouldUseNetworkSecurityPerimeter: shouldUseNetworkSecurityPerimeter
+    networkSecurityPerimeterAllowedIpAddressPrefixes: validatedNetworkSecurityPerimeterAllowedIpAddressPrefixes
+    useExistingVirtualNetwork: useExistingNetworking
+    existingResourceGroupName: existingNetworkingResourceGroupName
+    virtualNetworkName: virtualNetworkName
+    subnetName: subnetName
+    networkSecurityGroupName: networkSecurityGroupName
   }
+}
+
+// Informational only; the multi-node cluster does not depend on Step 1's VPN Gateway.
+resource existingVpnGateway 'Microsoft.Network/virtualNetworkGateways@2025-01-01' existing = if (useExistingNetworking) {
+  name: resolvedVpnGatewayName
+  scope: resourceGroup(resolvedExistingNetworkingResourceGroupName)
 }
 
 module cloudVmHost '../../../src/000-cloud/051-vm-host/bicep/main.bicep' = if (!shouldUseArcMachines) {
@@ -918,16 +965,23 @@ output natGatewayPublicIps array? = shouldEnableManagedOutboundAccess && cloudNe
   VPN Gateway Outputs
 */
 
-@description('VPN Gateway configuration when enabled.')
+@description('VPN Gateway configuration when enabled, or informational details for an existing gateway when useExistingNetworking is true.')
 output vpnGateway object? = shouldEnableVpnGateway
   ? {
       id: cloudVpnGateway.?outputs.?vpnGatewayId
       name: cloudVpnGateway.?outputs.?vpnGatewayName
     }
-  : null
+  : useExistingNetworking
+      ? {
+          id: existingVpnGateway!.id
+          name: existingVpnGateway!.name
+        }
+      : null
 
-@description('VPN Gateway public IP address for client configuration.')
-output vpnGatewayPublicIp string? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?vpnGatewayPublicIp : null
+@description('VPN Gateway public IP address for client configuration, or the existing gateway public IP when useExistingNetworking is true.')
+output vpnGatewayPublicIp string? = shouldEnableVpnGateway
+  ? cloudVpnGateway.?outputs.?vpnGatewayPublicIp
+  : (useExistingNetworking ? existingVpnGateway!.properties.ipConfigurations[0].properties.publicIPAddress.id : null)
 
 @description('VPN client connection information including download URLs.')
 output vpnClientConnectionInfo object? = shouldEnableVpnGateway ? cloudVpnGateway.?outputs.?clientConnectionInfo : null

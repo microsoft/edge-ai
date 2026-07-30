@@ -7,19 +7,19 @@ along with installing extensions for cluster connect and custom locations.
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azapi     | >= 2.3.0         |
-| azurerm   | >= 4.51.0        |
+| Name      | Version            |
+|-----------|--------------------|
+| terraform | >= 1.12.0, < 2.0   |
+| azapi     | >= 2.3.0           |
+| azurerm   | >= 4.51.0, < 5.0.0 |
 
 ## Providers
 
-| Name    | Version   |
-|---------|-----------|
-| azurerm | >= 4.51.0 |
-| local   | n/a       |
-| random  | n/a       |
+| Name    | Version            |
+|---------|--------------------|
+| azurerm | >= 4.51.0, < 5.0.0 |
+| local   | n/a                |
+| random  | n/a                |
 
 ## Resources
 
