@@ -167,17 +167,22 @@ An operations experience request typically originates from the region closest to
 | `westeurope`                 | `72.145.132.248` |
 | `westus3`                    | `57.154.126.80`  |
 
-Add the prefixes as `/32` CIDR entries:
+These prefixes are the `/32` default of `network_security_perimeter_allowed_ip_address_prefixes`, so enabling the perimeter is enough:
 
 ```hcl
 should_use_network_security_perimeter = true
+```
 
+Override the variable to allow a different set of prefixes:
+
+```hcl
 network_security_perimeter_allowed_ip_address_prefixes = [
   "48.211.120.64/32",  # eastus
   "72.145.25.40/32",   # northeurope
   "128.24.193.24/32",  # westcentralus
   "72.145.132.248/32", # westeurope
   "57.154.126.80/32",  # westus3
+  "203.0.113.10/32",   # additional client
 ]
 ```
 
