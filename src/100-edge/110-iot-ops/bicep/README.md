@@ -296,13 +296,13 @@ Deploys Azure IoT Operations instance, broker, authentication, listeners, and da
 | aioSyncRule                           | `Microsoft.ExtendedLocation/customLocations/resourceSyncRules`                  | 2021-08-31-preview |
 | adrSyncRule                           | `Microsoft.ExtendedLocation/customLocations/resourceSyncRules`                  | 2021-08-31-preview |
 | defaultSecretSyncSecretProviderClass  | `Microsoft.SecretSyncController/azureKeyVaultSecretProviderClasses`             | 2024-08-21-preview |
-| aioInstance                           | `Microsoft.IoTOperations/instances`                                             | 2026-03-01         |
-| broker                                | `Microsoft.IoTOperations/instances/brokers`                                     | 2026-03-01         |
-| brokerAuthn                           | `Microsoft.IoTOperations/instances/brokers/authentications`                     | 2026-03-01         |
-| brokerListener                        | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2026-03-01         |
-| brokerListenerAnonymous               | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2026-03-01         |
-| dataFlowProfile                       | `Microsoft.IoTOperations/instances/dataflowProfiles`                            | 2026-03-01         |
-| dataFlowEndpoint                      | `Microsoft.IoTOperations/instances/dataflowEndpoints`                           | 2026-03-01         |
+| aioInstance                           | `Microsoft.IoTOperations/instances`                                             | 2026-07-01         |
+| broker                                | `Microsoft.IoTOperations/instances/brokers`                                     | 2026-07-01         |
+| brokerAuthn                           | `Microsoft.IoTOperations/instances/brokers/authentications`                     | 2026-07-01         |
+| brokerListener                        | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2026-07-01         |
+| brokerListenerAnonymous               | `Microsoft.IoTOperations/instances/brokers/listeners`                           | 2026-07-01         |
+| dataFlowProfile                       | `Microsoft.IoTOperations/instances/dataflowProfiles`                            | 2026-07-01         |
+| dataFlowEndpoint                      | `Microsoft.IoTOperations/instances/dataflowEndpoints`                           | 2026-07-01         |
 
 #### Outputs for iotOpsInstance
 
@@ -349,7 +349,7 @@ Deploys multiple Azure IoT Operations Akri Connector Templates as part of the Io
 
 | Name              | Type                                                       | API Version |
 |:------------------|:-----------------------------------------------------------|:------------|
-| connectorTemplate | `Microsoft.IoTOperations/instances/akriConnectorTemplates` | 2026-03-01  |
+| connectorTemplate | `Microsoft.IoTOperations/instances/akriConnectorTemplates` | 2026-07-01  |
 
 #### Outputs for akriConnectors
 
@@ -375,8 +375,8 @@ Manages container registry endpoints for Azure IoT Operations, including the def
 
 | Name                   | Type                                                  | API Version |
 |:-----------------------|:------------------------------------------------------|:------------|
-| mcrEndpoint            | `Microsoft.IoTOperations/instances/registryEndpoints` | 2026-03-01  |
-| customEndpoints        | `Microsoft.IoTOperations/instances/registryEndpoints` | 2026-03-01  |
+| mcrEndpoint            | `Microsoft.IoTOperations/instances/registryEndpoints` | 2026-07-01  |
+| customEndpoints        | `Microsoft.IoTOperations/instances/registryEndpoints` | 2026-07-01  |
 | acrPullRoleAssignments | `Microsoft.Authorization/roleAssignments`             | 2022-04-01  |
 
 #### Outputs for registryEndpointsModule
