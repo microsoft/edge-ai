@@ -39,7 +39,7 @@ type CertManagerExtension = {
 var certManagerExtensionDefaults = {
   enabled: true
   release: {
-    version: '0.13.3'
+    version: '0.14.0'
     train: 'stable'
     autoUpgradeMinorVersion: false
   }
