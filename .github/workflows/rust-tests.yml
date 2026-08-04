@@ -35,6 +35,8 @@ jobs:
             crate: src/500-application/507-ai-inference/services/ai-edge-inference
           - name: 507-ai-edge-inference-crate
             crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - name: 517-akri-http-post-connector
+            crate: src/500-application/517-akri-http-post-connector/services/akri-http-post-connector
           - name: 901-video-to-gif
             crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
     steps:
@@ -198,6 +200,7 @@ jobs:
           - name: 504-mqtt-otel-trace-exporter
           - name: 507-ai-edge-inference
           - name: 507-ai-edge-inference-crate
+          - name: 517-akri-http-post-connector
           - name: 901-video-to-gif
     steps:
       - name: Checkout (sparse, for .grype.yaml)

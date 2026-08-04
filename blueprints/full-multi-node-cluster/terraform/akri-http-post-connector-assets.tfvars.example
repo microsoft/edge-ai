@@ -1,0 +1,115 @@
+/*
+ * Akri HTTP POST Connector Assets Configuration Example
+ *
+ * This file demonstrates how to register the custom Akri HTTP POST connector
+ * (src/500-application/517-akri-http-post-connector) and configure a device and asset that post a
+ * field-selection request body to the bounded `POST /retrieval` fixture served by the existing
+ * 505 sensor-simulator service.
+ *
+ * Unlike the built-in REST/ONVIF/SSE connectors, this connector is registered directly through
+ * `custom_akri_connectors` on src/100-edge/110-iot-ops -- there is no separate
+ * `should_enable_akri_*_connector` flag to set.
+ *
+ * Usage:
+ *   terraform apply -var-file="akri-http-post-connector-assets.tfvars"
+ *
+ * Or copy this file to terraform.tfvars to automatically load these values.
+ *
+ * Prerequisites:
+ *   1. Publish the connector-metadata artifact referenced by `custom_connector_metadata_ref` below.
+ *      See src/500-application/517-akri-http-post-connector/resources/metadata-publish/README.md.
+ *   2. Build and push the connector runtime image referenced by `custom_image_name`/`image_tag`.
+ */
+
+/*
+ * Custom Akri HTTP POST Connector Template
+ *
+ * REQUIRED: Registers the EdgeAi.HttpPost v1.0 connector template with src/100-edge/110-iot-ops.
+ * Replace the registry, image, and metadata references with your own published values.
+ */
+custom_akri_connectors = [
+  {
+    name                          = "akri-http-post-connector"
+    type                          = "custom"
+    custom_endpoint_type          = "EdgeAi.HttpPost"
+    custom_endpoint_version       = "1.0"
+    custom_image_name             = "edge-ai/akri-http-post-connector"
+    custom_connector_metadata_ref = "example.azurecr.io/akri-http-post-connector-metadata:1.0.0"
+    registry                      = "example.azurecr.io"
+    image_tag                     = "1.0.0"
+  }
+]
+
+/*
+ * HTTP POST Connector Devices
+ *
+ * Defines the HTTP endpoint that will be allocated to the custom connector. This example points
+ * at the 505 sensor-simulator, which serves the bounded `POST /retrieval` fixture alongside its
+ * existing GET endpoints.
+ */
+namespaced_devices = [
+  {
+    name    = "http-post-sensor-array"
+    enabled = true
+    endpoints = {
+      outbound = { assigned = {} }
+      inbound = {
+        "sensor-array-endpoint" = {
+          endpoint_type = "EdgeAi.HttpPost"
+          address       = "http://sensor-simulator:8081"
+          version       = "1.0"
+          authentication = {
+            method = "Anonymous"
+          }
+          trustSettings = null
+        }
+      }
+    }
+  }
+]
+
+/*
+ * HTTP POST Connector Assets
+ *
+ * Defines the dataset that posts a field-selection request body to `/retrieval`. The illustrative
+ * `request.body` below selects two fields; substitute the exact content of
+ * src/500-application/517-akri-http-post-connector/resources/request-fixtures/long-field-selection-request.json
+ * (whose SHA-256 hashes are recorded in that fixture's README.md) to exercise the byte-fidelity
+ * proof gate for request bodies longer than 10,000 characters.
+ */
+namespaced_assets = [
+  {
+    name         = "http-post-sensor-array-fields"
+    display_name = "HTTP POST Sensor Array - Field Selection"
+    enabled      = true
+    device_ref = {
+      device_name   = "http-post-sensor-array"
+      endpoint_name = "sensor-array-endpoint"
+    }
+    description       = "Custom Akri HTTP POST connector sample requesting a field selection from the 505 sensor-simulator"
+    documentation_uri = "https://github.com/microsoft/edge-ai/tree/main/src/500-application/517-akri-http-post-connector"
+    datasets = [
+      {
+        name = "field-selection-dataset"
+
+        # Bounded POST fixture served by the 505 sensor-simulator; see its README for the GET vs POST endpoint split.
+        data_source = "/retrieval"
+
+        dataset_configuration = "{\"schemaVersion\": 1, \"request\": {\"body\": \"{\\\"field_ids\\\": [\\\"temp-celsius-01\\\", \\\"humidity-pct-01\\\"]}\", \"contentType\": \"application/json\"}, \"samplingIntervalMs\": 15000}"
+
+        data_points = []
+
+        destinations = [
+          {
+            target = "Mqtt"
+            configuration = {
+              topic  = "http-post-sensor-array/telemetry/field-selection"
+              retain = "Never"
+              qos    = "Qos1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

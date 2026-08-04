@@ -193,6 +193,23 @@ curl http://localhost:8081/sensor/fields
 curl http://localhost:8081/health
 ```
 
+### Custom-Connector POST Fixture
+
+The endpoints above are served for the **official Microsoft REST connector**, which only issues GET
+requests. The sensor-simulator also exposes `POST /retrieval`, a fixture reserved for the
+[517 custom Akri HTTP POST connector](../517-akri-http-post-connector/README.md) — the official
+connector does not use this route.
+
+```bash
+curl -X POST http://localhost:8081/retrieval \
+   -H "Content-Type: application/json" \
+   -d '{"field_ids": ["temp-celsius-01", "humidity-pct-01"]}'
+```
+
+The request body must be JSON with a non-empty `field_ids` array (blank entries are rejected).
+Requests are capped at `MAX_REQUEST_BYTES` (default 64 KiB, oversized bodies return `413`);
+unknown field IDs return `404` with no partial data.
+
 ## Configuring Dataset Assets for Sensor Simulator
 
 When configuring assets in your `terraform.tfvars` or `rest-connector-assets.tfvars`, you can reference multiple sensor simulator fields in a single dataset by using the `/sensor/array/field` endpoint with multiple `field_id` query parameters.

@@ -39,6 +39,7 @@ flags:
       - "src/500-application/503-media-capture-service/**"
       - "src/500-application/504-mqtt-otel-trace-exporter/**"
       - "src/500-application/507-ai-inference/**"
+      - "src/500-application/517-akri-http-post-connector/**"
     carryforward: true
 flag_management:
   default_rules:

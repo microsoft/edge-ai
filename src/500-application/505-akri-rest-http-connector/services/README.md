@@ -19,7 +19,8 @@ This docker-compose.yml provides a complete development and testing environment 
 
 - **sensor-simulator**: Simulates a generic temperature/humidity sensor
   - Port: 8081
-  - Endpoints: `/sensor/fields`, `/sensor/fields/<field_id>`, `/sensor/array/field`, `/api/sensor/data`, `/health`
+  - Official connector (GET) endpoints: `/sensor/fields`, `/sensor/fields/<field_id>`, `/sensor/array/field`, `/api/sensor/data`, `/health`
+  - Custom-connector fixture (POST): `/retrieval` — used only by the [517 custom Akri HTTP POST connector](../../517-akri-http-post-connector/README.md), not the official Microsoft connector
   - Authentication: None (anonymous access)
   - Field configuration: `../resources/field_sources.json`
 

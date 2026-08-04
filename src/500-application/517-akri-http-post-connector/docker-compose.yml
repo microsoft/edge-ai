@@ -1,0 +1,16 @@
+---
+# Local build/test support only. This Compose file does not deploy the Akri
+# runtime to a cluster; production deployment always goes through the
+# ARM-based Terraform/Bicep components in src/100-edge/110-iot-ops and
+# src/100-edge/111-assets. The service build context below is populated when
+# the Rust crate is added in a later implementation phase.
+services:
+  akri-http-post-connector:
+    build:
+      context: ./services/akri-http-post-connector
+      dockerfile: Dockerfile
+    image: akri-http-post-connector:dev
+    env_file:
+      - ./.env
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}

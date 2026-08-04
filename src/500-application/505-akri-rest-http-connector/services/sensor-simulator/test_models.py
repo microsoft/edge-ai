@@ -6,6 +6,7 @@ from models import (
     FieldConfig,
     FieldsArrayResponse,
     FieldValueResponse,
+    RetrievalRequest,
     SimulatorMetadata,
 )
 from pydantic import ValidationError
@@ -148,3 +149,25 @@ class TestSimulatorMetadata:
         meta = SimulatorMetadata()
         assert meta.device_id == "field-sensor-simulator-001"
         assert meta.version == "2.0.0"
+
+
+class TestRetrievalRequestValidation:
+    def test_valid_field_ids(self):
+        req = RetrievalRequest(field_ids=["a", "b"])
+        assert req.field_ids == ["a", "b"]
+
+    def test_trims_whitespace(self):
+        req = RetrievalRequest(field_ids=["  a  ", "b\t"])
+        assert req.field_ids == ["a", "b"]
+
+    def test_rejects_empty_list(self):
+        with pytest.raises(ValidationError, match="must contain at least one entry"):
+            RetrievalRequest(field_ids=[])
+
+    def test_rejects_blank_entry(self):
+        with pytest.raises(ValidationError, match="must not be blank"):
+            RetrievalRequest(field_ids=["a", "   "])
+
+    def test_preserves_duplicates_and_order(self):
+        req = RetrievalRequest(field_ids=["b", "a", "b"])
+        assert req.field_ids == ["b", "a", "b"]

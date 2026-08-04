@@ -164,6 +164,27 @@ class FieldsArrayResponse(BaseModel):
         return self
 
 
+class RetrievalRequest(BaseModel):
+    """Request body for the custom-connector `POST /retrieval` fixture."""
+
+    field_ids: list[str] = Field(...,
+                                 description="Field identifiers to retrieve, in requested order")
+
+    @model_validator(mode='after')
+    def validate_field_ids(self) -> 'RetrievalRequest':
+        """Trim whitespace and reject a blank or empty selection."""
+
+        if not self.field_ids:
+            raise ValueError("field_ids must contain at least one entry")
+
+        trimmed = [field_id.strip() for field_id in self.field_ids]
+        if any(not field_id for field_id in trimmed):
+            raise ValueError("field_ids entries must not be blank")
+
+        self.field_ids = trimmed
+        return self
+
+
 def load_from_file(file_path: str | Path) -> FieldsConfig:
     """Convenience wrapper around FieldsConfig.load_from_file."""
 
@@ -182,6 +203,7 @@ __all__ = [
     "FieldValueResponse",
     "FieldsArrayResponse",
     "FieldsConfig",
+    "RetrievalRequest",
     "SimulatorMetadata",
     "load_default",
     "load_from_file",

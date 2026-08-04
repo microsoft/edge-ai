@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from flask import Flask, jsonify, request
-from models import DataType, FieldsArrayResponse, FieldsConfig, FieldValueResponse
+from models import DataType, FieldsArrayResponse, FieldsConfig, FieldValueResponse, RetrievalRequest
 from pydantic import ValidationError
 
 
@@ -30,6 +30,10 @@ PORT = int(os.environ.get("PORT", 8081))
 DEVICE_ID = os.environ.get("DEVICE_ID", "field-sensor-simulator-001")
 SENSOR_TYPE = os.environ.get("SENSOR_TYPE", "field-sensor")
 QUALITY_OPTIONS = ("excellent", "good", "fair")
+
+# Bounds the custom-connector POST /retrieval fixture; default is 64 KiB.
+app.config["MAX_CONTENT_LENGTH"] = int(
+    os.environ.get("MAX_REQUEST_BYTES", 65536))
 
 
 def _load_config() -> FieldsConfig:
@@ -146,6 +150,41 @@ def get_fields_array():
     return _respond_with_validation(build)
 
 
+@app.errorhandler(413)
+def handle_request_entity_too_large(_error):
+    return jsonify({"error": "Request body exceeds maximum allowed size"}), 413
+
+
+@app.route("/retrieval", methods=["POST"])
+def post_retrieval():
+    if request.mimetype != "application/json":
+        return jsonify({"error": "Content-Type must be application/json"}), 415
+
+    payload = request.get_json(silent=True)
+    if payload is None:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
+    try:
+        retrieval_request = RetrievalRequest(**payload)
+    except (ValidationError, TypeError) as exc:
+        logger.warning("Retrieval request validation failed: %s", exc)
+        return jsonify({"error": "Invalid retrieval request"}), 400
+
+    field_ids = retrieval_request.field_ids
+    missing = [field_id for field_id in field_ids if field_id not in CONFIG.fields]
+    if missing:
+        return jsonify({"error": f"Fields not found: {', '.join(missing)}"}), 404
+
+    timestamp = _current_timestamp()
+
+    def build() -> FieldsArrayResponse:
+        responses = [_build_response(field_id, timestamp)
+                     for field_id in field_ids]
+        return FieldsArrayResponse(fields=responses, count=len(responses))
+
+    return _respond_with_validation(build)
+
+
 @app.route("/sensor/fields", methods=["GET"])
 def list_fields():
     fields_summary = [
@@ -201,6 +240,7 @@ def get_device_info():
                 "fields": "/sensor/fields",
                 "field_single": "/sensor/fields/<field_id>",
                 "fields_array": "/sensor/array/field",
+                "retrieval": "/retrieval",
                 "health": "/health",
             },
             "polling_recommendations": {
@@ -225,6 +265,7 @@ def root():
                 "/sensor/fields",
                 "/sensor/fields/<field_id>",
                 "/sensor/array/field?field_id=...",
+                "/retrieval",
                 "/api/sensor/status",
                 "/api/device/info",
             ],

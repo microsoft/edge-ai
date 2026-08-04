@@ -1147,9 +1147,10 @@ variable "custom_akri_connectors" {
     type = string // "rest", "media", "onvif", "sse", "custom"
 
     // Custom Connector Fields (required when type = "custom")
-    custom_endpoint_type    = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
-    custom_image_name       = optional(string) // e.g., "my_acr.azurecr.io/custom-connector"
-    custom_endpoint_version = optional(string, "1.0")
+    custom_endpoint_type          = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
+    custom_image_name             = optional(string) // e.g., "my_acr.azurecr.io/custom-connector"
+    custom_endpoint_version       = optional(string, "1.0")
+    custom_connector_metadata_ref = optional(string) // e.g., "my_acr.azurecr.io/custom-connector-metadata:1.0.0"
 
     // Runtime Configuration (defaults applied based on connector type)
     registry          = optional(string) // Defaults: mcr.microsoft.com for built-in types
