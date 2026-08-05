@@ -5,4 +5,4 @@ defusedxml==0.7.1
 onvif-zeep-async==4.0.4
 lxml>=6.1.1
 lxml-html-clean>=0.4.5
-aiohttp>=3.14.0
+aiohttp>=3.14.3
