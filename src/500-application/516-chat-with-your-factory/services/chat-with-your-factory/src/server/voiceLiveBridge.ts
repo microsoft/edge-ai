@@ -2,38 +2,38 @@ import type { Server, IncomingMessage } from 'http'
 import type { Duplex } from 'stream'
 import { WebSocketServer, WebSocket } from 'ws'
 import { DefaultAzureCredential } from '@azure/identity'
+import { cleanLogging } from '../shared/logging.js'
 import { getAuthorizedSessionFor } from './aclHelper.js'
 import { dispatchChat } from './chatHandler.js'
 import { sessionStore } from './sessionStore.js'
+import { toSpeechText } from './speechText.js'
 import { sseRegistry } from './sseRegistry.js'
+import { buildResponseCreate, buildSessionUpdate } from './voiceLiveProtocol.js'
 import { consumeTicket } from './wsTicketStore.js'
 
 const VOICELIVE_RESOURCE = process.env.AZURE_VOICELIVE_RESOURCE ?? ''
 const VOICELIVE_MODEL = process.env.AZURE_VOICELIVE_MODEL ?? 'gpt-realtime'
-const VOICELIVE_API_VERSION = process.env.AZURE_VOICELIVE_API_VERSION ?? '2025-10-01'
+const VOICELIVE_API_VERSION = process.env.AZURE_VOICELIVE_API_VERSION ?? '2026-04-10'
 const UTTERANCE_SILENCE_MS = 2000
 // When true, log raw transcript content to server logs. Off by default so
 // production logs don't capture sensitive user speech in plaintext.
 const VOICELIVE_DEBUG = process.env.VOICELIVE_DEBUG === 'true'
 
 const credential = new DefaultAzureCredential()
+const voiceDispatchTails = new Map<string, Promise<void>>()
 
-/**
- * session.update — pure STT/VAD engine, no model responses.
- * User transcripts are accumulated and dispatched as a single turn
- * after a silence window, enabling natural speech corrections.
- */
-function buildSessionUpdate() {
-  return {
-    type: 'session.update',
-    session: {
-      modalities: ['text'],
-      input_audio_format: 'pcm16',
-      input_audio_transcription: { model: 'azure-speech', language: 'en' },
-      input_audio_noise_reduction: { type: 'azure_deep_noise_suppression' },
-      turn_detection: { type: 'azure_semantic_vad', create_response: false },
-    },
+function enqueueVoiceDispatch(sessionId: string, job: () => Promise<void>): Promise<void> {
+  const previous = voiceDispatchTails.get(sessionId) ?? Promise.resolve()
+  const current = previous.catch(() => {}).then(job)
+  voiceDispatchTails.set(sessionId, current)
+
+  const deleteCurrentTail = () => {
+    if (voiceDispatchTails.get(sessionId) === current) {
+      voiceDispatchTails.delete(sessionId)
+    }
   }
+  void current.then(deleteCurrentTail, deleteCurrentTail)
+  return current
 }
 
 /**
@@ -98,14 +98,14 @@ export function attachVoiceLiveBridge(httpServer: Server): WebSocketServer {
         wss.emit('connection', clientWs, req)
         void handleConnection(clientWs, sessionId, ticket.userId, ticket.displayName, ticket.ssoToken)
           .catch((err) => {
-            console.error('[VoiceLive] Unhandled connection error:', err)
+            cleanLogging.Error('VoiceLive', 'Unhandled connection error', err)
             if (clientWs.readyState === WebSocket.OPEN) {
               clientWs.close(1011, 'Connection setup failed')
             }
           })
       })
     } catch (err) {
-      console.error('[VoiceLive] Upgrade handler error:', err)
+      cleanLogging.Error('VoiceLive', 'Upgrade handler error', err)
       try {
         socket.write('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n')
       } catch {
@@ -133,10 +133,53 @@ async function handleConnection(
   const pendingUtterances: string[] = []
   let dispatchTimer: ReturnType<typeof setTimeout> | null = null
 
+  function sendCompletedResponse(markdown: string): void {
+    if (upstreamWs?.readyState !== WebSocket.OPEN) return
+    upstreamWs.send(JSON.stringify(buildResponseCreate(toSpeechText(markdown))))
+  }
+
+  function queueDispatch(fullText: string, turnId: string, errorMessage: string): Promise<void> {
+    const dispatchContext = {
+      userId,
+      displayName,
+      ssoToken,
+      source: 'voice' as const,
+      skipUserMessage: true,
+      turnId,
+      onAssistantCompleted: sendCompletedResponse,
+    }
+    const notifyFailure = (err: unknown) => {
+      if (clientWs.readyState !== WebSocket.OPEN) return
+      const message = err instanceof Error ? err.message : 'Dispatch failed'
+      try {
+        clientWs.send(JSON.stringify({ type: 'dispatch.failed', error: message, turnId }))
+      } catch (sendErr) {
+        cleanLogging.Warn('VoiceLive', 'Failed to send dispatch.failed event', sendErr)
+      }
+    }
+
+    if (clientWs.readyState === WebSocket.OPEN) {
+      try {
+        clientWs.send(JSON.stringify({ type: 'dispatching', turnId }))
+      } catch (sendErr) {
+        cleanLogging.Warn('VoiceLive', 'Failed to send dispatching event', sendErr)
+      }
+    }
+
+    return enqueueVoiceDispatch(sessionId, async () => {
+      try {
+        await dispatchChat(sessionId, fullText, dispatchContext)
+      } catch (err) {
+        cleanLogging.Error('VoiceLive', errorMessage, err)
+        notifyFailure(err)
+      }
+    })
+  }
+
   function scheduleDispatch() {
     if (dispatchTimer) clearTimeout(dispatchTimer)
     dispatchTimer = setTimeout(() => {
-      void (async () => {
+      void Promise.resolve().then(() => {
         dispatchTimer = null
         if (pendingUtterances.length === 0) return
         const fullText = pendingUtterances.join(' ')
@@ -148,44 +191,18 @@ async function handleConnection(
         // from prematurely clearing the local pending counter.
         const turnId = crypto.randomUUID()
         if (VOICELIVE_DEBUG) {
-          console.log(`[VoiceLive] Dispatching session=${sessionId} turn=${turnId}: ${fullText}`)
+          cleanLogging.Log('VoiceLive', 'Dispatching transcript', { sessionId, turnId, transcript: fullText })
         } else {
-          console.log(`[VoiceLive] Dispatching session=${sessionId} turn=${turnId} utterances=${utteranceCount} chars=${fullText.length}`)
-        }
-        // Notify client that a dispatch is in flight
-        if (clientWs.readyState === WebSocket.OPEN) {
-          try {
-            clientWs.send(JSON.stringify({ type: 'dispatching', turnId }))
-          } catch (sendErr) {
-            console.warn('[VoiceLive] Failed to send dispatching event:', sendErr)
-          }
-        }
-        try {
-          await dispatchChat(sessionId, fullText, {
-            userId,
-            displayName,
-            ssoToken,
-            source: 'voice',
-            skipUserMessage: true,
+          cleanLogging.Log('VoiceLive', 'Dispatching transcript', {
+            sessionId,
             turnId,
+            utteranceCount,
+            characterCount: fullText.length,
           })
-        } catch (err) {
-          console.error('[VoiceLive] dispatchChat error:', err)
-          // Tell the client the dispatch failed so it can clear its pending
-          // counter / spinner. Without this, the UI stays stuck in a loading
-          // state because it normally clears the counter on the assistant SSE
-          // event that will never arrive.
-          if (clientWs.readyState === WebSocket.OPEN) {
-            const message = err instanceof Error ? err.message : 'Dispatch failed'
-            try {
-              clientWs.send(JSON.stringify({ type: 'dispatch.failed', error: message, turnId }))
-            } catch (sendErr) {
-              console.warn('[VoiceLive] Failed to send dispatch.failed event:', sendErr)
-            }
-          }
         }
-      })().catch((err) => {
-        console.error('[VoiceLive] Unhandled dispatch timer error:', err)
+        return queueDispatch(fullText, turnId, 'dispatchChat error')
+      }).catch((err) => {
+        cleanLogging.Error('VoiceLive', 'Unhandled dispatch timer error', err)
       })
     }, UTTERANCE_SILENCE_MS)
   }
@@ -197,7 +214,7 @@ async function handleConnection(
       // can produce a token (e.g. missing managed identity, expired CLI login).
       // Fail fast with a clear close reason rather than letting a downstream
       // throw surface as a generic 1011.
-      console.error('[VoiceLive] Failed to acquire AAD token for Cognitive Services')
+      cleanLogging.Error('VoiceLive', 'Failed to acquire AAD token for Cognitive Services')
       if (clientWs.readyState === WebSocket.OPEN) {
         clientWs.close(1011, 'Upstream auth unavailable')
       }
@@ -213,7 +230,7 @@ async function handleConnection(
     })
 
     upstreamWs.on('open', () => {
-      console.log(`[VoiceLive] Upstream connected for session ${sessionId}`)
+      cleanLogging.Log('VoiceLive', 'Upstream connected', { sessionId })
       upstreamWs!.send(JSON.stringify(buildSessionUpdate()))
     })
 
@@ -244,7 +261,7 @@ async function handleConnection(
         // every one floods production logs, so gate behind VOICELIVE_DEBUG
         // (the same flag that controls raw transcript content logging).
         if (VOICELIVE_DEBUG && !event.type?.includes('.delta')) {
-          console.log(`[VoiceLive] Upstream event: ${event.type}`)
+          cleanLogging.Log('VoiceLive', 'Upstream event', { type: event.type })
         }
 
         // Signal client to start sending audio after session is configured
@@ -264,9 +281,12 @@ async function handleConnection(
           const transcript = (event as { transcript?: string }).transcript ?? ''
           if (transcript.trim()) {
             if (VOICELIVE_DEBUG) {
-              console.log(`[VoiceLive] User said (session=${sessionId}): ${transcript}`)
+              cleanLogging.Log('VoiceLive', 'User transcript completed', { sessionId, transcript })
             } else {
-              console.log(`[VoiceLive] Transcript completed session=${sessionId} chars=${transcript.trim().length}`)
+              cleanLogging.Log('VoiceLive', 'User transcript completed', {
+                sessionId,
+                characterCount: transcript.trim().length,
+              })
             }
             const userMsg = {
               id: crypto.randomUUID(),
@@ -284,12 +304,12 @@ async function handleConnection(
           }
         }
       } catch (err) {
-        console.error('[VoiceLive] Error handling upstream message:', err)
+        cleanLogging.Error('VoiceLive', 'Error handling upstream message', err)
       }
     })
 
     upstreamWs.on('close', (code, reason) => {
-      console.log(`[VoiceLive] Upstream closed: ${code} ${reason}`)
+      cleanLogging.Log('VoiceLive', 'Upstream closed', { code, reason: reason.toString() })
       if (dispatchTimer) clearTimeout(dispatchTimer)
       const clientCode = code === 1000 ? 1000 : 1011
       const clientReason = code === 1000 ? 'Upstream closed' : `Upstream failure (${code})`
@@ -297,7 +317,7 @@ async function handleConnection(
     })
 
     upstreamWs.on('error', (err) => {
-      console.error('[VoiceLive] Upstream error:', err)
+      cleanLogging.Error('VoiceLive', 'Upstream error', err)
       if (clientWs.readyState === WebSocket.OPEN) clientWs.close(1011, 'Upstream error')
     })
 
@@ -328,7 +348,7 @@ async function handleConnection(
     })
 
     clientWs.on('close', () => {
-      console.log(`[VoiceLive] Client disconnected for session ${sessionId}`)
+      cleanLogging.Log('VoiceLive', 'Client disconnected', { sessionId })
       if (dispatchTimer) clearTimeout(dispatchTimer)
       // Flush pending utterances on disconnect.
       // Each individual transcript was already persisted + broadcast as a
@@ -345,35 +365,18 @@ async function handleConnection(
         // ignore the turnId since it isn't in their pending set, which is
         // the correct behavior.
         const turnId = crypto.randomUUID()
-        // Best-effort `dispatching` event so the originating client (if
-        // its socket flushes one more frame before close) can register
-        // the turnId in its pending set; without this, a later
-        // `dispatch.failed` carrying the same turnId can't correlate.
-        if (clientWs.readyState === WebSocket.OPEN) {
-          clientWs.send(JSON.stringify({ type: 'dispatching', turnId }))
-        }
-        dispatchChat(sessionId, fullText, { userId, displayName, ssoToken, source: 'voice', skipUserMessage: true, turnId })
-          .catch(err => {
-            console.error('[VoiceLive] Final dispatch error:', err)
-            // Best-effort: client is already disconnecting, but if the socket
-            // somehow flushes this in time the UI will clear its spinner.
-            // Include turnId so the client can correlate to its pending set
-            // (the timer-dispatch path does the same — see above).
-            if (clientWs.readyState === WebSocket.OPEN) {
-              const message = err instanceof Error ? err.message : 'Dispatch failed'
-              clientWs.send(JSON.stringify({ type: 'dispatch.failed', error: message, turnId }))
-            }
-          })
+        void queueDispatch(fullText, turnId, 'Final dispatch error')
+          .catch(err => cleanLogging.Error('VoiceLive', 'Unhandled final dispatch error', err))
       }
       if (upstreamWs?.readyState === WebSocket.OPEN) upstreamWs.close()
     })
 
     clientWs.on('error', (err) => {
-      console.error('[VoiceLive] Client error:', err)
+      cleanLogging.Error('VoiceLive', 'Client error', err)
       if (upstreamWs?.readyState === WebSocket.OPEN) upstreamWs.close()
     })
   } catch (err) {
-    console.error('[VoiceLive] Connection setup failed:', err)
+    cleanLogging.Error('VoiceLive', 'Connection setup failed', err)
     if (clientWs.readyState === WebSocket.OPEN) clientWs.close(1011, 'Setup failed')
     if (upstreamWs?.readyState === WebSocket.OPEN) upstreamWs.close()
   }

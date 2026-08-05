@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit'
 import path from 'path'
 import { DefaultAzureCredential } from '@azure/identity'
 import { chatHandler } from './chatHandler.js'
-import { listSessions, createSession, updateSession, addParticipant } from './sessionsHandler.js'
+import { listSessions, createSession, updateSession, addParticipant, resumeSession } from './sessionsHandler.js'
 import { getTranscript } from './transcriptHandler.js'
 import { requireAuth } from './authMiddleware.js'
 import { sseHandler } from './sseHandler.js'
@@ -89,6 +89,7 @@ app.get('/api/sessions', listSessions)
 app.post('/api/sessions', createSession)
 app.patch('/api/sessions/:id', updateSession)
 app.post('/api/sessions/:id/participants', addParticipant)
+app.post('/api/sessions/:id/resume', resumeSession)
 
 // Transcript retrieval
 app.get('/api/transcript/:sessionId', getTranscript)

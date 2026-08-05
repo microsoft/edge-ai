@@ -1,7 +1,7 @@
 ---
 title: Chat With Factory
 description: A voice-enabled AI agent web application for industrial environments powered by Azure AI Foundry Agents or Copilot Studio
-ms.date: 2026-06-29
+ms.date: 2026-08-04
 ms.topic: overview
 keywords:
   - chat with factory
@@ -200,7 +200,7 @@ Create the Foundry resource, project, and model deployment:
 
 ```powershell
 $RG_NAME   = "rg-chat-with-your-factory"
-$LOCATION  = "eastus"
+$LOCATION  = "eastus2"
 $AI_NAME   = "chat-factory-ai"
 $PROJECT   = "chat-factory-project"
 
@@ -213,6 +213,10 @@ az cognitiveservices account create `
   --sku S0 `
   --location $LOCATION `
   --custom-domain $AI_NAME
+
+# East US 2 supports the default gpt-realtime model for Voice Live.
+# Existing AI Services resources cannot change regions; create a replacement
+# in East US 2 and update AZURE_VOICELIVE_RESOURCE when migrating from East US.
 
 az cognitiveservices account deployment create `
   --name $AI_NAME `
@@ -544,7 +548,7 @@ Each concern maps to a specific technology. No component serves double duty. The
 | Concern                   | Technology                                                                       | Details                                                                                                                                                                                                                                                                                                     | MVP Upgrade                                                                                                                                          |
 |---------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Speech-to-text (STT)      | Configurable: Azure Speech SDK (default) or Browser Web Speech API or Voice Live | Build-time switch via `npm run build:client:azure`, `npm run build:client:webspeech`, or `npm run build:client:voicelive`. esbuild tree-shakes the unused providers at build time. Voice Live (`VOICE_PROVIDER=voicelive`) uses a server-proxied WebSocket bridge at `/api/voice-live` — see ADR 0001.      | Server-side real-time STT via Azure Speech SDK. Browser streams raw audio to Express server via WebSocket; server runs Speech SDK for transcription. |
-| Text-to-speech (TTS)      | None today                                                                       | Voice Live can produce TTS in principle, but the current bridge runs it as STT/VAD only (`modalities: ['text']`, `create_response: false`) — see ADR 0001. Agent responses render as text in all configurations.                                                                                            | Azure Speech neural TTS for optional read-aloud via `/api/tts` endpoint, or enable Voice Live audio output once topology supports it.                |
+| Text-to-speech (TTS)      | Voice Live PCM16 output                                                          | The authoritative backend Markdown is persisted and rendered as text. A citation- and URL-free derivative is sent to Voice Live, and the browser plays the returned 24 kHz PCM16 audio.                                                                                                                       | Add distributed synthesis latency and interruption telemetry.                                                                                       |
 | AI / LLM backend          | Copilot Studio (Agents SDK), Azure AI Foundry, or Copilot Studio (Direct Line)   | Configurable via `AGENT_BACKEND` env var (`copilotstudio` default). Agents SDK uses `@microsoft/agents-copilotstudio-client` with OBO token exchange and streaming. Foundry uses Assistants-style threads with `createAndPoll`. Direct Line uses fire-and-forget POST with WebSocket relay for bot replies. | Foundry streaming via `createAndStream` + SSE for real-time token delivery.                                                                          |
 | Server framework          | Express v5 (TypeScript, ESM)                                                     | Serves static files, REST API routes, SSE broadcast, and `Permissions-Policy` header for iframe microphone access.                                                                                                                                                                                          | Same. Native async error handling. Managed Identity via `DefaultAzureCredential` in production.                                                      |
 | User authentication       | Teams SSO + JWT validation (`jose`)                                              | Validates AAD v2.0 tokens. Dev bypass via `SKIP_AUTH=true`.                                                                                                                                                                                                                                                 | Remove `SKIP_AUTH` bypass in production.                                                                                                             |
@@ -560,7 +564,7 @@ A single user interaction follows this path:
 
 1. The user clicks the mic button or types a message.
 2. For voice: the `useSpeech` barrel hook delegates to either the Web Speech API, Azure Speech SDK, or Voice Live hook based on the build-time `__SPEECH_PROVIDER__` constant.
-3. For Web Speech and Azure Speech providers, the React client sends a POST to `/api/chat` with the message text. For Voice Live, the browser sends raw PCM16 audio over a WebSocket to `/api/voice-live`; the server bridge handles transcription and agent dispatch (via `dispatchChat`) — no `/api/chat` POST is made for voice turns. Agent responses arrive via SSE and render as text (no TTS playback today).
+3. For Web Speech and Azure Speech providers, the React client sends a POST to `/api/chat` with the message text. For Voice Live, the browser sends raw PCM16 audio over a WebSocket to `/api/voice-live`; the server bridge handles transcription and agent dispatch (via `dispatchChat`), so no `/api/chat` POST is made for voice turns. Agent responses arrive as authoritative Markdown through SSE, while Voice Live returns a speech-safe PCM16 rendition for browser playback.
 4. The Express server validates the JWT, checks the user's session ACL, stores the user message locally, and broadcasts it via SSE.
 5. **Copilot Studio (Agents SDK) backend**: The server performs an OBO token exchange using MSAL, connects to the Copilot Studio agent via `@microsoft/agents-copilotstudio-client`, streams the response, stores it locally, broadcasts via SSE, and returns it in the HTTP response.
 6. **Foundry backend**: The server forwards the message to the Foundry agent via `agentsClient.messages.create`, calls `createAndPoll`, retrieves the response, stores it locally, broadcasts via SSE, and returns it in the HTTP response.
@@ -634,7 +638,11 @@ the result back to Foundry.
 4. The agent response appears in the chat panel.
 
 > [!TIP]
-> The default speech provider (Azure Speech SDK) works across all browsers. To use the browser Web Speech API instead (Chrome/Edge only), run `npm run start:webspeech`. To use Voice Live (preview), set `VOICE_PROVIDER=voicelive` and `AZURE_VOICELIVE_RESOURCE` in `.env`, then run `npm run start:voicelive`. See ADR 0001 for details. The text input fallback is always available.
+> The default speech provider (Azure Speech SDK) works across all browsers. To use the browser Web Speech API instead (Chrome/Edge only), run `npm run start:webspeech`.
+>
+> To use Voice Live, create the AI Services resource in a [region that supports `gpt-realtime`](https://learn.microsoft.com/azure/ai-services/speech-service/regions?tabs=voice-live#regions), such as East US 2. Set `VOICE_PROVIDER=voicelive`, `AZURE_VOICELIVE_RESOURCE`, `AZURE_VOICELIVE_MODEL=gpt-realtime`, and `AZURE_VOICELIVE_API_VERSION=2026-04-10` in `.env`, then run `npm run start:voicelive`.
+>
+> Existing AI Services resources cannot change regions and must be replaced when migrating from East US. See ADR 0001 for details. The text input fallback is always available.
 >
 > Plain `npm start` always rebuilds the client with the **default Azure Speech SDK** provider, which will overwrite any voicelive / webspeech bundle you previously built. Use `npm run start:voicelive` or `npm run start:webspeech` to keep the matching client bundle in sync with the server in one step.
 

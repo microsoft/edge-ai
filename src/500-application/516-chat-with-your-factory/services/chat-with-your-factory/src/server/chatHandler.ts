@@ -1,6 +1,12 @@
 import type { Request, Response } from 'express'
 import { isOutputOfType } from '@azure/ai-agents'
-import type { SubmitToolOutputsAction, RequiredFunctionToolCall, ToolOutput } from '@azure/ai-agents'
+import type {
+  RunStatus,
+  SubmitToolOutputsAction,
+  RequiredFunctionToolCall,
+  ToolOutput,
+} from '@azure/ai-agents'
+import { cleanLogging } from '../shared/logging.js'
 import * as directLine from './directLineClient.js'
 import { getAuthorizedSession } from './aclHelper.js'
 import { handleFactoryTool } from './factoryTool.js'
@@ -11,7 +17,17 @@ const AGENT_BACKEND = process.env.AGENT_BACKEND || 'foundry'
 
 // Foundry run states that warrant continued polling. Module-scoped and frozen
 // so it isn't rebuilt per request and can't be mutated.
-const POLL_STATUSES: ReadonlySet<string> = new Set(['queued', 'in_progress', 'requires_action'])
+const POLL_STATUSES: ReadonlySet<RunStatus> = new Set([
+  'queued',
+  'in_progress',
+  'requires_action',
+  'cancelling',
+])
+const CANCELLABLE_STATUSES: ReadonlySet<RunStatus> = new Set([
+  'queued',
+  'in_progress',
+  'requires_action',
+])
 // Hard cap on the run-polling loop. Express 5 has no request timeout, so an
 // upstream stall (quota pause, hung run) would otherwise hold the HTTP socket
 // and a worker open indefinitely.
@@ -23,6 +39,8 @@ export interface DispatchContext {
   ssoToken?: string
   source?: 'voice' | 'text' | 'teams'
   skipUserMessage?: boolean
+  clientMessageId?: string
+  onAssistantCompleted?: (markdown: string) => void
   /** Optional correlation ID stamped onto the assistant reply broadcast.
    *  Used by voicelive clients to match replies to the dispatch they
    *  initiated, so a co-participant's reply doesn't clear this client's
@@ -34,6 +52,27 @@ export interface DispatchResult {
   text: string
   messageId: string
   title?: string
+}
+
+function publishAssistantMessage(
+  sessionId: string,
+  message: {
+    id: string
+    role: 'assistant'
+    text: string
+    timestamp: string
+    source: 'agent'
+    turnId?: string
+  },
+  onAssistantCompleted?: (markdown: string) => void,
+): void {
+  sessionStore.addMessage(sessionId, message)
+  sseRegistry.broadcast(sessionId, message)
+  try {
+    onAssistantCompleted?.(message.text)
+  } catch (error) {
+    cleanLogging.Warn('Chat', 'Assistant completion callback failed', error)
+  }
 }
 
 export async function dispatchChat(
@@ -51,7 +90,7 @@ export async function dispatchChat(
 
   if (!ctx.skipUserMessage) {
     const userMessage = {
-      id: crypto.randomUUID(),
+      id: ctx.clientMessageId ?? crypto.randomUUID(),
       role: 'user' as const,
       text,
       timestamp: new Date().toISOString(),
@@ -106,8 +145,7 @@ export async function dispatchChat(
         source: 'agent' as const,
         turnId: ctx.turnId,
       }
-      sessionStore.addMessage(sessionId, message)
-      sseRegistry.broadcast(sessionId, message)
+      publishAssistantMessage(sessionId, message, ctx.onAssistantCompleted)
       lastAssistantText = activity.text
       lastAssistantId = message.id
     }
@@ -130,55 +168,96 @@ export async function dispatchChat(
     let run = await agentsClient.runs.create(threadId, agentId)
 
     const pollDeadline = Date.now() + MAX_POLL_MS
-    while (POLL_STATUSES.has(run.status)) {
-      if (Date.now() > pollDeadline) {
-        throw new Error(`Agent run timed out after ${MAX_POLL_MS / 1000} s`)
-      }
-      await new Promise(r => setTimeout(r, 1000))
-      run = await agentsClient.runs.get(threadId, run.id)
+    try {
+      while (POLL_STATUSES.has(run.status)) {
+        if (Date.now() > pollDeadline) {
+          throw new Error(`Agent run timed out after ${MAX_POLL_MS / 1000} s`)
+        }
+        await new Promise(r => setTimeout(r, 1000))
+        run = await agentsClient.runs.get(threadId, run.id)
 
-      if (
-        run.status === 'requires_action' &&
-        run.requiredAction &&
-        isOutputOfType<SubmitToolOutputsAction>(run.requiredAction, 'submit_tool_outputs')
-      ) {
-        const toolOutputs: ToolOutput[] = []
-        for (const toolCall of run.requiredAction.submitToolOutputs.toolCalls) {
-          if (isOutputOfType<RequiredFunctionToolCall>(toolCall, 'function')) {
-            const args = toolCall.function.arguments
-              ? JSON.parse(toolCall.function.arguments)
-              : {}
-            let result: unknown
-            if (toolCall.function.name === 'query_factory_ontology') {
-              result = await handleFactoryTool(args)
-            } else {
-              result = { error: `unknown tool: ${toolCall.function.name}` }
+        if (
+          run.status === 'requires_action' &&
+          run.requiredAction &&
+          isOutputOfType<SubmitToolOutputsAction>(run.requiredAction, 'submit_tool_outputs')
+        ) {
+          const toolOutputs: ToolOutput[] = []
+          for (const toolCall of run.requiredAction.submitToolOutputs.toolCalls) {
+            if (isOutputOfType<RequiredFunctionToolCall>(toolCall, 'function')) {
+              let result: unknown
+              try {
+                const args = toolCall.function.arguments
+                  ? JSON.parse(toolCall.function.arguments)
+                  : {}
+                result = toolCall.function.name === 'query_factory_ontology'
+                  ? await handleFactoryTool(args)
+                  : { error: `unknown tool: ${toolCall.function.name}` }
+              } catch (error) {
+                cleanLogging.Warn('Chat', 'Agent tool execution failed', {
+                  toolName: toolCall.function.name,
+                  error,
+                })
+                result = {
+                  error: 'The factory ontology is temporarily unavailable. Confirm that the Fabric capacity is active and retry.',
+                }
+              }
+              toolOutputs.push({ toolCallId: toolCall.id, output: JSON.stringify(result ?? null) })
             }
-            toolOutputs.push({ toolCallId: toolCall.id, output: JSON.stringify(result ?? null) })
+          }
+          if (toolOutputs.length) {
+            await agentsClient.runs.submitToolOutputs(threadId, run.id, toolOutputs)
           }
         }
-        if (toolOutputs.length) {
-          await agentsClient.runs.submitToolOutputs(threadId, run.id, toolOutputs)
+
+      }
+    } catch (error) {
+      if (CANCELLABLE_STATUSES.has(run.status)) {
+        try {
+          await agentsClient.runs.cancel(threadId, run.id)
+        } catch (cancelError) {
+          cleanLogging.Warn('Chat', 'Failed to cancel active agent run', cancelError)
         }
       }
-
-      if (run.status === 'failed') {
-        throw new Error(`Agent run failed: ${run.lastError?.code} ${run.lastError?.message}`)
-      }
+      throw error
     }
 
-    const messages = agentsClient.messages.list(threadId, { order: 'desc', limit: 1 })
+    if (run.status !== 'completed') {
+      if (run.status === 'failed') {
+        const code = String(run.lastError?.code ?? 'unknown').slice(0, 128)
+        const message = String(run.lastError?.message ?? 'No error details provided').slice(0, 500)
+        throw new Error(`Agent run failed: ${code} ${message}`)
+      }
+      if (run.status === 'cancelled') throw new Error('Agent run was cancelled')
+      if (run.status === 'expired') throw new Error('Agent run expired')
+      throw new Error(`Agent run ended without completion: ${String(run.status).slice(0, 64)}`)
+    }
 
-    let responseText = 'No response from agent.'
+    const messages = agentsClient.messages.list(threadId, {
+      order: 'desc',
+      limit: 1,
+      runId: run.id,
+    })
+
+    let responseText: string | undefined
     for await (const msg of messages) {
-      if (msg.role === 'assistant') {
+      if (
+        msg.role === 'assistant' &&
+        msg.runId === run.id &&
+        (msg.status === undefined || msg.status === 'completed')
+      ) {
+        const textBlocks: string[] = []
         for (const block of msg.content) {
           if (block.type === 'text') {
-            responseText = (block as MessageTextContent).text.value
+            textBlocks.push((block as MessageTextContent).text.value)
           }
         }
+        if (textBlocks.length > 0) responseText = textBlocks.join('\n')
       }
       break
+    }
+
+    if (responseText === undefined) {
+      throw new Error(`Agent run ${run.id} completed without a completed assistant message`)
     }
 
     sessionStore.updateSession(sessionId, { lastActivityAt: new Date().toISOString() })
@@ -191,15 +270,14 @@ export async function dispatchChat(
       source: 'agent' as const,
       turnId: ctx.turnId,
     }
-    sessionStore.addMessage(sessionId, agentMessage)
-    sseRegistry.broadcast(sessionId, agentMessage)
+    publishAssistantMessage(sessionId, agentMessage, ctx.onAssistantCompleted)
 
     return { text: responseText, messageId: agentMessage.id, title: generatedTitle }
   }
 }
 
 export async function chatHandler(req: Request, res: Response): Promise<void> {
-  const { text, sessionId, source } = req.body
+  const { text, sessionId, source, messageId } = req.body
 
   if (!text || typeof text !== 'string') {
     res.status(400).json({ error: 'Missing or invalid "text" field' })
@@ -209,6 +287,11 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
     res.status(400).json({ error: 'Missing or invalid "sessionId" field' })
     return
   }
+  const clientMessageId = typeof messageId === 'string'
+    && messageId.trim().length > 0
+    && messageId.length <= 128
+    ? messageId.trim()
+    : undefined
   const { userId } = req.user
 
   const session = getAuthorizedSession(res, sessionId, userId)
@@ -220,6 +303,7 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       displayName: req.user.displayName,
       ssoToken: req.ssoToken,
       source: source as 'voice' | 'text' | 'teams' | undefined,
+      clientMessageId,
     })
 
     if (AGENT_BACKEND === 'directline' || AGENT_BACKEND === 'copilotstudio') {
@@ -233,7 +317,7 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       })
     }
   } catch (error) {
-    console.error('Chat handler error:', error)
+    cleanLogging.Error('Chat', 'Chat handler error', error)
     const message = error instanceof Error ? error.message : 'Failed to generate response'
     if (message.includes('SSO token required')) {
       res.status(401).json({ error: message })

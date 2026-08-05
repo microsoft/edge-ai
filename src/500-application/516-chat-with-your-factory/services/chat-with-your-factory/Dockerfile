@@ -3,9 +3,10 @@ FROM node:22-slim@sha256:813a7480f28fdadac1f7f5c824bcdad435b5bc1322a5968bbbdef8d
 WORKDIR /app
 
 ARG SPEECH_PROVIDER=azure
+ARG NPM_REGISTRY=https://packagefeedproxy.microsoft.io/npm/
 
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --registry="${NPM_REGISTRY}"
 
 COPY tsconfig.json tsconfig.server.json ./
 COPY src/ src/
