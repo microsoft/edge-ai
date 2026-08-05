@@ -42,6 +42,8 @@ updates:
     open-pull-requests-limit: 5
 
   # npm
+    cooldown:
+      default-days: 7
   - package-ecosystem: "npm"
     directories:
       - "/"
