@@ -103,7 +103,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! grype dir:. --config .grype.yaml 2>&1 | tee security-results/grype-results.txt; then
+          if ! grype dir:. --name "edge-ai@${GITHUB_SHA}" --config .grype.yaml 2>&1 | tee security-results/grype-results.txt; then
             echo "GRYPE_FAILED=true" >> "$GITHUB_ENV"
           fi
 
