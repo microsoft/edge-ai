@@ -6,8 +6,9 @@ const MAX_ENCODED_PAYLOAD_LENGTH = 1536
 const MAX_POINTER_LENGTH = 512
 const BASE64URL_RE = /^[A-Za-z0-9_-]+$/
 const SECRET = process.env.RESUME_TOKEN_SECRET
+const NODE_ENV = process.env.NODE_ENV ?? 'development'
 
-if (!SECRET && process.env.NODE_ENV !== 'development') {
+if (!SECRET && NODE_ENV !== 'development') {
   throw new Error('RESUME_TOKEN_SECRET is required outside development')
 }
 
