@@ -20,9 +20,9 @@ requests carrying a textual request body to endpoints that cannot be queried thr
 complements, rather than replaces, the official built-in HTTP/REST connector, which remains the
 correct choice for `GET`-based polling.
 
-This component currently provides the connector metadata contract and ARM-based sample inputs. The
-Rust service crate and container image are added in a later implementation phase; see
-[Implementation Status](#implementation-status).
+This component provides the Rust connector crate, its container image, the connector metadata
+contract, and ARM-based sample inputs; see [Building and Publishing](#building-and-publishing) for
+the end-to-end steps that take the crate from source to a deployable Akri connector template.
 
 ## Contract and Scope (v1.0)
 
@@ -70,10 +70,15 @@ Azure Resource Manager (ARM) rather than `kubectl` YAML.
 
 ## Local Development Prerequisites
 
-* Rust toolchain (stable channel) for building and testing the connector crate once it is added.
-* Docker and Docker Compose, for local build and test support only. Compose does **not** deploy the
-  Akri runtime to a cluster; production deployment always goes through the ARM-based Terraform or
-  Bicep components referenced above.
+* Rust toolchain (stable channel) for building and testing the connector crate
+  (`services/akri-http-post-connector`).
+* Docker, for local build and test support only. Compose does **not** deploy the Akri runtime to a
+  cluster; production deployment always goes through the ARM-based Terraform or Bicep components
+  referenced above.
+* [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) (`az`), for authenticating to
+  an Azure Container Registry (ACR).
+* [ORAS CLI](https://oras.land/docs/installation), for publishing `connector-metadata.json` as an
+  OCI artifact.
 
 ```bash
 # Navigate to the component directory
@@ -83,18 +88,87 @@ cd src/500-application/517-akri-http-post-connector
 docker compose build
 ```
 
-## Implementation Status
+## Building and Publishing
 
-This directory contains the non-deployment application scaffold (environment template, ignore
-rules, local Compose support), the `connector-metadata/connector-metadata.json` contract, and
-application-owned Terraform/Bicep sample inputs and request fixtures under `resources/`. The Rust
-service crate, container image, and CI/coverage registration are added in a later implementation
-phase.
+Deploying this connector to a live environment requires two artifacts in the environment's ACR: the
+connector's container image and the `connector-metadata.json` OCI artifact referenced by
+`custom_connector_metadata_ref`. Both are produced by scripts under `scripts/`.
 
-See the implementation plan and log for full status:
+### Step 1: Build and push the connector image
 
-* [.copilot-tracking/plans/2026-08-03/akri-rust-rest-post-connector-plan.instructions.md](../../../.copilot-tracking/plans/2026-08-03/akri-rust-rest-post-connector-plan.instructions.md)
-* [.copilot-tracking/plans/logs/2026-08-03/akri-rust-rest-post-connector-log.md](../../../.copilot-tracking/plans/logs/2026-08-03/akri-rust-rest-post-connector-log.md)
+```bash
+./scripts/build-and-push-image.sh <acr_name> [image_tag]
+```
+
+* `<acr_name>` is the ACR name without the `.azurecr.io` domain suffix (for example, `acrkd0805dev001`).
+* `[image_tag]` defaults to the crate version declared in
+  `services/akri-http-post-connector/Cargo.toml`.
+* The script builds `services/akri-http-post-connector/Dockerfile`, authenticates via
+  `az acr login`, and pushes `<acr_name>.azurecr.io/akri-http-post-connector:<image_tag>`.
+
+### Step 2: Publish the connector metadata artifact
+
+```bash
+./scripts/publish-connector-metadata.sh <acr_name> [metadata_tag]
+```
+
+* `[metadata_tag]` also defaults to the crate version in `Cargo.toml`.
+* The script authenticates via `az acr login`, then runs `oras push` from `connector-metadata/`,
+  publishing `<acr_name>.azurecr.io/akri-http-post-connector-metadata:<metadata_tag>` with artifact
+  type `application/vnd.microsoft.akri-connector.v1+json`.
+
+### Step 3: Wire the connector into Terraform
+
+Reference the published image and metadata artifact from the environment's `custom_akri_connectors`,
+`namespaced_devices`, and `namespaced_assets` variables (`src/100-edge/110-iot-ops` /
+`blueprints/full-multi-node-cluster`). `blueprints/full-multi-node-cluster/terraform/akri-http-post-connector-assets.tfvars.example`
+demonstrates the full pattern, including the explicit `custom_connector_metadata_ref` and an
+HCL-escaped JSON `dataset_configuration` string (Terraform `.tfvars` files reject `file()` and
+`jsonencode()`; the JSON body must be a literal escaped string).
+
+```hcl
+custom_akri_connectors = [
+  {
+    name                          = "akri-http-post-connector"
+    type                          = "custom"
+    custom_endpoint_type          = "EdgeAi.HttpPost"
+    custom_endpoint_version       = "1.0"
+    custom_image_name             = "<acr_name>.azurecr.io/akri-http-post-connector"
+    custom_connector_metadata_ref = "<acr_name>.azurecr.io/akri-http-post-connector-metadata:<metadata_tag>"
+    registry                      = "<acr_name>.azurecr.io"
+    image_tag                     = "<image_tag>"
+  }
+]
+```
+
+### Verifying byte-fidelity with the sample request fixture
+
+`resources/request-fixtures/long-field-selection-request.json` is a 10,516-byte fixture (10,515-byte
+body, excluding the trailing newline) used to prove that a dataset's `request.body` is forwarded to
+the target endpoint without truncation or re-encoding. Recorded reference hashes:
+
+| Value                | Bytes  | SHA-256                                                            |
+|----------------------|--------|----------------------------------------------------------------------|
+| File (incl. newline) | 10,516 | `ee54e1fb745aa8cfa706d1de7a3e518be31c61bfa7eaaf805c8d4b99cb3bab9b` |
+| Body (excl. newline) | 10,515 | `82c7cc2c586e840e4bff75c43fecf30f9113709e91cf0235b7b3fa13b0448051` |
+
+To re-verify byte-fidelity after a live deployment observes the request:
+
+1. Extract the exact `request.body` value used by the target dataset's `dataset_configuration`
+   (for example, from the `.tfvars` file or from the deployed asset's configuration).
+2. Compute its SHA-256 and byte length.
+3. Compare against the table above; matching values confirm the body reached the endpoint unmodified.
+
+```python
+import hashlib
+
+body = open("resources/request-fixtures/long-field-selection-request.json", "rb").read().rstrip(b"\n")
+print(len(body), hashlib.sha256(body).hexdigest())
+```
+
+A live simulator may still reject this fixture's synthetic `field_ids` with a non-`200` response;
+that is expected and does not indicate a byte-fidelity failure, since the proof only concerns exact
+receipt and parsing of the request body, not a successful sensor read.
 
 ## References
 

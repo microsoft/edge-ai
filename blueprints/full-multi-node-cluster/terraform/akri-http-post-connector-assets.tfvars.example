@@ -16,9 +16,9 @@
  * Or copy this file to terraform.tfvars to automatically load these values.
  *
  * Prerequisites:
- *   1. Publish the connector-metadata artifact referenced by `custom_connector_metadata_ref` below.
- *      See src/500-application/517-akri-http-post-connector/resources/metadata-publish/README.md.
- *   2. Build and push the connector runtime image referenced by `custom_image_name`/`image_tag`.
+ *   1. Build and push the connector runtime image and publish the connector-metadata artifact
+ *      referenced below. See the "Building and Publishing" section of
+ *      src/500-application/517-akri-http-post-connector/README.md.
  */
 
 /*
