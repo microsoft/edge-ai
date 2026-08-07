@@ -1,10 +1,32 @@
 import type { Request, Response } from 'express'
+import type { Session } from '../shared/types.js'
+import { cleanLogging } from '../shared/logging.js'
 import * as directLine from './directLineClient.js'
 import { sseRegistry } from './sseRegistry.js'
 import { getAuthorizedSession } from './aclHelper.js'
 import { sessionStore } from './sessionStore.js'
+import { issueResumeToken, verifyResumeToken } from './resumeToken.js'
 
 const AGENT_BACKEND = process.env.AGENT_BACKEND || 'foundry'
+const SESSION_ID_RE = /^session-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const MAX_BACKEND_POINTER_LENGTH = 512
+
+type SessionResponse = Session & { resumeToken?: string }
+
+function withResumeToken(session: Session, userId: string): SessionResponse {
+  const threadId = session.threadId
+  if (
+    AGENT_BACKEND !== 'foundry' ||
+    typeof threadId !== 'string' ||
+    threadId.length === 0 ||
+    threadId.length > MAX_BACKEND_POINTER_LENGTH
+  ) {
+    return { ...session }
+  }
+
+  const resumeToken = issueResumeToken(userId, session.id, { threadId })
+  return { ...session, ...(resumeToken && { resumeToken }) }
+}
 
 /** Strip control characters and limit displayName length for defense-in-depth. */
 export function sanitizeDisplayName(raw: string | undefined, fallback = 'Unknown'): string {
@@ -23,7 +45,7 @@ export async function listSessions(req: Request, res: Response): Promise<void> {
   const { userId } = req.user
   const chatId = req.query.chatId as string | undefined
 
-  console.log('[Sessions] listSessions | userId:', userId, '| chatId:', chatId)
+  cleanLogging.Log('Sessions', 'Listing sessions', { userId, chatId })
 
   let sessions = sessionStore.listByUser(userId)
 
@@ -31,7 +53,7 @@ export async function listSessions(req: Request, res: Response): Promise<void> {
   // (e.g., created by the bot) and auto-add the user as a participant
   if (chatId) {
     const chatSession = sessionStore.findByChatId(chatId)
-    console.log('[Sessions] findByChatId result:', chatSession?.id ?? 'none')
+    cleanLogging.Log('Sessions', 'Chat session lookup completed', { sessionId: chatSession?.id ?? 'none' })
     if (chatSession) {
       if (!chatSession.participants.includes(userId)) {
         sessionStore.addParticipant(chatSession.id, userId, req.user.displayName)
@@ -40,7 +62,7 @@ export async function listSessions(req: Request, res: Response): Promise<void> {
     }
   }
 
-  res.json(sessions)
+  res.json(sessions.map(session => withResumeToken(session, userId)))
 }
 
 export async function createSession(req: Request, res: Response): Promise<void> {
@@ -79,8 +101,9 @@ export async function createSession(req: Request, res: Response): Promise<void> 
       const chatId = req.body?.chatId as string | undefined
       if (chatId) sessionStore.linkChatId(session.id, chatId)
 
-      res.status(201).json(sessionStore.getSession(session.id))
-    } 
+      const created = sessionStore.getSession(session.id)
+      res.status(201).json(withResumeToken(created ?? session, userId))
+    }
     else if (AGENT_BACKEND === 'copilotstudio')
     {
       // Copilot Studio Agents SDK — dynamic import to avoid crash when CPS env vars absent
@@ -119,7 +142,7 @@ export async function createSession(req: Request, res: Response): Promise<void> 
         )
         sessionStore.updateSession(session.id, { conversationId })
       } catch (cpsError) {
-        console.error('CPS startConversation failed:', cpsError)
+        cleanLogging.Error('Sessions', 'CPS startConversation failed', cpsError)
         // Mark orphaned session so it's not usable
         sessionStore.updateSession(session.id, { status: 'archived' })
         throw cpsError
@@ -128,9 +151,10 @@ export async function createSession(req: Request, res: Response): Promise<void> 
       const chatId = req.body?.chatId as string | undefined
       if (chatId) sessionStore.linkChatId(session.id, chatId)
 
-      res.status(201).json(sessionStore.getSession(session.id))
+      const created = sessionStore.getSession(session.id)
+      res.status(201).json(withResumeToken(created ?? session, userId))
     }
-    else 
+    else
     {
       // Foundry flow — dynamic import to avoid crash when Foundry env vars absent
       const { agentsClient } = await import('./agentsClient.js')
@@ -143,10 +167,10 @@ export async function createSession(req: Request, res: Response): Promise<void> 
       )
       const chatId = req.body?.chatId as string | undefined
       if (chatId) sessionStore.linkChatId(session.id, chatId)
-      res.status(201).json(session)
+      res.status(201).json(withResumeToken(session, userId))
     }
   } catch (error) {
-    console.error('Create session error:', error)
+    cleanLogging.Error('Sessions', 'Create session error', error)
     res.status(500).json({ error: 'Failed to create session' })
   }
 }
@@ -166,7 +190,7 @@ export async function updateSession(req: Request, res: Response): Promise<void> 
     ...(status && { status }),
     ...(title && { title }),
   })
-  res.json(updated)
+  res.json(updated ? withResumeToken(updated, userId) : updated)
 }
 
 export async function addParticipant(req: Request, res: Response): Promise<void> {
@@ -184,5 +208,69 @@ export async function addParticipant(req: Request, res: Response): Promise<void>
   const displayName = sanitizeDisplayName(rawDisplayName)
 
   const updated = sessionStore.addParticipant(session.id, newUserId, displayName)
-  res.json(updated)
+  res.json(updated ? withResumeToken(updated, userId) : updated)
+}
+
+export async function resumeSession(req: Request, res: Response): Promise<void> {
+  const { userId, displayName } = req.user
+  const sessionId = req.params.id as string
+  if (!SESSION_ID_RE.test(sessionId)) {
+    res.status(400).json({ error: 'Invalid session id format' })
+    return
+  }
+
+  const body = req.body as Record<string, unknown> | undefined
+  const incoming = body?.session
+  if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) {
+    res.status(400).json({ error: 'Body must include a session object' })
+    return
+  }
+  const cached = incoming as Record<string, unknown>
+  if (cached.id !== sessionId) {
+    res.status(400).json({ error: 'Session id must match the route' })
+    return
+  }
+
+  const existing = sessionStore.getSession(sessionId)
+  if (existing) {
+    if (!existing.participants.includes(userId)) {
+      res.status(403).json({ error: 'Not a participant of this session' })
+      return
+    }
+    res.json(withResumeToken(existing, userId))
+    return
+  }
+
+  if (AGENT_BACKEND !== 'foundry') {
+    res.status(409).json({ error: 'Restart resume is only available for the Foundry backend' })
+    return
+  }
+
+  const pointers = verifyResumeToken(cached.resumeToken, userId, sessionId)
+  if (!pointers?.threadId || pointers.conversationId) {
+    res.status(403).json({ error: 'A valid Foundry resume token with only a thread id is required' })
+    return
+  }
+
+  const adopted = sessionStore.adoptSession(
+    {
+      id: sessionId,
+      title: cached.title,
+      createdAt: cached.createdAt,
+      lastActivityAt: cached.lastActivityAt,
+      status: cached.status,
+      metadata: cached.metadata,
+    },
+    { userId, displayName: sanitizeDisplayName(displayName) },
+    { threadId: pointers.threadId },
+  )
+  if (!adopted) {
+    res.status(400).json({ error: 'Session could not be adopted' })
+    return
+  }
+  if (!adopted.participants.includes(userId)) {
+    res.status(403).json({ error: 'Not a participant of this session' })
+    return
+  }
+  res.json(withResumeToken(adopted, userId))
 }
