@@ -55,8 +55,8 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.4",
-    "markdown-link-check": "3.14.2",
-    "marked": "^18.0.7",
+    "markdown-link-check": "3.15.0",
+    "marked": "^18.0.9",
     "secretlint": "13.0.4",
     "tftest-to-junitxml": "0.2.0"
   },
