@@ -15,6 +15,37 @@ ignore:
   # Reference: GHSA-pwjx-qhcg-rvj4
   - vulnerability: GHSA-pwjx-qhcg-rvj4
 
+  # image-size 2.0.2 - HIGH severity, no fix available
+  # Justification: Used transitively by Docusaurus's build-time MDX loader to
+  # process repository-controlled images. No patched image-size release exists.
+  # References: GHSA-5p2g-fcmc-qvqq, GHSA-w3rx-r6r6-pgpr
+  - vulnerability: GHSA-5p2g-fcmc-qvqq
+    package:
+      type: npm
+      name: image-size
+  - vulnerability: GHSA-w3rx-r6r6-pgpr
+    package:
+      type: npm
+      name: image-size
+
+  # golang.org/x/crypto/openpgp - no fix available
+  # Justification: The deprecated openpgp packages are not imported by the Go
+  # modules in this repository, and govulncheck reports no reachable findings.
+  # Reference: GO-2026-5932
+  - vulnerability: GO-2026-5932
+    package:
+      type: go-module
+      name: golang.org/x/crypto
+
+  # setuptools 79.0.1 - MEDIUM severity, fixed in 83.0.0
+  # Justification: colcon-core 0.20.1 requires setuptools <80. The dependency
+  # is confined to ROS2 builder stages and processes repository-controlled files.
+  # Reference: GHSA-h35f-9h28-mq5c
+  - vulnerability: GHSA-h35f-9h28-mq5c
+    package:
+      type: python
+      name: setuptools
+
   # rand 0.8.5 / 0.9.2 - LOW severity, no fix available
   # Justification: Advisory published after PR #411 opened. Affects transitive `rand`
   # pulled via multiple upstream SDKs (azure_iot_operations_mqtt, candle, etc.).
