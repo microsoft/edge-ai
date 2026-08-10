@@ -175,9 +175,10 @@ az ad sp create --id $CLIENT_ID
 Grant admin consent for `User.Read` (requires Global Admin or Privileged Role Administrator):
 
 ```powershell
+# 00000003-0000-0000-c000-000000000000 is the well-known Microsoft Graph app ID
 az ad app permission grant `
   --id $(az ad sp show --id $CLIENT_ID --query id -o tsv) `
-  --api $(az ad sp show --id "00000003-0000-0000-c000-000000000000" --query id -o tsv) ` # well-known Microsoft Graph app ID
+  --api $(az ad sp show --id "00000003-0000-0000-c000-000000000000" --query id -o tsv) `
   --scope "User.Read"
 ```
 
@@ -196,55 +197,144 @@ Write-Host "AZURE_TENANT_ID=$TENANT_ID"
 > [!NOTE]
 > Only required when using the Foundry backend (`AGENT_BACKEND=foundry` or unset). Skip to [Copilot Studio (Direct Line)](#4-copilot-studio-direct-line) if using Direct Line.
 
-Create the Foundry resource, project, and model deployment:
+The Foundry account, project, and model deployment belong to the [full-multi-node-cluster](../../../blueprints/full-multi-node-cluster/) blueprint. Add the Foundry values to your blueprint configuration and redeploy the blueprint rather than creating a separate resource group and AI Services account for this application.
 
-```powershell
-$RG_NAME   = "rg-chat-with-your-factory"
-$LOCATION  = "eastus2"
-$AI_NAME   = "chat-factory-ai"
-$PROJECT   = "chat-factory-project"
+Deploy into East US 2. That region offers the `gpt-realtime` model that Voice Live uses by default, and an existing AI Services account cannot move to another region afterwards.
 
-az group create --name $RG_NAME --location $LOCATION
+> [!IMPORTANT]
+> The model version, scale type, and capacity shown below are examples. Confirm the model version is available in your target region and that your subscription has quota before you deploy.
 
-az cognitiveservices account create `
-  --name $AI_NAME `
-  --resource-group $RG_NAME `
-  --kind AIServices `
-  --sku S0 `
-  --location $LOCATION `
-  --custom-domain $AI_NAME
+##### Terraform blueprint configuration
 
-# East US 2 supports the default gpt-realtime model for Voice Live.
-# Existing AI Services resources cannot change regions; create a replacement
-# in East US 2 and update AZURE_VOICELIVE_RESOURCE when migrating from East US.
+Add these values to the `terraform.tfvars` file in `blueprints/full-multi-node-cluster/terraform`. A broader Foundry example, including Responsible AI policies, is available in [foundry-project.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/foundry-project.tfvars.example).
 
-az cognitiveservices account deployment create `
-  --name $AI_NAME `
-  --resource-group $RG_NAME `
-  --deployment-name gpt-4o `
-  --model-name gpt-4o `
-  --model-version "2024-11-20" `
-  --model-format OpenAI `
-  --sku-capacity 1 `
-  --sku-name Standard
+```terraform
+location                 = "eastus2"
+should_deploy_ai_foundry = true
+
+ai_foundry_projects = {
+  "chat-with-your-factory" = {
+    name         = "chat-factory-project"
+    display_name = "Chat With Your Factory"
+    description  = "Foundry project for the Chat With Your Factory application"
+  }
+}
+
+ai_foundry_model_deployments = {
+  "chat-with-your-factory" = {
+    name = "gpt-4o"
+    model = {
+      format  = "OpenAI"
+      name    = "gpt-4o"
+      version = "2024-11-20"
+    }
+    scale = {
+      type     = "Standard"
+      capacity = 1
+    }
+  }
+}
 ```
 
-Create the agent via REST (the Foundry CLI does not support assistants-style agent creation):
+Deploy from the blueprint directory:
+
+```bash
+cd blueprints/full-multi-node-cluster/terraform
+terraform init
+terraform apply -var-file=terraform.tfvars
+```
+
+The blueprint publishes the account object, the project map, and the deployment map. The account endpoint is not the project endpoint, so compose the project URL from the account name and the project name:
 
 ```powershell
-$FOUNDRY_ENDPOINT = "https://${AI_NAME}.services.ai.azure.com/api/projects/${PROJECT}"
-$TOKEN = az account get-access-token --resource "https://cognitiveservices.azure.com" --query accessToken -o tsv
+$FOUNDRY = terraform output -json ai_foundry | ConvertFrom-Json
+$PROJECTS = terraform output -json ai_foundry_projects | ConvertFrom-Json
+$DEPLOYMENTS = terraform output -json ai_foundry_deployments | ConvertFrom-Json
 
-$AGENT_RESPONSE = Invoke-RestMethod -Method Post `
-  -Uri "$FOUNDRY_ENDPOINT/assistants?api-version=2025-05-01" `
-  -Headers @{ Authorization = "Bearer $TOKEN"; "Content-Type" = "application/json" } `
-  -Body '{"model":"gpt-4o","name":"maintenance-agent","instructions":"You are a maintenance scheduling assistant for industrial machines."}'
-
-$AGENT_ID = $AGENT_RESPONSE.id
+$FOUNDRY_ENDPOINT = "https://$($FOUNDRY.name).services.ai.azure.com/api/projects/$($PROJECTS.'chat-with-your-factory'.name)"
+$FOUNDRY_MODEL_DEPLOYMENT = $DEPLOYMENTS.'chat-with-your-factory'.name
 
 Write-Host "FOUNDRY_ENDPOINT=$FOUNDRY_ENDPOINT"
-Write-Host "FOUNDRY_AGENT_ID=$AGENT_ID"
+Write-Host "FOUNDRY_MODEL_DEPLOYMENT=$FOUNDRY_MODEL_DEPLOYMENT"
 ```
+
+##### Bicep blueprint configuration
+
+Add these values to the `main.bicepparam` file in `blueprints/full-multi-node-cluster/bicep`. Keep the rest of your existing parameter file intact and set the shared location to East US 2.
+
+```bicep
+param common = {
+  resourcePrefix: '<unique-prefix>'
+  location: 'eastus2'
+  environment: 'dev'
+  instance: '001'
+}
+
+param shouldDeployAiFoundry = true
+
+param aiFoundryProjects = [
+  {
+    name: 'chat-factory-project'
+    displayName: 'Chat With Your Factory'
+    description: 'Foundry project for the Chat With Your Factory application'
+  }
+]
+
+param aiFoundryModelDeployments = [
+  {
+    name: 'gpt-4o'
+    model: {
+      format: 'OpenAI'
+      name: 'gpt-4o'
+      version: '2024-11-20'
+    }
+    scale: {
+      type: 'Standard'
+      capacity: 1
+    }
+    raiPolicyName: null
+    versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
+  }
+]
+```
+
+Deploy from the blueprint directory:
+
+```bash
+cd blueprints/full-multi-node-cluster/bicep
+az deployment sub create --name <deployment-name> --location eastus2 --parameters ./main.bicepparam
+```
+
+Read the equivalent outputs from the completed subscription deployment:
+
+```powershell
+$DEPLOYMENT_NAME = "<deployment-name>"
+$FOUNDRY = az deployment sub show --name $DEPLOYMENT_NAME --query "properties.outputs.aiFoundry.value" -o json | ConvertFrom-Json
+$PROJECTS = az deployment sub show --name $DEPLOYMENT_NAME --query "properties.outputs.aiFoundryProjects.value" -o json | ConvertFrom-Json
+$DEPLOYMENTS = az deployment sub show --name $DEPLOYMENT_NAME --query "properties.outputs.aiFoundryDeployments.value" -o json | ConvertFrom-Json
+
+$FOUNDRY_PROJECT = ($PROJECTS | Where-Object name -eq "chat-factory-project").name
+$FOUNDRY_ENDPOINT = "https://$($FOUNDRY.name).services.ai.azure.com/api/projects/$FOUNDRY_PROJECT"
+$FOUNDRY_MODEL_DEPLOYMENT = ($DEPLOYMENTS | Where-Object name -eq "gpt-4o").name
+
+Write-Host "FOUNDRY_ENDPOINT=$FOUNDRY_ENDPOINT"
+Write-Host "FOUNDRY_MODEL_DEPLOYMENT=$FOUNDRY_MODEL_DEPLOYMENT"
+```
+
+##### Provision the Foundry agent
+
+Foundry persistent agents are data-plane objects, so no ARM template creates them. Set `FOUNDRY_ENDPOINT`, `FOUNDRY_MODEL_DEPLOYMENT`, and `AZURE_TENANT_ID` in the component `.env` file first. `AZURE_TENANT_ID` is the `$TENANT_ID` value captured during the app registration step, which comes from `az account show --query tenantId -o tsv`.
+
+Run the provisioner from the service directory that owns the script, because the script loads `../../.env` relative to that directory:
+
+```bash
+cd services/chat-with-your-factory
+npm run provision:agent
+```
+
+The command builds the server, then creates or updates an agent named `chat-with-your-factory` with the factory ontology tool attached. It writes progress to stderr and the agent ID to stdout. Set that ID as `FOUNDRY_AGENT_ID` in `.env`. Running the command again updates the existing agent in place instead of creating a duplicate.
+
+`scripts/provision-foundry-agent.sh` wraps the same provisioner for Bash callers that export `FOUNDRY_ENDPOINT` and `FOUNDRY_MODEL_DEPLOYMENT` instead of relying on the component `.env` file.
 
 #### 4. Copilot Studio (Direct Line)
 
@@ -371,31 +461,37 @@ Open the app in Teams (OBO exchange requires a real Teams SSO token; `SKIP_AUTH=
 > [!NOTE]
 > The app supports three agent backends. Set `AGENT_BACKEND` in `.env` to choose which one to use.
 > Copilot Studio Agents SDK variables (`CPS_ENVIRONMENT_ID`, `CPS_AGENT_IDENTIFIER`, `TEAMS_APP_CLIENT_SECRET`) are only required when `AGENT_BACKEND=copilotstudio` (the default).
-> Foundry-specific variables (`FOUNDRY_ENDPOINT`, `FOUNDRY_AGENT_ID`) are only required when `AGENT_BACKEND=foundry`.
+> Foundry-specific variables (`FOUNDRY_ENDPOINT`, `FOUNDRY_AGENT_ID`) are only required when `AGENT_BACKEND=foundry`, and `FOUNDRY_MODEL_DEPLOYMENT` is only required when you run `npm run provision:agent`.
 > Direct Line variables (`DIRECT_LINE_SECRET`) are only required when `AGENT_BACKEND=directline`.
+> Voice Live variables (`AZURE_VOICELIVE_RESOURCE`, `AZURE_VOICELIVE_MODEL`, `AZURE_VOICELIVE_API_VERSION`) are only required when `VOICE_PROVIDER=voicelive`.
 
 #### Environment variables (`.env`)
 
 Copy from `.env.template` if the file does not exist.
 
-| Variable                   | Required     | Description                                                                                                           |
-|----------------------------|--------------|-----------------------------------------------------------------------------------------------------------------------|
-| `FOUNDRY_ENDPOINT`         | Foundry only | Azure AI Foundry project endpoint                                                                                     |
-| `FOUNDRY_AGENT_ID`         | Foundry only | Foundry agent/assistant ID                                                                                            |
-| `AZURE_TENANT_ID`          | Yes          | Entra ID tenant                                                                                                       |
-| `TEAMS_APP_ID`             | Yes          | Entra app registration client ID                                                                                      |
-| `DEVTUNNEL_DOMAIN`         | Teams dev    | Dev tunnel hostname, e.g. `abc123-3978.use.devtunnels.ms`                                                             |
-| `AGENT_BACKEND`            | No           | `copilotstudio`, `directline`, or `foundry` (default: `copilotstudio`)                                                |
-| `DIRECT_LINE_SECRET`       | DL only      | Copilot Studio web channel secret                                                                                     |
-| `DIRECT_LINE_ENDPOINT`     | No           | Regional DL endpoint (default: `directline.botframework.com`)                                                         |
-| `CPS_ENVIRONMENT_ID`       | CPS only     | Power Platform environment ID                                                                                         |
-| `CPS_AGENT_IDENTIFIER`     | CPS only     | Copilot agent schema name (e.g., `crd49_YourAgent`)                                                                   |
-| `CPS_DIRECT_CONNECT_URL`   | No           | Direct connect URL from Copilot Studio Channels > Web app (overrides `CPS_ENVIRONMENT_ID` and `CPS_AGENT_IDENTIFIER`) |
-| `TEAMS_APP_CLIENT_SECRET`  | CPS only     | Client secret from app registration (for OBO exchange)                                                                |
-| `PORT`                     | No           | Server port (default: `3978`)                                                                                         |
-| `SKIP_AUTH`                | No           | Set `true` for local dev without Teams                                                                                |
-| `AZURE_SPEECH_REGION`      | Speech only  | Azure Speech Services region                                                                                          |
-| `AZURE_SPEECH_RESOURCE_ID` | Speech only  | Azure Speech resource name                                                                                            |
+| Variable                      | Required     | Description                                                                                                           |
+|-------------------------------|--------------|-----------------------------------------------------------------------------------------------------------------------|
+| `FOUNDRY_ENDPOINT`            | Foundry only | Azure AI Foundry project endpoint                                                                                     |
+| `FOUNDRY_AGENT_ID`            | Foundry only | Foundry agent/assistant ID                                                                                            |
+| `FOUNDRY_MODEL_DEPLOYMENT`    | Provisioning | Model deployment name that `npm run provision:agent` assigns to the agent                                             |
+| `AZURE_TENANT_ID`             | Yes          | Entra ID tenant                                                                                                       |
+| `TEAMS_APP_ID`                | Yes          | Entra app registration client ID                                                                                      |
+| `DEVTUNNEL_DOMAIN`            | Teams dev    | Dev tunnel hostname, e.g. `abc123-3978.use.devtunnels.ms`                                                             |
+| `AGENT_BACKEND`               | No           | `copilotstudio`, `directline`, or `foundry` (default: `copilotstudio`)                                                |
+| `DIRECT_LINE_SECRET`          | DL only      | Copilot Studio web channel secret                                                                                     |
+| `DIRECT_LINE_ENDPOINT`        | No           | Regional DL endpoint (default: `directline.botframework.com`)                                                         |
+| `CPS_ENVIRONMENT_ID`          | CPS only     | Power Platform environment ID                                                                                         |
+| `CPS_AGENT_IDENTIFIER`        | CPS only     | Copilot agent schema name (e.g., `crd49_YourAgent`)                                                                   |
+| `CPS_DIRECT_CONNECT_URL`      | No           | Direct connect URL from Copilot Studio Channels > Web app (overrides `CPS_ENVIRONMENT_ID` and `CPS_AGENT_IDENTIFIER`) |
+| `TEAMS_APP_CLIENT_SECRET`     | CPS only     | Client secret from app registration (for OBO exchange)                                                                |
+| `PORT`                        | No           | Server port (default: `3978`)                                                                                         |
+| `SKIP_AUTH`                   | No           | Set `true` for local dev without Teams                                                                                |
+| `AZURE_SPEECH_REGION`         | Speech only  | Azure Speech Services region                                                                                          |
+| `AZURE_SPEECH_RESOURCE_ID`    | Speech only  | Azure Speech resource name                                                                                            |
+| `VOICE_PROVIDER`              | No           | `azure` (default), `webspeech`, or `voicelive`                                                                        |
+| `AZURE_VOICELIVE_RESOURCE`    | Voice Live   | AI Services account name that serves Voice Live: the Foundry account or a separate account                            |
+| `AZURE_VOICELIVE_MODEL`       | Voice Live   | Voice Live model (default: `gpt-realtime`)                                                                            |
+| `AZURE_VOICELIVE_API_VERSION` | Voice Live   | Voice Live API version (default: `2026-04-10`)                                                                        |
 
 #### Teams manifest (`appManifest/manifest.json`)
 
@@ -599,7 +695,7 @@ the result back to Foundry.
 
 ### Tool Prerequisites
 
-* Provision the agent with `npm run provision:agent` (attaches the tool).
+* Provision the agent with `npm run provision:agent` from `services/chat-with-your-factory` (attaches the tool).
 * Set the Fabric connection env vars: `FABRIC_WORKSPACE_ID` + `FABRIC_LAKEHOUSE_ID`
   (host discovery via Fabric REST) or `FABRIC_SQL_ENDPOINT` (explicit host), plus
   optional `FABRIC_LAKEHOUSE_DATABASE` (default `RoboticsOntologyLH`).
