@@ -1,4 +1,4 @@
 checkov~=3.2.528
 aiohttp>=3.14.3                  # Async HTTP client (transitive via checkov)
-gitpython>=3.1.57                # Git repository interaction (transitive via checkov); pinned >=3.1.55 to resolve GHSA-94p4-4cq8-9g67
+gitpython>=3.1.58                # Git repository interaction (transitive via checkov); pinned >=3.1.58 to resolve path traversal advisories
 soupsieve>=2.8.4                 # CSS selector engine (transitive via beautifulsoup4); pinned >=2.8.4 to resolve GHSA-836r-79rf-4m37
