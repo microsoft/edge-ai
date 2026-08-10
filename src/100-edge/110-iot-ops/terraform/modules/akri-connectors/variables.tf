@@ -28,8 +28,8 @@ variable "connector_templates" {
     custom_connector_metadata_ref = optional(string) // e.g., "my_acr.azurecr.io/custom-connector-metadata:1.0.0"
 
     // Runtime Configuration
-    registry              = optional(string) // Container registry hostname for pulling connector images (anonymous/public pulls)
-    registry_endpoint_ref = optional(string) // Name of a Microsoft.IoTOperations registryEndpoints resource; AIO known issues 7710/4570 mean Akri connectors don't reliably honor this, prefer image_pull_secrets
+    registry              = optional(string)       // Container registry hostname for pulling connector images (anonymous/public pulls)
+    registry_endpoint_ref = optional(string)       // Name of a Microsoft.IoTOperations registryEndpoints resource; AIO known issues 7710/4570 mean Akri connectors don't reliably honor this, prefer image_pull_secrets
     image_pull_secrets    = optional(list(string)) // Names of existing Kubernetes docker-registry Secrets for authenticated pulls; mutually exclusive with registry_endpoint_ref
     image_tag             = optional(string)
     replicas              = optional(number)
