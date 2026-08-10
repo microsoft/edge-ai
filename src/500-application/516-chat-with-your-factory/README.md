@@ -239,8 +239,15 @@ ai_foundry_model_deployments = {
 Deploy from the blueprint directory:
 
 ```bash
+az login
+az account list --output table
+az account set --subscription "<subscription-name-or-id>"
+az account show --query "{Name:name, SubscriptionId:id, TenantId:tenantId}" --output table
+export ARM_SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
+
 cd blueprints/full-multi-node-cluster/terraform
 terraform init
+terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
 ```
 
@@ -260,7 +267,22 @@ Write-Host "FOUNDRY_MODEL_DEPLOYMENT=$FOUNDRY_MODEL_DEPLOYMENT"
 
 ##### Bicep blueprint configuration
 
-Add these values to the `main.bicepparam` file in `blueprints/full-multi-node-cluster/bicep`. Keep the rest of your existing parameter file intact and set the shared location to East US 2.
+From a clean checkout, generate `main.bicepparam` only when it is absent. Keep an existing parameter file intact.
+
+```bash
+az login
+az account list --output table
+az account set --subscription "<subscription-name-or-id>"
+az account show --query "{Name:name, SubscriptionId:id, TenantId:tenantId}" --output table
+export ARM_SUBSCRIPTION_ID="$(az account show --query id --output tsv)"
+
+cd blueprints/full-multi-node-cluster/bicep
+if [ ! -f main.bicepparam ]; then
+  az bicep generate-params --file main.bicep --output-format bicepparam --include-params all > main.bicepparam
+fi
+```
+
+Add these values to `main.bicepparam`, keep its other parameters intact, and set the shared location to East US 2.
 
 ```bicep
 param common = {
@@ -301,7 +323,6 @@ param aiFoundryModelDeployments = [
 Deploy from the blueprint directory:
 
 ```bash
-cd blueprints/full-multi-node-cluster/bicep
 az deployment sub create --name <deployment-name> --location eastus2 --parameters ./main.bicepparam
 ```
 
