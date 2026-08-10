@@ -57,6 +57,8 @@ locals {
 
       // Registry and image defaults with connector-specific fallbacks
       registry                 = coalesce(conn.registry, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_registry : "mcr.microsoft.com")
+      registry_endpoint_ref    = conn.registry_endpoint_ref
+      image_pull_secrets       = conn.image_pull_secrets
       image_tag                = coalesce(conn.image_tag, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_tag : "latest")
       replicas                 = coalesce(conn.replicas, 1)
       image_pull_policy        = coalesce(conn.image_pull_policy, "IfNotPresent")
@@ -113,12 +115,20 @@ resource "azapi_resource" "connector_template" {
             {
               managedConfigurationType = "ImageConfiguration"
               imageConfigurationSettings = {
-                registrySettings = {
-                  registrySettingsType = "ContainerRegistry"
-                  containerRegistrySettings = {
-                    registry = each.value.registry
-                  }
-                }
+                registrySettings = merge(
+                  {
+                    registrySettingsType = each.value.registry_endpoint_ref != null ? "RegistryEndpointRef" : "ContainerRegistry"
+                  },
+                  each.value.registry_endpoint_ref != null ? { registryEndpointRef = each.value.registry_endpoint_ref } : {},
+                  each.value.registry_endpoint_ref == null ? {
+                    containerRegistrySettings = merge(
+                      { registry = each.value.registry },
+                      each.value.image_pull_secrets != null ? {
+                        imagePullSecrets = [for s in each.value.image_pull_secrets : { secretRef = s }]
+                      } : {}
+                    )
+                  } : {}
+                )
                 imageName       = each.value.image_name
                 imagePullPolicy = each.value.image_pull_policy
                 replicas        = each.value.replicas
@@ -130,8 +140,20 @@ resource "azapi_resource" "connector_template" {
             },
             each.value.allocation != null ? { allocation = each.value.allocation } : {},
             each.value.additional_configuration != null ? { additionalConfiguration = each.value.additional_configuration } : {},
-            each.value.secrets != null ? { secrets = each.value.secrets } : {},
-            each.value.trust_settings != null ? { trustSettings = each.value.trust_settings } : {}
+            each.value.secrets != null ? {
+              secrets = [
+                for s in each.value.secrets : {
+                  secretAlias = s.secret_alias
+                  secretKey   = s.secret_key
+                  secretRef   = s.secret_ref
+                }
+              ]
+            } : {},
+            each.value.trust_settings != null ? {
+              trustSettings = {
+                trustListSecretRef = each.value.trust_settings.trust_list_secret_ref
+              }
+            } : {}
           )
         }
         mqttConnectionConfiguration = {

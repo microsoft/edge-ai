@@ -38,10 +38,11 @@ variable "custom_akri_connectors" {
     custom_connector_metadata_ref = optional(string) // e.g., "my_acr.azurecr.io/custom-connector-metadata:1.0.0"
 
     // Runtime Configuration (defaults applied based on connector type)
-    registry          = optional(string) // Defaults: mcr.microsoft.com for built-in types
-    image_tag         = optional(string) // Defaults: 0.5.1 for built-in types, latest for custom
-    replicas          = optional(number, 1)
-    image_pull_policy = optional(string) // Default: IfNotPresent
+    registry              = optional(string) // Defaults: mcr.microsoft.com for built-in types (anonymous/public pulls)
+    registry_endpoint_ref = optional(string) // Name of a registry_endpoints entry (authenticated pulls); mutually exclusive with registry
+    image_tag             = optional(string) // Defaults: 0.5.1 for built-in types, latest for custom
+    replicas              = optional(number, 1)
+    image_pull_policy     = optional(string) // Default: IfNotPresent
 
     // Diagnostics
     log_level = optional(string) // Default: info (lowercase: trace, debug, info, warning, error, critical)
@@ -190,5 +191,13 @@ variable "custom_akri_connectors" {
       coalesce(conn.replicas, 1) >= 1 && coalesce(conn.replicas, 1) <= 10
     ])
     error_message = "Connector replicas must be between 1 and 10."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      conn.registry == null || conn.registry_endpoint_ref == null
+    ])
+    error_message = "Set only one of registry or registry_endpoint_ref per connector."
   }
 }

@@ -12,6 +12,7 @@ mod http;
 mod policy;
 mod proof;
 mod scheduler;
+mod secret_body;
 mod telemetry;
 
 use anyhow::{Context, Result};
@@ -44,6 +45,23 @@ async fn main() -> Result<()> {
     let trust_bundle_dir = connector_artifacts
         .device_endpoint_trust_bundle_mount
         .clone();
+    // Both secrets mount paths resolve `request.bodySecretAlias` (see `secret_body`);
+    // either being absent is a startup configuration error, not a per-request one.
+    let connector_secrets_metadata_mount = connector_artifacts
+        .connector_secrets_metadata_mount
+        .clone()
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "CONNECTOR_SECRETS_METADATA_MOUNT_PATH is required to resolve request.bodySecretAlias"
+            )
+        })?;
+    let connector_secrets_mount = std::env::var("CONNECTOR_SECRETS_MOUNT_PATH")
+        .map(std::path::PathBuf::from)
+        .map_err(|_| {
+            anyhow::anyhow!(
+                "CONNECTOR_SECRETS_MOUNT_PATH is required to resolve request.bodySecretAlias"
+            )
+        })?;
     let application_context = ApplicationContextBuilder::default()
         .build()
         .context("failed to build application context")?;
@@ -70,6 +88,8 @@ async fn main() -> Result<()> {
         device_creation_observation,
         trust_bundle_dir,
         concurrency,
+        connector_secrets_metadata_mount,
+        connector_secrets_mount,
     ));
 
     tokio::select! {

@@ -6,7 +6,7 @@
 //! [`config::ObservationPlan`]s, and executes scheduled bounded POST requests whose
 //! responses are forwarded to the data operation's configured destination(s).
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use azure_iot_operations_connector::base_connector::managed_azure_device_registry::{
@@ -98,10 +98,16 @@ impl TickState {
 
 /// Observes Device Endpoint creation notifications and spawns a supervision task per
 /// device endpoint. Runs until the underlying observation channel ends.
+///
+/// `secrets_metadata_mount` and `secrets_mount` are the Akri connector-template
+/// secrets mount paths used to resolve each dataset's `request.bodySecretAlias`
+/// (see [`crate::secret_body`]).
 pub async fn run(
     mut device_creation_observation: DeviceEndpointClientCreationObservation,
     trust_bundle_dir: Option<PathBuf>,
     concurrency: GlobalConcurrency,
+    secrets_metadata_mount: PathBuf,
+    secrets_mount: PathBuf,
 ) -> Result<(), String> {
     loop {
         let device_endpoint_client = device_creation_observation.recv_notification().await;
@@ -109,6 +115,8 @@ pub async fn run(
             device_endpoint_client,
             trust_bundle_dir.clone(),
             concurrency.clone(),
+            secrets_metadata_mount.clone(),
+            secrets_mount.clone(),
         ));
     }
 }
@@ -120,6 +128,8 @@ async fn run_device_endpoint(
     mut device_endpoint_client: DeviceEndpointClient,
     trust_bundle_dir: Option<PathBuf>,
     concurrency: GlobalConcurrency,
+    secrets_metadata_mount: PathBuf,
+    secrets_mount: PathBuf,
 ) {
     let reporter = device_endpoint_client.get_status_reporter();
     let endpoint_state: SharedEndpointState = Arc::new(RwLock::new(None));
@@ -138,6 +148,8 @@ async fn run_device_endpoint(
                     asset_client,
                     Arc::clone(&endpoint_state),
                     concurrency.clone(),
+                    secrets_metadata_mount.clone(),
+                    secrets_mount.clone(),
                 ));
             }
             ClientNotification::Updated => {
@@ -205,6 +217,8 @@ async fn run_asset(
     mut asset_client: AssetClient,
     endpoint_state: SharedEndpointState,
     concurrency: GlobalConcurrency,
+    secrets_metadata_mount: PathBuf,
+    secrets_mount: PathBuf,
 ) {
     let reporter = asset_client.get_status_reporter();
     report_asset_status(&reporter, telemetry::ok_status()).await;
@@ -219,6 +233,8 @@ async fn run_asset(
                     data_operation_client,
                     Arc::clone(&endpoint_state),
                     concurrency.clone(),
+                    secrets_metadata_mount.clone(),
+                    secrets_mount.clone(),
                 ));
             }
             ClientNotification::Created(_) => {
@@ -251,12 +267,22 @@ async fn run_data_operation(
     mut data_operation_client: DataOperationClient,
     endpoint_state: SharedEndpointState,
     concurrency: GlobalConcurrency,
+    secrets_metadata_mount: PathBuf,
+    secrets_mount: PathBuf,
 ) {
     let reporter = data_operation_client.get_status_reporter();
     let mut schema_cache = SchemaCache::new();
     let mut tick_state = TickState::new();
 
-    match compile_and_store_plan(&data_operation_client, &endpoint_state, &mut tick_state).await {
+    match compile_and_store_plan(
+        &data_operation_client,
+        &endpoint_state,
+        &mut tick_state,
+        &secrets_metadata_mount,
+        &secrets_mount,
+    )
+    .await
+    {
         Ok(()) => report_dataset_status(&reporter, telemetry::ok_status()).await,
         Err(err) => {
             warn!(error = %err, "initial dataset configuration rejected; awaiting an update");
@@ -271,7 +297,13 @@ async fn run_data_operation(
                 match notification {
                     DataOperationNotification::Updated(Ok(()))
                     | DataOperationNotification::AssetUpdated(Ok(())) => {
-                        match compile_and_store_plan(&data_operation_client, &endpoint_state, &mut tick_state).await {
+                        match compile_and_store_plan(
+                            &data_operation_client,
+                            &endpoint_state,
+                            &mut tick_state,
+                            &secrets_metadata_mount,
+                            &secrets_mount,
+                        ).await {
                             Ok(()) => {
                                 info!("observation plan replaced after update");
                                 report_dataset_status(&reporter, telemetry::ok_status()).await;
@@ -320,12 +352,15 @@ async fn report_dataset_status(
 }
 
 /// Reads the current dataset configuration from the data operation's definition,
-/// compiles a plan against the current endpoint state's resolved base address, and
-/// applies it to `tick_state` only if compilation succeeds.
+/// compiles a plan against the current endpoint state's resolved base address and
+/// the connector-template secrets mount, and applies it to `tick_state` only if
+/// compilation succeeds.
 async fn compile_and_store_plan(
     data_operation_client: &DataOperationClient,
     endpoint_state: &SharedEndpointState,
     tick_state: &mut TickState,
+    secrets_metadata_mount: &Path,
+    secrets_mount: &Path,
 ) -> Result<(), String> {
     let DataOperationDefinition::Dataset(dataset) = data_operation_client.definition() else {
         return Err("data operation is not a Dataset".to_string());
@@ -344,8 +379,14 @@ async fn compile_and_store_plan(
         state.address.clone()
     };
 
-    let plan = config::compile_plan(&base_address, data_source, raw_dataset_configuration)?;
-    proof::record(&plan.dataset.request.body);
+    let plan = config::compile_plan(
+        &base_address,
+        data_source,
+        raw_dataset_configuration,
+        secrets_metadata_mount,
+        secrets_mount,
+    )?;
+    proof::record(&plan.resolved_body);
     info!(endpoint_address = %plan.endpoint.address, "compiled observation plan");
     tick_state.apply(plan);
     Ok(())
@@ -427,7 +468,7 @@ async fn attempt_post_and_forward(
     let response = http::execute_post(
         &state.client,
         plan.endpoint.address.clone(),
-        plan.dataset.request.body.clone(),
+        plan.resolved_body.clone(),
         &plan.dataset.request.content_type,
         &state.credentials,
     )
@@ -457,12 +498,13 @@ mod tests {
             dataset: DatasetConfiguration {
                 schema_version: config::DATASET_CONFIGURATION_SCHEMA_VERSION,
                 request: RequestConfiguration {
-                    body: "x".repeat(10_000),
+                    body_secret_alias: "body-secret".to_string(),
                     content_type: "application/json".to_string(),
                     idempotent: false,
                 },
                 sampling_interval_ms,
             },
+            resolved_body: "x".repeat(10_000),
         }
     }
 

@@ -35,6 +35,10 @@ Version 1.0 supports:
 * HTTP `POST` only; there is no configurable request method.
 * Textual request bodies only, including JSON and other text-based MIME types.
 * A configurable request `Content-Type`, owned by the Akri dataset configuration.
+* A dataset-configuration schema version 2 contract: `request.bodySecretAlias` names a Kubernetes
+  Secret resolved through the Akri operator's connector-template secrets mount, rather than an
+  inline request body. See [`docs/request-body-secret.md`](docs/request-body-secret.md) for the
+  manual `kubectl create secret generic` prerequisite this requires.
 
 Version 1.0 does not support:
 
@@ -79,6 +83,13 @@ Azure Resource Manager (ARM) rather than `kubectl` YAML.
   an Azure Container Registry (ACR).
 * [ORAS CLI](https://oras.land/docs/installation), for publishing `connector-metadata.json` as an
   OCI artifact.
+* A [registry endpoint](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-configure-registry-endpoint)
+  on the Azure IoT Operations instance, pointing at the ACR above. Azure IoT Operations pulls the
+  connector's runtime image through this registry endpoint rather than anonymously, so it must use
+  an authenticated method (for example `SystemAssignedManagedIdentity` with `AcrPull` granted to the
+  instance's Arc extension identity). Configure it via the `registry_endpoints` variable on
+  `src/100-edge/110-iot-ops` / `blueprints/full-multi-node-cluster`, the Azure portal, or
+  `az iot ops registry create`.
 
 ```bash
 # Navigate to the component directory
@@ -135,17 +146,33 @@ custom_akri_connectors = [
     custom_endpoint_version       = "1.0"
     custom_image_name             = "<acr_name>.azurecr.io/akri-http-post-connector"
     custom_connector_metadata_ref = "<acr_name>.azurecr.io/akri-http-post-connector-metadata:<metadata_tag>"
-    registry                      = "<acr_name>.azurecr.io"
+    registry_endpoint_ref         = "<registry_endpoint_name>"
     image_tag                     = "<image_tag>"
+    secrets = [
+      {
+        secret_alias = "field-selection-body"
+        secret_key   = "body"
+        secret_ref   = "http-post-field-selection-body"
+      }
+    ]
   }
 ]
 ```
 
+`registry_endpoint_ref` must name a registry endpoint (see Prerequisites) whose `host` matches the
+ACR above; omitting it falls back to the `registry` field, which pulls anonymously and fails with
+`ImagePullBackOff` against a private ACR.
+
+`secrets` declares the Kubernetes Secret aliases dataset configurations reference through
+`request.bodySecretAlias`; see [`docs/request-body-secret.md`](docs/request-body-secret.md) for the
+manual `kubectl create secret generic` prerequisite this requires.
+
 ### Verifying byte-fidelity with the sample request fixture
 
 `resources/request-fixtures/long-field-selection-request.json` is a 10,516-byte fixture (10,515-byte
-body, excluding the trailing newline) used to prove that a dataset's `request.body` is forwarded to
-the target endpoint without truncation or re-encoding. Recorded reference hashes:
+body, excluding the trailing newline) used to prove that the request body content resolved from a
+dataset's `request.bodySecretAlias` is forwarded to the target endpoint without truncation or
+re-encoding. Recorded reference hashes:
 
 | Value                | Bytes  | SHA-256                                                            |
 |----------------------|--------|----------------------------------------------------------------------|
@@ -154,8 +181,10 @@ the target endpoint without truncation or re-encoding. Recorded reference hashes
 
 To re-verify byte-fidelity after a live deployment observes the request:
 
-1. Extract the exact `request.body` value used by the target dataset's `dataset_configuration`
-   (for example, from the `.tfvars` file or from the deployed asset's configuration).
+1. Extract the exact secret content referenced by the target dataset's `request.bodySecretAlias`
+   (for example, `kubectl get secret <secret_ref> -o jsonpath='{.data.<secret_key>}' | base64 -d`;
+   see [`docs/request-body-secret.md`](docs/request-body-secret.md) for the secret's `.tfvars`
+   wiring).
 2. Compute its SHA-256 and byte length.
 3. Compare against the table above; matching values confirm the body reached the endpoint unmodified.
 

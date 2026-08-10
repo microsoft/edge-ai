@@ -11,13 +11,18 @@
           "additionalProperties": false,
           "required": ["schemaVersion", "request", "samplingIntervalMs"],
           "properties": {
-            "schemaVersion": { "const": 1 },
+            "schemaVersion": { "const": 2 },
             "request": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["body", "contentType"],
+              "required": ["bodySecretAlias", "contentType"],
               "properties": {
-                "body": { "type": "string" },
+                "bodySecretAlias": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 253,
+                  "pattern": "^[A-Za-z0-9_.-]+$"
+                },
                 "contentType": { "type": "string", "minLength": 1 },
                 "idempotent": { "type": "boolean", "default": false }
               }

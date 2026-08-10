@@ -19,13 +19,29 @@
  *   1. Build and push the connector runtime image and publish the connector-metadata artifact
  *      referenced below. See the "Building and Publishing" section of
  *      src/500-application/517-akri-http-post-connector/README.md.
+ *   2. Configure a registry endpoint on the Azure IoT Operations instance pointing at the ACR
+ *      above, using an authenticated method (for example SystemAssignedManagedIdentity with
+ *      AcrPull granted to the instance's Arc extension identity). Reference its name from
+ *      `registry_endpoint_ref` below. See
+ *      https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-configure-registry-endpoint.
+ *      Without this, the connector pulls anonymously and fails with ImagePullBackOff against a
+ *      private ACR.
+ *   3. Create the Kubernetes Secret referenced by the `secrets` entry below (request body
+ *      content). See
+ *      src/500-application/517-akri-http-post-connector/docs/request-body-secret.md.
  */
 
 /*
  * Custom Akri HTTP POST Connector Template
  *
  * REQUIRED: Registers the EdgeAi.HttpPost v1.0 connector template with src/100-edge/110-iot-ops.
- * Replace the registry, image, and metadata references with your own published values.
+ * Replace the registry_endpoint_ref, image, and metadata references with your own published values.
+ *
+ * The `secrets` entry declares the request body secret alias resolved by the connector at
+ * runtime (`request.bodySecretAlias` below). It requires a Kubernetes Secret to already exist
+ * in the cluster; see
+ * src/500-application/517-akri-http-post-connector/docs/request-body-secret.md for the exact
+ * `kubectl create secret generic` command.
  */
 custom_akri_connectors = [
   {
@@ -33,10 +49,17 @@ custom_akri_connectors = [
     type                          = "custom"
     custom_endpoint_type          = "EdgeAi.HttpPost"
     custom_endpoint_version       = "1.0"
-    custom_image_name             = "edge-ai/akri-http-post-connector"
-    custom_connector_metadata_ref = "example.azurecr.io/akri-http-post-connector-metadata:1.0.0"
-    registry                      = "example.azurecr.io"
+    custom_image_name             = "akri-http-post-connector"
+    custom_connector_metadata_ref = "akri-http-post-connector-metadata:1.0.0"
+    registry_endpoint_ref         = "example-registry-endpoint"
     image_tag                     = "1.0.0"
+    secrets = [
+      {
+        secret_alias = "field-selection-body"
+        secret_key   = "body"
+        secret_ref   = "http-post-field-selection-body"
+      }
+    ]
   }
 ]
 
@@ -71,11 +94,15 @@ namespaced_devices = [
 /*
  * HTTP POST Connector Assets
  *
- * Defines the dataset that posts a field-selection request body to `/retrieval`. The illustrative
- * `request.body` below selects two fields; substitute the exact content of
+ * Defines the dataset that posts a field-selection request body to `/retrieval`. The request
+ * body is not inline: `request.bodySecretAlias` below (`field-selection-body`) names the
+ * `secrets` entry declared on `custom_akri_connectors` above, which the connector resolves at
+ * runtime through the Akri operator's connector-template secrets mount (see
+ * src/500-application/517-akri-http-post-connector/docs/request-body-secret.md). Substitute
+ * the exact content of
  * src/500-application/517-akri-http-post-connector/resources/request-fixtures/long-field-selection-request.json
- * (whose SHA-256 hashes are recorded in that fixture's README.md) to exercise the byte-fidelity
- * proof gate for request bodies longer than 10,000 characters.
+ * (whose SHA-256 hashes are recorded in that fixture's README.md) as the Secret's content to
+ * exercise the byte-fidelity proof gate for request bodies longer than 10,000 characters.
  */
 namespaced_assets = [
   {
@@ -95,7 +122,7 @@ namespaced_assets = [
         # Bounded POST fixture served by the 505 sensor-simulator; see its README for the GET vs POST endpoint split.
         data_source = "/retrieval"
 
-        dataset_configuration = "{\"schemaVersion\": 1, \"request\": {\"body\": \"{\\\"field_ids\\\": [\\\"temp-celsius-01\\\", \\\"humidity-pct-01\\\"]}\", \"contentType\": \"application/json\"}, \"samplingIntervalMs\": 15000}"
+        dataset_configuration = "{\"schemaVersion\": 2, \"request\": {\"bodySecretAlias\": \"field-selection-body\", \"contentType\": \"application/json\"}, \"samplingIntervalMs\": 15000}"
 
         data_points = []
 
