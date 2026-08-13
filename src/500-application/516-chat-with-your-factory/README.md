@@ -323,7 +323,9 @@ param aiFoundryModelDeployments = [
 Deploy from the blueprint directory:
 
 ```bash
-az deployment sub create --name <deployment-name> --location eastus2 --parameters ./main.bicepparam
+az deployment sub create --name <deployment-name> --location eastus2 \
+  --template-file ./main.bicep \
+  --parameters ./main.bicepparam
 ```
 
 After Bicep creates the account, project, and deployment, read the equivalent outputs from the completed subscription deployment and derive the runtime project endpoint:
