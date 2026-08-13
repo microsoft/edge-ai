@@ -197,7 +197,7 @@ Write-Host "AZURE_TENANT_ID=$TENANT_ID"
 > [!NOTE]
 > Only required when using the Foundry backend (`AGENT_BACKEND=foundry` or unset). Skip to [Copilot Studio (Direct Line)](#4-copilot-studio-direct-line) if using Direct Line.
 
-The Foundry account, project, and model deployment belong to the [full-multi-node-cluster](../../../blueprints/full-multi-node-cluster/) blueprint. Add the Foundry values to your blueprint configuration and redeploy the blueprint rather than creating a separate resource group and AI Services account for this application.
+The Foundry account, project, and model deployment belong to the [full-multi-node-cluster](../../../blueprints/full-multi-node-cluster/) blueprint. The blueprint calls `src/000-cloud/085-ai-foundry`, which creates the AI Services account, each configured `Microsoft.CognitiveServices/accounts/projects` resource, and each configured model deployment. Add the Foundry values to your blueprint configuration and redeploy the blueprint rather than creating these resources separately for this application.
 
 Deploy into East US 2. That region offers the `gpt-realtime` model that Voice Live uses by default, and an existing AI Services account cannot move to another region afterwards.
 
@@ -206,7 +206,7 @@ Deploy into East US 2. That region offers the `gpt-realtime` model that Voice Li
 
 ##### Terraform blueprint configuration
 
-Add these values to the `terraform.tfvars` file in `blueprints/full-multi-node-cluster/terraform`. A broader Foundry example, including Responsible AI policies, is available in [foundry-project.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/foundry-project.tfvars.example).
+Add these values to the `terraform.tfvars` file in `blueprints/full-multi-node-cluster/terraform`. `should_deploy_ai_foundry` enables the component, `ai_foundry_projects` creates the project, and `ai_foundry_model_deployments` creates the model deployment in the account. The component uses the blueprint-wide `location`; there is no separate Foundry location variable. A broader Foundry example, including Responsible AI policies, is available in [foundry-project.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/foundry-project.tfvars.example).
 
 ```terraform
 location                 = "eastus2"
@@ -251,7 +251,7 @@ terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
 ```
 
-The blueprint publishes the account object, the project map, and the deployment map. The account endpoint is not the project endpoint, so compose the project URL from the account name and the project name:
+After Terraform creates the account, project, and deployment, the blueprint publishes them as outputs. The application SDK requires a project-scoped URL, while the component exposes the account name and created project name separately. Derive the runtime URL from those outputs; this step does not create the project:
 
 ```powershell
 $FOUNDRY = terraform output -json ai_foundry | ConvertFrom-Json
@@ -282,7 +282,7 @@ if [ ! -f main.bicepparam ]; then
 fi
 ```
 
-Add these values to `main.bicepparam`, keep its other parameters intact, and set the shared location to East US 2.
+Add these values to `main.bicepparam`, keep its other parameters intact, and set the shared location to East US 2. `shouldDeployAiFoundry` enables the component, `aiFoundryProjects` creates the project, and `aiFoundryModelDeployments` creates the model deployment in the account.
 
 ```bicep
 param common = {
@@ -326,7 +326,7 @@ Deploy from the blueprint directory:
 az deployment sub create --name <deployment-name> --location eastus2 --parameters ./main.bicepparam
 ```
 
-Read the equivalent outputs from the completed subscription deployment:
+After Bicep creates the account, project, and deployment, read the equivalent outputs from the completed subscription deployment and derive the runtime project endpoint:
 
 ```powershell
 $DEPLOYMENT_NAME = "<deployment-name>"
