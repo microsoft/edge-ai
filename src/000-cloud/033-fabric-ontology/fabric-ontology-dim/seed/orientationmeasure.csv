@@ -1,0 +1,4 @@
+Id,Name,Description,Roll,Pitch,Yaw,CoordinateSystemId,Timestamp,Namespace,Source
+orient1,ABB Home Orientation,Home orientation for ABB IRB 6700,0.0,0.0,1.57,ocs1,2026-01-08T00:00:00Z,POS,Example
+orient2,KUKA Home Orientation,Home orientation for KUKA KR 16,0.0,0.0,0.0,ocs1,2026-01-08T00:00:00Z,POS,Example
+orient3,Fanuc Home Orientation,Home orientation for Fanuc M-20iA,0.0,0.0,-1.57,ocs1,2026-01-08T00:00:00Z,POS,Example

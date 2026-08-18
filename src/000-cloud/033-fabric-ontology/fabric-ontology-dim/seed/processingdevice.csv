@@ -1,0 +1,3 @@
+Id,Name,Description,Namespace,Source
+proc1,ABB IRC5 Controller,Robot controller for ABB IRB 6700,CORAX,Example
+proc2,KUKA KR C4 Controller,Robot controller for KUKA KR 16,CORAX,Example

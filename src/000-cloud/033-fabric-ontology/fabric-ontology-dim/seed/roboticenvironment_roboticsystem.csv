@@ -1,0 +1,3 @@
+Id,FromId,ToId,RelationType,Namespace,Source
+rel_se1,renv1,system1,equippedWith,CORA,Example
+rel_se2,renv2,system2,equippedWith,CORA,Example
