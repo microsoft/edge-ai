@@ -258,7 +258,9 @@ $FOUNDRY = terraform output -json ai_foundry | ConvertFrom-Json
 $PROJECTS = terraform output -json ai_foundry_projects | ConvertFrom-Json
 $DEPLOYMENTS = terraform output -json ai_foundry_deployments | ConvertFrom-Json
 
-$FOUNDRY_ENDPOINT = "https://$($FOUNDRY.name).services.ai.azure.com/api/projects/$($PROJECTS.'chat-with-your-factory'.name)"
+$FOUNDRY_PROJECT = $PROJECTS.'chat-with-your-factory'
+$FOUNDRY_PROJECT_ID = $FOUNDRY_PROJECT.id
+$FOUNDRY_ENDPOINT = "https://$($FOUNDRY.name).services.ai.azure.com/api/projects/$($FOUNDRY_PROJECT.name)"
 $FOUNDRY_MODEL_DEPLOYMENT = $DEPLOYMENTS.'chat-with-your-factory'.name
 
 Write-Host "FOUNDRY_ENDPOINT=$FOUNDRY_ENDPOINT"
@@ -336,12 +338,36 @@ $FOUNDRY = az deployment sub show --name $DEPLOYMENT_NAME --query "properties.ou
 $PROJECTS = az deployment sub show --name $DEPLOYMENT_NAME --query "properties.outputs.aiFoundryProjects.value" -o json | ConvertFrom-Json
 $DEPLOYMENTS = az deployment sub show --name $DEPLOYMENT_NAME --query "properties.outputs.aiFoundryDeployments.value" -o json | ConvertFrom-Json
 
-$FOUNDRY_PROJECT = ($PROJECTS | Where-Object name -eq "chat-factory-project").name
-$FOUNDRY_ENDPOINT = "https://$($FOUNDRY.name).services.ai.azure.com/api/projects/$FOUNDRY_PROJECT"
+$FOUNDRY_PROJECT = $PROJECTS | Where-Object name -eq "chat-factory-project"
+$FOUNDRY_PROJECT_ID = $FOUNDRY_PROJECT.id
+$FOUNDRY_ENDPOINT = "https://$($FOUNDRY.name).services.ai.azure.com/api/projects/$($FOUNDRY_PROJECT.name)"
 $FOUNDRY_MODEL_DEPLOYMENT = ($DEPLOYMENTS | Where-Object name -eq "gpt-4o").name
 
 Write-Host "FOUNDRY_ENDPOINT=$FOUNDRY_ENDPOINT"
 Write-Host "FOUNDRY_MODEL_DEPLOYMENT=$FOUNDRY_MODEL_DEPLOYMENT"
+```
+
+##### Verify Foundry Agent Service data-plane access
+
+The principal selected by `DefaultAzureCredential` needs the [Foundry User role at the project scope](https://learn.microsoft.com/azure/foundry/agents/environment-setup#required-permissions) to create or update agents. For the local Azure CLI workflow in this guide, verify the signed-in user's inherited role assignments at the selected project:
+
+```powershell
+$SIGNED_IN_USER_OBJECT_ID = az ad signed-in-user show --query id -o tsv
+az role assignment list `
+  --assignee-object-id $SIGNED_IN_USER_OBJECT_ID `
+  --scope $FOUNDRY_PROJECT_ID `
+  --include-inherited `
+  --output table
+```
+
+Verify that `Foundry User`, formerly named `Azure AI User`, appears in the results. If the assignment is absent, a principal permitted to create role assignments can run the following command. Do not run it when the assignment already exists.
+
+```powershell
+az role assignment create `
+  --assignee-object-id $SIGNED_IN_USER_OBJECT_ID `
+  --assignee-principal-type User `
+  --role 53ca6127-db72-4b80-b1b0-d745d6d5456d `
+  --scope $FOUNDRY_PROJECT_ID
 ```
 
 ##### Provision the Foundry agent
