@@ -44,6 +44,7 @@ DATA_DIR=""
 SKIP_DATA_SOURCES="false"
 SKIP_SEMANTIC_MODEL="false"
 SKIP_ONTOLOGY="false"
+ALLOW_PARTIAL_DATA="false"
 DRY_RUN="false"
 
 # Resource IDs populated during deployment
@@ -82,6 +83,7 @@ Optional Arguments:
   --skip-data-sources       Skip data source creation (use existing Lakehouse)
   --skip-semantic-model     Skip semantic model creation
   --skip-ontology           Skip ontology creation
+  --allow-partial-data      Allow tables without a resolvable source to be skipped
   --lakehouse-id <id>       Use existing Lakehouse (required with --skip-data-sources)
   --dry-run                 Show deployment plan without making changes
   -h, --help                Show this help message
@@ -139,6 +141,10 @@ while [[ $# -gt 0 ]]; do
       SKIP_ONTOLOGY="true"
       shift
       ;;
+    --allow-partial-data)
+      ALLOW_PARTIAL_DATA="true"
+      shift
+      ;;
     --dry-run)
       DRY_RUN="true"
       shift
@@ -186,11 +192,6 @@ for tool in az curl jq yq; do
   fi
 done
 
-# Check Azure CLI authentication
-if ! az account show &>/dev/null; then
-  err "Azure CLI not authenticated. Run 'az login' first."
-fi
-
 ok "Prerequisites validated"
 
 ####
@@ -220,6 +221,58 @@ info "Ontology: $ONTOLOGY_NAME"
 info "Description: $ONTOLOGY_DESC"
 info "Lakehouse: $LAKEHOUSE_NAME"
 
+resolve_table_source() {
+  local table="$1"
+  local table_name source_file source_url candidate
+  table_name=$(jq -r '.name' <<<"$table")
+  source_url=$(jq -r '.sourceUrl // empty' <<<"$table")
+  source_file=$(jq -r '.sourceFile // empty' <<<"$table")
+
+  if [[ -n "$DATA_DIR" ]]; then
+    for candidate in "$DATA_DIR/${table_name}.csv" "$DATA_DIR/${table_name}.parquet"; do
+      if [[ -f "$candidate" ]]; then
+        printf '%s\n' "$candidate"
+        return 0
+      fi
+    done
+  fi
+
+  if [[ -n "$source_url" ]]; then
+    printf '%s\n' "$source_url"
+    return 0
+  fi
+
+  if [[ -n "$source_file" ]]; then
+    if [[ ! "$source_file" = /* ]]; then
+      source_file="$(dirname "$DEFINITION_FILE")/$source_file"
+    fi
+    if [[ -f "$source_file" ]]; then
+      printf '%s\n' "$source_file"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+if [[ "$SKIP_DATA_SOURCES" != "true" ]]; then
+  missing_sources=()
+  while IFS= read -r table; do
+    table_name=$(jq -r '.name' <<<"$table")
+    if ! resolve_table_source "$table" >/dev/null; then
+      missing_sources+=("$table_name")
+    fi
+  done < <(get_lakehouse_tables "$DEFINITION_FILE" | jq -c '.[]')
+
+  if [[ ${#missing_sources[@]} -gt 0 ]]; then
+    if [[ "$ALLOW_PARTIAL_DATA" == "true" ]]; then
+      warn "Missing data sources for tables: ${missing_sources[*]}"
+    else
+      err "Missing required data sources for tables: ${missing_sources[*]}"
+    fi
+  fi
+fi
+
 ####
 # Display Configuration
 ####
@@ -246,6 +299,10 @@ fi
 ####
 # Authenticate
 ####
+
+if ! az account show &>/dev/null; then
+  err "Azure CLI not authenticated. Run 'az login' first."
+fi
 
 log "Authenticating to Fabric API"
 FABRIC_TOKEN=$(get_fabric_token)
@@ -361,8 +418,11 @@ if [[ "$SKIP_DATA_SOURCES" != "true" ]]; then
       fi
 
       if [[ -z "$local_file" || ! -f "$local_file" ]]; then
-        warn "No data source found for table '$table_name', skipping"
-        continue
+        if [[ "$ALLOW_PARTIAL_DATA" == "true" ]]; then
+          warn "No data source found for table '$table_name', skipping"
+          continue
+        fi
+        err "No data source found for required table '$table_name'"
       fi
 
       # Upload to OneLake Files

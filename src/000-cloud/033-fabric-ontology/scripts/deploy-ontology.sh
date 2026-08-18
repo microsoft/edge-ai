@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # deploy-ontology.sh - Deploy Fabric Ontology from ontology definition
 #
-# Creates entity types, properties, data bindings, relationships, and contextualizations
-# using the Microsoft Fabric Ontology REST API.
+# Publishes entity types, properties, data bindings, relationships, and
+# contextualizations into existing Microsoft Fabric resources.
 #
-# Dependencies: curl, jq, yq, az (Azure CLI), uuidgen
+# Dependencies: curl, jq, yq, az (Azure CLI), sha256sum
 #
 # Usage:
-#   ./deploy-ontology.sh --definition <path> --workspace-id <id> --lakehouse-id <id> \
-#     --eventhouse-id <id> --cluster-uri <uri>
+#   ./deploy-ontology.sh --definition <path> --workspace-id <id> --lakehouse-id <id>
 
 set -e
 set -o pipefail
@@ -32,11 +31,18 @@ EVENTHOUSE_ID=""
 KQL_DATABASE_ID=""
 CLUSTER_URI=""
 DRY_RUN="false"
+ID_MAPPING_OUTPUT="${ID_MAPPING_OUTPUT:-/tmp/ontology-id-mapping.json}"
+EXISTING_ONTOLOGY_ID=""
+EXISTING_DEFINITION_PARTS="[]"
 
-# Associative arrays for ID tracking (entity name -> generated ID)
+# Associative arrays for ID tracking
 declare -A ENTITY_TYPE_IDS
 declare -A PROPERTY_IDS
 declare -A RELATIONSHIP_IDS
+declare -A DATA_BINDING_IDS
+declare -A CONTEXTUALIZATION_IDS
+declare -A ENTITY_NAMES_BY_ID
+declare -A RELATIONSHIP_NAMES_BY_ID
 
 ####
 # Usage and Argument Parsing
@@ -61,16 +67,19 @@ Optional Arguments:
   --kql-database-id <id>  KQL Database ID (for reference)
 
 Options:
+  --id-mapping-output <path>
+                           Write the logical-name-to-Fabric-ID mapping to this path
+                           (default: /tmp/ontology-id-mapping.json)
   --dry-run               Show what would be created without making changes
   -h, --help              Show this help message
 
 Examples:
-  # Static data only (lakehouse)
-  $(basename "$0") --definition ./definitions/examples/lakeshore-retail.yaml \\
+  # Supported static Lakehouse publisher profile
+  $(basename "$0") --definition ./definitions/examples/cora-corax-dim.yaml \
     --workspace-id abc123 --lakehouse-id def456
 
-  # With time-series data (lakehouse + eventhouse)
-  $(basename "$0") --definition ./definitions/examples/lakeshore-retail.yaml \\
+  # Experimental time-series binding path
+  $(basename "$0") --definition ./definitions/examples/cora-corax-dim-timeseries.yaml \
     --workspace-id abc123 --lakehouse-id def456 \\
     --eventhouse-id ghi789 --cluster-uri https://xyz.kusto.fabric.microsoft.com
 EOF
@@ -100,6 +109,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cluster-uri)
       CLUSTER_URI="$2"
+      shift 2
+      ;;
+    --id-mapping-output)
+      ID_MAPPING_OUTPUT="$2"
       shift 2
       ;;
     --dry-run)
@@ -188,25 +201,143 @@ workspace_name=$(echo "$workspace_response" | jq -r '.displayName')
 info "Workspace: $workspace_name ($WORKSPACE_ID)"
 
 ####
-# ID Generation Functions
+# ID Reconciliation and Generation
 ####
 
-# Generate unique 64-bit ID (BigInt as string)
-generate_bigint_id() {
-  local timestamp random_part
-  timestamp=$(date +%s%N | cut -c1-13)
-  random_part=$((RANDOM % 10000))
-  printf "%s%04d" "$timestamp" "$random_part"
+deterministic_hash() {
+  local logical_key="$1"
+  printf '%s' "fabric-ontology:$logical_key" | sha256sum | cut -d ' ' -f 1
 }
 
-# Generate UUID v4
+generate_bigint_id() {
+  local logical_key="$1"
+  local hash
+  hash=$(deterministic_hash "$logical_key")
+  printf '%d\n' "0x${hash:0:15}"
+}
+
 generate_uuid() {
-  if command -v uuidgen >/dev/null 2>&1; then
-    uuidgen | tr '[:upper:]' '[:lower:]'
-  else
-    # Fallback using /dev/urandom
-    od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}'
+  local logical_key="$1"
+  local hash
+  hash=$(deterministic_hash "$logical_key")
+  printf '%s-%s-5%s-8%s-%s\n' \
+    "${hash:0:8}" \
+    "${hash:8:4}" \
+    "${hash:13:3}" \
+    "${hash:17:3}" \
+    "${hash:20:12}"
+}
+
+binding_logical_name() {
+  printf '%s|%s|%s|%s\n' "$1" "$2" "$3" "$4"
+}
+
+contextualization_logical_name() {
+  printf '%s|%s|%s|%s|%s\n' "$1" "$2" "$3" "$4" "$5"
+}
+
+decode_item_definition() {
+  local response="$1"
+  local decoded_parts="[]"
+  local part
+
+  if ! jq -e '.definition.parts | type == "array"' <<<"$response" >/dev/null; then
+    return 1
   fi
+
+  while IFS= read -r part; do
+    local path payload payload_type content
+    path=$(jq -er '.path' <<<"$part") || return 1
+    payload=$(jq -er '.payload' <<<"$part") || return 1
+    payload_type=$(jq -er '.payloadType' <<<"$part") || return 1
+    [[ "$payload_type" == "InlineBase64" ]] || return 1
+    content=$(printf '%s' "$payload" | base64 --decode 2>/dev/null) || return 1
+    jq -e . <<<"$content" >/dev/null || return 1
+    decoded_parts=$(jq \
+      --arg path "$path" \
+      --argjson content "$content" \
+      '. += [{path: $path, content: $content}]' <<<"$decoded_parts")
+  done < <(jq -c '.definition.parts[]' <<<"$response")
+
+  printf '%s\n' "$decoded_parts"
+}
+
+load_existing_ids() {
+  local entity_name entity_id property_name property_id
+  while IFS=$'\t' read -r entity_name entity_id; do
+    [[ -n "$entity_name" && -n "$entity_id" ]] || err "Existing entity definition is missing a name or ID"
+    ENTITY_TYPE_IDS[$entity_name]="$entity_id"
+    ENTITY_NAMES_BY_ID[$entity_id]="$entity_name"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^EntityTypes/[0-9]+/definition\\.json$"))
+    | [.content.name, .content.id]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  while IFS=$'\t' read -r entity_name property_name property_id; do
+    [[ -n "$property_name" && -n "$property_id" ]] || err "Existing property definition is missing a name or ID"
+    PROPERTY_IDS["${entity_name}:${property_name}"]="$property_id"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^EntityTypes/[0-9]+/definition\\.json$"))
+    | .content.name as $entityName
+    | (.content.properties[]?, .content.timeseriesProperties[]?)
+    | [$entityName, .name, .id]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  local relationship_name relationship_id
+  while IFS=$'\t' read -r relationship_name relationship_id; do
+    [[ -n "$relationship_name" && -n "$relationship_id" ]] || err "Existing relationship definition is missing a name or ID"
+    RELATIONSHIP_IDS[$relationship_name]="$relationship_id"
+    RELATIONSHIP_NAMES_BY_ID[$relationship_id]="$relationship_name"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^RelationshipTypes/[0-9]+/definition\\.json$"))
+    | [.content.name, .content.id]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  local parent_id binding_id binding_type source_type table_name logical_name
+  while IFS=$'\t' read -r parent_id binding_id binding_type source_type table_name; do
+    entity_name="${ENTITY_NAMES_BY_ID[$parent_id]:-}"
+    [[ -n "$entity_name" && -n "$binding_id" ]] || err "Existing data binding cannot be matched to an entity"
+    logical_name=$(binding_logical_name "$entity_name" "$binding_type" "$source_type" "$table_name")
+    DATA_BINDING_IDS[$logical_name]="$binding_id"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^EntityTypes/[0-9]+/DataBindings/[0-9a-fA-F-]+\\.json$"))
+    | [
+        (.path | capture("^EntityTypes/(?<id>[0-9]+)/").id),
+        .content.id,
+        .content.dataBindingConfiguration.dataBindingType,
+        .content.dataBindingConfiguration.sourceTableProperties.sourceType,
+        .content.dataBindingConfiguration.sourceTableProperties.sourceTableName
+      ]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  local source_columns target_columns
+  while IFS=$'\t' read -r parent_id binding_id source_type table_name source_columns target_columns; do
+    relationship_name="${RELATIONSHIP_NAMES_BY_ID[$parent_id]:-}"
+    [[ -n "$relationship_name" && -n "$binding_id" ]] || err "Existing contextualization cannot be matched to a relationship"
+    logical_name=$(contextualization_logical_name \
+      "$relationship_name" "$source_type" "$table_name" "$source_columns" "$target_columns")
+    CONTEXTUALIZATION_IDS[$logical_name]="$binding_id"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^RelationshipTypes/[0-9]+/Contextualizations/[0-9a-fA-F-]+\\.json$"))
+    | [
+        (.path | capture("^RelationshipTypes/(?<id>[0-9]+)/").id),
+        .content.id,
+        .content.dataBindingTable.sourceType,
+        .content.dataBindingTable.sourceTableName,
+        ([.content.sourceKeyRefBindings[].sourceColumnName] | join(",")),
+        ([.content.targetKeyRefBindings[].sourceColumnName] | join(","))
+      ]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
 }
 
 # Get or generate entity type ID (uses pre-generated ID if available)
@@ -215,7 +346,7 @@ get_entity_type_id() {
   if [[ -z "${ENTITY_TYPE_IDS[$entity_name]:-}" ]]; then
     # This should not happen if pre_generate_ids was called
     warn "Entity type ID not pre-generated for: $entity_name"
-    ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id)
+    ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id "entity:$entity_name")
   fi
   echo "${ENTITY_TYPE_IDS[$entity_name]}"
 }
@@ -228,7 +359,7 @@ get_property_id() {
   if [[ -z "${PROPERTY_IDS[$key]:-}" ]]; then
     # This should not happen if pre_generate_ids was called
     warn "Property ID not pre-generated for: $key"
-    PROPERTY_IDS[$key]=$(generate_bigint_id)
+    PROPERTY_IDS[$key]=$(generate_bigint_id "property:$key")
   fi
   echo "${PROPERTY_IDS[$key]}"
 }
@@ -239,14 +370,16 @@ get_relationship_id() {
   if [[ -z "${RELATIONSHIP_IDS[$rel_name]:-}" ]]; then
     # This should not happen if pre_generate_ids was called
     warn "Relationship ID not pre-generated for: $rel_name"
-    RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id)
+    RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id "relationship:$rel_name")
   fi
   echo "${RELATIONSHIP_IDS[$rel_name]}"
 }
 
 ####
-# JSON Generation Functions
+# Authoritative Ontology Part Generation
 ####
+
+# Ontology definition parts are constructed programmatically with jq in this file.
 
 # Build property JSON object
 build_property_json() {
@@ -366,9 +499,10 @@ build_lakehouse_binding() {
   local entity_name="$1"
   local binding_json="$2"
 
-  local table_name binding_id
+  local table_name binding_id logical_name
   table_name=$(echo "$binding_json" | jq -r '.table')
-  binding_id=$(generate_uuid)
+  logical_name=$(binding_logical_name "$entity_name" "NonTimeSeries" "LakehouseTable" "$table_name")
+  binding_id="${DATA_BINDING_IDS[$logical_name]}"
 
   # Build property bindings from entity properties
   local property_bindings="[]"
@@ -414,10 +548,11 @@ build_eventhouse_binding() {
   local entity_name="$1"
   local binding_json="$2"
 
-  local table_name timestamp_col binding_id
+  local table_name timestamp_col binding_id logical_name
   table_name=$(echo "$binding_json" | jq -r '.table')
   timestamp_col=$(echo "$binding_json" | jq -r '.timestampColumn // "timestamp"')
-  binding_id=$(generate_uuid)
+  logical_name=$(binding_logical_name "$entity_name" "TimeSeries" "KustoTable" "$table_name")
+  binding_id="${DATA_BINDING_IDS[$logical_name]}"
 
   # Build property bindings from timeseries properties
   local property_bindings="[]"
@@ -518,11 +653,14 @@ build_contextualization() {
     return 0
   fi
 
-  ctx_id=$(generate_uuid)
   local table_name from_col to_col
   table_name=$(echo "$binding" | jq -r '.table')
   from_col=$(echo "$binding" | jq -r '.fromColumn')
   to_col=$(echo "$binding" | jq -r '.toColumn')
+  local logical_name
+  logical_name=$(contextualization_logical_name \
+    "$rel_name" "LakehouseTable" "$table_name" "$from_col" "$to_col")
+  ctx_id="${CONTEXTUALIZATION_IDS[$logical_name]}"
 
   # Get source entity key property ID
   local from_key from_key_prop_id
@@ -582,8 +720,9 @@ pre_generate_ids() {
   for i in $(seq 0 $((entity_count - 1))); do
     local entity_name
     entity_name=$(echo "$entity_types" | jq -r ".[$i].name")
-    # Generate and cache the entity type ID
-    ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id)
+    if [[ -z "${ENTITY_TYPE_IDS[$entity_name]:-}" ]]; then
+      ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id "entity:$entity_name")
+    fi
 
     # Pre-generate property IDs for this entity
     local static_props ts_props prop_count
@@ -592,7 +731,9 @@ pre_generate_ids() {
     for j in $(seq 0 $((prop_count - 1))); do
       local prop_name
       prop_name=$(echo "$static_props" | jq -r ".[$j].name")
-      PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id)
+      if [[ -z "${PROPERTY_IDS["${entity_name}:${prop_name}"]:-}" ]]; then
+        PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id "property:${entity_name}:${prop_name}")
+      fi
     done
 
     ts_props=$(get_entity_timeseries_properties "$DEFINITION_FILE" "$entity_name")
@@ -600,8 +741,30 @@ pre_generate_ids() {
     for j in $(seq 0 $((prop_count - 1))); do
       local prop_name
       prop_name=$(echo "$ts_props" | jq -r ".[$j].name")
-      PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id)
+      if [[ -z "${PROPERTY_IDS["${entity_name}:${prop_name}"]:-}" ]]; then
+        PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id "property:${entity_name}:${prop_name}")
+      fi
     done
+
+    local static_binding table_name logical_name
+    static_binding=$(get_entity_static_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$static_binding" && "$static_binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$static_binding")
+      logical_name=$(binding_logical_name "$entity_name" "NonTimeSeries" "LakehouseTable" "$table_name")
+      if [[ -z "${DATA_BINDING_IDS[$logical_name]:-}" ]]; then
+        DATA_BINDING_IDS[$logical_name]=$(generate_uuid "binding:$logical_name")
+      fi
+    fi
+
+    local timeseries_binding
+    timeseries_binding=$(get_entity_timeseries_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$timeseries_binding" && "$timeseries_binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$timeseries_binding")
+      logical_name=$(binding_logical_name "$entity_name" "TimeSeries" "KustoTable" "$table_name")
+      if [[ -z "${DATA_BINDING_IDS[$logical_name]:-}" ]]; then
+        DATA_BINDING_IDS[$logical_name]=$(generate_uuid "binding:$logical_name")
+      fi
+    fi
   done
 
   # Pre-generate relationship IDs
@@ -612,8 +775,90 @@ pre_generate_ids() {
   for i in $(seq 0 $((rel_count - 1))); do
     local rel_name
     rel_name=$(echo "$relationships" | jq -r ".[$i].name")
-    RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id)
+    if [[ -z "${RELATIONSHIP_IDS[$rel_name]:-}" ]]; then
+      RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id "relationship:$rel_name")
+    fi
+
+    local rel_binding table_name from_col to_col logical_name
+    rel_binding=$(echo "$relationships" | jq ".[$i].binding // null")
+    if [[ "$rel_binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$rel_binding")
+      from_col=$(jq -r '.fromColumn' <<<"$rel_binding")
+      to_col=$(jq -r '.toColumn' <<<"$rel_binding")
+      logical_name=$(contextualization_logical_name \
+        "$rel_name" "LakehouseTable" "$table_name" "$from_col" "$to_col")
+      if [[ -z "${CONTEXTUALIZATION_IDS[$logical_name]:-}" ]]; then
+        CONTEXTUALIZATION_IDS[$logical_name]=$(generate_uuid "contextualization:$logical_name")
+      fi
+    fi
   done
+}
+
+write_id_mapping() {
+  local mapping='{"version":1,"terms":[]}'
+  local entity_types entity_count
+  entity_types=$(get_entity_types "$DEFINITION_FILE")
+  entity_count=$(jq 'length' <<<"$entity_types")
+
+  for i in $(seq 0 $((entity_count - 1))); do
+    local entity_name properties property_count property_name property_key
+    entity_name=$(jq -r ".[$i].name" <<<"$entity_types")
+    mapping=$(jq --arg logicalName "$entity_name" --arg id "${ENTITY_TYPE_IDS[$entity_name]}" \
+      '.terms += [{kind: "entity", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+
+    properties=$(jq ".[$i] | [(.properties // [])[], (.timeseriesProperties // [])[]]" <<<"$entity_types")
+    property_count=$(jq 'length' <<<"$properties")
+    for j in $(seq 0 $((property_count - 1))); do
+      property_name=$(jq -r ".[$j].name" <<<"$properties")
+      property_key="${entity_name}:${property_name}"
+      mapping=$(jq \
+        --arg logicalName "${entity_name}.${property_name}" \
+        --arg id "${PROPERTY_IDS[$property_key]}" \
+        '.terms += [{kind: "property", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    done
+
+    local binding table_name logical_name
+    binding=$(get_entity_static_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$binding" && "$binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$binding")
+      logical_name=$(binding_logical_name "$entity_name" "NonTimeSeries" "LakehouseTable" "$table_name")
+      mapping=$(jq --arg logicalName "$logical_name" --arg id "${DATA_BINDING_IDS[$logical_name]}" \
+        '.terms += [{kind: "binding", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    fi
+
+    binding=$(get_entity_timeseries_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$binding" && "$binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$binding")
+      logical_name=$(binding_logical_name "$entity_name" "TimeSeries" "KustoTable" "$table_name")
+      mapping=$(jq --arg logicalName "$logical_name" --arg id "${DATA_BINDING_IDS[$logical_name]}" \
+        '.terms += [{kind: "binding", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    fi
+  done
+
+  local relationships relationship_count
+  relationships=$(get_relationships "$DEFINITION_FILE")
+  relationship_count=$(jq 'length' <<<"$relationships")
+  for i in $(seq 0 $((relationship_count - 1))); do
+    local relationship_name binding table_name from_col to_col logical_name
+    relationship_name=$(jq -r ".[$i].name" <<<"$relationships")
+    mapping=$(jq --arg logicalName "$relationship_name" --arg id "${RELATIONSHIP_IDS[$relationship_name]}" \
+      '.terms += [{kind: "relationship", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+
+    binding=$(jq ".[$i].binding // null" <<<"$relationships")
+    if [[ "$binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$binding")
+      from_col=$(jq -r '.fromColumn' <<<"$binding")
+      to_col=$(jq -r '.toColumn' <<<"$binding")
+      logical_name=$(contextualization_logical_name \
+        "$relationship_name" "LakehouseTable" "$table_name" "$from_col" "$to_col")
+      mapping=$(jq --arg logicalName "$logical_name" --arg id "${CONTEXTUALIZATION_IDS[$logical_name]}" \
+        '.terms += [{kind: "contextualization", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    fi
+  done
+
+  mkdir -p "$(dirname "$ID_MAPPING_OUTPUT")"
+  jq -S '.terms |= sort_by(.kind, .logicalName)' <<<"$mapping" >"$ID_MAPPING_OUTPUT"
+  info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
 }
 
 ####
@@ -731,10 +976,7 @@ create_ontology() {
 
   log "Creating Ontology"
 
-  # Check if ontology already exists
-  local existing_response ontology_id
-  existing_response=$(fabric_api_call "GET" "/workspaces/$WORKSPACE_ID/ontologies" "" "$FABRIC_TOKEN" 2>/dev/null || echo '{"value":[]}')
-  ontology_id=$(echo "$existing_response" | jq -r ".value[] | select(.displayName == \"$ONTOLOGY_NAME\") | .id")
+  local ontology_id="$EXISTING_ONTOLOGY_ID"
 
   if [[ -n "$ontology_id" ]]; then
     info "Ontology '$ONTOLOGY_NAME' already exists: $ontology_id"
@@ -824,8 +1066,24 @@ if [[ "$DRY_RUN" == "true" ]]; then
   warn "DRY-RUN mode enabled"
 fi
 
+# Reconcile IDs from the deployed definition before allocating missing IDs
+existing_response=$(fabric_api_call "GET" "/workspaces/$WORKSPACE_ID/ontologies" "" "$FABRIC_TOKEN" 2>/dev/null || echo '{"value":[]}')
+EXISTING_ONTOLOGY_ID=$(jq -r --arg name "$ONTOLOGY_NAME" '.value[] | select(.displayName == $name) | .id' <<<"$existing_response" | head -n 1)
+
+if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then
+  info "Exporting deployed ontology definition: $EXISTING_ONTOLOGY_ID"
+  if ! existing_definition_response=$(get_item_definition "$WORKSPACE_ID" "$EXISTING_ONTOLOGY_ID" "$FABRIC_TOKEN"); then
+    err "Failed to retrieve deployed ontology definition: $EXISTING_ONTOLOGY_ID"
+  fi
+  if ! EXISTING_DEFINITION_PARTS=$(decode_item_definition "$existing_definition_response"); then
+    err "Failed to decode deployed ontology definition: $EXISTING_ONTOLOGY_ID"
+  fi
+  load_existing_ids
+fi
+
 # Pre-generate all IDs to avoid subshell issues with associative arrays
 pre_generate_ids
+write_id_mapping
 
 # Build ontology definition parts
 DEFINITION_PARTS=$(build_ontology_definition)

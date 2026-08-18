@@ -511,6 +511,15 @@ get_or_create_ontology() {
   get_or_create_item "$workspace_id" "Ontology" "$ontology_name" "$token"
 }
 
+# Get an existing item's definition
+get_item_definition() {
+  local workspace_id="$1"
+  local item_id="$2"
+  local token="${3:-}"
+
+  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/getDefinition" "" "$token"
+}
+
 # Update item definition
 update_item_definition() {
   local workspace_id="$1"

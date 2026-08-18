@@ -32,7 +32,7 @@ dataSources:
     database: "RoboticsOntologyKQL"  # placeholder - auto-created if unspecified
     tables:
       - name: "oven_telemetry"
-        format: "json"
+        format: "csv"
         schema:
           - name: "AssetId"
             type: "string"

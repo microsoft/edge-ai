@@ -1,0 +1,20 @@
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+metadata:
+  name: InvalidDisplayProperty
+dataSources:
+  lakehouse:
+    name: TestLakehouse
+    tables:
+      - name: robot
+entityTypes:
+  - name: Robot
+    key: Id
+    displayName: MissingName
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robot
+    properties:
+      - name: Id
+        type: string

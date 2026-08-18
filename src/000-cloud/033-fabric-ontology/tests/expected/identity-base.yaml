@@ -1,0 +1,49 @@
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+metadata:
+  name: IdentityFixture
+  description: Identity reconciliation fixture
+dataSources:
+  lakehouse:
+    name: IdentityLakehouse
+    tables:
+      - name: robot
+        format: csv
+      - name: robotgroup
+        format: csv
+      - name: robot_robotgroup
+        format: csv
+entityTypes:
+  - name: Robot
+    key: Id
+    displayName: Name
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robot
+    properties:
+      - name: Id
+        type: string
+      - name: Name
+        type: string
+  - name: RobotGroup
+    key: Id
+    displayName: Name
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robotgroup
+    properties:
+      - name: Id
+        type: string
+      - name: Name
+        type: string
+relationships:
+  - name: member
+    from: Robot
+    to: RobotGroup
+    cardinality: many-to-many
+    binding:
+      table: robot_robotgroup
+      fromColumn: FromId
+      toColumn: ToId
