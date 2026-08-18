@@ -36,8 +36,8 @@ export function useTeamsUser() {
     }).catch(() => {
       // Not running inside Teams — use a local fallback
       setUser({
-        userId: 'local-user',
-        displayName: 'Local User',
+        userId: 'dev-user',
+        displayName: 'Dev User',
       })
     })
   }, [])

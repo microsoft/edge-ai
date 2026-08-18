@@ -2,7 +2,7 @@
 title: Full Multi-node Cluster Blueprint
 description: Complete end-to-end deployment of Azure IoT Operations on a multi-node, Arc-enabled Kubernetes cluster providing production-grade high availability edge computing environment
 author: Edge AI Team
-ms.date: 2025-06-07
+ms.date: 2025-07-28
 ms.topic: reference
 keywords:
   - azure iot operations
@@ -151,6 +151,41 @@ aio_features = {
 
 ```
 
+### Network Security Perimeter and the Operations Experience
+
+When `should_use_network_security_perimeter = true`, the Key Vault and Storage Account are only reachable from the deployment client IP and any prefixes listed in `network_security_perimeter_allowed_ip_address_prefixes`. The [operations experience](https://iotoperations.azure.com) web UI calls these same resources on your behalf to manage secrets, the schema registry, and dataflow graphs.
+
+Its outbound IP addresses must also be on the allow list, or the UI returns access errors. See [Troubleshoot the operations experience and private endpoints](https://learn.microsoft.com/azure/iot-operations/troubleshoot/troubleshoot#troubleshoot-the-operations-experience-and-private-endpoints) for the current list.
+
+An operations experience request typically originates from the region closest to you, but Microsoft recommends allowing every published region since the request can come from any of them:
+
+| Operations experience region | IP address       |
+|------------------------------|------------------|
+| `eastus`                     | `48.211.120.64`  |
+| `northeurope`                | `72.145.25.40`   |
+| `westcentralus`              | `128.24.193.24`  |
+| `westeurope`                 | `72.145.132.248` |
+| `westus3`                    | `57.154.126.80`  |
+
+Add the prefixes as `/32` CIDR entries:
+
+```hcl
+should_use_network_security_perimeter = true
+
+network_security_perimeter_allowed_ip_address_prefixes = [
+  "48.211.120.64/32",  # eastus
+  "72.145.25.40/32",   # northeurope
+  "128.24.193.24/32",  # westcentralus
+  "72.145.132.248/32", # westeurope
+  "57.154.126.80/32",  # westus3
+]
+```
+
+> [!NOTE]
+> Microsoft periodically updates these IP addresses. Confirm the current list in the linked troubleshooting article before relying on it for a production deployment.
+
+The Bicep version of this blueprint exposes the same options as `shouldUseNetworkSecurityPerimeter` and `networkSecurityPerimeterAllowedIpAddressPrefixes`; the same allow-list applies.
+
 ## Deploying to Azure Arc for Servers
 
 This blueprint supports deploying to existing Azure Arc-enabled servers instead of creating new Azure VMs. This mode is ideal for production edge deployments where physical or on-premises servers are already registered with Azure Arc.
@@ -264,10 +299,26 @@ Ensure you have the following prerequisites:
 
 Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
 
+## Two-Step Networking and VPN Deployment
+
+When subscription policy blocks public network access on Key Vault or Storage, deploy
+[Only Network VPN Gateway](../only-network-vpn-gateway/README.md) first to create a virtual network and
+Point-to-Site VPN Gateway, connect over VPN, then deploy this blueprint with `use_existing_networking = true`
+to reuse that virtual network. Once connected over VPN, `should_enable_key_vault_public_network_access` and
+`should_enable_storage_public_network_access` can be safely set to `false`. See
+[Layering an Existing Network and VPN Gateway](../README.md#layering-an-existing-network-and-vpn-gateway) in
+the blueprints README for the full walkthrough, including the shared-resource-group and separate-resource-group
+variable combinations.
+
+The Bicep implementation supports the same pattern via `useExistingNetworking` (mirroring the Terraform
+`use_existing_networking` variables above), reusing [Only Network VPN Gateway](../only-network-vpn-gateway/README.md#terraform-and-bicep-implementations)'s
+Bicep counterpart. The Bicep VPN Gateway only supports Azure AD (Microsoft Entra ID) authentication.
+
 ## Related Blueprints
 
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
+- **[Only Network VPN Gateway](../only-network-vpn-gateway/README.md)**: Pre-step deploying an existing network and VPN Gateway for this blueprint to layer on top of
 
 ---
 

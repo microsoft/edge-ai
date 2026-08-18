@@ -46,6 +46,12 @@ Deploys a complete end-to-end environment for Azure IoT Operations on a multi-no
 | shouldEnableStoragePublicNetworkAccess           | Whether to enable public network access for the storage account.                                                                                                                                                                                                                             | `bool`                                               | `true`                                                                                                                                   | no       |
 | shouldUseNetworkSecurityPerimeter                | Whether to secure the Key Vault and Storage Account with a Network Security Perimeter.                                                                                                                                                                                                       | `bool`                                               | `false`                                                                                                                                  | no       |
 | networkSecurityPerimeterAllowedIpAddressPrefixes | IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter. Required when shouldUseNetworkSecurityPerimeter is true.                                                                                                                                                          | `string[]`                                           | []                                                                                                                                       | no       |
+| useExistingNetworking                            | Whether to reference an existing virtual network, subnet, and network security group (for example, from the only-network-vpn-gateway blueprint) instead of creating new ones.                                                                                                                | `bool`                                               | `false`                                                                                                                                  | no       |
+| existingNetworkingResourceGroupName              | Resource group name containing the existing networking resources when useExistingNetworking is true. Otherwise, resourceGroupName (supports the common case of Step 1 and Step 2 sharing one resource group).                                                                                | `string`                                             | n/a                                                                                                                                      | no       |
+| virtualNetworkName                               | Name of the virtual network to create or reference. Otherwise, computed from common naming.                                                                                                                                                                                                  | `string`                                             | n/a                                                                                                                                      | no       |
+| subnetName                                       | Name of the subnet to create or reference. Otherwise, computed from common naming.                                                                                                                                                                                                           | `string`                                             | n/a                                                                                                                                      | no       |
+| networkSecurityGroupName                         | Name of the network security group to create or reference. Otherwise, computed from common naming.                                                                                                                                                                                           | `string`                                             | n/a                                                                                                                                      | no       |
+| vpnGatewayName                                   | Name of an existing VPN Gateway to look up for informational outputs when useExistingNetworking is true. Otherwise, computed from common naming.                                                                                                                                             | `string`                                             | n/a                                                                                                                                      | no       |
 | subnetAddressPrefixAcr                           | Address prefix for the ACR subnet.                                                                                                                                                                                                                                                           | `string`                                             | 10.0.4.0/24                                                                                                                              | no       |
 | subnetAddressPrefixAks                           | Address prefix for the AKS subnet.                                                                                                                                                                                                                                                           | `string`                                             | 10.0.5.0/24                                                                                                                              | no       |
 | subnetAddressPrefixAksPod                        | Address prefix for the AKS pod subnet.                                                                                                                                                                                                                                                       | `string`                                             | 10.0.6.0/24                                                                                                                              | no       |
@@ -157,57 +163,54 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 #### Parameters for cloudSecurityIdentity
 
-| Name                                             | Description                                                                                            | Type                               | Default                                                                                                                          | Required |
-|:-------------------------------------------------|:-------------------------------------------------------------------------------------------------------|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|:---------|
-| common                                           | The common component configuration.                                                                    | `[_1.Common](#user-defined-types)` | n/a                                                                                                                              | yes      |
-| shouldCreateArcOnboardingUami                    | Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.              | `bool`                             | `true`                                                                                                                           | no       |
-| shouldCreateKeyVault                             | Whether or not to create a new Key Vault for the Secret Sync Extension.                                | `bool`                             | `true`                                                                                                                           | no       |
-| keyVaultName                                     | The name of the Key Vault.                                                                             | `string`                           | [format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
-| keyVaultResourceGroupName                        | The name for the Resource Group for the Key Vault.                                                     | `string`                           | [resourceGroup().name]                                                                                                           | no       |
-| shouldAssignAdminUserRole                        | Whether or not to create a role assignment for an admin user.                                          | `bool`                             | `true`                                                                                                                           | no       |
-| adminUserObjectId                                | The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role.             | `string`                           | [deployer().objectId]                                                                                                            | no       |
-| shouldCreateKeyVaultPrivateEndpoint              | Whether to create a private endpoint for the Key Vault.                                                | `bool`                             | `false`                                                                                                                          | no       |
-| keyVaultPrivateEndpointSubnetId                  | Subnet resource ID for the Key Vault private endpoint.                                                 | `string`                           | n/a                                                                                                                              | no       |
-| keyVaultVirtualNetworkId                         | Virtual network resource ID for the Key Vault private DNS link.                                        | `string`                           | n/a                                                                                                                              | no       |
-| shouldEnableKeyVaultPublicNetworkAccess          | Whether to enable public network access on the Key Vault.                                              | `bool`                             | `true`                                                                                                                           | no       |
-| shouldUseNetworkSecurityPerimeter                | Whether to create a Network Security Perimeter for Key Vault and Storage Account access.               | `bool`                             | `false`                                                                                                                          | no       |
-| networkSecurityPerimeterAllowedIpAddressPrefixes | IPv4 or IPv6 CIDR prefixes allowed to access resources associated with the Network Security Perimeter. | `array`                            | []                                                                                                                               | no       |
-| telemetry_opt_out                                | Whether to opt out of telemetry data collection.                                                       | `bool`                             | `false`                                                                                                                          | no       |
+| Name                                      | Description                                                                                | Type                               | Default                                                                                                                          | Required |
+|:------------------------------------------|:-------------------------------------------------------------------------------------------|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|:---------|
+| common                                    | The common component configuration.                                                        | `[_1.Common](#user-defined-types)` | n/a                                                                                                                              | yes      |
+| shouldCreateArcOnboardingUami             | Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.  | `bool`                             | `true`                                                                                                                           | no       |
+| shouldCreateKeyVault                      | Whether or not to create a new Key Vault for the Secret Sync Extension.                    | `bool`                             | `true`                                                                                                                           | no       |
+| keyVaultName                              | The name of the Key Vault.                                                                 | `string`                           | [format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
+| keyVaultResourceGroupName                 | The name for the Resource Group for the Key Vault.                                         | `string`                           | [resourceGroup().name]                                                                                                           | no       |
+| shouldAssignAdminUserRole                 | Whether or not to create a role assignment for an admin user.                              | `bool`                             | `true`                                                                                                                           | no       |
+| adminUserObjectId                         | The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role. | `string`                           | [deployer().objectId]                                                                                                            | no       |
+| shouldCreateKeyVaultPrivateEndpoint       | Whether to create a private endpoint for the Key Vault.                                    | `bool`                             | `false`                                                                                                                          | no       |
+| keyVaultPrivateEndpointSubnetId           | Subnet resource ID for the Key Vault private endpoint.                                     | `string`                           | n/a                                                                                                                              | no       |
+| keyVaultVirtualNetworkId                  | Virtual network resource ID for the Key Vault private DNS link.                            | `string`                           | n/a                                                                                                                              | no       |
+| shouldEnableKeyVaultPublicNetworkAccess   | Whether to enable public network access on the Key Vault.                                  | `bool`                             | `true`                                                                                                                           | no       |
+| networkSecurityPerimeterName              | Name of the Network Security Perimeter to associate the Key Vault with.                    | `string`                           | n/a                                                                                                                              | no       |
+| networkSecurityPerimeterResourceGroupName | Resource group containing the Network Security Perimeter.                                  | `string`                           | n/a                                                                                                                              | no       |
+| networkSecurityPerimeterProfileName       | Name of the Network Security Perimeter profile to associate the Key Vault with.            | `string`                           | n/a                                                                                                                              | no       |
+| telemetry_opt_out                         | Whether to opt out of telemetry data collection.                                           | `bool`                             | `false`                                                                                                                          | no       |
 
 #### Resources for cloudSecurityIdentity
 
 | Name                                        | Type                              | API Version |
 |:--------------------------------------------|:----------------------------------|:------------|
 | identity                                    | `Microsoft.Resources/deployments` | 2025-04-01  |
-| networkSecurityPerimeter                    | `Microsoft.Resources/deployments` | 2025-04-01  |
 | keyVault                                    | `Microsoft.Resources/deployments` | 2025-04-01  |
 | keyVaultNetworkSecurityPerimeterAssociation | `Microsoft.Resources/deployments` | 2025-04-01  |
 
 #### Outputs for cloudSecurityIdentity
 
-| Name                                      | Type     | Description                                                                                           |
-|:------------------------------------------|:---------|:------------------------------------------------------------------------------------------------------|
-| keyVaultName                              | `string` | The name of the Secret Store Extension Key Vault.                                                     |
-| keyVaultId                                | `string` | The resource ID of the Secret Store Extension Key Vault.                                              |
-| keyVaultPrivateEndpointId                 | `string` | The Key Vault private endpoint ID when created.                                                       |
-| keyVaultPrivateEndpointName               | `string` | The Key Vault private endpoint name when created.                                                     |
-| keyVaultPrivateEndpointIp                 | `string` | The Key Vault private endpoint IP address when created.                                               |
-| keyVaultPrivateDnsZoneId                  | `string` | The Key Vault private DNS zone ID when created.                                                       |
-| keyVaultPrivateDnsZoneName                | `string` | The Key Vault private DNS zone name when created.                                                     |
-| networkSecurityPerimeterId                | `string` | The resource ID of the Network Security Perimeter when created.                                       |
-| networkSecurityPerimeterResourceGroupName | `string` | The resource group containing the Network Security Perimeter when created.                            |
-| networkSecurityPerimeterProfileId         | `string` | The resource ID of the Network Security Perimeter profile when created.                               |
-| sseIdentityName                           | `string` | The Secret Store Extension User Assigned Managed Identity name.                                       |
-| sseIdentityId                             | `string` | The Secret Store Extension User Assigned Managed Identity ID.                                         |
-| sseIdentityPrincipalId                    | `string` | The Secret Store Extension User Assigned Managed Identity Principal ID.                               |
-| aioIdentityName                           | `string` | The Azure IoT Operations User Assigned Managed Identity name.                                         |
-| aioIdentityId                             | `string` | The Azure IoT Operations User Assigned Managed Identity ID.                                           |
-| aioIdentityPrincipalId                    | `string` | The Azure IoT Operations User Assigned Managed Identity Principal ID.                                 |
-| deployIdentityName                        | `string` | The Deployment User Assigned Managed Identity name.                                                   |
-| deployIdentityId                          | `string` | The Deployment User Assigned Managed Identity ID.                                                     |
-| deployIdentityPrincipalId                 | `string` | The Deployment User Assigned Managed Identity Principal ID.                                           |
-| arcOnboardingIdentityId                   | `string` | The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.   |
-| arcOnboardingIdentityName                 | `string` | The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions. |
+| Name                        | Type     | Description                                                                                           |
+|:----------------------------|:---------|:------------------------------------------------------------------------------------------------------|
+| keyVaultName                | `string` | The name of the Secret Store Extension Key Vault.                                                     |
+| keyVaultId                  | `string` | The resource ID of the Secret Store Extension Key Vault.                                              |
+| keyVaultPrivateEndpointId   | `string` | The Key Vault private endpoint ID when created.                                                       |
+| keyVaultPrivateEndpointName | `string` | The Key Vault private endpoint name when created.                                                     |
+| keyVaultPrivateEndpointIp   | `string` | The Key Vault private endpoint IP address when created.                                               |
+| keyVaultPrivateDnsZoneId    | `string` | The Key Vault private DNS zone ID when created.                                                       |
+| keyVaultPrivateDnsZoneName  | `string` | The Key Vault private DNS zone name when created.                                                     |
+| sseIdentityName             | `string` | The Secret Store Extension User Assigned Managed Identity name.                                       |
+| sseIdentityId               | `string` | The Secret Store Extension User Assigned Managed Identity ID.                                         |
+| sseIdentityPrincipalId      | `string` | The Secret Store Extension User Assigned Managed Identity Principal ID.                               |
+| aioIdentityName             | `string` | The Azure IoT Operations User Assigned Managed Identity name.                                         |
+| aioIdentityId               | `string` | The Azure IoT Operations User Assigned Managed Identity ID.                                           |
+| aioIdentityPrincipalId      | `string` | The Azure IoT Operations User Assigned Managed Identity Principal ID.                                 |
+| deployIdentityName          | `string` | The Deployment User Assigned Managed Identity name.                                                   |
+| deployIdentityId            | `string` | The Deployment User Assigned Managed Identity ID.                                                     |
+| deployIdentityPrincipalId   | `string` | The Deployment User Assigned Managed Identity Principal ID.                                           |
+| arcOnboardingIdentityId     | `string` | The User Assigned Managed Identity ID with "Kubernetes Cluster - Azure Arc Onboarding" permissions.   |
+| arcOnboardingIdentityName   | `string` | The User Assigned Managed Identity name with "Kubernetes Cluster - Azure Arc Onboarding" permissions. |
 
 ### cloudObservability
 
@@ -433,43 +436,50 @@ Creates virtual network, subnet, and network security group resources for Azure 
 
 #### Parameters for cloudNetworking
 
-| Name                         | Description                                             | Type                                              | Default                                         | Required |
-|:-----------------------------|:--------------------------------------------------------|:--------------------------------------------------|:------------------------------------------------|:---------|
-| common                       | The common component configuration.                     | `[_2.Common](#user-defined-types)`                | n/a                                             | yes      |
-| networkingConfig             | Networking configuration settings.                      | `[_1.NetworkingConfig](#user-defined-types)`      | [variables('_1.networkingConfigDefaults')]      | no       |
-| natGatewayConfig             | NAT Gateway configuration settings.                     | `[_1.NatGatewayConfig](#user-defined-types)`      | [variables('_1.natGatewayConfigDefaults')]      | no       |
-| privateResolverConfig        | Private DNS Resolver configuration settings.            | `[_1.PrivateResolverConfig](#user-defined-types)` | [variables('_1.privateResolverConfigDefaults')] | no       |
-| defaultOutboundAccessEnabled | Whether default outbound access is enabled for subnets. | `bool`                                            | `false`                                         | no       |
-| telemetry_opt_out            | Whether to opt out of telemetry data collection.        | `bool`                                            | `false`                                         | no       |
+| Name                                             | Description                                                                                                                                     | Type                                              | Default                                         | Required |
+|:-------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|:------------------------------------------------|:---------|
+| common                                           | The common component configuration.                                                                                                             | `[_2.Common](#user-defined-types)`                | n/a                                             | yes      |
+| networkingConfig                                 | Networking configuration settings.                                                                                                              | `[_1.NetworkingConfig](#user-defined-types)`      | [variables('_1.networkingConfigDefaults')]      | no       |
+| natGatewayConfig                                 | NAT Gateway configuration settings.                                                                                                             | `[_1.NatGatewayConfig](#user-defined-types)`      | [variables('_1.natGatewayConfigDefaults')]      | no       |
+| privateResolverConfig                            | Private DNS Resolver configuration settings.                                                                                                    | `[_1.PrivateResolverConfig](#user-defined-types)` | [variables('_1.privateResolverConfigDefaults')] | no       |
+| defaultOutboundAccessEnabled                     | Whether default outbound access is enabled for subnets.                                                                                         | `bool`                                            | `false`                                         | no       |
+| shouldUseNetworkSecurityPerimeter                | Whether to create a Network Security Perimeter that allows the detected deployment client IP for supported PaaS resources.                      | `bool`                                            | `false`                                         | no       |
+| networkSecurityPerimeterAllowedIpAddressPrefixes | Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically. | `array`                                           | []                                              | no       |
+| telemetry_opt_out                                | Whether to opt out of telemetry data collection.                                                                                                | `bool`                                            | `false`                                         | no       |
+| useExistingVirtualNetwork                        | Whether to reference an existing virtual network, subnet, and network security group instead of creating new ones.                              | `bool`                                            | `false`                                         | no       |
+| existingResourceGroupName                        | Resource group name containing the existing virtual network when useExistingVirtualNetwork is true. Otherwise, the deployment resource group.   | `string`                                          | n/a                                             | no       |
+| virtualNetworkName                               | Name of the virtual network to create or reference. Otherwise, computed from common naming.                                                     | `string`                                          | n/a                                             | no       |
+| subnetName                                       | Name of the subnet to create or reference. Otherwise, computed from common naming.                                                              | `string`                                          | n/a                                             | no       |
+| networkSecurityGroupName                         | Name of the network security group to create or reference. Otherwise, computed from common naming.                                              | `string`                                          | n/a                                             | no       |
 
 #### Resources for cloudNetworking
 
-| Name            | Type                                        | API Version |
-|:----------------|:--------------------------------------------|:------------|
-| virtualNetwork  | `Microsoft.Network/virtualNetworks`         | 2025-01-01  |
-| defaultSubnet   | `Microsoft.Network/virtualNetworks/subnets` | 2025-01-01  |
-| natGateway      | `Microsoft.Resources/deployments`           | 2025-04-01  |
-| privateResolver | `Microsoft.Resources/deployments`           | 2025-04-01  |
+| Name                     | Type                              | API Version |
+|:-------------------------|:----------------------------------|:------------|
+| networkSecurityPerimeter | `Microsoft.Resources/deployments` | 2025-04-01  |
 
 #### Outputs for cloudNetworking
 
-| Name                         | Type     | Description                                                               |
-|:-----------------------------|:---------|:--------------------------------------------------------------------------|
-| networkSecurityGroupId       | `string` | The ID of the created network security group.                             |
-| networkSecurityGroupName     | `string` | The name of the created network security group.                           |
-| subnetId                     | `string` | The ID of the created subnet.                                             |
-| subnetName                   | `string` | The name of the created subnet.                                           |
-| virtualNetworkId             | `string` | The ID of the created virtual network.                                    |
-| virtualNetworkName           | `string` | The name of the created virtual network.                                  |
-| natGatewayId                 | `string` | The ID of the NAT Gateway (if enabled).                                   |
-| natGatewayName               | `string` | The name of the NAT Gateway (if enabled).                                 |
-| natGatewayPublicIps          | `array`  | The public IP addresses associated with NAT Gateway (if enabled).         |
-| privateResolverId            | `string` | The Private DNS Resolver ID (if enabled).                                 |
-| privateResolverName          | `string` | The Private DNS Resolver name (if enabled).                               |
-| dnsServerIp                  | `string` | The DNS server IP address from Private Resolver (if enabled).             |
-| defaultOutboundAccessEnabled | `bool`   | Whether default outbound access remains enabled for the shared subnet(s). |
-| subnetAddressPrefix          | `string` | The address prefix allocated to the default subnet.                       |
-| virtualNetworkAddressPrefix  | `string` | The address prefix allocated to the virtual network.                      |
+| Name                                      | Type     | Description                                                                |
+|:------------------------------------------|:---------|:---------------------------------------------------------------------------|
+| networkSecurityGroupId                    | `string` | The ID of the created network security group.                              |
+| networkSecurityGroupName                  | `string` | The name of the created network security group.                            |
+| subnetId                                  | `string` | The ID of the created subnet.                                              |
+| subnetName                                | `string` | The name of the created subnet.                                            |
+| virtualNetworkId                          | `string` | The ID of the created virtual network.                                     |
+| virtualNetworkName                        | `string` | The name of the created virtual network.                                   |
+| natGatewayId                              | `string` | The ID of the NAT Gateway (if enabled).                                    |
+| natGatewayName                            | `string` | The name of the NAT Gateway (if enabled).                                  |
+| natGatewayPublicIps                       | `array`  | The public IP addresses associated with NAT Gateway (if enabled).          |
+| privateResolverId                         | `string` | The Private DNS Resolver ID (if enabled).                                  |
+| privateResolverName                       | `string` | The Private DNS Resolver name (if enabled).                                |
+| dnsServerIp                               | `string` | The DNS server IP address from Private Resolver (if enabled).              |
+| defaultOutboundAccessEnabled              | `bool`   | Whether default outbound access remains enabled for the shared subnet(s).  |
+| subnetAddressPrefix                       | `string` | The address prefix allocated to the default subnet.                        |
+| virtualNetworkAddressPrefix               | `string` | The address prefix allocated to the virtual network.                       |
+| networkSecurityPerimeterId                | `string` | The resource ID of the Network Security Perimeter when created.            |
+| networkSecurityPerimeterResourceGroupName | `string` | The resource group containing the Network Security Perimeter when created. |
+| networkSecurityPerimeterProfileId         | `string` | The resource ID of the Network Security Perimeter profile when created.    |
 
 ### cloudVmHost
 
@@ -2200,33 +2210,33 @@ Common settings for the components.
 
 ## Outputs
 
-| Name                    | Type     | Description                                                                      |
-|:------------------------|:---------|:---------------------------------------------------------------------------------|
-| azureIotOperations      | `object` | Azure IoT Operations deployment details.                                         |
-| assets                  | `object` | IoT asset resources.                                                             |
-| clusterConnection       | `object` | Commands and information to connect to the deployed cluster.                     |
-| containerRegistry       | `object` | Azure Container Registry resources.                                              |
-| acrNetworkPosture       | `object` | Azure Container Registry network posture metadata.                               |
-| kubernetes              | `object` | Azure Kubernetes Service resources.                                              |
-| dataStorage             | `object` | Data storage resources.                                                          |
-| deploymentSummary       | `object` | Summary of the deployment configuration.                                         |
-| messaging               | `object` | Cloud messaging resources.                                                       |
-| notification            | `object` | Alert notification pipeline resources.                                           |
-| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                                         |
-| dataflows               | `array`  | Map of dataflow resources by name.                                               |
-| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                                      |
-| aiFoundry               | `object` | Azure AI Foundry account resources.                                              |
-| aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                              |
-| aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                              |
-| vmHost                  | `array`  | Virtual machine host resources. (Empty when targeting pre-existing Arc machines) |
-| arcConnectedCluster     | `object` | Azure Arc connected cluster resources.                                           |
-| observability           | `object` | Monitoring and observability resources.                                          |
-| securityIdentity        | `object` | Security and identity resources.                                                 |
-| natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.                    |
-| natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name.               |
-| vpnGateway              | `object` | VPN Gateway configuration when enabled.                                          |
-| vpnGatewayPublicIp      | `string` | VPN Gateway public IP address for client configuration.                          |
-| vpnClientConnectionInfo | `object` | VPN client connection information including download URLs.                       |
-| privateResolverDnsIp    | `string` | Private Resolver DNS IP address for VPN client configuration.                    |
+| Name                    | Type     | Description                                                                                                                   |
+|:------------------------|:---------|:------------------------------------------------------------------------------------------------------------------------------|
+| azureIotOperations      | `object` | Azure IoT Operations deployment details.                                                                                      |
+| assets                  | `object` | IoT asset resources.                                                                                                          |
+| clusterConnection       | `object` | Commands and information to connect to the deployed cluster.                                                                  |
+| containerRegistry       | `object` | Azure Container Registry resources.                                                                                           |
+| acrNetworkPosture       | `object` | Azure Container Registry network posture metadata.                                                                            |
+| kubernetes              | `object` | Azure Kubernetes Service resources.                                                                                           |
+| dataStorage             | `object` | Data storage resources.                                                                                                       |
+| deploymentSummary       | `object` | Summary of the deployment configuration.                                                                                      |
+| messaging               | `object` | Cloud messaging resources.                                                                                                    |
+| notification            | `object` | Alert notification pipeline resources.                                                                                        |
+| dataflowGraphs          | `array`  | Map of dataflow graph resources by name.                                                                                      |
+| dataflows               | `array`  | Map of dataflow resources by name.                                                                                            |
+| dataflowEndpoints       | `array`  | Map of dataflow endpoint resources by name.                                                                                   |
+| aiFoundry               | `object` | Azure AI Foundry account resources.                                                                                           |
+| aiFoundryProjects       | `array`  | Azure AI Foundry project resources.                                                                                           |
+| aiFoundryDeployments    | `array`  | Azure AI Foundry model deployments.                                                                                           |
+| vmHost                  | `array`  | Virtual machine host resources. (Empty when targeting pre-existing Arc machines)                                              |
+| arcConnectedCluster     | `object` | Azure Arc connected cluster resources.                                                                                        |
+| observability           | `object` | Monitoring and observability resources.                                                                                       |
+| securityIdentity        | `object` | Security and identity resources.                                                                                              |
+| natGateway              | `object` | NAT gateway resource when managed outbound access is enabled.                                                                 |
+| natGatewayPublicIps     | `array`  | Public IP resources associated with the NAT gateway keyed by name.                                                            |
+| vpnGateway              | `object` | VPN Gateway configuration when enabled, or informational details for an existing gateway when useExistingNetworking is true.  |
+| vpnGatewayPublicIp      | `string` | VPN Gateway public IP address for client configuration, or the existing gateway public IP when useExistingNetworking is true. |
+| vpnClientConnectionInfo | `object` | VPN client connection information including download URLs.                                                                    |
+| privateResolverDnsIp    | `string` | Private Resolver DNS IP address for VPN client configuration.                                                                 |
 
 <!-- END_BICEP_DOCS -->

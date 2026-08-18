@@ -19,6 +19,11 @@ imagePullSecrets:
 nameOverride: ""
 fullnameOverride: ""
 
+# Externally managed Azure Workload Identity ServiceAccount. Leave name empty
+# to render no ServiceAccount binding or workload identity pod label.
+serviceAccount:
+  name: ""
+
 # Dedicated namespace scopes RBAC, NetworkPolicies, and quotas to this workload.
 # Operators may override via --set namespace=<value>.
 namespace: chat-with-your-factory
@@ -39,6 +44,14 @@ resources:
 env:
   AGENT_BACKEND: "foundry"
   PORT: "3978"
+  # Runtime VOICE_PROVIDER=voicelive requires an image built with the Docker
+  # build argument SPEECH_PROVIDER=voicelive; SPEECH_PROVIDER is build-time only.
+  VOICE_PROVIDER: "azure"
+  # Required deployment override when VOICE_PROVIDER=voicelive. The default
+  # gpt-realtime model requires a supported Voice Live region such as East US 2.
+  AZURE_VOICELIVE_RESOURCE: ""
+  AZURE_VOICELIVE_MODEL: "gpt-realtime"
+  AZURE_VOICELIVE_API_VERSION: "2026-04-10"
   # Foundry backend (AGENT_BACKEND=foundry): point at the 085-ai-foundry component.
   # FOUNDRY_ENDPOINT is the Foundry project endpoint; FOUNDRY_AGENT_ID is the deployed agent.
   # Create the agent reproducibly with `npm run provision:agent` (needs FOUNDRY_MODEL_DEPLOYMENT).
@@ -72,3 +85,5 @@ env:
 secrets: {}
   # DIRECT_LINE_SECRET: "<copilot-studio-web-channel-secret>"
   # TEAMS_APP_CLIENT_SECRET: "<client-secret-from-app-registration>"
+  # Required outside development; inject externally with no committed default.
+  # RESUME_TOKEN_SECRET: "<externally-injected-resume-token-secret>"

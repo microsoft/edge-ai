@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.51.0"
+      version = ">= 4.51.0, < 5.0.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
@@ -14,7 +14,7 @@ terraform {
     }
     fabric = {
       source  = "microsoft/fabric"
-      version = "1.3.0"
+      version = "1.10.0"
     }
     external = {
       source  = "hashicorp/external"

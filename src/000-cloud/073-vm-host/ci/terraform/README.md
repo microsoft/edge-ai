@@ -3,20 +3,20 @@
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azurerm   | >= 4.51.0        |
-| local     | >= 2.5.0         |
-| random    | >= 3.6.0         |
-| tls       | >= 4.0.0         |
+| Name      | Version            |
+|-----------|--------------------|
+| terraform | >= 1.12.0, < 2.0   |
+| azurerm   | >= 4.51.0, < 5.0.0 |
+| local     | >= 2.5.0           |
+| random    | >= 3.6.0           |
+| tls       | >= 4.0.0           |
 
 ## Providers
 
-| Name      | Version   |
-|-----------|-----------|
-| azurerm   | >= 4.51.0 |
-| terraform | n/a       |
+| Name      | Version            |
+|-----------|--------------------|
+| azurerm   | >= 4.51.0, < 5.0.0 |
+| terraform | n/a                |
 
 ## Resources
 
