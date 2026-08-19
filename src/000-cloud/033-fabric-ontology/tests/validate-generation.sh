@@ -52,6 +52,41 @@ for definition in valid-static identity-base identity-additive; do
 done
 echo "[ OK    ]: Static and identity definition regressions pass"
 
+invalid_definitions=(
+  invalid-display-property
+  invalid-duplicate-names
+  invalid-incomplete-timeseries-binding
+  invalid-missing-endpoint-column
+  invalid-name
+  invalid-unsupported-type
+)
+for definition in "${invalid_definitions[@]}"; do
+  if "scripts/validate-definition.sh" \
+    --definition "tests/definitions/${definition}.yaml" \
+    >"$TEST_ROOT/${definition}.stdout" 2>"$TEST_ROOT/${definition}.stderr"; then
+    echo "[ ERROR ]: Invalid definition unexpectedly passed: $definition" >&2
+    exit 1
+  fi
+done
+echo "[ OK    ]: All six invalid definitions return nonzero"
+
+yq -o=json '.dataSources.lakehouse.tables // []' \
+  "definitions/examples/cora-corax-dim.yaml" \
+  | jq -r '.[].name' \
+  | LC_ALL=C sort >"$TEST_ROOT/declared-seed-tables.txt"
+
+for seed_file in fabric-ontology-dim/seed/*.csv; do
+  seed_name="${seed_file##*/}"
+  printf '%s\n' "${seed_name%.csv}"
+done | LC_ALL=C sort >"$TEST_ROOT/actual-seed-tables.txt"
+
+declared_seed_count=$(wc -l <"$TEST_ROOT/declared-seed-tables.txt")
+actual_seed_count=$(wc -l <"$TEST_ROOT/actual-seed-tables.txt")
+[[ "$declared_seed_count" -eq 19 ]]
+[[ "$actual_seed_count" -eq 19 ]]
+diff -u "$TEST_ROOT/declared-seed-tables.txt" "$TEST_ROOT/actual-seed-tables.txt"
+echo "[ OK    ]: Exact-case Lakehouse seed inventory matches (19 declared, 19 files)"
+
 if "scripts/deploy.sh" \
   --definition "tests/definitions/valid-static.yaml" \
   --workspace-id "publisher-workspace-id" \
@@ -205,6 +240,36 @@ jq -e '
 [[ $(cat "$TEST_ROOT/mutation-calls.txt") == "update" ]]
 grep -F "Graph readiness was not checked" "$TEST_ROOT/ontology.stderr" >/dev/null
 echo "[ OK    ]: New-item rollback precedes update and publication separates Graph readiness"
+
+: >"$TEST_ROOT/mutation-calls.txt"
+MOCK_EXISTING_ONTOLOGY=true \
+  MOCK_DEFINITION_STATE="$TEST_ROOT/published-definition.json" \
+  MOCK_DIFF_OUTPUT="$TEST_ROOT/unchanged-semantic-diff.json" \
+  MOCK_ROLLBACK_OUTPUT="$TEST_ROOT/unchanged-rollback.json" \
+  MOCK_MUTATION_CALLS="$TEST_ROOT/mutation-calls.txt" \
+  ID_MAPPING_OUTPUT="$TEST_ROOT/unchanged-id-mapping.json" \
+  "$TEST_ROOT/ontology-scripts/deploy-ontology.sh" \
+  --definition "$COMPONENT_DIR/tests/definitions/valid-static.yaml" \
+  --workspace-id "publisher-workspace-id" \
+  --lakehouse-id "publisher-lakehouse-id" \
+  --output "$TEST_ROOT/unchanged-publication.json" \
+  --rollback-output "$TEST_ROOT/unchanged-rollback.json" \
+  --diff-output "$TEST_ROOT/unchanged-semantic-diff.json" \
+  >"$TEST_ROOT/unchanged.stdout" 2>"$TEST_ROOT/unchanged.stderr"
+
+jq -e '.counts == {added: 0, removed: 0, changed: 0}' \
+  "$TEST_ROOT/unchanged-semantic-diff.json" >/dev/null
+jq -e '.terms | group_by([.kind, .logicalName]) | all(length == 1)' \
+  "$TEST_ROOT/id-mapping.json" >/dev/null
+jq -e '.terms | group_by([.kind, .logicalName]) | all(length == 1)' \
+  "$TEST_ROOT/unchanged-id-mapping.json" >/dev/null
+diff -u \
+  <(jq -S '.terms | map({key: ([.kind, .logicalName] | join("/")), value: .id}) | from_entries' \
+    "$TEST_ROOT/id-mapping.json") \
+  <(jq -S '.terms | map({key: ([.kind, .logicalName] | join("/")), value: .id}) | from_entries' \
+    "$TEST_ROOT/unchanged-id-mapping.json")
+[[ $(cat "$TEST_ROOT/mutation-calls.txt") == "update" ]]
+echo "[ OK    ]: Unchanged redeployment preserves every logical term ID"
 
 jq '
   .definition.parts = (
