@@ -1,5 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { UseSpeechRecognitionResult } from './useSpeechRecognition.js'
+import { cleanLogging } from '../../shared/logging.js'
+import {
+  calculatePlaybackSchedule,
+  clearPlaybackSources,
+  decodeBase64Pcm16,
+} from '../audio/pcmPlayback.js'
 
 /**
  * Browser-side debug gate. Audio device labels and IDs are PII-adjacent
@@ -47,6 +53,8 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
   const audioCtxRef = useRef<AudioContext | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const workletRef = useRef<AudioWorkletNode | null>(null)
+  const nextPlaybackTimeRef = useRef(0)
+  const playbackSourcesRef = useRef(new Set<AudioBufferSourceNode>())
   const onFinalResultRef = useRef(options.onFinalResult)
   onFinalResultRef.current = options.onFinalResult
 
@@ -63,6 +71,12 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
     typeof WebSocket !== 'undefined' &&
     typeof AudioWorkletNode !== 'undefined'
 
+  const clearPlayback = useCallback(() => {
+    clearPlaybackSources(playbackSourcesRef.current, () => {
+      nextPlaybackTimeRef.current = 0
+    })
+  }, [])
+
   const cleanup = useCallback(() => {
     const worklet = workletRef.current
     workletRef.current = null
@@ -72,9 +86,11 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
     streamRef.current = null
     stream?.getTracks().forEach(t => t.stop())
 
+    clearPlayback()
+
     const audioCtx = audioCtxRef.current
     audioCtxRef.current = null
-    if (audioCtx?.state !== 'closed') {
+    if (audioCtx && audioCtx.state !== 'closed') {
       audioCtx.close().catch(() => {})
     }
 
@@ -83,7 +99,7 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
     if (ws?.readyState === WebSocket.OPEN || ws?.readyState === WebSocket.CONNECTING) {
       ws.close()
     }
-  }, [])
+  }, [clearPlayback])
 
   // Cleanup on unmount
   useEffect(() => cleanup, [cleanup])
@@ -118,7 +134,10 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
       const devices = await navigator.mediaDevices.enumerateDevices()
       const audioInputs = devices.filter(d => d.kind === 'audioinput')
       if (debugEnabled()) {
-        console.log('[VoiceLive] Audio input devices:', audioInputs.map(d => `${d.label} (${d.deviceId.slice(0, 8)})`))
+        cleanLogging.Log('VoiceLive', 'Audio input devices', audioInputs.map(device => ({
+          label: device.label,
+          deviceIdPrefix: device.deviceId.slice(0, 8),
+        })))
       }
 
       // Prefer a non-default, non-communications device if one exists
@@ -138,7 +157,7 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
       if (preferred) {
         audioConstraints.deviceId = { exact: preferred.deviceId }
         if (debugEnabled()) {
-          console.log(`[VoiceLive] Using mic: ${preferred.label}`)
+          cleanLogging.Log('VoiceLive', 'Using microphone', { label: preferred.label })
         }
       }
 
@@ -151,7 +170,7 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
         // exact deviceId to let the browser pick the current default input.
         if (err instanceof DOMException && err.name === 'OverconstrainedError') {
           if (debugEnabled()) {
-            console.warn('[VoiceLive] Preferred mic unavailable, retrying with default input')
+            cleanLogging.Warn('VoiceLive', 'Preferred microphone unavailable; retrying with default input')
           }
           stream = await navigator.mediaDevices.getUserMedia({
             audio: {
@@ -237,6 +256,73 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
         setTranscript('Connecting...')
       }
 
+      function handleVoiceLiveEvent(event: { type?: string; transcript?: string; delta?: string }) {
+        switch (event.type) {
+          case 'response.audio.delta': {
+            if (!event.delta) break
+
+            const audioCtx = audioCtxRef.current
+            if (!audioCtx) break
+
+            const samples = decodeBase64Pcm16(event.delta)
+            if (samples.length === 0) break
+
+            const sampleRate = 24000
+            const schedule = calculatePlaybackSchedule(
+              audioCtx.currentTime,
+              nextPlaybackTimeRef.current,
+              samples.length,
+              sampleRate,
+            )
+            const buffer = audioCtx.createBuffer(1, samples.length, sampleRate)
+            buffer.copyToChannel(samples, 0)
+
+            const source = audioCtx.createBufferSource()
+            source.buffer = buffer
+            source.connect(audioCtx.destination)
+            playbackSourcesRef.current.add(source)
+            source.addEventListener('ended', () => {
+              playbackSourcesRef.current.delete(source)
+              try {
+                source.disconnect()
+              } catch {
+                // The source may already have been disconnected by cleanup.
+              }
+            }, { once: true })
+            try {
+              source.start(schedule.startTime)
+            } catch {
+              playbackSourcesRef.current.delete(source)
+              try {
+                source.disconnect()
+              } catch {
+                // Disconnect is best-effort after a failed start.
+              }
+              break
+            }
+            nextPlaybackTimeRef.current = schedule.endTime
+            break
+          }
+
+          case 'input_audio_buffer.speech_started':
+            clearPlayback()
+            break
+
+          case 'conversation.item.input_audio_transcription.delta':
+            if (event.delta) setTranscript(prev => prev + event.delta)
+            break
+
+          case 'conversation.item.input_audio_transcription.completed':
+            setTranscript('')
+            if (event.transcript) onFinalResultRef.current(event.transcript)
+            break
+
+          case 'error':
+            setError((event as { error?: { message?: string } }).error?.message ?? 'Voice Live error')
+            break
+        }
+      }
+
       // Only start sending audio after upstream is ready (bridge sends session.ready)
       ws.onmessage = (ev) => {
         try {
@@ -308,7 +394,7 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
       setError(message)
       cleanup()
     }
-  }, [isListening, cleanup])
+  }, [isListening, cleanup, clearPlayback])
 
   const stopListening = useCallback(() => {
     cleanup()
@@ -323,23 +409,6 @@ export function useVoiceLive(options: UseVoiceLiveOptions): UseSpeechRecognition
       startListening()
     }
   }, [isListening, startListening, stopListening])
-
-  function handleVoiceLiveEvent(event: { type?: string; transcript?: string; delta?: string }) {
-    switch (event.type) {
-      case 'conversation.item.input_audio_transcription.delta':
-        if (event.delta) setTranscript(prev => prev + event.delta)
-        break
-
-      case 'conversation.item.input_audio_transcription.completed':
-        setTranscript('')
-        if (event.transcript) onFinalResultRef.current(event.transcript)
-        break
-
-      case 'error':
-        setError((event as { error?: { message?: string } }).error?.message ?? 'Voice Live error')
-        break
-    }
-  }
 
   return { isListening, isSupported, transcript, error, startListening, stopListening, toggleListening }
 }

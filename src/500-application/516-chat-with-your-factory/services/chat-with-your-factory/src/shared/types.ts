@@ -3,6 +3,7 @@ export interface Session {
   userId: string
   threadId?: string
   conversationId?: string
+  resumeToken?: string
   title: string
   createdAt: string
   lastActivityAt: string
@@ -46,6 +47,12 @@ export interface UserContext {
   tenantId?: string
   chatId?: string | null
 }
+
+export type DeviceContinuityState =
+  | 'loading'
+  | 'local-fallback'
+  | 'server-reconciled'
+  | 'cleared'
 
 export type AddParticipantErrorCode =
   | 'NO_ACTIVE_SESSION'

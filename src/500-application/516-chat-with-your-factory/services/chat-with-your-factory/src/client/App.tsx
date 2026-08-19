@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { FluentProvider, makeStyles, tokens } from '@fluentui/react-components'
+import { Button, FluentProvider, makeStyles, tokens } from '@fluentui/react-components'
+import { DeleteRegular } from '@fluentui/react-icons'
 import { ChatPanel } from './components/ChatPanel.js'
 import { VoiceInput } from './components/VoiceInput.js'
 import { TextInput } from './components/TextInput.js'
@@ -7,12 +8,9 @@ import { SessionBar } from './components/SessionBar.js'
 import { useTeamsTheme } from './hooks/useTeamsTheme.js'
 import { useTeamsUser } from './hooks/useTeamsUser.js'
 import { useSessionMessages } from './hooks/useSessionMessages.js'
-import type { Session, TranscriptMessage } from '../shared/types.js'
-import {
-  addParticipantErrorCodeFromStatus,
-  isAddParticipantError,
-  toAddParticipantError,
-} from '../shared/addParticipantErrors.js'
+import { useSessions } from './hooks/useSessions.js'
+import type { TranscriptMessage } from '../shared/types.js'
+import { toAddParticipantError } from '../shared/addParticipantErrors.js'
 import { apiFetch } from './utils/apiFetch.js'
 
 declare const __SPEECH_PROVIDER__: string
@@ -25,6 +23,30 @@ export interface Message {
   timestamp: number
   displayName?: string
   userId?: string
+}
+
+function toUiMessages(messages: TranscriptMessage[]): Message[] {
+  return messages.map(message => ({
+    id: message.id,
+    role: message.role,
+    text: message.text,
+    source: message.source ?? 'text',
+    timestamp: new Date(message.timestamp).getTime(),
+    displayName: message.displayName,
+    userId: message.userId,
+  }))
+}
+
+function toTranscriptMessage(message: Message): TranscriptMessage {
+  return {
+    id: message.id,
+    role: message.role,
+    text: message.text,
+    timestamp: new Date(message.timestamp).toISOString(),
+    source: message.source,
+    displayName: message.displayName,
+    userId: message.userId,
+  }
 }
 
 const useStyles = makeStyles({
@@ -46,6 +68,19 @@ const useStyles = makeStyles({
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     backgroundColor: tokens.colorNeutralBackground1,
   },
+  continuityBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalS,
+    padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalL}`,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    backgroundColor: tokens.colorNeutralBackground2,
+    color: tokens.colorNeutralForeground2,
+    fontSize: tokens.fontSizeBase200,
+  },
+  continuityStatus: {
+    flexGrow: 1,
+  },
 })
 
 export function App() {
@@ -57,46 +92,34 @@ export function App() {
 
   // Real Teams identity
   const currentUser = useTeamsUser()
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+  const {
+    sessions,
+    setSessions,
+    activeSessionId,
+    setActiveSessionId,
+    continuityState,
+    loadTranscript,
+    createSession,
+    addParticipant,
+    persistMessage,
+    persistSession,
+    clearLocalData,
+  } = useSessions(currentUser)
 
-  // Fetch sessions when user resolves
-  useEffect(() => {
-    if (!currentUser) return
-
-    // If we're in a Teams chat, check for a session linked to this chatId first
-    const chatIdParam = currentUser.chatId ? `?chatId=${encodeURIComponent(currentUser.chatId)}` : ''
-    apiFetch(`/api/sessions${chatIdParam}`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
-      .then((data: Session[]) => {
-        setSessions(data)
-        const active = data.find(s => s.status === 'active')
-        setActiveSessionId(active?.id ?? data[0]?.id ?? null)
-      })
-      .catch(console.error)
-  }, [currentUser])
-
-  // Load transcript when active session changes
+  // Render the local transcript before replacing it with the reconciled result.
   useEffect(() => {
     if (!activeSessionId) {
       setMessages([])
       return
     }
-    apiFetch(`/api/transcript/${activeSessionId}`)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() })
-      .then((data: TranscriptMessage[]) => {
-        setMessages(data.map(m => ({
-          id: m.id,
-          role: m.role,
-          text: m.text,
-          source: m.source ?? 'text',
-          timestamp: new Date(m.timestamp).getTime(),
-          displayName: m.displayName,
-          userId: m.userId,
-        })))
-      })
-      .catch(console.error)
-  }, [activeSessionId, currentUser])
+    let cancelled = false
+    void loadTranscript(activeSessionId, local => {
+      if (!cancelled) setMessages(toUiMessages(local))
+    }).then(reconciled => {
+      if (!cancelled) setMessages(toUiMessages(reconciled))
+    })
+    return () => { cancelled = true }
+  }, [activeSessionId, loadTranscript])
 
   // Track pending dispatches for voice loading indicator. We use a Set of
   // turnIds (rather than a bare counter) so that when an assistant SSE
@@ -121,6 +144,7 @@ export function App() {
   useSessionMessages({
     sessionId: activeSessionId,
     onMessage: useCallback((msg: TranscriptMessage) => {
+      if (activeSessionId) persistMessage(activeSessionId, msg)
       // Skip our own user messages — they're already in the list from sendMessage
       // Exception: in voicelive mode, voice user messages come only via SSE (bridge writes them)
       if (msg.role === 'user' && msg.userId === currentUser?.userId) {
@@ -175,7 +199,7 @@ export function App() {
           userId: msg.userId,
         }]
       })
-    }, [currentUser?.userId]),
+    }, [activeSessionId, currentUser?.userId, persistMessage]),
   })
 
   // Auto-scroll
@@ -185,60 +209,19 @@ export function App() {
 
   const handleNewSession = useCallback(async (): Promise<string | null> => {
     if (!currentUser) return null
-    try {
-      const resp = await apiFetch('/api/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatId: currentUser.chatId }),
-      })
-      const session: Session = await resp.json()
-      setSessions(prev => [session, ...prev])
-      setActiveSessionId(session.id)
-      setMessages([])
-      return session.id
-    } catch (err) {
-      console.error('Failed to create session:', err)
-      return null
-    }
-  }, [currentUser])
+    const session = await createSession(currentUser.chatId)
+    if (!session) return null
+    setMessages([])
+    return session.id
+  }, [createSession, currentUser])
 
   const handleAddParticipant = useCallback(async (userId: string, displayName: string): Promise<void> => {
     if (!activeSessionId) {
       throw toAddParticipantError('NO_ACTIVE_SESSION', 'No active session')
     }
 
-    try {
-      const resp = await apiFetch(`/api/sessions/${activeSessionId}/participants`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, displayName }),
-      })
-
-      if (!resp.ok) {
-        let serverMessage = 'Failed to add participant'
-        try {
-          const body = await resp.json() as { error?: string }
-          if (typeof body?.error === 'string' && body.error.trim().length > 0) {
-            serverMessage = body.error
-          }
-        } catch {
-          // non-JSON response, keep default message
-        }
-
-        const code = addParticipantErrorCodeFromStatus(resp.status)
-
-        throw toAddParticipantError(code, serverMessage, resp.status)
-      }
-
-      const updated: Session = await resp.json()
-      setSessions(prev => prev.map(s => s.id === updated.id ? updated : s))
-    } catch (err) {
-      if (isAddParticipantError(err)) {
-        throw err
-      }
-      throw toAddParticipantError('NETWORK', 'Network error while adding participant')
-    }
-  }, [activeSessionId, currentUser])
+    await addParticipant(activeSessionId, userId, displayName)
+  }, [activeSessionId, addParticipant])
 
   const sendMessage = useCallback(async (text: string, source: 'voice' | 'text') => {
     const trimmed = text.trim()
@@ -251,20 +234,9 @@ export function App() {
     let sessionId = activeSessionId
     if (!sessionId) {
       if (!currentUser) return
-      try {
-        const resp = await apiFetch('/api/sessions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chatId: currentUser.chatId }),
-        })
-        const session: Session = await resp.json()
-        setSessions(prev => [session, ...prev])
-        setActiveSessionId(session.id)
-        sessionId = session.id
-      } catch (err) {
-        console.error('Failed to create session:', err)
-        return
-      }
+      const session = await createSession(currentUser.chatId)
+      if (!session) return
+      sessionId = session.id
     }
 
     const userMessageId = crypto.randomUUID()
@@ -278,13 +250,20 @@ export function App() {
       userId: currentUser?.userId,
     }
     setMessages(prev => [...prev, userMessage])
+    persistMessage(sessionId, toTranscriptMessage(userMessage))
     setIsLoading(true)
 
     try {
       const resp = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: trimmed, sessionId, source, chatId: currentUser?.chatId }),
+        body: JSON.stringify({
+          text: trimmed,
+          sessionId,
+          source,
+          chatId: currentUser?.chatId,
+          messageId: userMessageId,
+        }),
       })
 
       if (!resp.ok) throw new Error(`Server error: ${resp.status}`)
@@ -293,9 +272,12 @@ export function App() {
 
       // Update session title if auto-generated by server
       if (data.title) {
-        setSessions(prev => prev.map(s =>
-          s.id === sessionId ? { ...s, title: data.title } : s
-        ))
+        setSessions(prev => prev.map(session => {
+          if (session.id !== sessionId) return session
+          const updated = { ...session, title: data.title }
+          persistSession(updated)
+          return updated
+        }))
       }
 
       if (data.text) {
@@ -310,6 +292,7 @@ export function App() {
           if (prev.some(m => m.id === agentMessage.id)) return prev
           return [...prev, agentMessage]
         })
+        persistMessage(sessionId, toTranscriptMessage(agentMessage))
         setIsLoading(false)
       }
       // For async backends (DirectLine, Copilot Studio) isLoading stays true
@@ -325,7 +308,14 @@ export function App() {
       setMessages(prev => [...prev, errorMessage])
       setIsLoading(false)
     }
-  }, [activeSessionId, isLoading, currentUser])
+  }, [activeSessionId, createSession, currentUser, isLoading, persistMessage, persistSession, setSessions])
+
+  const continuityMessage = {
+    loading: 'Device-local continuity: loading cache.',
+    'local-fallback': 'Device-local continuity: showing cached data while server reconciliation is unavailable.',
+    'server-reconciled': 'Device-local continuity: reconciled with the server.',
+    cleared: 'Device-local continuity: device cache cleared. Server sessions were not deleted.',
+  }[continuityState]
 
   const ensureSession = useCallback(async (): Promise<string | null> => {
     if (activeSessionId) return activeSessionId
@@ -342,6 +332,18 @@ export function App() {
           onNewSession={handleNewSession}
           onAddParticipant={handleAddParticipant}
         />
+        <div className={styles.continuityBar} role="status" aria-live="polite">
+          <span className={styles.continuityStatus}>{continuityMessage}</span>
+          <Button
+            appearance="subtle"
+            size="small"
+            icon={<DeleteRegular />}
+            disabled={continuityState === 'loading'}
+            onClick={() => { void clearLocalData() }}
+          >
+            Clear device data
+          </Button>
+        </div>
         <ChatPanel messages={messages} isLoading={isLoading} bottomRef={bottomRef} onSend={(text) => sendMessage(text, 'text')} />
         <div className={styles.inputBar}>
           <VoiceInput onResult={(text) => sendMessage(text, 'voice')} disabled={isLoading} sessionId={activeSessionId} onEnsureSession={ensureSession} onDispatch={handleVoiceDispatch} onDispatchError={handleVoiceDispatchError} />

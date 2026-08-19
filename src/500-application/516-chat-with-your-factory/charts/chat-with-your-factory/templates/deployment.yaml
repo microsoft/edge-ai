@@ -15,7 +15,13 @@ spec:
     metadata:
       labels:
         {{- include "chat-with-your-factory.selectorLabels" . | nindent 8 }}
+        {{- with .Values.serviceAccount.name }}
+        azure.workload.identity/use: "true"
+        {{- end }}
     spec:
+      {{- with .Values.serviceAccount.name }}
+      serviceAccountName: {{ . | quote }}
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
