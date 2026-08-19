@@ -999,7 +999,7 @@ create_ontology() {
     info "[DRY-RUN] Would create generic Ontology item: $ONTOLOGY_NAME"
   else
     local item_response
-    if ! item_response=$(get_or_create_ontology "$WORKSPACE_ID" "$ONTOLOGY_NAME" "$FABRIC_TOKEN"); then
+    if ! item_response=$(create_item "$WORKSPACE_ID" "Ontology" "$ONTOLOGY_NAME" "$FABRIC_TOKEN"); then
       err "Failed to create generic Ontology item: $ONTOLOGY_NAME"
     fi
     if ! ontology_id=$(jq -er '.id' <<<"$item_response"); then
@@ -1113,12 +1113,15 @@ workspace_response=$(get_workspace "$WORKSPACE_ID" "$FABRIC_TOKEN")
 workspace_name=$(echo "$workspace_response" | jq -r '.displayName')
 info "Workspace: $workspace_name ($WORKSPACE_ID)"
 
-# Reconcile IDs from the deployed definition before allocating missing IDs
-if ! existing_response=$(fabric_api_call "GET" "/workspaces/$WORKSPACE_ID/items?type=Ontology" "" "$FABRIC_TOKEN"); then
-  err "Failed to retrieve existing Ontology items"
+# Reconcile IDs from the selected deployed definition before allocating missing IDs
+if ! existing_ontology=$(select_workspace_item_by_display_name \
+  "$WORKSPACE_ID" "Ontology" "$ONTOLOGY_NAME" "$FABRIC_TOKEN"); then
+  err "Failed to select existing Ontology item: $ONTOLOGY_NAME"
 fi
-if ! EXISTING_ONTOLOGY_ID=$(jq -er --arg name "$ONTOLOGY_NAME" '[.value[] | select(.displayName == $name) | .id][0] // ""' <<<"$existing_response"); then
-  err "Failed to decode existing Ontology items"
+if [[ -n "$existing_ontology" ]]; then
+  if ! EXISTING_ONTOLOGY_ID=$(jq -er '.id' <<<"$existing_ontology"); then
+    err "Failed to decode selected Ontology item: $ONTOLOGY_NAME"
+  fi
 fi
 
 if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then

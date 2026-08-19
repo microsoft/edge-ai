@@ -106,11 +106,11 @@ get_workspace() {
   printf '{"displayName":"Test Workspace"}\n'
 }
 
-fabric_api_call() {
-  printf '{"value":[]}\n'
+select_workspace_item_by_display_name() {
+  return 0
 }
 
-get_or_create_ontology() {
+create_item() {
   printf '{"id":"published-ontology-id"}\n'
 }
 
@@ -182,6 +182,198 @@ grep -F "No ontology was published" "$TEST_ROOT/dry-run.stderr" >/dev/null
 echo "[ OK    ]: Dry run writes no publication result and claims no ontology ID"
 
 source "$COMPONENT_DIR/scripts/lib/fabric-api.sh"
+
+MOCK_CURL_ATTEMPTS="$TEST_ROOT/curl-attempts.txt"
+MOCK_CURL_INVOCATIONS="$TEST_ROOT/curl-invocations.txt"
+MOCK_SLEEP_DELAYS="$TEST_ROOT/sleep-delays.txt"
+MOCK_CURL_SCENARIO=""
+
+curl() {
+  printf '%q ' "$@" >>"$MOCK_CURL_INVOCATIONS"
+  printf '\n' >>"$MOCK_CURL_INVOCATIONS"
+
+  local headers_file=""
+  local response_file=""
+  while (($# > 0)); do
+    case "$1" in
+      --dump-header)
+        headers_file="$2"
+        shift 2
+        ;;
+      --output)
+        response_file="$2"
+        shift 2
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  printf 'attempt\n' >>"$MOCK_CURL_ATTEMPTS"
+  local attempt
+  attempt=$(wc -l <"$MOCK_CURL_ATTEMPTS")
+  : >"$headers_file"
+  : >"$response_file"
+
+  case "$MOCK_CURL_SCENARIO:$attempt" in
+    retry-after:1)
+      printf 'HTTP/1.1 429 Too Many Requests\r\nRetry-After: 7\r\n\r\n' >"$headers_file"
+      printf '{"error":"rate limited"}' >"$response_file"
+      printf '429'
+      ;;
+    service:1 | exhaust:*)
+      printf 'HTTP/1.1 503 Service Unavailable\r\n\r\n' >"$headers_file"
+      printf '{"error":"unavailable"}' >"$response_file"
+      printf '503'
+      ;;
+    transport:1)
+      return 7
+      ;;
+    bad-request:*)
+      printf 'HTTP/1.1 400 Bad Request\r\n\r\n' >"$headers_file"
+      printf '{"error":"invalid"}' >"$response_file"
+      printf '400'
+      ;;
+    *)
+      printf 'HTTP/1.1 200 OK\r\n\r\n' >"$headers_file"
+      printf '{"ok":true}' >"$response_file"
+      printf '200'
+      ;;
+  esac
+}
+
+fabric_sleep() {
+  printf '%s\n' "$1" >>"$MOCK_SLEEP_DELAYS"
+}
+
+fabric_retry_jitter() {
+  printf '1\n'
+}
+
+reset_transport_mock() {
+  local scenario="$1"
+  MOCK_CURL_SCENARIO="$scenario"
+  : >"$MOCK_CURL_ATTEMPTS"
+  : >"$MOCK_CURL_INVOCATIONS"
+  : >"$MOCK_SLEEP_DELAYS"
+}
+
+reset_transport_mock retry-after
+fabric_api_call "GET" "/retry-after" "" "test-token" >/dev/null
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
+diff -u <(printf '7\n') "$MOCK_SLEEP_DELAYS"
+grep -F -- "--connect-timeout $FABRIC_API_CONNECT_TIMEOUT" "$MOCK_CURL_INVOCATIONS" >/dev/null
+grep -F -- "--max-time $FABRIC_API_REQUEST_TIMEOUT" "$MOCK_CURL_INVOCATIONS" >/dev/null
+echo "[ OK    ]: HTTP 429 honors Retry-After and every request includes bounded timeouts"
+
+reset_transport_mock service
+fabric_api_call "GET" "/service" "" "test-token" >/dev/null
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
+diff -u <(printf '1\n') "$MOCK_SLEEP_DELAYS"
+echo "[ OK    ]: HTTP 503 retries with deterministic bounded jitter"
+
+reset_transport_mock transport
+fabric_api_call "GET" "/transport" "" "test-token" >/dev/null
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
+echo "[ OK    ]: Curl transport failure retries"
+
+reset_transport_mock bad-request
+if fabric_api_call "GET" "/bad-request" "" "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: HTTP 400 unexpectedly succeeded" >&2
+  exit 1
+fi
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 1 ]]
+[[ ! -s "$MOCK_SLEEP_DELAYS" ]]
+echo "[ OK    ]: Nonretriable HTTP 400 performs one attempt"
+
+reset_transport_mock exhaust
+if fabric_api_call "GET" "/exhaust" "" "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: Exhausted HTTP 503 attempts unexpectedly succeeded" >&2
+  exit 1
+fi
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq "$FABRIC_API_MAX_ATTEMPTS" ]]
+[[ $(wc -l <"$MOCK_SLEEP_DELAYS") -eq $((FABRIC_API_MAX_ATTEMPTS - 1)) ]]
+echo "[ OK    ]: Retriable failures stop at the configured attempt bound"
+
+reset_transport_mock success
+printf '{"request":true}\n' >"$TEST_ROOT/request-body.json"
+fabric_api_call_file "POST" "/file-request" "$TEST_ROOT/request-body.json" "test-token" >/dev/null
+grep -F -- "--connect-timeout $FABRIC_API_CONNECT_TIMEOUT" "$MOCK_CURL_INVOCATIONS" >/dev/null
+grep -F -- "--max-time $FABRIC_API_REQUEST_TIMEOUT" "$MOCK_CURL_INVOCATIONS" >/dev/null
+echo "[ OK    ]: File-based requests use the centralized timeout-aware transport"
+
+unset -f curl
+
+MOCK_PAGE_CALLS="$TEST_ROOT/page-calls.txt"
+MOCK_POST_CALLS="$TEST_ROOT/post-calls.txt"
+MOCK_PAGE_SCENARIO="second-page"
+
+fabric_api_call() {
+  local method="$1"
+  local endpoint="$2"
+  printf '%s %s\n' "$method" "$endpoint" >>"$MOCK_PAGE_CALLS"
+
+  if [[ "$method" == "POST" ]]; then
+    printf 'POST\n' >>"$MOCK_POST_CALLS"
+    printf '{"id":"created-id","displayName":"Target Ontology"}\n'
+    return 0
+  fi
+
+  case "$MOCK_PAGE_SCENARIO:$endpoint" in
+    second-page:*continuationToken*)
+      printf '{"value":[{"id":"second-page-id","displayName":"Target Ontology","type":"Ontology"}]}\n'
+      ;;
+    second-page:*)
+      printf '{"value":[{"id":"other-id","displayName":"Other","type":"Ontology"}],"continuationToken":"page-2"}\n'
+      ;;
+    duplicate:*continuationToken*)
+      printf '{"value":[{"id":"duplicate-2","displayName":"Target Ontology","type":"Ontology"}]}\n'
+      ;;
+    duplicate:*)
+      printf '{"value":[{"id":"duplicate-1","displayName":"Target Ontology","type":"Ontology"}],"continuationToken":"page-2"}\n'
+      ;;
+    cycle:*)
+      printf '{"value":[],"continuationUri":"/workspaces/workspace-id/items?type=Ontology"}\n'
+      ;;
+    malformed:*)
+      printf '{"continuationToken":"page-2"}\n'
+      ;;
+  esac
+}
+
+: >"$MOCK_PAGE_CALLS"
+selected_item=$(select_workspace_item_by_display_name \
+  "workspace-id" "Ontology" "Target Ontology" "test-token")
+[[ $(jq -r '.id' <<<"$selected_item") == "second-page-id" ]]
+[[ $(wc -l <"$MOCK_PAGE_CALLS") -eq 2 ]]
+echo "[ OK    ]: Exact display-name selection finds a second-page match"
+
+MOCK_PAGE_SCENARIO="duplicate"
+: >"$MOCK_PAGE_CALLS"
+: >"$MOCK_POST_CALLS"
+if get_or_create_item "workspace-id" "Ontology" "Target Ontology" "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: Duplicate display names unexpectedly selected or created an item" >&2
+  exit 1
+fi
+[[ ! -s "$MOCK_POST_CALLS" ]]
+echo "[ OK    ]: Duplicate display names across pages fail before POST"
+
+MOCK_PAGE_SCENARIO="cycle"
+: >"$MOCK_PAGE_CALLS"
+if list_workspace_items_paginated "workspace-id" "Ontology" "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: Pagination cycle unexpectedly succeeded" >&2
+  exit 1
+fi
+echo "[ OK    ]: Pagination cycles fail closed"
+
+MOCK_PAGE_SCENARIO="malformed"
+: >"$MOCK_PAGE_CALLS"
+if list_workspace_items_paginated "workspace-id" "Ontology" "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: Malformed pagination response unexpectedly succeeded" >&2
+  exit 1
+fi
+echo "[ OK    ]: Malformed pagination responses fail closed"
 
 EXPECTED_PARTS='[{"path":"definition.json","payload":"e30=","payloadType":"InlineBase64"}]'
 
