@@ -32,6 +32,7 @@ KQL_DATABASE_ID=""
 CLUSTER_URI=""
 DRY_RUN="false"
 ID_MAPPING_OUTPUT="${ID_MAPPING_OUTPUT:-/tmp/ontology-id-mapping.json}"
+DEFINITION_PARTS_OUTPUT=""
 EXISTING_ONTOLOGY_ID=""
 EXISTING_DEFINITION_PARTS="[]"
 
@@ -70,6 +71,8 @@ Options:
   --id-mapping-output <path>
                            Write the logical-name-to-Fabric-ID mapping to this path
                            (default: /tmp/ontology-id-mapping.json)
+  --definition-parts-output <path>
+                           Write generated definition parts and exit before authentication
   --dry-run               Show what would be created without making changes
   -h, --help              Show this help message
 
@@ -113,6 +116,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --id-mapping-output)
       ID_MAPPING_OUTPUT="$2"
+      shift 2
+      ;;
+    --definition-parts-output)
+      DEFINITION_PARTS_OUTPUT="$2"
       shift 2
       ;;
     --dry-run)
@@ -184,23 +191,6 @@ info "Ontology: $ONTOLOGY_NAME"
 info "Description: ${ONTOLOGY_DESC:-N/A}"
 
 ####
-# Authentication
-####
-
-log "Authenticating to Fabric API"
-FABRIC_TOKEN=$(get_fabric_token)
-info "Authentication successful"
-
-####
-# Verify Workspace Access
-####
-
-log "Verifying Workspace Access"
-workspace_response=$(get_workspace "$WORKSPACE_ID" "$FABRIC_TOKEN")
-workspace_name=$(echo "$workspace_response" | jq -r '.displayName')
-info "Workspace: $workspace_name ($WORKSPACE_ID)"
-
-####
 # ID Reconciliation and Generation
 ####
 
@@ -253,10 +243,12 @@ decode_item_definition() {
     [[ "$payload_type" == "InlineBase64" ]] || return 1
     content=$(printf '%s' "$payload" | base64 --decode 2>/dev/null) || return 1
     jq -e . <<<"$content" >/dev/null || return 1
-    decoded_parts=$(jq \
+    if ! decoded_parts=$(jq \
       --arg path "$path" \
       --argjson content "$content" \
-      '. += [{path: $path, content: $content}]' <<<"$decoded_parts")
+      '. += [{path: $path, content: $content}]' <<<"$decoded_parts"); then
+      return 1
+    fi
   done < <(jq -c '.definition.parts[]' <<<"$response")
 
   printf '%s\n' "$decoded_parts"
@@ -974,80 +966,96 @@ build_ontology_definition() {
 create_ontology() {
   local definition_parts="$1"
 
-  log "Creating Ontology"
+  log "Publishing Ontology"
 
   local ontology_id="$EXISTING_ONTOLOGY_ID"
 
   if [[ -n "$ontology_id" ]]; then
     info "Ontology '$ONTOLOGY_NAME' already exists: $ontology_id"
-    info "Updating definition..."
-
-    if [[ "$DRY_RUN" == "true" ]]; then
-      info "[DRY-RUN] Would update ontology definition"
-      echo "$ontology_id"
-      return 0
+  elif [[ "$DRY_RUN" == "true" ]]; then
+    ontology_id="dry-run-ontology-id"
+    info "[DRY-RUN] Would create generic Ontology item: $ONTOLOGY_NAME"
+  else
+    local item_response
+    if ! item_response=$(get_or_create_ontology "$WORKSPACE_ID" "$ONTOLOGY_NAME" "$FABRIC_TOKEN"); then
+      err "Failed to create generic Ontology item: $ONTOLOGY_NAME"
     fi
-
-    # Update existing ontology definition
-    local update_body
-    update_body=$(jq -n --argjson parts "$definition_parts" '{"definition": {"parts": $parts}}')
-
-    fabric_api_call "POST" "/workspaces/$WORKSPACE_ID/ontologies/$ontology_id/updateDefinition" "$update_body" "$FABRIC_TOKEN"
-    ok "Ontology definition updated"
-    echo "$ontology_id"
-    return 0
+    if ! ontology_id=$(jq -er '.id' <<<"$item_response"); then
+      err "Failed to retrieve created Ontology item ID: $ONTOLOGY_NAME"
+    fi
+    ok "Ontology item created: $ontology_id"
   fi
-
-  # Create new ontology with definition
-  info "Creating ontology: $ONTOLOGY_NAME"
 
   if [[ "$DRY_RUN" == "true" ]]; then
-    info "[DRY-RUN] Would create ontology: $ONTOLOGY_NAME"
-    local parts_count
-    parts_count=$(echo "$definition_parts" | jq 'length')
-    info "[DRY-RUN] Definition parts count: $parts_count"
-    echo "dry-run-ontology-id"
+    info "[DRY-RUN] Would update generic item definition with metadata"
+    echo "$ontology_id"
     return 0
   fi
 
-  # Write parts to temp file to avoid shell argument length limits
-  local parts_file request_body_file response
-  parts_file=$(mktemp)
-  request_body_file=$(mktemp)
-  echo "$definition_parts" >"$parts_file"
+  info "Updating ontology definition..."
+  if ! update_item_definition "$WORKSPACE_ID" "$ontology_id" "$definition_parts" "$FABRIC_TOKEN" >/dev/null; then
+    err "Failed to update ontology definition: $ontology_id"
+  fi
+  ok "Ontology definition updated"
+  echo "$ontology_id"
+}
 
-  # Build request body using file-based approach
-  jq -n \
-    --arg name "$ONTOLOGY_NAME" \
-    --arg desc "${ONTOLOGY_DESC:-}" \
-    --slurpfile parts "$parts_file" \
-    '{
-      "displayName": $name,
-      "description": $desc,
-      "definition": {"parts": $parts[0]}
-    }' >"$request_body_file"
+verify_ontology_definition() {
+  local ontology_id="$1"
+  local expected_parts="$2"
+  local response actual_parts
 
-  rm -f "$parts_file"
-
-  # Save request body for debugging
-  cp "$request_body_file" /tmp/ontology-request.json
-  info "Request body saved to /tmp/ontology-request.json"
-
-  response=$(fabric_api_call_file "POST" "/workspaces/$WORKSPACE_ID/ontologies" "$request_body_file" "$FABRIC_TOKEN")
-  rm -f "$request_body_file"
-
-  ontology_id=$(echo "$response" | jq -r '.id // empty')
-  if [[ -z "$ontology_id" ]]; then
-    # May be in createdItem for LRO
-    ontology_id=$(echo "$response" | jq -r '.createdItem.id // empty')
+  info "Retrieving published ontology definition: $ontology_id"
+  if ! response=$(get_item_definition "$WORKSPACE_ID" "$ontology_id" "$FABRIC_TOKEN"); then
+    err "Failed to retrieve published ontology definition: $ontology_id"
+  fi
+  if ! actual_parts=$(decode_item_definition "$response"); then
+    err "Failed to decode published ontology definition: $ontology_id"
   fi
 
-  if [[ -n "$ontology_id" ]]; then
-    ok "Ontology created: $ontology_id"
-    echo "$ontology_id"
-  else
-    err "Failed to create ontology - no ID returned"
+  if ! jq -e --argjson expected "$expected_parts" '
+    ($expected | map(.path)) as $expectedPaths
+    | (map(.path)) as $actualPaths
+    | all($expectedPaths[]; . as $path | $actualPaths | index($path) != null)
+  ' <<<"$actual_parts" >/dev/null; then
+    err "Published ontology definition is missing required generated part paths"
   fi
+
+  if ! jq -e '
+    def path_id($pattern): .path | capture($pattern).id;
+    ([.[] | select(.path | test("^EntityTypes/[0-9]+/definition\\.json$"))]) as $entities
+    | ([.[] | select(.path | test("^RelationshipTypes/[0-9]+/definition\\.json$"))]) as $relationships
+    | ($entities | map(.content.id)) as $entityIds
+    | ($relationships | map(.content.id)) as $relationshipIds
+    | ($entities | map({key: .content.id, value: ([.content.properties[]?.id, .content.timeseriesProperties[]?.id])}) | from_entries) as $propertyIds
+    | all($entities[]; . as $entity
+      | ($entity.content.id == ($entity | path_id("^EntityTypes/(?<id>[0-9]+)/definition\\.json$")))
+      and all($entity.content.entityIdParts[]; $propertyIds[$entity.content.id] | index(.) != null)
+      and ($propertyIds[$entity.content.id] | index($entity.content.displayNamePropertyId) != null))
+    and all(.[] | select(.path | test("^EntityTypes/[0-9]+/DataBindings/[0-9a-fA-F-]+\\.json$"));
+        (path_id("^EntityTypes/(?<id>[0-9]+)/DataBindings/") as $entityId
+        | ($entityIds | index($entityId) != null)
+        and (.content.id == (.path | capture("/DataBindings/(?<id>[0-9a-fA-F-]+)\\.json$").id))
+        and all(.content.dataBindingConfiguration.propertyBindings[]; . as $binding
+          | $propertyIds[$entityId] | index($binding.targetPropertyId) != null)))
+    and all($relationships[]; . as $relationship
+      | ($relationship.content.id == ($relationship | path_id("^RelationshipTypes/(?<id>[0-9]+)/definition\\.json$")))
+      and ($entityIds | index($relationship.content.source.entityTypeId) != null)
+      and ($entityIds | index($relationship.content.target.entityTypeId) != null))
+    and all(.[] | select(.path | test("^RelationshipTypes/[0-9]+/Contextualizations/[0-9a-fA-F-]+\\.json$"));
+        (path_id("^RelationshipTypes/(?<id>[0-9]+)/Contextualizations/") as $relationshipId
+        | ($relationships[] | select(.content.id == $relationshipId).content) as $relationship
+        | ($relationshipIds | index($relationshipId) != null)
+        and (.content.id == (.path | capture("/Contextualizations/(?<id>[0-9a-fA-F-]+)\\.json$").id))
+        and all(.content.sourceKeyRefBindings[]; . as $binding
+          | $propertyIds[$relationship.source.entityTypeId] | index($binding.targetPropertyId) != null)
+        and all(.content.targetKeyRefBindings[]; . as $binding
+          | $propertyIds[$relationship.target.entityTypeId] | index($binding.targetPropertyId) != null)))
+  ' <<<"$actual_parts" >/dev/null; then
+    err "Published ontology definition contains invalid internal references"
+  fi
+
+  ok "Published ontology definition paths and references verified"
 }
 
 ####
@@ -1066,9 +1074,31 @@ if [[ "$DRY_RUN" == "true" ]]; then
   warn "DRY-RUN mode enabled"
 fi
 
+if [[ -n "$DEFINITION_PARTS_OUTPUT" ]]; then
+  pre_generate_ids
+  DEFINITION_PARTS=$(build_ontology_definition)
+  mkdir -p "$(dirname "$DEFINITION_PARTS_OUTPUT")"
+  jq . <<<"$DEFINITION_PARTS" >"$DEFINITION_PARTS_OUTPUT"
+  info "Ontology definition parts: $DEFINITION_PARTS_OUTPUT"
+  exit 0
+fi
+
+log "Authenticating to Fabric API"
+FABRIC_TOKEN=$(get_fabric_token)
+info "Authentication successful"
+
+log "Verifying Workspace Access"
+workspace_response=$(get_workspace "$WORKSPACE_ID" "$FABRIC_TOKEN")
+workspace_name=$(echo "$workspace_response" | jq -r '.displayName')
+info "Workspace: $workspace_name ($WORKSPACE_ID)"
+
 # Reconcile IDs from the deployed definition before allocating missing IDs
-existing_response=$(fabric_api_call "GET" "/workspaces/$WORKSPACE_ID/ontologies" "" "$FABRIC_TOKEN" 2>/dev/null || echo '{"value":[]}')
-EXISTING_ONTOLOGY_ID=$(jq -r --arg name "$ONTOLOGY_NAME" '.value[] | select(.displayName == $name) | .id' <<<"$existing_response" | head -n 1)
+if ! existing_response=$(fabric_api_call "GET" "/workspaces/$WORKSPACE_ID/items?type=Ontology" "" "$FABRIC_TOKEN"); then
+  err "Failed to retrieve existing Ontology items"
+fi
+if ! EXISTING_ONTOLOGY_ID=$(jq -er --arg name "$ONTOLOGY_NAME" '[.value[] | select(.displayName == $name) | .id][0] // ""' <<<"$existing_response"); then
+  err "Failed to decode existing Ontology items"
+fi
 
 if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then
   info "Exporting deployed ontology definition: $EXISTING_ONTOLOGY_ID"
@@ -1092,7 +1122,13 @@ parts_count=$(echo "$DEFINITION_PARTS" | jq 'length')
 info "Total definition parts: $parts_count"
 
 # Create or update ontology
-ONTOLOGY_ID=$(create_ontology "$DEFINITION_PARTS")
+if ! ONTOLOGY_ID=$(create_ontology "$DEFINITION_PARTS"); then
+  err "Ontology publication failed"
+fi
+
+if [[ "$DRY_RUN" != "true" ]]; then
+  verify_ontology_definition "$ONTOLOGY_ID" "$DEFINITION_PARTS"
+fi
 
 log "Deployment Complete"
 ok "Ontology ID: $ONTOLOGY_ID"

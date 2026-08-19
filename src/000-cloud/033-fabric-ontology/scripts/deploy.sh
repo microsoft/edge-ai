@@ -8,8 +8,7 @@
 # Deployment sequence:
 #   1. Validate definition
 #   2. Create Lakehouse and load data from --data-dir
-#   3. Create Semantic Model (Direct Lake)
-#   4. Create Ontology (entity types, relationships)
+#   3. Create Ontology (entity types, relationships)
 #
 # Dependencies: curl, jq, yq, az (Azure CLI)
 #
@@ -42,7 +41,7 @@ DEFINITION_FILE=""
 WORKSPACE_ID=""
 DATA_DIR=""
 SKIP_DATA_SOURCES="false"
-SKIP_SEMANTIC_MODEL="false"
+EXPERIMENTAL_SEMANTIC_MODEL="false"
 SKIP_ONTOLOGY="false"
 ALLOW_PARTIAL_DATA="false"
 DRY_RUN="false"
@@ -66,8 +65,7 @@ Deploy a complete ontology with data to Microsoft Fabric.
 
 This script orchestrates the full deployment:
   1. Data Sources: Creates Lakehouse, uploads data, loads Delta tables
-  2. Semantic Model: Creates Direct Lake semantic model
-  3. Ontology: Creates entity types, relationships, and data bindings
+  2. Ontology: Creates entity types, relationships, and data bindings
 
 Required Arguments:
   --definition <path>       Path to ontology definition YAML file
@@ -81,7 +79,8 @@ Data Source Arguments (one of):
 
 Optional Arguments:
   --skip-data-sources       Skip data source creation (use existing Lakehouse)
-  --skip-semantic-model     Skip semantic model creation
+  --experimental-semantic-model
+                            Also create an experimental Direct Lake semantic model
   --skip-ontology           Skip ontology creation
   --allow-partial-data      Allow tables without a resolvable source to be skipped
   --lakehouse-id <id>       Use existing Lakehouse (required with --skip-data-sources)
@@ -133,8 +132,8 @@ while [[ $# -gt 0 ]]; do
       SKIP_DATA_SOURCES="true"
       shift
       ;;
-    --skip-semantic-model)
-      SKIP_SEMANTIC_MODEL="true"
+    --experimental-semantic-model)
+      EXPERIMENTAL_SEMANTIC_MODEL="true"
       shift
       ;;
     --skip-ontology)
@@ -285,7 +284,7 @@ if [[ -n "$DATA_DIR" ]]; then
   info "Data Directory: $DATA_DIR"
 fi
 info "Deploy Data Sources: $(if [[ "$SKIP_DATA_SOURCES" == "true" ]]; then echo "No (skipped)"; else echo "Yes"; fi)"
-info "Deploy Semantic Model: $(if [[ "$SKIP_SEMANTIC_MODEL" == "true" ]]; then echo "No (skipped)"; else echo "Yes"; fi)"
+info "Deploy Experimental Semantic Model: $(if [[ "$EXPERIMENTAL_SEMANTIC_MODEL" == "true" ]]; then echo "Yes"; else echo "No"; fi)"
 info "Deploy Ontology: $(if [[ "$SKIP_ONTOLOGY" == "true" ]]; then echo "No (skipped)"; else echo "Yes"; fi)"
 
 if [[ -n "$LAKEHOUSE_ID" ]]; then
@@ -464,38 +463,11 @@ else
 fi
 
 ####
-# Step 2: Deploy Semantic Model
-####
-
-if [[ "$SKIP_SEMANTIC_MODEL" != "true" ]]; then
-  log "Step 2: Deploying Semantic Model"
-
-  if [[ -z "$LAKEHOUSE_ID" ]]; then
-    err "Lakehouse ID is required for semantic model deployment"
-  fi
-
-  deploy_args=(
-    "--definition" "$DEFINITION_FILE"
-    "--workspace-id" "$WORKSPACE_ID"
-    "--lakehouse-id" "$LAKEHOUSE_ID"
-  )
-
-  if [[ "$DRY_RUN" == "true" ]]; then
-    deploy_args+=("--dry-run")
-  fi
-
-  "$SCRIPT_DIR/deploy-semantic-model.sh" "${deploy_args[@]}"
-  ok "Semantic model deployed"
-else
-  log "Step 2: Skipping Semantic Model"
-fi
-
-####
-# Step 3: Deploy Ontology
+# Step 2: Deploy Ontology
 ####
 
 if [[ "$SKIP_ONTOLOGY" != "true" ]]; then
-  log "Step 3: Deploying Ontology"
+  log "Step 2: Deploying Ontology"
 
   if [[ -z "$LAKEHOUSE_ID" ]]; then
     err "Lakehouse ID is required for ontology deployment"
@@ -525,7 +497,32 @@ if [[ "$SKIP_ONTOLOGY" != "true" ]]; then
   warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
   info "The portal will show 'Setting up your ontology' until complete"
 else
-  log "Step 3: Skipping Ontology"
+  log "Step 2: Skipping Ontology"
+fi
+
+####
+# Experimental Semantic Model
+####
+
+if [[ "$EXPERIMENTAL_SEMANTIC_MODEL" == "true" ]]; then
+  log "Experimental: Deploying Semantic Model"
+
+  if [[ -z "$LAKEHOUSE_ID" ]]; then
+    err "Lakehouse ID is required for experimental semantic model deployment"
+  fi
+
+  deploy_args=(
+    "--definition" "$DEFINITION_FILE"
+    "--workspace-id" "$WORKSPACE_ID"
+    "--lakehouse-id" "$LAKEHOUSE_ID"
+  )
+
+  if [[ "$DRY_RUN" == "true" ]]; then
+    deploy_args+=("--dry-run")
+  fi
+
+  "$SCRIPT_DIR/deploy-semantic-model.sh" "${deploy_args[@]}"
+  ok "Experimental semantic model deployed"
 fi
 
 ####
@@ -564,7 +561,7 @@ cat <<EOF
 
 2. Verify the Lakehouse tables were created correctly
 
-3. Open the Semantic Model and verify Direct Lake connection
+3. Open the Ontology and verify its entity types and relationships
 
 4. Create a Data Agent (manual step - no API available):
    - Click '+ New item' → Search for 'Data agent'

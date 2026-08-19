@@ -479,10 +479,14 @@ get_or_create_item() {
 
   # Check if item exists
   local existing
-  existing=$(fabric_api_call "GET" "/workspaces/$workspace_id/items?type=$item_type" "" "$token")
+  if ! existing=$(fabric_api_call "GET" "/workspaces/$workspace_id/items?type=$item_type" "" "$token"); then
+    return 1
+  fi
 
   local item_id
-  item_id=$(echo "$existing" | jq -r ".value[] | select(.displayName == \"$item_name\") | .id")
+  if ! item_id=$(jq -er --arg name "$item_name" '[.value[] | select(.displayName == $name) | .id][0] // ""' <<<"$existing"); then
+    return 1
+  fi
 
   if [[ -n "$item_id" ]]; then
     echo "[ INFO ]: $item_type '$item_name' already exists: $item_id" >&2
@@ -493,13 +497,17 @@ get_or_create_item() {
   # Create new item
   echo "[ INFO ]: Creating $item_type '$item_name'..." >&2
   local body
-  body=$(jq -n \
+  if ! body=$(jq -n \
     --arg name "$item_name" \
     --arg type "$item_type" \
-    '{"displayName": $name, "type": $type}')
+    '{"displayName": $name, "type": $type}'); then
+    return 1
+  fi
 
   local response
-  response=$(fabric_api_call "POST" "/workspaces/$workspace_id/items" "$body" "$token")
+  if ! response=$(fabric_api_call "POST" "/workspaces/$workspace_id/items" "$body" "$token"); then
+    return 1
+  fi
   echo "$response"
 }
 
@@ -532,9 +540,11 @@ update_item_definition() {
   fi
 
   local body
-  body=$(jq -n --argjson parts "$definition_parts" '{"definition": {"parts": $parts}}')
+  if ! body=$(jq -n --argjson parts "$definition_parts" '{"definition": {"parts": $parts}}'); then
+    return 1
+  fi
 
-  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/updateDefinition" "$body" "$token"
+  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/updateDefinition?updateMetadata=true" "$body" "$token"
 }
 
 # Upload file to OneLake via DFS API
