@@ -33,6 +33,7 @@ CLUSTER_URI=""
 DRY_RUN="false"
 ID_MAPPING_OUTPUT="${ID_MAPPING_OUTPUT:-/tmp/ontology-id-mapping.json}"
 DEFINITION_PARTS_OUTPUT=""
+PUBLICATION_OUTPUT=""
 EXISTING_ONTOLOGY_ID=""
 EXISTING_DEFINITION_PARTS="[]"
 
@@ -65,6 +66,7 @@ Conditional Arguments (required if eventhouse tables exist):
   --cluster-uri <uri>     Kusto cluster URI (e.g., https://xxx.kusto.fabric.microsoft.com)
 
 Optional Arguments:
+  --output <path>          Write the publication result as JSON
   --kql-database-id <id>  KQL Database ID (for reference)
 
 Options:
@@ -122,6 +124,10 @@ while [[ $# -gt 0 ]]; do
       DEFINITION_PARTS_OUTPUT="$2"
       shift 2
       ;;
+    --output)
+      PUBLICATION_OUTPUT="$2"
+      shift 2
+      ;;
     --dry-run)
       DRY_RUN="true"
       shift
@@ -153,6 +159,10 @@ if [[ -z "$LAKEHOUSE_ID" ]]; then
   err "Missing required argument: --lakehouse-id"
 fi
 
+if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$PUBLICATION_OUTPUT" ]]; then
+  err "Missing required argument: --output"
+fi
+
 # Check for eventhouse requirements if time-series data exists
 HAS_EVENTHOUSE=$(get_eventhouse_name "$DEFINITION_FILE")
 if [[ -n "$HAS_EVENTHOUSE" && "$HAS_EVENTHOUSE" != "null" ]]; then
@@ -171,7 +181,7 @@ fi
 log "Validating Definition"
 info "Validating definition: $DEFINITION_FILE"
 
-if ! "$SCRIPT_DIR/validate-definition.sh" --definition "$DEFINITION_FILE"; then
+if ! "$SCRIPT_DIR/validate-definition.sh" --definition "$DEFINITION_FILE" >&2; then
   err "Definition validation failed"
 fi
 
@@ -786,7 +796,7 @@ pre_generate_ids() {
   done
 }
 
-write_id_mapping() {
+build_id_mapping() {
   local mapping='{"version":1,"terms":[]}'
   local entity_types entity_count
   entity_types=$(get_entity_types "$DEFINITION_FILE")
@@ -848,9 +858,22 @@ write_id_mapping() {
     fi
   done
 
-  mkdir -p "$(dirname "$ID_MAPPING_OUTPUT")"
-  jq -S '.terms |= sort_by(.kind, .logicalName)' <<<"$mapping" >"$ID_MAPPING_OUTPUT"
-  info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
+  jq -S '.terms |= sort_by(.kind, .logicalName)' <<<"$mapping"
+}
+
+write_json_atomically() {
+  local output_path="$1"
+  local content="$2"
+  local output_dir temp_file
+  output_dir=$(dirname "$output_path")
+  mkdir -p "$output_dir"
+  temp_file=$(mktemp "$output_path.tmp.XXXXXX")
+
+  if ! jq -e -S . <<<"$content" >"$temp_file"; then
+    rm -f "$temp_file"
+    err "Failed to encode JSON output: $output_path"
+  fi
+  mv "$temp_file" "$output_path"
 }
 
 ####
@@ -973,7 +996,6 @@ create_ontology() {
   if [[ -n "$ontology_id" ]]; then
     info "Ontology '$ONTOLOGY_NAME' already exists: $ontology_id"
   elif [[ "$DRY_RUN" == "true" ]]; then
-    ontology_id="dry-run-ontology-id"
     info "[DRY-RUN] Would create generic Ontology item: $ONTOLOGY_NAME"
   else
     local item_response
@@ -988,7 +1010,6 @@ create_ontology() {
 
   if [[ "$DRY_RUN" == "true" ]]; then
     info "[DRY-RUN] Would update generic item definition with metadata"
-    echo "$ontology_id"
     return 0
   fi
 
@@ -1113,7 +1134,9 @@ fi
 
 # Pre-generate all IDs to avoid subshell issues with associative arrays
 pre_generate_ids
-write_id_mapping
+ID_MAPPING=$(build_id_mapping)
+write_json_atomically "$ID_MAPPING_OUTPUT" "$ID_MAPPING"
+info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
 
 # Build ontology definition parts
 DEFINITION_PARTS=$(build_ontology_definition)
@@ -1131,13 +1154,24 @@ if [[ "$DRY_RUN" != "true" ]]; then
 fi
 
 log "Deployment Complete"
-ok "Ontology ID: $ONTOLOGY_ID"
-warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
-info "The portal will show 'Setting up your ontology' until complete"
-
-# Output for scripting
-if [[ "$DRY_RUN" != "true" ]]; then
-  echo ""
-  echo "# Environment variables for downstream scripts:"
-  echo "export ONTOLOGY_ID=\"$ONTOLOGY_ID\""
+if [[ "$DRY_RUN" == "true" ]]; then
+  warn "DRY RUN - No ontology was published and no publication output was written"
+else
+  PUBLICATION_RESULT=$(jq -n \
+    --arg workspaceId "$WORKSPACE_ID" \
+    --arg lakehouseId "$LAKEHOUSE_ID" \
+    --arg ontologyItemId "$ONTOLOGY_ID" \
+    --argjson mapping "$ID_MAPPING" \
+    '{
+      version: 1,
+      workspaceId: $workspaceId,
+      lakehouseId: $lakehouseId,
+      ontologyItemId: $ontologyItemId,
+      mapping: $mapping
+    }')
+  write_json_atomically "$PUBLICATION_OUTPUT" "$PUBLICATION_RESULT"
+  ok "Ontology ID: $ONTOLOGY_ID"
+  info "Publication output: $PUBLICATION_OUTPUT"
+  warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
+  info "The portal will show 'Setting up your ontology' until complete"
 fi
