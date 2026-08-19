@@ -1,10 +1,49 @@
 {
   "$schema": "https://json.schemastore.org/aio-connector-metadata-11.0-preview.json",
+  "name": "EdgeAiHttpPostConnector",
+  "description": "POST-only connector for HTTP endpoints that require a textual request body, with the body resolved from a Kubernetes Secret alias",
+  "version": "1.0.0",
+  "supportedArchitectures": ["linux/amd64"],
+  "imageConfigurationSettings": {
+    "imageName": "akri-http-post-connector",
+    "tag": "1.0.0"
+  },
   "inboundEndpoints": [
     {
       "endpointType": "EdgeAi.HttpPost",
       "version": "1.0",
+      "fields": {
+        "address": {
+          "input": "required",
+          "exampleValue": "http://sensor-simulator:8081",
+          "regex": ["^https?:\\/\\/([\\da-z.-]+)(:\\d+)?([\\/\\w .-]*)*\\/?$"],
+          "description": "The base URL of the HTTP endpoint that the connector issues POST requests against"
+        }
+      },
       "datasets": {
+        "limits": {
+          "minimum": 0
+        },
+        "fields": {
+          "dataSource": {
+            "input": "required",
+            "exampleValue": "/retrieval",
+            "description": "The request path (relative to the device's address) that the connector issues the POST request against"
+          },
+          "typeRef": {
+            "input": "unsupported"
+          }
+        },
+        "destinations": {
+          "supportedDestinations": ["Mqtt"],
+          "defaultDestination": {
+            "destination": "Mqtt",
+            "topic": "mqtt/{deviceName}/{inboundEndpointName}/{assetName}/{datasetName}",
+            "qos": 1,
+            "ttl": 0,
+            "retain": "never"
+          }
+        },
         "datasetConfigurationSchema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
