@@ -83,13 +83,25 @@ Azure Resource Manager (ARM) rather than `kubectl` YAML.
   an Azure Container Registry (ACR).
 * [ORAS CLI](https://oras.land/docs/installation), for publishing `connector-metadata.json` as an
   OCI artifact.
-* A [registry endpoint](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-configure-registry-endpoint)
-  on the Azure IoT Operations instance, pointing at the ACR above. Azure IoT Operations pulls the
-  connector's runtime image through this registry endpoint rather than anonymously, so it must use
-  an authenticated method (for example `SystemAssignedManagedIdentity` with `AcrPull` granted to the
-  instance's Arc extension identity). Configure it via the `registry_endpoints` variable on
-  `src/100-edge/110-iot-ops` / `blueprints/full-multi-node-cluster`, the Azure portal, or
-  `az iot ops registry create`.
+* An ACR pull Secret in the `azure-iot-operations` namespace, referenced through
+  `image_pull_secrets` on the connector template (see Step 3). Akri connectors don't reliably
+  honor `registry_endpoint_ref`: AIO known issues
+  [7710](https://learn.microsoft.com/azure/iot-operations/troubleshoot/known-issues#general-connector-issues)
+  (registry endpoint resources aren't reconciled for Akri connectors before AIO version 1.2.154)
+  and 4570 (only `artifact pull secrets` authentication is supported for registry endpoints with
+  Akri connectors) mean the connector otherwise falls back to an anonymous pull and fails with
+  `ImagePullBackOff`. Create the pull secret with `kubectl`:
+
+  ```bash
+  kubectl create secret docker-registry acr-pull-secret \
+    --namespace azure-iot-operations \
+    --docker-server=<acr_name>.azurecr.io \
+    --docker-username=<acr-token-or-sp-id> \
+    --docker-password=<acr-token-or-sp-password>
+  ```
+
+  Use an ACR token (`az acr token create`) or a service principal with `AcrPull`; avoid the
+  registry's admin credentials.
 
 ```bash
 # Navigate to the component directory
@@ -146,7 +158,8 @@ custom_akri_connectors = [
     custom_endpoint_version       = "1.0"
     custom_image_name             = "<acr_name>.azurecr.io/akri-http-post-connector"
     custom_connector_metadata_ref = "<acr_name>.azurecr.io/akri-http-post-connector-metadata:<metadata_tag>"
-    registry_endpoint_ref         = "<registry_endpoint_name>"
+    registry                      = "<acr_name>.azurecr.io"
+    image_pull_secrets            = ["acr-pull-secret"]
     image_tag                     = "<image_tag>"
     secrets = [
       {
@@ -159,8 +172,8 @@ custom_akri_connectors = [
 ]
 ```
 
-`registry_endpoint_ref` must name a registry endpoint (see Prerequisites) whose `host` matches the
-ACR above; omitting it falls back to the `registry` field, which pulls anonymously and fails with
+`image_pull_secrets` names existing Kubernetes docker-registry Secrets (see Prerequisites) used for
+authenticated pulls; omitting it falls back to the anonymous `registry` pull and fails with
 `ImagePullBackOff` against a private ACR.
 
 `secrets` declares the Kubernetes Secret aliases dataset configurations reference through

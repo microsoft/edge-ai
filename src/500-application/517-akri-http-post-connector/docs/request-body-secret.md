@@ -28,13 +28,6 @@ multiple assets can reference distinct secrets by adding one list entry per alia
 dataset's `request.bodySecretAlias` at the alias it needs. See
 [Adding multiple secrets for multiple assets](#adding-multiple-secrets-for-multiple-assets).
 
-> **Temporary workaround, not permanent design**: This manual `kubectl create secret generic` step
-> exists only because Azure Resource Manager (ARM) enforces a 512-character limit on
-> `datasetConfiguration`, which is too small to hold a request body directly. It is not a
-> general-purpose secret-management feature of this connector. See
-> [WI-10 in the planning log](../../../.copilot-tracking/plans/logs/2026-08-03/akri-rust-rest-post-connector-log.md)
-> for the follow-on work item to replace this workaround once a first-class solution exists.
-
 ## Creating the secret
 
 Create a Kubernetes Secret in the same namespace as the Azure IoT Operations instance

@@ -19,13 +19,14 @@
  *   1. Build and push the connector runtime image and publish the connector-metadata artifact
  *      referenced below. See the "Building and Publishing" section of
  *      src/500-application/517-akri-http-post-connector/README.md.
- *   2. Configure a registry endpoint on the Azure IoT Operations instance pointing at the ACR
- *      above, using an authenticated method (for example SystemAssignedManagedIdentity with
- *      AcrPull granted to the instance's Arc extension identity). Reference its name from
- *      `registry_endpoint_ref` below. See
- *      https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/howto-configure-registry-endpoint.
- *      Without this, the connector pulls anonymously and fails with ImagePullBackOff against a
- *      private ACR.
+ *   2. Create a Kubernetes docker-registry Secret with pull credentials for the ACR above, and
+ *      reference its name from `image_pull_secrets` below. Akri connectors don't reliably honor
+ *      `registry_endpoint_ref` (AIO known issues 7710 and 4570 on
+ *      https://learn.microsoft.com/azure/iot-operations/troubleshoot/known-issues), so use the
+ *      `registry` + `image_pull_secrets` fields instead. See the "Local Development
+ *      Prerequisites" section of src/500-application/517-akri-http-post-connector/README.md for
+ *      the exact `kubectl create secret docker-registry` command. Without this, the connector
+ *      pulls anonymously and fails with ImagePullBackOff against a private ACR.
  *   3. Create the Kubernetes Secret referenced by the `secrets` entry below (request body
  *      content). See
  *      src/500-application/517-akri-http-post-connector/docs/request-body-secret.md.
@@ -35,7 +36,7 @@
  * Custom Akri HTTP POST Connector Template
  *
  * REQUIRED: Registers the EdgeAi.HttpPost v1.0 connector template with src/100-edge/110-iot-ops.
- * Replace the registry_endpoint_ref, image, and metadata references with your own published values.
+ * Replace the registry, image, and metadata references with your own published values.
  *
  * The `secrets` entry declares the request body secret alias resolved by the connector at
  * runtime (`request.bodySecretAlias` below). It requires a Kubernetes Secret to already exist
@@ -51,7 +52,8 @@ custom_akri_connectors = [
     custom_endpoint_version       = "1.0"
     custom_image_name             = "akri-http-post-connector"
     custom_connector_metadata_ref = "akri-http-post-connector-metadata:1.0.0"
-    registry_endpoint_ref         = "example-registry-endpoint"
+    registry                      = "<acr_name>.azurecr.io"
+    image_pull_secrets            = ["acr-pull-secret"]
     image_tag                     = "1.0.0"
     secrets = [
       {
