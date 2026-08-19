@@ -34,8 +34,11 @@ DRY_RUN="false"
 ID_MAPPING_OUTPUT="${ID_MAPPING_OUTPUT:-/tmp/ontology-id-mapping.json}"
 DEFINITION_PARTS_OUTPUT=""
 PUBLICATION_OUTPUT=""
+ROLLBACK_OUTPUT=""
+DIFF_OUTPUT=""
 EXISTING_ONTOLOGY_ID=""
 EXISTING_DEFINITION_PARTS="[]"
+EXISTING_DEFINITION_PAYLOAD=""
 
 # Associative arrays for ID tracking
 declare -A ENTITY_TYPE_IDS
@@ -67,6 +70,9 @@ Conditional Arguments (required if eventhouse tables exist):
 
 Optional Arguments:
   --output <path>          Write the publication result as JSON
+  --rollback-output <path>
+                           Write rollback input keyed by ontology item ID
+  --diff-output <path>     Write the semantic definition diff as JSON
   --kql-database-id <id>  KQL Database ID (for reference)
 
 Options:
@@ -128,6 +134,14 @@ while [[ $# -gt 0 ]]; do
       PUBLICATION_OUTPUT="$2"
       shift 2
       ;;
+    --rollback-output)
+      ROLLBACK_OUTPUT="$2"
+      shift 2
+      ;;
+    --diff-output)
+      DIFF_OUTPUT="$2"
+      shift 2
+      ;;
     --dry-run)
       DRY_RUN="true"
       shift
@@ -161,6 +175,12 @@ fi
 
 if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$PUBLICATION_OUTPUT" ]]; then
   err "Missing required argument: --output"
+fi
+if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$ROLLBACK_OUTPUT" ]]; then
+  err "Missing required argument: --rollback-output"
+fi
+if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$DIFF_OUTPUT" ]]; then
+  err "Missing required argument: --diff-output"
 fi
 
 # Check for eventhouse requirements if time-series data exists
@@ -861,19 +881,102 @@ build_id_mapping() {
   jq -S '.terms |= sort_by(.kind, .logicalName)' <<<"$mapping"
 }
 
-write_json_atomically() {
+write_json_atomically() (
   local output_path="$1"
   local content="$2"
   local output_dir temp_file
   output_dir=$(dirname "$output_path")
   mkdir -p "$output_dir"
   temp_file=$(mktemp "$output_path.tmp.XXXXXX")
+  trap 'rm -f "$temp_file"' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
 
   if ! jq -e -S . <<<"$content" >"$temp_file"; then
-    rm -f "$temp_file"
     err "Failed to encode JSON output: $output_path"
   fi
   mv "$temp_file" "$output_path"
+)
+
+build_semantic_diff() {
+  local previous_parts="$1"
+  local target_parts="$2"
+
+  jq -n -S \
+    --argjson previous "$previous_parts" \
+    --argjson target "$target_parts" '
+      def indexed($parts):
+        $parts
+        | map({key: .path, value: .content})
+        | sort_by(.key)
+        | from_entries;
+      (indexed($previous)) as $before
+      | (indexed($target)) as $after
+      | (($before | keys) - ($after | keys) | sort) as $removed
+      | (($after | keys) - ($before | keys) | sort) as $added
+      | ([($before | keys[]) as $path
+          | select($after | has($path))
+          | select($before[$path] != $after[$path])
+          | $path] | sort) as $changed
+      | {
+          version: 1,
+          comparison: "DecodedCanonicalJsonByPath",
+          addedPaths: $added,
+          removedPaths: $removed,
+          changedPaths: $changed,
+          counts: {
+            added: ($added | length),
+            removed: ($removed | length),
+            changed: ($changed | length)
+          }
+        }
+    '
+}
+
+write_existing_rollback() {
+  local ontology_id="$1"
+  local rollback
+  rollback=$(jq -n \
+    --arg workspaceId "$WORKSPACE_ID" \
+    --arg ontologyItemId "$ontology_id" \
+    --argjson definition "$EXISTING_DEFINITION_PAYLOAD" '
+      {
+        version: 1,
+        schema: "fabric-ontology-rollback/1.0",
+        workspaceId: $workspaceId,
+        items: {
+          ($ontologyItemId): {
+            ontologyItemId: $ontologyItemId,
+            preMutationState: "Present",
+            rollbackAction: "updateDefinition",
+            request: {definition: $definition}
+          }
+        }
+      }
+    ')
+  write_json_atomically "$ROLLBACK_OUTPUT" "$rollback"
+}
+
+write_created_rollback() {
+  local ontology_id="$1"
+  local rollback
+  rollback=$(jq -n \
+    --arg workspaceId "$WORKSPACE_ID" \
+    --arg ontologyItemId "$ontology_id" '
+      {
+        version: 1,
+        schema: "fabric-ontology-rollback/1.0",
+        workspaceId: $workspaceId,
+        items: {
+          ($ontologyItemId): {
+            ontologyItemId: $ontologyItemId,
+            preMutationState: "Absent",
+            rollbackAction: "deleteItem"
+          }
+        }
+      }
+    ')
+  write_json_atomically "$ROLLBACK_OUTPUT" "$rollback"
 }
 
 ####
@@ -1005,12 +1108,19 @@ create_ontology() {
     if ! ontology_id=$(jq -er '.id' <<<"$item_response"); then
       err "Failed to retrieve created Ontology item ID: $ONTOLOGY_NAME"
     fi
+    write_created_rollback "$ontology_id"
+    info "Rollback input recorded for newly created ontology: $ROLLBACK_OUTPUT"
     ok "Ontology item created: $ontology_id"
   fi
 
   if [[ "$DRY_RUN" == "true" ]]; then
     info "[DRY-RUN] Would update generic item definition with metadata"
     return 0
+  fi
+
+  if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then
+    write_existing_rollback "$ontology_id"
+    info "Pre-update rollback input recorded: $ROLLBACK_OUTPUT"
   fi
 
   info "Updating ontology definition..."
@@ -1132,6 +1242,9 @@ if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then
   if ! EXISTING_DEFINITION_PARTS=$(decode_item_definition "$existing_definition_response"); then
     err "Failed to decode deployed ontology definition: $EXISTING_ONTOLOGY_ID"
   fi
+  if ! EXISTING_DEFINITION_PAYLOAD=$(jq -ec '.definition' <<<"$existing_definition_response"); then
+    err "Failed to retain deployed ontology rollback payload: $EXISTING_ONTOLOGY_ID"
+  fi
   load_existing_ids
 fi
 
@@ -1143,6 +1256,16 @@ info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
 
 # Build ontology definition parts
 DEFINITION_PARTS=$(build_ontology_definition)
+
+TARGET_DEFINITION_PARTS=$(jq -c '
+  map({path, content: (.payload | @base64d | fromjson)})
+  | sort_by(.path)
+' <<<"$DEFINITION_PARTS")
+SEMANTIC_DIFF=$(build_semantic_diff "$EXISTING_DEFINITION_PARTS" "$TARGET_DEFINITION_PARTS")
+if [[ "$DRY_RUN" != "true" ]]; then
+  write_json_atomically "$DIFF_OUTPUT" "$SEMANTIC_DIFF"
+  info "Semantic definition diff: $DIFF_OUTPUT"
+fi
 
 parts_count=$(echo "$DEFINITION_PARTS" | jq 'length')
 info "Total definition parts: $parts_count"
@@ -1164,17 +1287,31 @@ else
     --arg workspaceId "$WORKSPACE_ID" \
     --arg lakehouseId "$LAKEHOUSE_ID" \
     --arg ontologyItemId "$ONTOLOGY_ID" \
+    --arg rollbackEvidence "$ROLLBACK_OUTPUT" \
+    --arg diffEvidence "$DIFF_OUTPUT" \
     --argjson mapping "$ID_MAPPING" \
     '{
-      version: 1,
+      version: 2,
       workspaceId: $workspaceId,
       lakehouseId: $lakehouseId,
       ontologyItemId: $ontologyItemId,
+      evidence: {
+        rollback: $rollbackEvidence,
+        semanticDiff: $diffEvidence
+      },
+      itemOperation: {
+        status: "Succeeded",
+        verification: "DefinitionPartsVerified"
+      },
+      graphReadiness: {
+        status: "NotChecked",
+        reason: "Graph readiness requires separate qualification"
+      },
       mapping: $mapping
     }')
   write_json_atomically "$PUBLICATION_OUTPUT" "$PUBLICATION_RESULT"
   ok "Ontology ID: $ONTOLOGY_ID"
   info "Publication output: $PUBLICATION_OUTPUT"
-  warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
-  info "The portal will show 'Setting up your ontology' until complete"
+  ok "Item operation and definition verification succeeded"
+  warn "Graph readiness was not checked and requires separate qualification"
 fi

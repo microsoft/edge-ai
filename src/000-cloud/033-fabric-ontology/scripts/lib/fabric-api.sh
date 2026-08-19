@@ -16,6 +16,8 @@
 #   FABRIC_API_CONNECT_TIMEOUT - Connection timeout in seconds (default: 10, maximum: 60)
 #   FABRIC_API_REQUEST_TIMEOUT - Total request timeout in seconds (default: 60, maximum: 600)
 #   FABRIC_API_MAX_PAGES - Maximum item-list pages (default: 100, maximum: 1000)
+#   FABRIC_API_POLL_TIMEOUT - Long-running operation timeout in seconds (default: 300, maximum: 3600)
+#   FABRIC_API_POLL_INTERVAL - Long-running operation poll interval in seconds (default: 5, maximum: 60)
 
 set -e
 set -o pipefail
@@ -45,8 +47,11 @@ FABRIC_API_RETRY_MAX_DELAY=$(fabric_bounded_config FABRIC_API_RETRY_MAX_DELAY "$
 FABRIC_API_CONNECT_TIMEOUT=$(fabric_bounded_config FABRIC_API_CONNECT_TIMEOUT "${FABRIC_API_CONNECT_TIMEOUT:-10}" 1 60) || exit 1
 FABRIC_API_REQUEST_TIMEOUT=$(fabric_bounded_config FABRIC_API_REQUEST_TIMEOUT "${FABRIC_API_REQUEST_TIMEOUT:-60}" 1 600) || exit 1
 FABRIC_API_MAX_PAGES=$(fabric_bounded_config FABRIC_API_MAX_PAGES "${FABRIC_API_MAX_PAGES:-100}" 1 1000) || exit 1
+FABRIC_API_POLL_TIMEOUT=$(fabric_bounded_config FABRIC_API_POLL_TIMEOUT "${FABRIC_API_POLL_TIMEOUT:-300}" 1 3600) || exit 1
+FABRIC_API_POLL_INTERVAL=$(fabric_bounded_config FABRIC_API_POLL_INTERVAL "${FABRIC_API_POLL_INTERVAL:-5}" 1 60) || exit 1
 readonly FABRIC_API_MAX_ATTEMPTS FABRIC_API_RETRY_BASE_DELAY FABRIC_API_RETRY_MAX_DELAY
 readonly FABRIC_API_CONNECT_TIMEOUT FABRIC_API_REQUEST_TIMEOUT FABRIC_API_MAX_PAGES
+readonly FABRIC_API_POLL_TIMEOUT FABRIC_API_POLL_INTERVAL
 readonly FABRIC_RESOURCE="https://api.fabric.microsoft.com"
 readonly STORAGE_RESOURCE="https://storage.azure.com"
 readonly ONELAKE_DFS_URL="https://onelake.dfs.fabric.microsoft.com"
@@ -133,7 +138,7 @@ fabric_api_url() {
 }
 
 # Retries curl transport failures and HTTP 408, 429, and 5xx responses only.
-fabric_api_request() {
+fabric_api_request() (
   local method="$1"
   local endpoint="$2"
   local body_file="${3:-}"
@@ -146,6 +151,9 @@ fabric_api_request() {
     local headers_file response_file http_code curl_status response_body retry_after
     headers_file=$(mktemp)
     response_file=$(mktemp)
+    trap 'rm -f "$headers_file" "$response_file"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
 
     local curl_args=(
       --silent
@@ -203,15 +211,16 @@ fabric_api_request() {
 
         if [[ -n "$location" ]]; then
           echo "[ INFO ]: Long-running operation, polling for completion..." >&2
-          poll_operation "$location" "$token" 300
+          poll_operation "$location" "$token" "$FABRIC_API_POLL_TIMEOUT"
           return $?
         elif [[ -n "$operation_id" ]]; then
           echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
-          poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
+          poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" "$FABRIC_API_POLL_TIMEOUT"
           return $?
         fi
-        printf '%s\n' "$response_body"
-        return 0
+        echo "[ ERROR ]: Fabric API returned HTTP 202 without an operation reference" >&2
+        echo "[ ERROR ]: Endpoint: $method $url" >&2
+        return 1
         ;;
       408 | 429 | 5??)
         retry_after=$(awk 'tolower($1) == "retry-after:" {sub(/\r$/, "", $2); print $2; exit}' "$headers_file")
@@ -231,7 +240,7 @@ fabric_api_request() {
     echo "[ ERROR ]: Response: $response_body" >&2
     return 1
   done
-}
+)
 
 # Generic Fabric API call with error handling (file-based for large payloads)
 fabric_api_call_file() {
@@ -252,7 +261,7 @@ fabric_api_call_file() {
 }
 
 # Generic Fabric API call with error handling
-fabric_api_call() {
+fabric_api_call() (
   local method="$1"
   local endpoint="$2"
   local body="${3:-}"
@@ -264,6 +273,9 @@ fabric_api_call() {
   fi
   if [[ -n "$body" ]]; then
     body_file=$(mktemp)
+    trap 'rm -f "$body_file"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
     printf '%s\n' "$body" >"$body_file"
   fi
 
@@ -271,7 +283,7 @@ fabric_api_call() {
   fabric_api_request "$method" "$endpoint" "$body_file" "$token" || status=$?
   [[ -n "$body_file" ]] && rm -f "$body_file"
   return "$status"
-}
+)
 
 # Poll long-running operation until completion
 # Arguments:
@@ -289,7 +301,7 @@ poll_operation() {
   fi
 
   local elapsed=0
-  local sleep_interval=5
+  local sleep_interval="$FABRIC_API_POLL_INTERVAL"
 
   while [[ $elapsed -lt $max_wait ]]; do
     local response
@@ -297,20 +309,26 @@ poll_operation() {
       return 1
     fi
 
+    if ! jq -e '
+      type == "object"
+      and ((.status // .Status) | type == "string" and length > 0)
+    ' <<<"$response" >/dev/null; then
+      echo "[ ERROR ]: Operation returned malformed status JSON" >&2
+      return 1
+    fi
+
     local status
-    status=$(echo "$response" | jq -r '.status // .Status // "Unknown"')
+    status=$(jq -r '.status // .Status' <<<"$response")
 
     case "$status" in
       "Succeeded" | "succeeded")
         # Fetch the result endpoint to get the created item
         local result_url="${operation_url}/result"
         local result_response
-        if ! result_response=$(fabric_api_request "GET" "$result_url" "" "$token"); then
-          return 1
-        fi
+        result_response=$(fabric_api_request "GET" "$result_url" "" "$token") || result_response=""
 
         # Return result if valid, otherwise check for createdItem in status response
-        if [[ -n "$result_response" && "$result_response" != "null" ]]; then
+        if jq -e 'type == "object"' <<<"$result_response" >/dev/null 2>&1; then
           local result_id
           result_id=$(echo "$result_response" | jq -r '.id // empty')
           if [[ -n "$result_id" ]]; then
@@ -329,8 +347,8 @@ poll_operation() {
         fi
         return 0
         ;;
-      "Failed" | "failed")
-        echo "[ ERROR ]: Operation failed" >&2
+      "Failed" | "failed" | "Cancelled" | "cancelled" | "Canceled" | "canceled")
+        echo "[ ERROR ]: Operation reached terminal failure state: $status" >&2
         echo "$response" >&2
         return 1
         ;;
@@ -340,9 +358,8 @@ poll_operation() {
         ((elapsed += sleep_interval))
         ;;
       *)
-        echo "[ WARN ]: Unknown operation status: $status" >&2
-        fabric_sleep "$sleep_interval"
-        ((elapsed += sleep_interval))
+        echo "[ ERROR ]: Operation returned unsupported status: $status" >&2
+        return 1
         ;;
     esac
   done

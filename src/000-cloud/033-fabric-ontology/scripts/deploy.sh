@@ -12,6 +12,8 @@ DEFINITION_FILE=""
 WORKSPACE_ID=""
 LAKEHOUSE_ID=""
 OUTPUT_FILE=""
+ROLLBACK_OUTPUT=""
+DIFF_OUTPUT=""
 DRY_RUN="false"
 
 usage() {
@@ -25,6 +27,9 @@ Required Arguments:
   --workspace-id <id>     Existing Fabric workspace ID (GUID)
   --lakehouse-id <id>     Existing Lakehouse ID (GUID)
   --output <path>         Write the publication result as JSON
+  --rollback-output <path>
+                          Write rollback input keyed by ontology item ID
+  --diff-output <path>    Write the semantic definition diff as JSON
 
 Options:
   --dry-run               Show publication intent without publishing or writing output
@@ -51,6 +56,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --output)
       OUTPUT_FILE="$2"
+      shift 2
+      ;;
+    --rollback-output)
+      ROLLBACK_OUTPUT="$2"
+      shift 2
+      ;;
+    --diff-output)
+      DIFF_OUTPUT="$2"
       shift 2
       ;;
     --dry-run)
@@ -82,12 +95,20 @@ fi
 if [[ -z "$OUTPUT_FILE" ]]; then
   err "--output is required"
 fi
+if [[ -z "$ROLLBACK_OUTPUT" ]]; then
+  err "--rollback-output is required"
+fi
+if [[ -z "$DIFF_OUTPUT" ]]; then
+  err "--diff-output is required"
+fi
 
 deploy_args=(
   "--definition" "$DEFINITION_FILE"
   "--workspace-id" "$WORKSPACE_ID"
   "--lakehouse-id" "$LAKEHOUSE_ID"
   "--output" "$OUTPUT_FILE"
+  "--rollback-output" "$ROLLBACK_OUTPUT"
+  "--diff-output" "$DIFF_OUTPUT"
 )
 
 if [[ "$DRY_RUN" == "true" ]]; then
@@ -98,6 +119,8 @@ log "Publishing Static Fabric Ontology"
 info "Workspace ID: $WORKSPACE_ID"
 info "Lakehouse ID: $LAKEHOUSE_ID"
 info "Publication output: $OUTPUT_FILE"
+info "Rollback output: $ROLLBACK_OUTPUT"
+info "Semantic diff output: $DIFF_OUTPUT"
 
 "$SCRIPT_DIR/deploy-ontology.sh" "${deploy_args[@]}"
 
