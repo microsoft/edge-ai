@@ -1,6 +1,6 @@
 ---
 title: Fabric Ontology Publisher
-description: Unsupported accelerator for publishing static Lakehouse ontologies into existing Microsoft Fabric resources
+description: Accelerator for publishing static Lakehouse ontologies into existing Microsoft Fabric resources
 author: Edge AI Team
 ms.date: 2026-08-18
 ms.topic: reference
@@ -14,18 +14,15 @@ estimated_reading_time: 5
 
 ## Fabric Ontology Publisher
 
-Component 033 is an unsupported, nonproduction accelerator that publishes ontology
-content into existing Microsoft Fabric resources. It consumes explicit workspace and
-Lakehouse IDs. It does not own Fabric infrastructure.
+Component 033 publishes ontology content into existing Microsoft Fabric resources. It
+consumes explicit workspace and Lakehouse IDs. It does not own Fabric infrastructure.
 
 Component 031 owns the workspace, Lakehouse, Eventhouse, and KQL database lifecycle.
 Use its outputs as inputs to this publisher. Do not use component 033 to establish or
 manage those resources for the supported profile.
 
 > [!WARNING]
-> Microsoft Fabric Ontology is a preview capability. This component has not completed
-> the qualification gates required for production use, customer deployment, or
-> reference architecture positioning.
+> Microsoft Fabric Ontology is a preview capability. Its APIs and behavior may change.
 
 Microsoft references:
 
@@ -49,7 +46,6 @@ The following capabilities are outside the supported profile:
 * Eventhouse and time-series ontology bindings
 * Semantic-model generation or updates
 * Graph refresh and Graph readiness automation
-* Production support, service-level guarantees, or customer rollout
 * Complete IEEE 1872 conformance claims
 
 Eventhouse and semantic-model fields retained in the definition schema describe
@@ -77,8 +73,7 @@ Validate the checked-in definition:
   --definition definitions/examples/cora-corax-dim.yaml
 ```
 
-Validation checks the local definition contract. It does not remove the qualification
-and support restrictions above.
+Validation checks the local definition contract before publication.
 
 Preview ontology part generation without calling the Fabric mutation API:
 
@@ -120,9 +115,9 @@ The supported profile uses these fields from
 | `relationships`         | Generates relationship types and Lakehouse contextualizations              |
 
 The schema accepts a limited Eventhouse shape and a semantic-model name for the
-existing experimental scripts. Eventhouse ingestion accepts CSV only. Unsupported
-source options, semantic-model import mode, and semantic-model Lakehouse auto-detection
-are not part of the contract.
+existing experimental scripts. Eventhouse ingestion accepts CSV only. Other source
+options, semantic-model import mode, and semantic-model Lakehouse auto-detection are
+not part of the contract.
 
 The schema does not carry workspace or Lakehouse IDs. Resource IDs are deployment
 inputs so one portable definition can target an explicitly selected environment.
