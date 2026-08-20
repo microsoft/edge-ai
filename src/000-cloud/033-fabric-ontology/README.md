@@ -77,8 +77,8 @@ Validate the checked-in definition:
   --definition definitions/examples/cora-corax-dim.yaml
 ```
 
-Validation is preliminary until the deterministic preflight phase is complete. Review
-its output before publication.
+Validation checks the local definition contract. It does not remove the qualification
+and support restrictions above.
 
 Preview ontology part generation without calling the Fabric mutation API:
 
