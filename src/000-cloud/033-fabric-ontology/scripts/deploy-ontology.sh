@@ -917,8 +917,73 @@ build_semantic_diff() {
         | sort_by(.key)
         | from_entries
           end;
-      (indexed_unique($previous; "previous")) as $before
+      def normalize_previous($path; $previous; $target_exists; $target):
+        if ($target_exists | not)
+            or (($previous | type) != "object")
+            or (($target | type) != "object") then
+          {value: $previous, events: []}
+        elif ($path | test("^EntityTypes/[1-9][0-9]*/definition\\.json$"))
+            and (($target | has("untypedProperties")) | not)
+            and ($previous | has("untypedProperties"))
+            and ($previous.untypedProperties == []) then
+          {
+            value: ($previous | del(.untypedProperties)),
+            events: [{
+              ruleId: "ontology-entity-empty-untyped-properties-v1",
+              path: $path,
+              pointer: "/untypedProperties",
+              observedValue: []
+            }]
+          }
+        elif ($path | test("^RelationshipTypes/[1-9][0-9]*/definition\\.json$"))
+            and (($target | has("$schema")) | not)
+            and ($previous | has("$schema"))
+            and ($previous["$schema"] ==
+              "https://developer.microsoft.com/json-schemas/fabric/item/ontology/relationshipType/1.0.0/schema.json") then
+          {
+            value: ($previous | del(.["$schema"])),
+            events: [{
+              ruleId: "ontology-relationship-schema-v1",
+              path: $path,
+              pointer: "/$schema",
+              observedValue: $previous["$schema"]
+            }]
+          }
+        elif ($path | test(
+            "^RelationshipTypes/[1-9][0-9]*/Contextualizations/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\\.json$"))
+            and (($target | has("$schema")) | not)
+            and ($previous | has("$schema"))
+            and ($previous["$schema"] ==
+              "https://developer.microsoft.com/json-schemas/fabric/item/ontology/contextualization/1.0.0/schema.json") then
+          {
+            value: ($previous | del(.["$schema"])),
+            events: [{
+              ruleId: "ontology-contextualization-schema-v1",
+              path: $path,
+              pointer: "/$schema",
+              observedValue: $previous["$schema"]
+            }]
+          }
+        else
+          {value: $previous, events: []}
+        end;
+      (indexed_unique($previous; "previous")) as $raw_before
       | (indexed_unique($target; "target")) as $after
+      | ($raw_before
+        | to_entries
+        | sort_by(.key)
+        | reduce .[] as $entry (
+            {parts: {}, events: []};
+            (normalize_previous(
+              $entry.key;
+              $entry.value;
+              ($after | has($entry.key));
+              $after[$entry.key]
+            )) as $result
+            | .parts[$entry.key] = $result.value
+            | .events += $result.events
+          )) as $normalized
+      | ($normalized.parts) as $before
       | (($before | keys) - ($after | keys) | sort) as $removed
       | (($after | keys) - ($before | keys) | sort) as $added
       | ([($before | keys[]) as $path
