@@ -700,7 +700,7 @@ get_item_definition() {
   local item_id="$2"
   local token="${3:-}"
 
-  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/getDefinition" "" "$token"
+  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/getDefinition" '{}' "$token"
 }
 
 # Update item definition

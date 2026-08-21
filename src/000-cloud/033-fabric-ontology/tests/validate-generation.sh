@@ -608,11 +608,24 @@ fabric_api_call() {
   local token="$4"
 
   [[ "$method" == "POST" ]]
-  [[ "$endpoint" == "/workspaces/workspace-id/items/item-id/updateDefinition?updateMetadata=true" ]]
   [[ "$token" == "test-token" ]]
-  jq -e --argjson expected "$EXPECTED_PARTS" '.definition.parts == $expected' <<<"$body" >/dev/null
-  printf '{"status":"Succeeded"}\n'
+  case "$endpoint" in
+    "/workspaces/workspace-id/items/item-id/getDefinition")
+      [[ "$body" == '{}' ]]
+      printf '{"definition":{"parts":[]}}\n'
+      ;;
+    "/workspaces/workspace-id/items/item-id/updateDefinition?updateMetadata=true")
+      jq -e --argjson expected "$EXPECTED_PARTS" '.definition.parts == $expected' <<<"$body" >/dev/null
+      printf '{"status":"Succeeded"}\n'
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
+
+get_item_definition "workspace-id" "item-id" "test-token" >/dev/null
+echo "[ OK    ]: Generic item definition retrieval sends an explicit JSON body"
 
 update_item_definition "workspace-id" "item-id" "$EXPECTED_PARTS" "test-token" >/dev/null
 echo "[ OK    ]: Generic item update uses the metadata-aware endpoint"
