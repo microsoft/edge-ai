@@ -57,7 +57,7 @@ experimental scripts. They are not part of static Lakehouse qualification.
 * Fabric capacity assigned to the workspace
 * Ontology preview enabled for the tenant
 * Azure CLI authenticated with access to the target workspace
-* `bash`, `az`, `curl`, `jq`, `yq`, and `uuidgen`
+* `bash`, `az`, `curl`, `jq`, `yq`, and `sha256sum`
 
 The publisher mutates content in the workspace and Lakehouse identified on the command
 line. Confirm both IDs before publication.
