@@ -1,3 +1,4 @@
+---
 apiVersion: fabric.ontology/v1
 kind: OntologyDefinition
 metadata:
@@ -17,3 +18,4 @@ entityTypes:
     properties:
       - name: Id
         type: uuid
+...

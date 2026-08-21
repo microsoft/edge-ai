@@ -1,3 +1,4 @@
+---
 apiVersion: fabric.ontology/v1
 kind: OntologyDefinition
 metadata:
@@ -35,3 +36,4 @@ relationships:
     binding:
       table: robot_group
       toColumn: ToId
+...

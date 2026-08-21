@@ -119,7 +119,8 @@ PUBLISHER_ARGS_OUTPUT="$TEST_ROOT/publisher-args.txt" \
   >"$TEST_ROOT/publisher.stdout" 2>"$TEST_ROOT/publisher.stderr"
 
 [[ ! -s "$TEST_ROOT/publisher.stdout" ]]
-diff -u <(cat <<EOF
+diff -u <(
+  cat <<EOF
 --definition
 $COMPONENT_DIR/tests/definitions/valid-static.yaml
 --workspace-id
@@ -199,13 +200,13 @@ if ! MOCK_DEFINITION_STATE="$TEST_ROOT/published-definition.json" \
   MOCK_MUTATION_CALLS="$TEST_ROOT/mutation-calls.txt" \
   ID_MAPPING_OUTPUT="$TEST_ROOT/id-mapping.json" \
   "$TEST_ROOT/ontology-scripts/deploy-ontology.sh" \
-    --definition "$COMPONENT_DIR/tests/definitions/valid-static.yaml" \
-    --workspace-id "publisher-workspace-id" \
-    --lakehouse-id "publisher-lakehouse-id" \
-    --output "$TEST_ROOT/publication.json" \
-    --rollback-output "$TEST_ROOT/rollback.json" \
-    --diff-output "$TEST_ROOT/semantic-diff.json" \
-    >"$TEST_ROOT/ontology.stdout" 2>"$TEST_ROOT/ontology.stderr"; then
+  --definition "$COMPONENT_DIR/tests/definitions/valid-static.yaml" \
+  --workspace-id "publisher-workspace-id" \
+  --lakehouse-id "publisher-lakehouse-id" \
+  --output "$TEST_ROOT/publication.json" \
+  --rollback-output "$TEST_ROOT/rollback.json" \
+  --diff-output "$TEST_ROOT/semantic-diff.json" \
+  >"$TEST_ROOT/ontology.stdout" 2>"$TEST_ROOT/ontology.stderr"; then
   cat "$TEST_ROOT/ontology.stdout" >&2
   cat "$TEST_ROOT/ontology.stderr" >&2
   echo "[ ERROR ]: Mocked ontology publication failed" >&2
@@ -218,13 +219,15 @@ if [[ -s "$TEST_ROOT/ontology.stdout" ]]; then
   exit 1
 fi
 grep -F "Ontology ID: published-ontology-id" "$TEST_ROOT/ontology.stderr" >/dev/null
-jq -e '
+jq -e \
+  --arg rollbackOutput "$TEST_ROOT/rollback.json" \
+  --arg diffOutput "$TEST_ROOT/semantic-diff.json" '
   .version == 2
   and .workspaceId == "publisher-workspace-id"
   and .lakehouseId == "publisher-lakehouse-id"
   and .ontologyItemId == "published-ontology-id"
-  and .evidence.rollback == "'$TEST_ROOT'/rollback.json"
-  and .evidence.semanticDiff == "'$TEST_ROOT'/semantic-diff.json"
+  and .evidence.rollback == $rollbackOutput
+  and .evidence.semanticDiff == $diffOutput
   and .itemOperation.status == "Succeeded"
   and .itemOperation.verification == "DefinitionPartsVerified"
   and .graphReadiness.status == "NotChecked"
@@ -462,6 +465,7 @@ reset_transport_mock() {
 }
 
 reset_transport_mock retry-after
+# shellcheck disable=SC2218 # Mock functions are intentionally redefined later.
 fabric_api_call "GET" "/retry-after" "" "test-token" >/dev/null
 [[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
 diff -u <(printf '7\n') "$MOCK_SLEEP_DELAYS"
@@ -470,12 +474,14 @@ grep -F -- "--max-time $FABRIC_API_REQUEST_TIMEOUT" "$MOCK_CURL_INVOCATIONS" >/d
 echo "[ OK    ]: HTTP 429 honors Retry-After and every request includes bounded timeouts"
 
 reset_transport_mock service
+# shellcheck disable=SC2218 # Mock functions are intentionally redefined later.
 fabric_api_call "GET" "/service" "" "test-token" >/dev/null
 [[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
 diff -u <(printf '1\n') "$MOCK_SLEEP_DELAYS"
 echo "[ OK    ]: HTTP 503 retries with deterministic bounded jitter"
 
 reset_transport_mock transport
+# shellcheck disable=SC2218 # Mock functions are intentionally redefined later.
 fabric_api_call "GET" "/transport" "" "test-token" >/dev/null
 [[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
 echo "[ OK    ]: Curl transport failure retries"
@@ -679,7 +685,7 @@ chmod +x "$TEST_ROOT/signal-bin/az" "$TEST_ROOT/signal-bin/curl"
 if PATH="$TEST_ROOT/signal-bin:$PATH" \
   SIGNAL_TEMP_PATHS="$TEST_ROOT/signal-temp-paths.txt" \
   bash -c 'source "$1"; fabric_api_call POST /signal-test "{\"secret\":true}" test-token' \
-    _ "$COMPONENT_DIR/scripts/lib/fabric-api.sh" >/dev/null 2>&1; then
+  _ "$COMPONENT_DIR/scripts/lib/fabric-api.sh" >/dev/null 2>&1; then
   echo "[ ERROR ]: Signal-interrupted API request unexpectedly succeeded" >&2
   exit 1
 fi

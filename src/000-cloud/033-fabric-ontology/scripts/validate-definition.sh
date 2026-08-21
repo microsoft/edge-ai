@@ -17,7 +17,11 @@ WARNINGS=()
 log() { printf "[ INFO  ]: %s\n" "$1"; }
 warn() { printf "[ WARN  ]: %s\n" "$1" >&2; }
 err() { printf "[ ERROR ]: %s\n" "$1" >&2; }
-debug() { [[ "$VERBOSE" == "true" ]] && printf "[ DEBUG ]: %s\n" "$1" || true; }
+debug() {
+  if [[ "$VERBOSE" == "true" ]]; then
+    printf "[ DEBUG ]: %s\n" "$1"
+  fi
+}
 success() { printf "[ OK    ]: %s\n" "$1"; }
 
 usage() {
@@ -89,18 +93,16 @@ parse_args() {
 }
 
 require_dependencies() {
-  local dependency
-  for dependency in jq; do
-    if ! command -v "$dependency" >/dev/null 2>&1; then
-      err "Required tool not found: $dependency"
-      exit 2
-    fi
-  done
+  if ! command -v jq >/dev/null 2>&1; then
+    err "Required tool not found: jq"
+    exit 2
+  fi
 
   local candidate
-  for candidate in "${PYTHON:-}" python3 python /c/Python313/python.exe /mnt/c/Python313/python.exe; do
-    if [[ -n "$candidate" ]] && command -v "$candidate" >/dev/null 2>&1 && \
-      "$candidate" -c 'import jsonschema, yaml' >/dev/null 2>&1; then
+  local candidates=("${PYTHON:-}" python3 python /c/Python313/python.exe /mnt/c/Python313/python.exe)
+  for candidate in "${candidates[@]}"; do
+    if [[ -n "$candidate" ]] && command -v "$candidate" >/dev/null 2>&1 \
+      && "$candidate" -c 'import jsonschema, yaml' >/dev/null 2>&1; then
       PYTHON_COMMAND="$candidate"
       break
     fi
@@ -131,7 +133,7 @@ convert_definition() {
   definition_path=$(python_file_path "$DEFINITION_FILE")
   output_path=$(python_file_path "$DEFINITION_JSON")
 
-  if ! "$PYTHON_COMMAND" - "$definition_path" "$output_path" <<'PY'
+  if ! "$PYTHON_COMMAND" - "$definition_path" "$output_path" <<'PY'; then
 import json
 import sys
 
@@ -142,7 +144,6 @@ with open(sys.argv[1], encoding="utf-8") as definition_file:
 with open(sys.argv[2], "w", encoding="utf-8") as output_file:
     json.dump(definition, output_file)
 PY
-  then
     add_error "Definition is not valid YAML"
     return 1
   fi
@@ -158,7 +159,8 @@ validate_schema() {
   local definition_path schema_output schema_path
   schema_path=$(python_file_path "$SCHEMA_FILE")
   definition_path=$(python_file_path "$DEFINITION_JSON")
-  if schema_output=$("$PYTHON_COMMAND" - "$schema_path" "$definition_path" <<'PY'
+  if schema_output=$(
+    "$PYTHON_COMMAND" - "$schema_path" "$definition_path" <<'PY'
 import json
 import sys
 

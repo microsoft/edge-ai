@@ -1,3 +1,4 @@
+---
 apiVersion: fabric.ontology/v1
 kind: OntologyDefinition
 metadata:
@@ -21,3 +22,4 @@ entityTypes:
         type: string
       - name: Name
         type: string
+...
