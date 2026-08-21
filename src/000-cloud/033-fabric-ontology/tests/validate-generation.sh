@@ -137,6 +137,30 @@ EOF
 ) "$TEST_ROOT/publisher-args.txt"
 echo "[ OK    ]: Publisher delegates explicit resources and evidence output paths"
 
+PUBLISHER_ARGS_OUTPUT="$TEST_ROOT/publisher-dry-run-args.txt" \
+  "$TEST_ROOT/publisher/scripts/deploy.sh" \
+  --definition "$COMPONENT_DIR/tests/definitions/valid-static.yaml" \
+  --workspace-id "publisher-workspace-id" \
+  --lakehouse-id "publisher-lakehouse-id" \
+  --dry-run \
+  >"$TEST_ROOT/publisher-dry-run.stdout" 2>"$TEST_ROOT/publisher-dry-run.stderr"
+
+[[ ! -s "$TEST_ROOT/publisher-dry-run.stdout" ]]
+diff -u <(
+  cat <<EOF
+--definition
+$COMPONENT_DIR/tests/definitions/valid-static.yaml
+--workspace-id
+publisher-workspace-id
+--lakehouse-id
+publisher-lakehouse-id
+--dry-run
+EOF
+) "$TEST_ROOT/publisher-dry-run-args.txt"
+grep -F "No ontology was published and no publication output was written" \
+  "$TEST_ROOT/publisher-dry-run.stderr" >/dev/null
+echo "[ OK    ]: Publisher dry run requires and forwards no output paths"
+
 cp -R "scripts" "$TEST_ROOT/ontology-scripts"
 cp -R "definitions" "$TEST_ROOT/definitions"
 cat >"$TEST_ROOT/ontology-scripts/lib/fabric-api.sh" <<'EOF'

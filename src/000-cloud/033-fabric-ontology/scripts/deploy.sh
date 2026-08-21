@@ -26,6 +26,8 @@ Required Arguments:
   --definition <path>     Path to ontology definition YAML file
   --workspace-id <id>     Existing Fabric workspace ID (GUID)
   --lakehouse-id <id>     Existing Lakehouse ID (GUID)
+
+Required for Publication:
   --output <path>         Write the publication result as JSON
   --rollback-output <path>
                           Write rollback input keyed by ontology item ID
@@ -92,35 +94,42 @@ fi
 if [[ -z "$LAKEHOUSE_ID" ]]; then
   err "--lakehouse-id is required"
 fi
-if [[ -z "$OUTPUT_FILE" ]]; then
-  err "--output is required"
-fi
-if [[ -z "$ROLLBACK_OUTPUT" ]]; then
-  err "--rollback-output is required"
-fi
-if [[ -z "$DIFF_OUTPUT" ]]; then
-  err "--diff-output is required"
+if [[ "$DRY_RUN" != "true" ]]; then
+  if [[ -z "$OUTPUT_FILE" ]]; then
+    err "--output is required"
+  fi
+  if [[ -z "$ROLLBACK_OUTPUT" ]]; then
+    err "--rollback-output is required"
+  fi
+  if [[ -z "$DIFF_OUTPUT" ]]; then
+    err "--diff-output is required"
+  fi
 fi
 
 deploy_args=(
   "--definition" "$DEFINITION_FILE"
   "--workspace-id" "$WORKSPACE_ID"
   "--lakehouse-id" "$LAKEHOUSE_ID"
-  "--output" "$OUTPUT_FILE"
-  "--rollback-output" "$ROLLBACK_OUTPUT"
-  "--diff-output" "$DIFF_OUTPUT"
 )
 
 if [[ "$DRY_RUN" == "true" ]]; then
   deploy_args+=("--dry-run")
+else
+  deploy_args+=(
+    "--output" "$OUTPUT_FILE"
+    "--rollback-output" "$ROLLBACK_OUTPUT"
+    "--diff-output" "$DIFF_OUTPUT"
+  )
 fi
 
 log "Publishing Static Fabric Ontology"
 info "Workspace ID: $WORKSPACE_ID"
 info "Lakehouse ID: $LAKEHOUSE_ID"
-info "Publication output: $OUTPUT_FILE"
-info "Rollback output: $ROLLBACK_OUTPUT"
-info "Semantic diff output: $DIFF_OUTPUT"
+if [[ "$DRY_RUN" != "true" ]]; then
+  info "Publication output: $OUTPUT_FILE"
+  info "Rollback output: $ROLLBACK_OUTPUT"
+  info "Semantic diff output: $DIFF_OUTPUT"
+fi
 
 "$SCRIPT_DIR/deploy-ontology.sh" "${deploy_args[@]}"
 
