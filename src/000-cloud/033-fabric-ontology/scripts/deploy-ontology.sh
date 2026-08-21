@@ -905,13 +905,20 @@ build_semantic_diff() {
   jq -n -S \
     --argjson previous "$previous_parts" \
     --argjson target "$target_parts" '
-      def indexed($parts):
+      def duplicate_paths($parts):
+        [$parts | group_by(.path)[] | select(length > 1) | .[0].path] | sort;
+      def indexed_unique($parts; $side):
+        (duplicate_paths($parts)) as $duplicates
+        | if ($duplicates | length) > 0 then
+            error("duplicate definition part paths in \($side): \($duplicates | join(", "))")
+          else
         $parts
         | map({key: .path, value: .content})
         | sort_by(.key)
-        | from_entries;
-      (indexed($previous)) as $before
-      | (indexed($target)) as $after
+        | from_entries
+          end;
+      (indexed_unique($previous; "previous")) as $before
+      | (indexed_unique($target; "target")) as $after
       | (($before | keys) - ($after | keys) | sort) as $removed
       | (($after | keys) - ($before | keys) | sort) as $added
       | ([($before | keys[]) as $path
