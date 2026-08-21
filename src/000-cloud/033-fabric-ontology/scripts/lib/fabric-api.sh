@@ -10,16 +10,57 @@
 #
 # Environment Variables (optional):
 #   FABRIC_API_BASE_URL - Override default API base URL
+#   FABRIC_API_MAX_ATTEMPTS - Total transport attempts (default: 4, maximum: 10)
+#   FABRIC_API_RETRY_BASE_DELAY - Initial retry delay in seconds (default: 1, maximum: 60)
+#   FABRIC_API_RETRY_MAX_DELAY - Maximum retry delay in seconds (default: 30, maximum: 120)
+#   FABRIC_API_CONNECT_TIMEOUT - Connection timeout in seconds (default: 10, maximum: 60)
+#   FABRIC_API_REQUEST_TIMEOUT - Total request timeout in seconds (default: 60, maximum: 600)
+#   FABRIC_API_MAX_PAGES - Maximum item-list pages (default: 100, maximum: 1000)
+#   FABRIC_API_POLL_TIMEOUT - Long-running operation timeout in seconds (default: 300, maximum: 3600)
+#   FABRIC_API_POLL_INTERVAL - Long-running operation poll interval in seconds (default: 5, maximum: 60)
 
 set -e
 set -o pipefail
 
+fabric_bounded_config() {
+  local name="$1"
+  local value="$2"
+  local minimum="$3"
+  local maximum="$4"
+
+  if [[ ! "$value" =~ ^[0-9]+$ ]] || ((value < minimum)); then
+    echo "[ ERROR ]: $name must be an integer greater than or equal to $minimum" >&2
+    return 1
+  fi
+  if ((value > maximum)); then
+    echo "[ WARN ]: $name capped at $maximum" >&2
+    value="$maximum"
+  fi
+  printf '%s\n' "$value"
+}
+
 # API Configuration
 readonly FABRIC_API_BASE_URL="${FABRIC_API_BASE_URL:-https://api.fabric.microsoft.com/v1}"
+FABRIC_API_MAX_ATTEMPTS=$(fabric_bounded_config FABRIC_API_MAX_ATTEMPTS "${FABRIC_API_MAX_ATTEMPTS:-4}" 1 10) || exit 1
+FABRIC_API_RETRY_BASE_DELAY=$(fabric_bounded_config FABRIC_API_RETRY_BASE_DELAY "${FABRIC_API_RETRY_BASE_DELAY:-1}" 0 60) || exit 1
+FABRIC_API_RETRY_MAX_DELAY=$(fabric_bounded_config FABRIC_API_RETRY_MAX_DELAY "${FABRIC_API_RETRY_MAX_DELAY:-30}" 0 120) || exit 1
+FABRIC_API_CONNECT_TIMEOUT=$(fabric_bounded_config FABRIC_API_CONNECT_TIMEOUT "${FABRIC_API_CONNECT_TIMEOUT:-10}" 1 60) || exit 1
+FABRIC_API_REQUEST_TIMEOUT=$(fabric_bounded_config FABRIC_API_REQUEST_TIMEOUT "${FABRIC_API_REQUEST_TIMEOUT:-60}" 1 600) || exit 1
+FABRIC_API_MAX_PAGES=$(fabric_bounded_config FABRIC_API_MAX_PAGES "${FABRIC_API_MAX_PAGES:-100}" 1 1000) || exit 1
+FABRIC_API_POLL_TIMEOUT=$(fabric_bounded_config FABRIC_API_POLL_TIMEOUT "${FABRIC_API_POLL_TIMEOUT:-300}" 1 3600) || exit 1
+FABRIC_API_POLL_INTERVAL=$(fabric_bounded_config FABRIC_API_POLL_INTERVAL "${FABRIC_API_POLL_INTERVAL:-5}" 1 60) || exit 1
+readonly FABRIC_API_MAX_ATTEMPTS FABRIC_API_RETRY_BASE_DELAY FABRIC_API_RETRY_MAX_DELAY
+readonly FABRIC_API_CONNECT_TIMEOUT FABRIC_API_REQUEST_TIMEOUT FABRIC_API_MAX_PAGES
+readonly FABRIC_API_POLL_TIMEOUT FABRIC_API_POLL_INTERVAL
 readonly FABRIC_RESOURCE="https://api.fabric.microsoft.com"
 readonly STORAGE_RESOURCE="https://storage.azure.com"
 readonly ONELAKE_DFS_URL="https://onelake.dfs.fabric.microsoft.com"
 readonly KUSTO_RESOURCE="https://kusto.kusto.windows.net"
+
+if ((FABRIC_API_RETRY_BASE_DELAY > FABRIC_API_RETRY_MAX_DELAY)); then
+  echo "[ ERROR ]: FABRIC_API_RETRY_BASE_DELAY cannot exceed FABRIC_API_RETRY_MAX_DELAY" >&2
+  exit 1
+fi
 
 # Verify required tools
 for cmd in curl jq az; do
@@ -53,13 +94,155 @@ get_kusto_token() {
     --output tsv
 }
 
+fabric_sleep() {
+  sleep "$1"
+}
+
+fabric_retry_jitter() {
+  local ceiling="$1"
+  if ((ceiling == 0)); then
+    printf '0\n'
+  else
+    printf '%s\n' "$((RANDOM % (ceiling + 1)))"
+  fi
+}
+
+fabric_retry_wait() {
+  local attempt="$1"
+  local retry_after="${2:-}"
+  local delay="$FABRIC_API_RETRY_BASE_DELAY"
+
+  if [[ "$retry_after" =~ ^[0-9]+$ ]]; then
+    delay="$retry_after"
+    ((delay > FABRIC_API_RETRY_MAX_DELAY)) && delay="$FABRIC_API_RETRY_MAX_DELAY"
+  else
+    local exponent=$((attempt - 1))
+    while ((exponent > 0 && delay < FABRIC_API_RETRY_MAX_DELAY)); do
+      delay=$((delay * 2))
+      ((delay > FABRIC_API_RETRY_MAX_DELAY)) && delay="$FABRIC_API_RETRY_MAX_DELAY"
+      ((exponent--))
+    done
+    delay=$(fabric_retry_jitter "$delay")
+  fi
+
+  fabric_sleep "$delay"
+}
+
+fabric_api_url() {
+  local endpoint="$1"
+  if [[ "$endpoint" =~ ^https:// ]]; then
+    printf '%s\n' "$endpoint"
+  else
+    printf '%s%s\n' "$FABRIC_API_BASE_URL" "$endpoint"
+  fi
+}
+
+# Retries curl transport failures and HTTP 408, 429, and 5xx responses only.
+fabric_api_request() (
+  local method="$1"
+  local endpoint="$2"
+  local body_file="${3:-}"
+  local token="$4"
+  local url
+  url=$(fabric_api_url "$endpoint")
+
+  local attempt=1
+  while ((attempt <= FABRIC_API_MAX_ATTEMPTS)); do
+    local headers_file response_file http_code curl_status response_body retry_after
+    headers_file=$(mktemp)
+    response_file=$(mktemp)
+    trap 'rm -f "$headers_file" "$response_file"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+
+    local curl_args=(
+      --silent
+      --show-error
+      --connect-timeout "$FABRIC_API_CONNECT_TIMEOUT"
+      --max-time "$FABRIC_API_REQUEST_TIMEOUT"
+      --dump-header "$headers_file"
+      --output "$response_file"
+      --write-out "%{http_code}"
+      --request "$method"
+      "$url"
+      --header "Authorization: Bearer $token"
+      --header "Content-Type: application/json"
+    )
+    if [[ -n "$body_file" ]]; then
+      curl_args+=(--data-binary "@$body_file")
+    fi
+
+    if http_code=$(curl "${curl_args[@]}"); then
+      curl_status=0
+    else
+      curl_status=$?
+    fi
+    response_body=$(cat "$response_file")
+
+    if ((curl_status != 0)); then
+      rm -f "$headers_file" "$response_file"
+      if ((attempt < FABRIC_API_MAX_ATTEMPTS)); then
+        echo "[ WARN ]: Fabric API transport failed (curl $curl_status); retrying attempt $((attempt + 1))/$FABRIC_API_MAX_ATTEMPTS" >&2
+        fabric_retry_wait "$attempt"
+        ((attempt++))
+        continue
+      fi
+      echo "[ ERROR ]: Fabric API transport failed after $attempt attempts (curl $curl_status)" >&2
+      echo "[ ERROR ]: Endpoint: $method $url" >&2
+      return 1
+    fi
+
+    case "$http_code" in
+      200 | 201)
+        rm -f "$headers_file" "$response_file"
+        printf '%s\n' "$response_body"
+        return 0
+        ;;
+      204)
+        rm -f "$headers_file" "$response_file"
+        printf '{}\n'
+        return 0
+        ;;
+      202)
+        local location operation_id
+        location=$(awk 'tolower($1) == "location:" {sub(/\r$/, "", $2); print $2; exit}' "$headers_file")
+        operation_id=$(awk 'tolower($1) == "x-ms-operation-id:" {sub(/\r$/, "", $2); print $2; exit}' "$headers_file")
+        rm -f "$headers_file" "$response_file"
+
+        if [[ -n "$location" ]]; then
+          echo "[ INFO ]: Long-running operation, polling for completion..." >&2
+          poll_operation "$location" "$token" "$FABRIC_API_POLL_TIMEOUT"
+          return $?
+        elif [[ -n "$operation_id" ]]; then
+          echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
+          poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" "$FABRIC_API_POLL_TIMEOUT"
+          return $?
+        fi
+        echo "[ ERROR ]: Fabric API returned HTTP 202 without an operation reference" >&2
+        echo "[ ERROR ]: Endpoint: $method $url" >&2
+        return 1
+        ;;
+      408 | 429 | 5??)
+        retry_after=$(awk 'tolower($1) == "retry-after:" {sub(/\r$/, "", $2); print $2; exit}' "$headers_file")
+        rm -f "$headers_file" "$response_file"
+        if ((attempt < FABRIC_API_MAX_ATTEMPTS)); then
+          echo "[ WARN ]: Fabric API returned HTTP $http_code; retrying attempt $((attempt + 1))/$FABRIC_API_MAX_ATTEMPTS" >&2
+          fabric_retry_wait "$attempt" "$retry_after"
+          ((attempt++))
+          continue
+        fi
+        ;;
+    esac
+
+    rm -f "$headers_file" "$response_file"
+    echo "[ ERROR ]: API call failed with HTTP $http_code after $attempt attempt(s)" >&2
+    echo "[ ERROR ]: Endpoint: $method $url" >&2
+    echo "[ ERROR ]: Response: $response_body" >&2
+    return 1
+  done
+)
+
 # Generic Fabric API call with error handling (file-based for large payloads)
-# Arguments:
-#   $1 - HTTP method (GET, POST, PUT, PATCH, DELETE)
-#   $2 - API endpoint (relative to base URL, e.g., "/workspaces")
-#   $3 - Path to file containing request body JSON, or empty
-#   $4 - Bearer token (optional, will fetch if not provided)
-# Returns: Response body on success, exits on error
 fabric_api_call_file() {
   local method="$1"
   local endpoint="$2"
@@ -69,152 +252,38 @@ fabric_api_call_file() {
   if [[ -z "$token" ]]; then
     token=$(get_fabric_token)
   fi
-
-  local url="${FABRIC_API_BASE_URL}${endpoint}"
-  local headers_file response http_code response_body
-
-  headers_file=$(mktemp)
-
-  if [[ -n "$body_file" && -f "$body_file" ]]; then
-    response=$(curl -s -w "\n%{http_code}" -D "$headers_file" -X "$method" "$url" \
-      -H "Authorization: Bearer $token" \
-      -H "Content-Type: application/json" \
-      -d @"$body_file")
-  else
-    response=$(curl -s -w "\n%{http_code}" -D "$headers_file" -X "$method" "$url" \
-      -H "Authorization: Bearer $token" \
-      -H "Content-Type: application/json")
+  if [[ -n "$body_file" && ! -f "$body_file" ]]; then
+    echo "[ ERROR ]: Request body file not found: $body_file" >&2
+    return 1
   fi
 
-  http_code=$(echo "$response" | tail -c 4)
-  response_body=$(echo "$response" | sed '$d')
-
-  # Handle different response codes
-  case "$http_code" in
-    200 | 201)
-      rm -f "$headers_file"
-      echo "$response_body"
-      return 0
-      ;;
-    204)
-      rm -f "$headers_file"
-      echo "{}"
-      return 0
-      ;;
-    202)
-      # Long-running operation - check for Location header and poll
-      local location operation_id
-      location=$(grep -i "^Location:" "$headers_file" | sed 's/^[Ll]ocation: *//' | tr -d '\r')
-      operation_id=$(grep -i "^x-ms-operation-id:" "$headers_file" | sed 's/^x-ms-operation-id: *//' | tr -d '\r')
-      rm -f "$headers_file"
-
-      if [[ -n "$location" ]]; then
-        echo "[ INFO ]: Long-running operation, polling for completion..." >&2
-        poll_operation "$location" "$token" 300
-        return $?
-      elif [[ -n "$operation_id" ]]; then
-        echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
-        poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
-        return $?
-      else
-        # No location header, return body if any
-        echo "$response_body"
-        return 0
-      fi
-      ;;
-    *)
-      rm -f "$headers_file"
-      echo "[ ERROR ]: API call failed with HTTP $http_code" >&2
-      echo "[ ERROR ]: Endpoint: $method $url" >&2
-      echo "[ ERROR ]: Response: $response_body" >&2
-      return 1
-      ;;
-  esac
+  fabric_api_request "$method" "$endpoint" "$body_file" "$token"
 }
 
 # Generic Fabric API call with error handling
-# Arguments:
-#   $1 - HTTP method (GET, POST, PUT, PATCH, DELETE)
-#   $2 - API endpoint (relative to base URL, e.g., "/workspaces")
-#   $3 - Request body (JSON string or empty)
-#   $4 - Bearer token (optional, will fetch if not provided)
-# Returns: Response body on success, exits on error
-fabric_api_call() {
+fabric_api_call() (
   local method="$1"
   local endpoint="$2"
   local body="${3:-}"
   local token="${4:-}"
+  local body_file=""
 
   if [[ -z "$token" ]]; then
     token=$(get_fabric_token)
   fi
-
-  local url="${FABRIC_API_BASE_URL}${endpoint}"
-  local headers_file response http_code response_body
-
-  headers_file=$(mktemp)
-
   if [[ -n "$body" ]]; then
-    # Use file-based approach to avoid shell argument length limits
-    local body_file
     body_file=$(mktemp)
-    echo "$body" >"$body_file"
-    response=$(curl -s -w "\n%{http_code}" -D "$headers_file" -X "$method" "$url" \
-      -H "Authorization: Bearer $token" \
-      -H "Content-Type: application/json" \
-      -d @"$body_file")
-    rm -f "$body_file"
-  else
-    response=$(curl -s -w "\n%{http_code}" -D "$headers_file" -X "$method" "$url" \
-      -H "Authorization: Bearer $token" \
-      -H "Content-Type: application/json")
+    trap 'rm -f "$body_file"' EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+    printf '%s\n' "$body" >"$body_file"
   fi
 
-  http_code=$(echo "$response" | tail -c 4)
-  response_body=$(echo "$response" | sed '$d')
-
-  # Handle different response codes
-  case "$http_code" in
-    200 | 201)
-      rm -f "$headers_file"
-      echo "$response_body"
-      return 0
-      ;;
-    204)
-      rm -f "$headers_file"
-      echo "{}"
-      return 0
-      ;;
-    202)
-      # Long-running operation - check for Location header and poll
-      local location operation_id
-      location=$(grep -i "^Location:" "$headers_file" | sed 's/^[Ll]ocation: *//' | tr -d '\r')
-      operation_id=$(grep -i "^x-ms-operation-id:" "$headers_file" | sed 's/^x-ms-operation-id: *//' | tr -d '\r')
-      rm -f "$headers_file"
-
-      if [[ -n "$location" ]]; then
-        echo "[ INFO ]: Long-running operation, polling for completion..." >&2
-        poll_operation "$location" "$token" 300
-        return $?
-      elif [[ -n "$operation_id" ]]; then
-        echo "[ INFO ]: Long-running operation ID: $operation_id, polling..." >&2
-        poll_operation "${FABRIC_API_BASE_URL}/operations/${operation_id}" "$token" 300
-        return $?
-      else
-        # No location header, return body if any
-        echo "$response_body"
-        return 0
-      fi
-      ;;
-    *)
-      rm -f "$headers_file"
-      echo "[ ERROR ]: API call failed with HTTP $http_code" >&2
-      echo "[ ERROR ]: Endpoint: $method $url" >&2
-      echo "[ ERROR ]: Response: $response_body" >&2
-      return 1
-      ;;
-  esac
-}
+  local status=0
+  fabric_api_request "$method" "$endpoint" "$body_file" "$token" || status=$?
+  [[ -n "$body_file" ]] && rm -f "$body_file"
+  return "$status"
+)
 
 # Poll long-running operation until completion
 # Arguments:
@@ -232,26 +301,34 @@ poll_operation() {
   fi
 
   local elapsed=0
-  local sleep_interval=5
+  local sleep_interval="$FABRIC_API_POLL_INTERVAL"
 
   while [[ $elapsed -lt $max_wait ]]; do
     local response
-    response=$(curl -s -X GET "$operation_url" \
-      -H "Authorization: Bearer $token")
+    if ! response=$(fabric_api_request "GET" "$operation_url" "" "$token"); then
+      return 1
+    fi
+
+    if ! jq -e '
+      type == "object"
+      and ((.status // .Status) | type == "string" and length > 0)
+    ' <<<"$response" >/dev/null; then
+      echo "[ ERROR ]: Operation returned malformed status JSON" >&2
+      return 1
+    fi
 
     local status
-    status=$(echo "$response" | jq -r '.status // .Status // "Unknown"')
+    status=$(jq -r '.status // .Status' <<<"$response")
 
     case "$status" in
       "Succeeded" | "succeeded")
         # Fetch the result endpoint to get the created item
         local result_url="${operation_url}/result"
         local result_response
-        result_response=$(curl -s -X GET "$result_url" \
-          -H "Authorization: Bearer $token")
+        result_response=$(fabric_api_request "GET" "$result_url" "" "$token") || result_response=""
 
         # Return result if valid, otherwise check for createdItem in status response
-        if [[ -n "$result_response" && "$result_response" != "null" ]]; then
+        if jq -e 'type == "object"' <<<"$result_response" >/dev/null 2>&1; then
           local result_id
           result_id=$(echo "$result_response" | jq -r '.id // empty')
           if [[ -n "$result_id" ]]; then
@@ -270,20 +347,19 @@ poll_operation() {
         fi
         return 0
         ;;
-      "Failed" | "failed")
-        echo "[ ERROR ]: Operation failed" >&2
+      "Failed" | "failed" | "Cancelled" | "cancelled" | "Canceled" | "canceled")
+        echo "[ ERROR ]: Operation reached terminal failure state: $status" >&2
         echo "$response" >&2
         return 1
         ;;
       "Running" | "running" | "InProgress" | "inProgress" | "NotStarted" | "notStarted")
         echo "[ INFO ]: Operation status: $status (${elapsed}s/${max_wait}s)" >&2
-        sleep "$sleep_interval"
+        fabric_sleep "$sleep_interval"
         ((elapsed += sleep_interval))
         ;;
       *)
-        echo "[ WARN ]: Unknown operation status: $status" >&2
-        sleep "$sleep_interval"
-        ((elapsed += sleep_interval))
+        echo "[ ERROR ]: Operation returned unsupported status: $status" >&2
+        return 1
         ;;
     esac
   done
@@ -466,8 +542,106 @@ get_or_create_semantic_model() {
   echo "$response"
 }
 
-# Get or create generic Fabric item (idempotent)
-get_or_create_item() {
+# List every item page for an exact Fabric item type.
+list_workspace_items_paginated() {
+  local workspace_id="$1"
+  local item_type="$2"
+  local token="${3:-}"
+
+  if [[ -z "$token" ]]; then
+    token=$(get_fabric_token)
+  fi
+
+  local encoded_type endpoint
+  encoded_type=$(jq -rn --arg value "$item_type" '$value | @uri')
+  endpoint="/workspaces/$workspace_id/items?type=$encoded_type"
+
+  local page_count=0
+  local result='{"value":[]}'
+  declare -A visited_endpoints=()
+
+  while [[ -n "$endpoint" ]]; do
+    ((page_count += 1))
+    if ((page_count > FABRIC_API_MAX_PAGES)); then
+      echo "[ ERROR ]: Fabric item pagination exceeded $FABRIC_API_MAX_PAGES pages" >&2
+      return 1
+    fi
+    if [[ -n "${visited_endpoints[$endpoint]:-}" ]]; then
+      echo "[ ERROR ]: Fabric item pagination cycle detected" >&2
+      return 1
+    fi
+    visited_endpoints[$endpoint]=1
+
+    local page
+    if ! page=$(fabric_api_call "GET" "$endpoint" "" "$token"); then
+      return 1
+    fi
+    if ! jq -e '
+      type == "object"
+      and (.value | type == "array")
+      and (.continuationUri == null or (.continuationUri | type == "string" and length > 0))
+      and (.continuationToken == null or (.continuationToken | type == "string" and length > 0))
+    ' <<<"$page" >/dev/null; then
+      echo "[ ERROR ]: Fabric item list returned a malformed page" >&2
+      return 1
+    fi
+    if ! result=$(jq --argjson items "$(jq '.value' <<<"$page")" '.value += $items' <<<"$result"); then
+      return 1
+    fi
+
+    local continuation_uri continuation_token
+    continuation_uri=$(jq -r '.continuationUri // empty' <<<"$page")
+    continuation_token=$(jq -r '.continuationToken // empty' <<<"$page")
+    if [[ -n "$continuation_uri" ]]; then
+      if [[ "$continuation_uri" == "$FABRIC_API_BASE_URL"/* || "$continuation_uri" == /* ]]; then
+        endpoint="$continuation_uri"
+      else
+        echo "[ ERROR ]: Fabric item pagination returned an unexpected continuation URI" >&2
+        return 1
+      fi
+    elif [[ -n "$continuation_token" ]]; then
+      if [[ "$continuation_token" == *['&?#']* ]]; then
+        echo "[ ERROR ]: Fabric item pagination returned an invalid continuation token" >&2
+        return 1
+      fi
+      endpoint="/workspaces/$workspace_id/items?type=$encoded_type&continuationToken=$continuation_token"
+    else
+      endpoint=""
+    fi
+  done
+
+  printf '%s\n' "$result"
+}
+
+# Return no item or one exact display-name match; duplicate names fail closed.
+select_workspace_item_by_display_name() {
+  local workspace_id="$1"
+  local item_type="$2"
+  local item_name="$3"
+  local token="${4:-}"
+  local existing matches match_count
+
+  if ! existing=$(list_workspace_items_paginated "$workspace_id" "$item_type" "$token"); then
+    return 1
+  fi
+  if ! matches=$(jq -ec --arg name "$item_name" '[.value[] | select(.displayName == $name)]' <<<"$existing"); then
+    return 1
+  fi
+  match_count=$(jq 'length' <<<"$matches")
+  if ((match_count > 1)); then
+    echo "[ ERROR ]: Multiple $item_type items have display name '$item_name'; refusing to mutate" >&2
+    return 1
+  fi
+  if ((match_count == 1)); then
+    if ! jq -e '.[0] | type == "object" and (.id | type == "string" and length > 0)' <<<"$matches" >/dev/null; then
+      echo "[ ERROR ]: Selected $item_type item is missing a valid ID" >&2
+      return 1
+    fi
+    jq -c '.[0]' <<<"$matches"
+  fi
+}
+
+create_item() {
   local workspace_id="$1"
   local item_type="$2"
   local item_name="$3"
@@ -477,30 +651,39 @@ get_or_create_item() {
     token=$(get_fabric_token)
   fi
 
-  # Check if item exists
-  local existing
-  existing=$(fabric_api_call "GET" "/workspaces/$workspace_id/items?type=$item_type" "" "$token")
+  echo "[ INFO ]: Creating $item_type '$item_name'..." >&2
+  local body
+  if ! body=$(jq -n \
+    --arg name "$item_name" \
+    --arg type "$item_type" \
+    '{"displayName": $name, "type": $type}'); then
+    return 1
+  fi
 
-  local item_id
-  item_id=$(echo "$existing" | jq -r ".value[] | select(.displayName == \"$item_name\") | .id")
+  fabric_api_call "POST" "/workspaces/$workspace_id/items" "$body" "$token"
+}
 
-  if [[ -n "$item_id" ]]; then
+# Get or create generic Fabric item (idempotent)
+get_or_create_item() {
+  local workspace_id="$1"
+  local item_type="$2"
+  local item_name="$3"
+  local token="${4:-}"
+  local existing_item
+
+  if ! existing_item=$(select_workspace_item_by_display_name "$workspace_id" "$item_type" "$item_name" "$token"); then
+    return 1
+  fi
+
+  if [[ -n "$existing_item" ]]; then
+    local item_id
+    item_id=$(jq -r '.id' <<<"$existing_item")
     echo "[ INFO ]: $item_type '$item_name' already exists: $item_id" >&2
-    echo "$existing" | jq ".value[] | select(.id == \"$item_id\")"
+    printf '%s\n' "$existing_item"
     return 0
   fi
 
-  # Create new item
-  echo "[ INFO ]: Creating $item_type '$item_name'..." >&2
-  local body
-  body=$(jq -n \
-    --arg name "$item_name" \
-    --arg type "$item_type" \
-    '{"displayName": $name, "type": $type}')
-
-  local response
-  response=$(fabric_api_call "POST" "/workspaces/$workspace_id/items" "$body" "$token")
-  echo "$response"
+  create_item "$workspace_id" "$item_type" "$item_name" "$token"
 }
 
 # Get or create Ontology item (idempotent)
@@ -509,6 +692,15 @@ get_or_create_ontology() {
   local ontology_name="$2"
   local token="${3:-}"
   get_or_create_item "$workspace_id" "Ontology" "$ontology_name" "$token"
+}
+
+# Get an existing item's definition
+get_item_definition() {
+  local workspace_id="$1"
+  local item_id="$2"
+  local token="${3:-}"
+
+  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/getDefinition" '{}' "$token"
 }
 
 # Update item definition
@@ -523,9 +715,11 @@ update_item_definition() {
   fi
 
   local body
-  body=$(jq -n --argjson parts "$definition_parts" '{"definition": {"parts": $parts}}')
+  if ! body=$(jq -n --argjson parts "$definition_parts" '{"definition": {"parts": $parts}}'); then
+    return 1
+  fi
 
-  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/updateDefinition" "$body" "$token"
+  fabric_api_call "POST" "/workspaces/$workspace_id/items/$item_id/updateDefinition?updateMetadata=true" "$body" "$token"
 }
 
 # Upload file to OneLake via DFS API
