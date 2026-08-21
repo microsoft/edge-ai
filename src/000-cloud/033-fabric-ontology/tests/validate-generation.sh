@@ -368,6 +368,7 @@ MOCK_CURL_INVOCATIONS="$TEST_ROOT/curl-invocations.txt"
 MOCK_SLEEP_DELAYS="$TEST_ROOT/sleep-delays.txt"
 MOCK_CURL_SCENARIO=""
 
+# shellcheck disable=SC2317 # This mock is exercised before being undefined.
 curl() {
   printf '%q ' "$@" >>"$MOCK_CURL_INVOCATIONS"
   printf '\n' >>"$MOCK_CURL_INVOCATIONS"
@@ -530,6 +531,7 @@ MOCK_PAGE_CALLS="$TEST_ROOT/page-calls.txt"
 MOCK_POST_CALLS="$TEST_ROOT/post-calls.txt"
 MOCK_PAGE_SCENARIO="second-page"
 
+# shellcheck disable=SC2317 # This mock is exercised before being redefined.
 fabric_api_call() {
   local method="$1"
   local endpoint="$2"
@@ -598,6 +600,7 @@ echo "[ OK    ]: Malformed pagination responses fail closed"
 
 EXPECTED_PARTS='[{"path":"definition.json","payload":"e30=","payloadType":"InlineBase64"}]'
 
+# shellcheck disable=SC2317 # This mock is exercised before being redefined.
 fabric_api_call() {
   local method="$1"
   local endpoint="$2"
