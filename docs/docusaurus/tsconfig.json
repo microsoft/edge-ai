@@ -1,5 +1,6 @@
 {
   "extends": "@docusaurus/tsconfig",
-  "compilerOptions": {    "types": ["jest", "node"]
+  "compilerOptions": {
+    "types": ["jest", "node"]
   }
 }
