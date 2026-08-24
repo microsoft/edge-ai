@@ -1259,8 +1259,10 @@ fi
 # Pre-generate all IDs to avoid subshell issues with associative arrays
 pre_generate_ids
 ID_MAPPING=$(build_id_mapping)
-write_json_atomically "$ID_MAPPING_OUTPUT" "$ID_MAPPING"
-info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
+if [[ "$DRY_RUN" != "true" ]]; then
+  write_json_atomically "$ID_MAPPING_OUTPUT" "$ID_MAPPING"
+  info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
+fi
 
 # Build ontology definition parts
 DEFINITION_PARTS=$(build_ontology_definition)
@@ -1289,7 +1291,7 @@ fi
 
 log "Deployment Complete"
 if [[ "$DRY_RUN" == "true" ]]; then
-  warn "DRY RUN - No ontology was published and no publication output was written"
+  warn "DRY RUN - No ontology was published and no evidence output was written"
 else
   PUBLICATION_RESULT=$(jq -n \
     --arg workspaceId "$WORKSPACE_ID" \

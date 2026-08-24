@@ -158,7 +158,7 @@ publisher-lakehouse-id
 --dry-run
 EOF
 ) "$TEST_ROOT/publisher-dry-run-args.txt"
-grep -F "No ontology was published and no publication output was written" \
+grep -F "No ontology was published and no evidence output was written" \
   "$TEST_ROOT/publisher-dry-run.stderr" >/dev/null
 echo "[ OK    ]: Publisher dry run requires and forwards no output paths"
 
@@ -419,23 +419,35 @@ fi
 echo "[ OK    ]: Failed update retains recovery evidence without publication success or temporary outputs"
 
 MOCK_DEFINITION_STATE="$TEST_ROOT/dry-run-definition.json" \
-  ID_MAPPING_OUTPUT="$TEST_ROOT/dry-run-id-mapping.json" \
   "$TEST_ROOT/ontology-scripts/deploy-ontology.sh" \
   --definition "$COMPONENT_DIR/tests/definitions/valid-static.yaml" \
   --workspace-id "publisher-workspace-id" \
   --lakehouse-id "publisher-lakehouse-id" \
   --output "$TEST_ROOT/dry-run-publication.json" \
+  --rollback-output "$TEST_ROOT/dry-run-rollback.json" \
+  --diff-output "$TEST_ROOT/dry-run-semantic-diff.json" \
+  --id-mapping-output "$TEST_ROOT/dry-run-id-mapping.json" \
   --dry-run \
   >"$TEST_ROOT/dry-run.stdout" 2>"$TEST_ROOT/dry-run.stderr"
 
 [[ ! -s "$TEST_ROOT/dry-run.stdout" ]]
-[[ ! -e "$TEST_ROOT/dry-run-publication.json" ]]
+for evidence_path in \
+  "$TEST_ROOT/dry-run-publication.json" \
+  "$TEST_ROOT/dry-run-rollback.json" \
+  "$TEST_ROOT/dry-run-semantic-diff.json" \
+  "$TEST_ROOT/dry-run-id-mapping.json"; do
+  if [[ -e "$evidence_path" ]]; then
+    echo "[ ERROR ]: Dry run wrote evidence output: $evidence_path" >&2
+    exit 1
+  fi
+done
 if grep -F "Ontology ID:" "$TEST_ROOT/dry-run.stderr" >/dev/null; then
   echo "[ ERROR ]: Dry run claimed a published ontology ID" >&2
   exit 1
 fi
-grep -F "No ontology was published" "$TEST_ROOT/dry-run.stderr" >/dev/null
-echo "[ OK    ]: Dry run writes no publication result and claims no ontology ID"
+grep -F "No ontology was published and no evidence output was written" \
+  "$TEST_ROOT/dry-run.stderr" >/dev/null
+echo "[ OK    ]: Dry run writes no publication, rollback, diff, or mapping evidence"
 
 source "$COMPONENT_DIR/scripts/lib/fabric-api.sh"
 

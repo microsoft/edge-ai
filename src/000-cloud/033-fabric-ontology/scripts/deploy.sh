@@ -134,7 +134,7 @@ fi
 "$SCRIPT_DIR/deploy-ontology.sh" "${deploy_args[@]}"
 
 if [[ "$DRY_RUN" == "true" ]]; then
-  warn "DRY RUN - No ontology was published and no publication output was written"
+  warn "DRY RUN - No ontology was published and no evidence output was written"
 else
   ok "Ontology publication result: $OUTPUT_FILE"
 fi
