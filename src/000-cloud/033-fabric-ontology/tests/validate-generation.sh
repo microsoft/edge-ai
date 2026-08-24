@@ -489,17 +489,27 @@ curl() {
       printf '{}' >"$response_file"
       printf '202'
       ;;
-    async-success:2)
+    async-relative:1)
+      printf 'HTTP/1.1 202 Accepted\r\nLocation: /v1/operations/relative-operation-id\r\n\r\n' >"$headers_file"
+      printf '{}' >"$response_file"
+      printf '202'
+      ;;
+    async-hostile:1)
+      printf 'HTTP/1.1 202 Accepted\r\nLocation: https://attacker.example/operations/stolen-token\r\n\r\n' >"$headers_file"
+      printf '{}' >"$response_file"
+      printf '202'
+      ;;
+    async-success:2 | async-relative:2)
       printf 'HTTP/1.1 200 OK\r\n\r\n' >"$headers_file"
       printf '{"status":"Running"}' >"$response_file"
       printf '200'
       ;;
-    async-success:3)
+    async-success:3 | async-relative:3)
       printf 'HTTP/1.1 200 OK\r\n\r\n' >"$headers_file"
       printf '{"status":"Succeeded","createdItem":{"id":"created-id"}}' >"$response_file"
       printf '200'
       ;;
-    async-success:4)
+    async-success:4 | async-relative:4)
       printf 'HTTP/1.1 200 OK\r\n\r\n' >"$headers_file"
       printf '{"id":"created-id"}' >"$response_file"
       printf '200'
@@ -626,6 +636,25 @@ async_result=$(fabric_api_call "POST" "/async-success" '{}' "test-token")
 [[ $(jq -r '.id' <<<"$async_result") == "created-id" ]]
 [[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 4 ]]
 echo "[ OK    ]: HTTP 202 succeeds only after Running reaches terminal Succeeded"
+
+reset_transport_mock async-relative
+async_result=$(fabric_api_call "POST" "/async-relative" '{}' "test-token")
+[[ $(jq -r '.id' <<<"$async_result") == "created-id" ]]
+grep -F -- "https://api.fabric.microsoft.com/v1/operations/relative-operation-id" \
+  "$MOCK_CURL_INVOCATIONS" >/dev/null
+echo "[ OK    ]: Relative operation locations resolve against the Fabric API origin"
+
+reset_transport_mock async-hostile
+if fabric_api_call "POST" "/async-hostile" '{}' "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: Cross-origin operation location unexpectedly succeeded" >&2
+  exit 1
+fi
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 1 ]]
+if grep -F -- "attacker.example" "$MOCK_CURL_INVOCATIONS" >/dev/null; then
+  echo "[ ERROR ]: Cross-origin operation location received a Fabric request" >&2
+  exit 1
+fi
+echo "[ OK    ]: Cross-origin operation locations are rejected before authorization"
 
 unset -f curl
 

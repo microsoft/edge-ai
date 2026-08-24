@@ -130,10 +130,28 @@ fabric_retry_wait() {
 
 fabric_api_url() {
   local endpoint="$1"
-  if [[ "$endpoint" =~ ^https:// ]]; then
+  local base_origin
+
+  if [[ ! "$FABRIC_API_BASE_URL" =~ ^(https://[^/]+)(/.*)?$ ]]; then
+    echo "[ ERROR ]: FABRIC_API_BASE_URL must be an absolute HTTPS URL" >&2
+    return 1
+  fi
+  base_origin="${BASH_REMATCH[1]}"
+
+  if [[ "$endpoint" =~ ^(https://[^/]+)(/.*)?$ ]]; then
+    local endpoint_origin="${BASH_REMATCH[1]}"
+    if [[ "${endpoint_origin,,}" != "${base_origin,,}" ]]; then
+      echo "[ ERROR ]: Refusing to send Fabric authorization to a different origin: $endpoint_origin" >&2
+      return 1
+    fi
     printf '%s\n' "$endpoint"
+  elif [[ "$endpoint" == /* ]]; then
+    printf '%s%s\n' "$base_origin" "$endpoint"
+  elif [[ "$endpoint" =~ ^[A-Za-z][A-Za-z0-9+.-]*: || "$endpoint" == //* ]]; then
+    echo "[ ERROR ]: Invalid Fabric API endpoint: $endpoint" >&2
+    return 1
   else
-    printf '%s%s\n' "$FABRIC_API_BASE_URL" "$endpoint"
+    printf '%s/%s\n' "${FABRIC_API_BASE_URL%/}" "$endpoint"
   fi
 }
 
@@ -155,7 +173,9 @@ fabric_api_request() (
   local body_file="${3:-}"
   local token="$4"
   local url
-  url=$(fabric_api_url "$endpoint")
+  if ! url=$(fabric_api_url "$endpoint"); then
+    return 1
+  fi
 
   local max_attempts=1
   if fabric_method_is_idempotent "$method"; then
