@@ -22,7 +22,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install Rust via rustup-init with sha256 verification (OSSF Pinned-Dependencies)
 ARG RUST_TOOLCHAIN=1.90.0
-RUN set -eux; \
+RUN --mount=type=secret,id=build_root_ca \
+    set -eux; \
+    if [[ -f /run/secrets/build_root_ca ]]; then \
+        cp /run/secrets/build_root_ca /etc/pki/ca-trust/source/anchors/build-root-ca.crt; \
+        update-ca-trust; \
+    fi; \
     case "$(uname -m)" in \
         x86_64)  RUSTUP_ARCH="x86_64-unknown-linux-gnu" ;; \
         aarch64) RUSTUP_ARCH="aarch64-unknown-linux-gnu" ;; \
@@ -37,7 +42,11 @@ RUN set -eux; \
     echo "$(cut -d ' ' -f 1 "${RUSTUP_HASH}")  ${RUSTUP_INIT}" | sha256sum -c -; \
     chmod +x "${RUSTUP_INIT}"; \
     "${RUSTUP_INIT}" -y --profile minimal --default-toolchain "${RUST_TOOLCHAIN}" --component rustc,cargo,rust-std; \
-    rm -rf "${RUSTUP_DIR}" "${RUSTUP_HASH}"
+    rm -rf "${RUSTUP_DIR}" "${RUSTUP_HASH}"; \
+    if [[ -f /etc/pki/ca-trust/source/anchors/build-root-ca.crt ]]; then \
+        rm -f /etc/pki/ca-trust/source/anchors/build-root-ca.crt; \
+        update-ca-trust; \
+    fi
 
 # Add Rust binaries to PATH for subsequent RUN commands
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -53,7 +62,17 @@ COPY Cargo.toml Cargo.lock ./
 COPY .cargo/ .cargo/
 COPY src/ ./src/
 
-RUN cargo build --release
+RUN --mount=type=secret,id=build_root_ca \
+    set -eux; \
+    if [[ -f /run/secrets/build_root_ca ]]; then \
+        cp /run/secrets/build_root_ca /etc/pki/ca-trust/source/anchors/build-root-ca.crt; \
+        update-ca-trust; \
+    fi; \
+    cargo build --release; \
+    if [[ -f /etc/pki/ca-trust/source/anchors/build-root-ca.crt ]]; then \
+        rm -f /etc/pki/ca-trust/source/anchors/build-root-ca.crt; \
+        update-ca-trust; \
+    fi
 
 # =============================================================================
 # STAGE 2: Runtime - Creates the minimal production image

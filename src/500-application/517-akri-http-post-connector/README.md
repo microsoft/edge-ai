@@ -2,7 +2,7 @@
 title: Akri HTTP POST Connector
 description: POST-only Rust Akri custom connector for Azure IoT Operations with textual request bodies and configurable request content type
 author: Edge AI Team
-ms.date: 2026-08-04
+ms.date: 2026-08-24
 ms.topic: reference
 keywords:
   - rust
@@ -120,16 +120,26 @@ connector's container image and the `connector-metadata.json` OCI artifact refer
 ### Step 1: Build and push the connector image
 
 ```bash
-./scripts/build-and-push-image.sh <acr_name> [image_tag]
+./scripts/build-and-push-image.sh <acr_name> [image_tag] [--build-root-ca <path>]
 ```
 
 * `<acr_name>` is the ACR name without the `.azurecr.io` domain suffix (for example, `myacr`).
 * `[image_tag]` defaults to the crate version declared in
   `services/akri-http-post-connector/Cargo.toml`.
+* `--build-root-ca <path>` optionally supplies a PEM-encoded root CA certificate for build hosts
+  whose firewall performs TLS inspection. The script passes the file as a BuildKit secret, adds it
+  temporarily to the builder's operating-system trust store, and does not copy it into the runtime
+  image.
 * The image tag must match both the crate version and `imageConfigurationSettings.tag` in
   `connector-metadata/connector-metadata.json`.
 * The script builds `services/akri-http-post-connector/Dockerfile`, authenticates via
   `az acr login`, and pushes `<acr_name>.azurecr.io/akri-http-post-connector:<image_tag>`.
+
+For example, build through a TLS-inspecting firewall while using the default image tag:
+
+```bash
+./scripts/build-and-push-image.sh myacr --build-root-ca /path/to/corporate-root-ca.pem
+```
 
 ### Step 2: Publish the connector metadata artifact
 
