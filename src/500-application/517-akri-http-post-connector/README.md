@@ -123,9 +123,11 @@ connector's container image and the `connector-metadata.json` OCI artifact refer
 ./scripts/build-and-push-image.sh <acr_name> [image_tag]
 ```
 
-* `<acr_name>` is the ACR name without the `.azurecr.io` domain suffix (for example, `acrkd0805dev001`).
+* `<acr_name>` is the ACR name without the `.azurecr.io` domain suffix (for example, `myacr`).
 * `[image_tag]` defaults to the crate version declared in
   `services/akri-http-post-connector/Cargo.toml`.
+* The image tag must match both the crate version and `imageConfigurationSettings.tag` in
+  `connector-metadata/connector-metadata.json`.
 * The script builds `services/akri-http-post-connector/Dockerfile`, authenticates via
   `az acr login`, and pushes `<acr_name>.azurecr.io/akri-http-post-connector:<image_tag>`.
 
@@ -136,6 +138,9 @@ connector's container image and the `connector-metadata.json` OCI artifact refer
 ```
 
 * `[metadata_tag]` also defaults to the crate version in `Cargo.toml`.
+* When bumping the connector version, update `version` and `imageConfigurationSettings.tag` in
+  `connector-metadata/connector-metadata.json` to match the crate version. The publish script
+  rejects inconsistent versions.
 * The script authenticates via `az acr login`, then runs `oras push` from `connector-metadata/`,
   publishing `<acr_name>.azurecr.io/akri-http-post-connector-metadata:<metadata_tag>` with artifact
   type `application/vnd.microsoft.akri-connector.v1+json`.
