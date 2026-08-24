@@ -1134,7 +1134,7 @@ create_ontology() {
 verify_ontology_definition() {
   local ontology_id="$1"
   local expected_parts="$2"
-  local response actual_parts
+  local response actual_parts expected_canonical actual_canonical
 
   info "Retrieving published ontology definition: $ontology_id"
   if ! response=$(get_item_definition "$WORKSPACE_ID" "$ontology_id" "$FABRIC_TOKEN"); then
@@ -1144,12 +1144,20 @@ verify_ontology_definition() {
     err "Failed to decode published ontology definition: $ontology_id"
   fi
 
-  if ! jq -e --argjson expected "$expected_parts" '
-    ($expected | map(.path)) as $expectedPaths
-    | (map(.path)) as $actualPaths
-    | all($expectedPaths[]; . as $path | $actualPaths | index($path) != null)
-  ' <<<"$actual_parts" >/dev/null; then
-    err "Published ontology definition is missing required generated part paths"
+  if ! expected_canonical=$(jq -cS '
+    map({path, content: (.payload | @base64d | fromjson)})
+    | sort_by(.path)
+  ' <<<"$expected_parts"); then
+    err "Failed to canonicalize generated ontology definition parts"
+  fi
+  if ! actual_canonical=$(jq -cS '
+    map({path, content})
+    | sort_by(.path)
+  ' <<<"$actual_parts"); then
+    err "Failed to canonicalize published ontology definition parts"
+  fi
+  if [[ "$expected_canonical" != "$actual_canonical" ]]; then
+    err "Published ontology definition content does not match generated parts"
   fi
 
   if ! jq -e '
@@ -1186,7 +1194,7 @@ verify_ontology_definition() {
     err "Published ontology definition contains invalid internal references"
   fi
 
-  ok "Published ontology definition paths and references verified"
+  ok "Published ontology definition content and references verified"
 }
 
 ####

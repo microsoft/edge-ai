@@ -204,6 +204,14 @@ update_item_definition() {
     return 1
   fi
   jq -n --argjson parts "$3" '{definition: {parts: $parts}}' >"$MOCK_DEFINITION_STATE"
+  if [[ "${MOCK_CONTENT_MISMATCH:-false}" == "true" ]]; then
+    jq '
+      (.definition.parts[] | select(.path == "definition.json").payload) |= (
+        (@base64d | fromjson) + {serviceAltered: true} | tostring | @base64
+      )
+    ' "$MOCK_DEFINITION_STATE" >"$MOCK_DEFINITION_STATE.tmp"
+    mv "$MOCK_DEFINITION_STATE.tmp" "$MOCK_DEFINITION_STATE"
+  fi
 }
 
 get_item_definition() {
@@ -288,6 +296,28 @@ jq -e '
 [[ $(cat "$TEST_ROOT/mutation-calls.txt") == "update" ]]
 grep -F "Graph readiness was not checked" "$TEST_ROOT/ontology.stderr" >/dev/null
 echo "[ OK    ]: New-item rollback precedes update and publication separates Graph readiness"
+
+if MOCK_CONTENT_MISMATCH=true \
+  MOCK_DEFINITION_STATE="$TEST_ROOT/mismatched-definition.json" \
+  MOCK_DIFF_OUTPUT="$TEST_ROOT/mismatched-semantic-diff.json" \
+  MOCK_ROLLBACK_OUTPUT="$TEST_ROOT/mismatched-rollback.json" \
+  MOCK_MUTATION_CALLS="$TEST_ROOT/mismatched-mutation-calls.txt" \
+  ID_MAPPING_OUTPUT="$TEST_ROOT/mismatched-id-mapping.json" \
+  "$TEST_ROOT/ontology-scripts/deploy-ontology.sh" \
+  --definition "$COMPONENT_DIR/tests/definitions/valid-static.yaml" \
+  --workspace-id "publisher-workspace-id" \
+  --lakehouse-id "publisher-lakehouse-id" \
+  --output "$TEST_ROOT/mismatched-publication.json" \
+  --rollback-output "$TEST_ROOT/mismatched-rollback.json" \
+  --diff-output "$TEST_ROOT/mismatched-semantic-diff.json" \
+  >"$TEST_ROOT/mismatched.stdout" 2>"$TEST_ROOT/mismatched.stderr"; then
+  echo "[ ERROR ]: Same-path content mismatch unexpectedly passed verification" >&2
+  exit 1
+fi
+grep -F "Published ontology definition content does not match generated parts" \
+  "$TEST_ROOT/mismatched.stderr" >/dev/null
+[[ ! -e "$TEST_ROOT/mismatched-publication.json" ]]
+echo "[ OK    ]: Same-path published content mismatch fails verification"
 
 : >"$TEST_ROOT/mutation-calls.txt"
 MOCK_EXISTING_ONTOLOGY=true \
