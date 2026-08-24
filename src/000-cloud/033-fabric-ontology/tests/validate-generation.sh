@@ -218,6 +218,27 @@ build_definition_part() {
 }
 EOF
 
+if ! MOCK_DEFINITION_STATE="$TEST_ROOT/documented-published-definition.json" \
+  MOCK_DIFF_OUTPUT="$TEST_ROOT/documented-semantic-diff.json" \
+  MOCK_ROLLBACK_OUTPUT="$TEST_ROOT/documented-rollback.json" \
+  MOCK_MUTATION_CALLS="$TEST_ROOT/documented-mutation-calls.txt" \
+  ID_MAPPING_OUTPUT="$TEST_ROOT/documented-id-mapping.json" \
+  "$TEST_ROOT/ontology-scripts/deploy-ontology.sh" \
+  --definition "$COMPONENT_DIR/definitions/examples/cora-corax-dim.yaml" \
+  --workspace-id "publisher-workspace-id" \
+  --lakehouse-id "publisher-lakehouse-id" \
+  --output "$TEST_ROOT/documented-publication.json" \
+  --rollback-output "$TEST_ROOT/documented-rollback.json" \
+  --diff-output "$TEST_ROOT/documented-semantic-diff.json" \
+  >"$TEST_ROOT/documented-ontology.stdout" \
+  2>"$TEST_ROOT/documented-ontology.stderr"; then
+  cat "$TEST_ROOT/documented-ontology.stdout" >&2
+  cat "$TEST_ROOT/documented-ontology.stderr" >&2
+  echo "[ ERROR ]: Documented CORA/CORAX publication invocation failed" >&2
+  exit 1
+fi
+echo "[ OK    ]: Documented CORA/CORAX publication invocation passes"
+
 if ! MOCK_DEFINITION_STATE="$TEST_ROOT/published-definition.json" \
   MOCK_DIFF_OUTPUT="$TEST_ROOT/semantic-diff.json" \
   MOCK_ROLLBACK_OUTPUT="$TEST_ROOT/rollback.json" \

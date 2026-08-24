@@ -88,10 +88,15 @@ Preview ontology part generation without calling the Fabric mutation API:
 Publish the ontology into the existing resources:
 
 ```bash
+mkdir -p artifacts
+
 ./scripts/deploy-ontology.sh \
   --definition definitions/examples/cora-corax-dim.yaml \
   --workspace-id <workspace-guid> \
-  --lakehouse-id <lakehouse-guid>
+  --lakehouse-id <lakehouse-guid> \
+  --output artifacts/ontology-publication.json \
+  --rollback-output artifacts/ontology-rollback.json \
+  --diff-output artifacts/ontology-semantic-diff.json
 ```
 
 The Lakehouse must already contain every table referenced by entity bindings and
