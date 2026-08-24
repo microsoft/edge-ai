@@ -532,6 +532,32 @@ fabric_api_call "GET" "/transport" "" "test-token" >/dev/null
 [[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 2 ]]
 echo "[ OK    ]: Curl transport failure retries"
 
+reset_transport_mock transport
+if create_item \
+  "publisher-workspace-id" \
+  "Ontology" \
+  "LostResponseOntology" \
+  "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: Lost create response unexpectedly succeeded" >&2
+  exit 1
+fi
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 1 ]]
+[[ ! -s "$MOCK_SLEEP_DELAYS" ]]
+echo "[ OK    ]: Lost create response is not retried"
+
+reset_transport_mock service
+if create_item \
+  "publisher-workspace-id" \
+  "Ontology" \
+  "UnavailableOntology" \
+  "test-token" >/dev/null 2>&1; then
+  echo "[ ERROR ]: HTTP 503 create response unexpectedly succeeded" >&2
+  exit 1
+fi
+[[ $(wc -l <"$MOCK_CURL_ATTEMPTS") -eq 1 ]]
+[[ ! -s "$MOCK_SLEEP_DELAYS" ]]
+echo "[ OK    ]: HTTP 503 create response is not retried"
+
 reset_transport_mock bad-request
 if fabric_api_call "GET" "/bad-request" "" "test-token" >/dev/null 2>&1; then
   echo "[ ERROR ]: HTTP 400 unexpectedly succeeded" >&2

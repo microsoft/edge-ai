@@ -137,7 +137,18 @@ fabric_api_url() {
   fi
 }
 
-# Retries curl transport failures and HTTP 408, 429, and 5xx responses only.
+fabric_method_is_idempotent() {
+  case "${1^^}" in
+    GET | HEAD | PUT | DELETE | OPTIONS)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+# Retries idempotent requests after curl failures and HTTP 408, 429, or 5xx responses.
 fabric_api_request() (
   local method="$1"
   local endpoint="$2"
@@ -146,8 +157,13 @@ fabric_api_request() (
   local url
   url=$(fabric_api_url "$endpoint")
 
+  local max_attempts=1
+  if fabric_method_is_idempotent "$method"; then
+    max_attempts="$FABRIC_API_MAX_ATTEMPTS"
+  fi
+
   local attempt=1
-  while ((attempt <= FABRIC_API_MAX_ATTEMPTS)); do
+  while ((attempt <= max_attempts)); do
     local headers_file response_file http_code curl_status response_body retry_after
     headers_file=$(mktemp)
     response_file=$(mktemp)
@@ -181,8 +197,8 @@ fabric_api_request() (
 
     if ((curl_status != 0)); then
       rm -f "$headers_file" "$response_file"
-      if ((attempt < FABRIC_API_MAX_ATTEMPTS)); then
-        echo "[ WARN ]: Fabric API transport failed (curl $curl_status); retrying attempt $((attempt + 1))/$FABRIC_API_MAX_ATTEMPTS" >&2
+      if ((attempt < max_attempts)); then
+        echo "[ WARN ]: Fabric API transport failed (curl $curl_status); retrying attempt $((attempt + 1))/$max_attempts" >&2
         fabric_retry_wait "$attempt"
         ((attempt++))
         continue
@@ -225,8 +241,8 @@ fabric_api_request() (
       408 | 429 | 5??)
         retry_after=$(awk 'tolower($1) == "retry-after:" {sub(/\r$/, "", $2); print $2; exit}' "$headers_file")
         rm -f "$headers_file" "$response_file"
-        if ((attempt < FABRIC_API_MAX_ATTEMPTS)); then
-          echo "[ WARN ]: Fabric API returned HTTP $http_code; retrying attempt $((attempt + 1))/$FABRIC_API_MAX_ATTEMPTS" >&2
+        if ((attempt < max_attempts)); then
+          echo "[ WARN ]: Fabric API returned HTTP $http_code; retrying attempt $((attempt + 1))/$max_attempts" >&2
           fabric_retry_wait "$attempt" "$retry_after"
           ((attempt++))
           continue
