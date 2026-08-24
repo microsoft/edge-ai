@@ -24,7 +24,7 @@ az acr login --name "${ACR_NAME}"
 
 echo "Publishing ${ARTIFACT_REF}"
 (cd "${METADATA_DIR}" && oras push "${ARTIFACT_REF}" \
-  --config connector-metadata.json:application/vnd.microsoft.akri-connector.v1+json \
-  --artifact-type application/vnd.microsoft.akri-connector.v1+json)
+  --config /dev/null:application/vnd.microsoft.akri-connector.v1+json \
+  connector-metadata.json:application/json)
 
 echo "Published ${ARTIFACT_REF}"

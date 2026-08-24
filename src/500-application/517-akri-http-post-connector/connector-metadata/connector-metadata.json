@@ -47,13 +47,16 @@
         "datasetConfigurationSchema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "additionalProperties": false,
           "required": ["schemaVersion", "request", "samplingIntervalMs"],
           "properties": {
-            "schemaVersion": { "const": 2 },
+            "schemaVersion": {
+              "type": "integer",
+              "enum": [2],
+              "default": 2,
+              "readOnly": true
+            },
             "request": {
               "type": "object",
-              "additionalProperties": false,
               "required": ["bodySecretAlias", "contentType"],
               "properties": {
                 "bodySecretAlias": {
