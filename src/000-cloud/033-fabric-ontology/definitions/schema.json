@@ -247,8 +247,19 @@
           "description": "Property used for entity display name"
         },
         "dataBinding": {
-          "$ref": "#/definitions/entityDataBinding",
-          "description": "Single data binding (use dataBindings for multiple)"
+          "allOf": [
+            {
+              "$ref": "#/definitions/entityDataBinding"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "static"
+                }
+              }
+            }
+          ],
+          "description": "Single static data binding (use dataBindings for timeseries or multiple bindings)"
         },
         "dataBindings": {
           "type": "array",

@@ -58,6 +58,7 @@ invalid_definitions=(
   invalid-incomplete-timeseries-binding
   invalid-missing-endpoint-column
   invalid-name
+  invalid-singular-timeseries-binding
   invalid-unsupported-type
 )
 for definition in "${invalid_definitions[@]}"; do
@@ -68,7 +69,7 @@ for definition in "${invalid_definitions[@]}"; do
     exit 1
   fi
 done
-echo "[ OK    ]: All six invalid definitions return nonzero"
+echo "[ OK    ]: All seven invalid definitions return nonzero"
 
 yq -o=json '.dataSources.lakehouse.tables // []' \
   "definitions/examples/cora-corax-dim.yaml" \

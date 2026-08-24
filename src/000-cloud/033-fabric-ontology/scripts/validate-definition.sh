@@ -282,7 +282,11 @@ validate_entity() {
 
   if jq -e 'has("dataBinding")' <<<"$entity" >/dev/null; then
     binding=$(jq -c '.dataBinding' <<<"$entity")
-    binding_types+=("$(jq -r '.type // ""' <<<"$binding")")
+    binding_type=$(jq -r '.type // ""' <<<"$binding")
+    binding_types+=("$binding_type")
+    if [[ "$binding_type" == "timeseries" ]]; then
+      add_error "Entity '$entity_name': Singular dataBinding supports static bindings only; use dataBindings for timeseries"
+    fi
     validate_binding "$entity_name" "$binding" "dataBinding"
   fi
 
