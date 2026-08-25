@@ -31,7 +31,7 @@ jobs:
           client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: chainguard-dev/actions/setup-gitsign@b2555de0cf9724fb9b49d050ff18bd1f49562ba7 # v1.6.29
+      - uses: chainguard-dev/actions/setup-gitsign@bed8050123fff65538e2db1902ff9404030c0221 # v1.6.31
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
@@ -111,7 +111,7 @@ jobs:
           upload-release-assets: false
 
       - id: attest-sbom
-        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: dep-sbom.spdx.json
           predicate-type: https://spdx.dev/Document/v2.3
@@ -164,7 +164,7 @@ jobs:
             > "release-artifacts/source-${TAG}.tar.gz"
 
       - id: provenance
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: 'release-artifacts/*'
 
