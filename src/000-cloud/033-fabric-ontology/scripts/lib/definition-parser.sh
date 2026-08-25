@@ -238,22 +238,10 @@ get_relationship() {
   yq -o=json ".relationships[] | select(.name == \"$rel_name\")" "$definition_file"
 }
 
-# Get semantic model configuration
-get_semantic_model_config() {
-  local definition_file="$1"
-  yq -o=json '.semanticModel // null' "$definition_file"
-}
-
 # Get semantic model name
 get_semantic_model_name() {
   local definition_file="$1"
   yq -r '.semanticModel.name // ""' "$definition_file"
-}
-
-# Get semantic model mode (directLake or import)
-get_semantic_model_mode() {
-  local definition_file="$1"
-  yq -r '.semanticModel.mode // "directLake"' "$definition_file"
 }
 
 # Map definition property type to Fabric ontology type
@@ -266,7 +254,10 @@ map_property_type() {
     "datetime") echo "DateTime" ;;
     "boolean") echo "Boolean" ;;
     "object") echo "Object" ;;
-    *) echo "String" ;;
+    *)
+      echo "Unsupported definition property type: $def_type" >&2
+      return 1
+      ;;
   esac
 }
 
@@ -280,7 +271,10 @@ map_kql_type() {
     "datetime") echo "datetime" ;;
     "boolean") echo "bool" ;;
     "object") echo "dynamic" ;;
-    *) echo "string" ;;
+    *)
+      echo "Unsupported definition property type: $def_type" >&2
+      return 1
+      ;;
   esac
 }
 
@@ -294,7 +288,10 @@ map_tmdl_type() {
     "datetime") echo "dateTime" ;;
     "boolean") echo "boolean" ;;
     "object") echo "string" ;;
-    *) echo "string" ;;
+    *)
+      echo "Unsupported definition property type: $def_type" >&2
+      return 1
+      ;;
   esac
 }
 

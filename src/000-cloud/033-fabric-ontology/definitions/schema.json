@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Fabric Ontology Definition",
-  "description": "Schema for defining Microsoft Fabric Ontology deployments",
+  "description": "Contract for publishing a static Lakehouse-backed Microsoft Fabric Ontology into existing Fabric resources",
   "type": "object",
-  "required": ["apiVersion", "kind", "metadata", "entityTypes"],
+  "required": ["apiVersion", "kind", "metadata", "dataSources", "entityTypes"],
   "additionalProperties": false,
   "properties": {
     "apiVersion": {
@@ -38,7 +38,8 @@
       "description": "Relationship definitions between entity types"
     },
     "semanticModel": {
-      "$ref": "#/definitions/semanticModel"
+      "$ref": "#/definitions/semanticModel",
+      "description": "Experimental Direct Lake semantic-model generation configuration; excluded from the supported static publisher profile"
     }
   },
   "definitions": {
@@ -67,16 +68,18 @@
     },
     "dataSources": {
       "type": "object",
+      "required": ["lakehouse"],
       "additionalProperties": false,
       "properties": {
         "lakehouse": {
           "$ref": "#/definitions/lakehouseDataSource"
         },
         "eventhouse": {
-          "$ref": "#/definitions/eventhouseDataSource"
+          "$ref": "#/definitions/eventhouseDataSource",
+          "description": "Experimental Eventhouse source configuration; excluded from the supported static publisher profile"
         }
       },
-      "description": "Data source configurations"
+      "description": "Existing data resources referenced by ontology bindings; component 033 does not own their infrastructure lifecycle"
     },
     "lakehouseDataSource": {
       "type": "object",
@@ -105,6 +108,7 @@
         "name": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Table name in Lakehouse"
         },
         "sourceFile": {
@@ -121,20 +125,6 @@
           "enum": ["csv", "parquet"],
           "default": "csv",
           "description": "Source file format"
-        },
-        "options": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "header": {
-              "type": "boolean",
-              "default": true
-            },
-            "delimiter": {
-              "type": "string",
-              "default": ","
-            }
-          }
         }
       }
     },
@@ -170,6 +160,7 @@
         "name": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "KQL table name"
         },
         "sourceFile": {
@@ -183,7 +174,7 @@
         },
         "format": {
           "type": "string",
-          "enum": ["csv", "parquet", "json"],
+          "const": "csv",
           "default": "csv"
         },
         "schema": {
@@ -222,6 +213,7 @@
         "name": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Column name"
         },
         "type": {
@@ -240,20 +232,34 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Entity type name"
         },
         "key": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Primary key property name (must match a property name)"
         },
         "displayName": {
           "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Property used for entity display name"
         },
         "dataBinding": {
-          "$ref": "#/definitions/entityDataBinding",
-          "description": "Single data binding (use dataBindings for multiple)"
+          "allOf": [
+            {
+              "$ref": "#/definitions/entityDataBinding"
+            },
+            {
+              "properties": {
+                "type": {
+                  "const": "static"
+                }
+              }
+            }
+          ],
+          "description": "Single static data binding (use dataBindings for timeseries or multiple bindings)"
         },
         "dataBindings": {
           "type": "array",
@@ -280,7 +286,7 @@
         "type": {
           "type": "string",
           "enum": ["static", "timeseries"],
-          "description": "Binding type"
+          "description": "Binding type; timeseries bindings are experimental and excluded from the supported static publisher profile"
         },
         "source": {
           "type": "string",
@@ -290,14 +296,17 @@
         "table": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Source table name"
         },
         "timestampColumn": {
           "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Timestamp column for timeseries bindings"
         },
         "correlationColumn": {
           "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Column linking timeseries to entity key"
         }
       }
@@ -311,6 +320,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Property name"
         },
         "type": {
@@ -320,6 +330,7 @@
         },
         "sourceColumn": {
           "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Source table column name (defaults to property name)"
         },
         "binding": {
@@ -338,6 +349,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Relationship name"
         },
         "description": {
@@ -348,11 +360,13 @@
         "from": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Source entity type name"
         },
         "to": {
           "type": "string",
           "minLength": 1,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
           "description": "Target entity type name"
         },
         "cardinality": {
@@ -368,14 +382,17 @@
           "properties": {
             "table": {
               "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
               "description": "Table containing the foreign key relationship"
             },
             "fromColumn": {
               "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
               "description": "Column matching source entity key"
             },
             "toColumn": {
               "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
               "description": "Column matching target entity key"
             }
           }
@@ -392,18 +409,6 @@
           "minLength": 1,
           "maxLength": 256,
           "description": "Semantic model display name"
-        },
-        "mode": {
-          "type": "string",
-          "enum": ["directLake", "import"],
-          "default": "directLake",
-          "description": "Semantic model storage mode"
-        },
-        "generateFrom": {
-          "type": "string",
-          "enum": ["definition", "lakehouse"],
-          "default": "definition",
-          "description": "How to generate tables - from this definition or auto-detect from lakehouse"
         }
       }
     }
