@@ -411,6 +411,7 @@ jobs:
             attrs==26.1.0 \
             jsonschema==4.26.0 \
             jsonschema-specifications==2025.9.1 \
+            pyyaml==6.0.3 \
             referencing==0.37.0 \
             rpds-py==0.30.0 \
             typing-extensions==4.15.0
