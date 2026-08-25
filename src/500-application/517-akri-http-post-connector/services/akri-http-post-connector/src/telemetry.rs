@@ -8,6 +8,91 @@
 //! into that closure shape.
 
 use azure_iot_operations_connector::AdrConfigError;
+use opentelemetry::trace::TracerProvider;
+use opentelemetry::KeyValue;
+use opentelemetry_otlp::SpanExporter;
+use opentelemetry_sdk::propagation::TraceContextPropagator;
+use opentelemetry_sdk::trace::SdkTracerProvider;
+use opentelemetry_sdk::Resource;
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+
+/// Retains and flushes the connector's OpenTelemetry provider for the process
+/// lifetime.
+pub struct TelemetryGuard {
+    provider: SdkTracerProvider,
+}
+
+impl Drop for TelemetryGuard {
+    fn drop(&mut self) {
+        let _ = self.provider.shutdown();
+    }
+}
+
+/// Installs console tracing, W3C propagation, and an optional OTLP exporter.
+pub fn init(service_name: &'static str) -> Result<TelemetryGuard, String> {
+    opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
+    let resource = Resource::builder()
+        .with_service_name(service_name)
+        .with_attributes([KeyValue::new("service.version", env!("CARGO_PKG_VERSION"))])
+        .build();
+    let mut provider_builder = SdkTracerProvider::builder().with_resource(resource);
+    if std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT").is_ok() {
+        let exporter = SpanExporter::builder()
+            .with_tonic()
+            .build()
+            .map_err(|_| "failed to configure OTLP trace exporter".to_string())?;
+        provider_builder = provider_builder.with_batch_exporter(exporter);
+    }
+    let provider = provider_builder.build();
+    let tracer = provider.tracer(service_name);
+    let filter = EnvFilter::try_from_default_env()
+        .or_else(|_| EnvFilter::try_new("info"))
+        .map_err(|_| "failed to configure tracing filter".to_string())?;
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(fmt::layer().with_target(true))
+        .with(tracing_opentelemetry::layer().with_tracer(tracer))
+        .try_init()
+        .map_err(|_| "failed to initialize tracing subscriber".to_string())?;
+    Ok(TelemetryGuard { provider })
+}
+
+/// Stable, bounded failure reasons that may be published through ADR status and
+/// health surfaces.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FailureReason {
+    ConfigurationRejected,
+    EndpointUnavailable,
+    InvalidEndpoint,
+    BodyUnavailable,
+    RequestFailed,
+    ForwardingFailed,
+}
+
+impl FailureReason {
+    /// Returns the reason code used in status, health, and structured logs.
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::ConfigurationRejected => "ConfigurationRejected",
+            Self::EndpointUnavailable => "EndpointUnavailable",
+            Self::InvalidEndpoint => "InvalidEndpoint",
+            Self::BodyUnavailable => "BodyUnavailable",
+            Self::RequestFailed => "RequestFailed",
+            Self::ForwardingFailed => "ForwardingFailed",
+        }
+    }
+
+    /// Returns whether this failure makes the accepted observation plan unusable.
+    pub fn invalidates_runtime_configuration(self) -> bool {
+        matches!(
+            self,
+            Self::ConfigurationRejected
+                | Self::EndpointUnavailable
+                | Self::InvalidEndpoint
+                | Self::BodyUnavailable
+        )
+    }
+}
 
 /// Builds a closure suitable for any `report_*_status_if_modified` call that
 /// reports `new_status` the first time (`current` is `None`) or whenever it

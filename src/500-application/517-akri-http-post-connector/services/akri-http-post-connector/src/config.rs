@@ -9,13 +9,10 @@
 //! `docs/request-body-secret.md` for the resolution contract and its manual
 //! `kubectl create secret generic` prerequisite.
 
-use std::path::Path;
-
 use serde::Deserialize;
 use url::Url;
 
 use crate::policy;
-use crate::secret_body;
 
 /// Dataset configuration schema version accepted by this connector (v2 contract).
 pub const DATASET_CONFIGURATION_SCHEMA_VERSION: u32 = 2;
@@ -58,24 +55,12 @@ pub struct RequestConfiguration {
     pub idempotent: bool,
 }
 
-/// A validated inbound endpoint address, restricted to `http`/`https` with a
-/// non-empty host, and resolved against the dataset's relative `data_source` path
-/// (see [`policy::resolve_request_url`]). Does not perform SSRF host-allowlisting
-/// beyond same-origin enforcement.
-#[derive(Debug, Clone)]
-pub struct EndpointPolicy {
-    pub address: Url,
-}
-
-/// An immutable, fully validated plan combining a resolved request address, an
-/// accepted dataset configuration, and the request body content resolved from
-/// `dataset.request.body_secret_alias`. Only produced by [`compile_plan`] after all
-/// validation and secret resolution succeed.
+/// Immutable validated dataset intent. Mutable endpoint and secret state is
+/// resolved immediately before each request execution.
 #[derive(Debug, Clone)]
 pub struct ObservationPlan {
-    pub endpoint: EndpointPolicy,
+    pub data_source: Option<String>,
     pub dataset: DatasetConfiguration,
-    pub resolved_body: String,
 }
 
 /// Parses the raw `dataset_configuration` JSON string into a [`DatasetConfiguration`].
@@ -85,8 +70,7 @@ pub fn parse_dataset_configuration(raw: &str) -> Result<DatasetConfiguration, St
 
 /// Validates a parsed [`DatasetConfiguration`] against the v2 contract: schema
 /// version, textual content type, `body_secret_alias` format, and sampling
-/// interval floor. Does not resolve or size-check the request body itself; that
-/// happens against the resolved secret content in [`compile_plan`].
+/// interval floor. Request body size is checked whenever the alias is resolved.
 pub fn validate_dataset_configuration(config: &DatasetConfiguration) -> Result<(), String> {
     if config.schema_version != DATASET_CONFIGURATION_SCHEMA_VERSION {
         return Err(format!(
@@ -144,8 +128,8 @@ fn validate_body_secret_alias(alias: &str) -> Result<(), String> {
 }
 
 /// Parses and validates a base inbound endpoint address string. Requires an `http`
-/// or `https` scheme and a non-empty host. Same-origin enforcement against a
-/// dataset's relative path happens in [`compile_plan`] via
+/// or `https` scheme and a non-empty host. Same-origin enforcement against the
+/// dataset's relative path happens at execution via
 /// [`policy::resolve_request_url`].
 pub fn parse_endpoint_address(address: &str) -> Result<Url, String> {
     let url = Url::parse(address).map_err(|err| format!("invalid endpoint address: {err}"))?;
@@ -155,87 +139,33 @@ pub fn parse_endpoint_address(address: &str) -> Result<Url, String> {
             url.scheme()
         ));
     }
+    if !url.username().is_empty() || url.password().is_some() {
+        return Err("endpoint address must not include userinfo".to_string());
+    }
     match url.host_str() {
         Some(host) if !host.is_empty() => Ok(url),
         _ => Err("endpoint address must include a non-empty host".to_string()),
     }
 }
 
-/// Parses and validates a base endpoint address, an optional relative dataset
-/// `data_source` path, and a raw dataset configuration together, then resolves
-/// `request.bodySecretAlias` to its request body content via
-/// [`secret_body::resolve_body`] against `secrets_metadata_mount` and
-/// `secrets_mount`, producing an immutable [`ObservationPlan`] only if all steps
-/// succeed.
+/// Parses and validates the immutable dataset configuration and relative data
+/// source retained between ticks.
 pub fn compile_plan(
-    endpoint_address: &str,
     data_source: Option<&str>,
     raw_dataset_configuration: &str,
-    secrets_metadata_mount: &Path,
-    secrets_mount: &Path,
 ) -> Result<ObservationPlan, String> {
-    let base_address = parse_endpoint_address(endpoint_address)?;
-    let resolved_address = policy::resolve_request_url(&base_address, data_source)?;
+    policy::validate_data_source(data_source)?;
     let dataset = parse_dataset_configuration(raw_dataset_configuration)?;
     validate_dataset_configuration(&dataset)?;
-    let resolved_body = secret_body::resolve_body(
-        secrets_metadata_mount,
-        secrets_mount,
-        &dataset.request.body_secret_alias,
-    )?;
     Ok(ObservationPlan {
-        endpoint: EndpointPolicy {
-            address: resolved_address,
-        },
+        data_source: data_source.map(str::to_string),
         dataset,
-        resolved_body,
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
-    use std::sync::atomic::{AtomicU64, Ordering};
-
-    /// A throwaway secrets-metadata-mount / secrets-mount pair with a single
-    /// alias resolved to `body`, for exercising `compile_plan`'s secret
-    /// resolution step without a live Akri operator. Built with `std::fs`/
-    /// `std::env` only, matching this crate's constraint of not adding a new
-    /// Cargo dependency for test scaffolding.
-    struct SecretMount {
-        metadata_dir: PathBuf,
-        secrets_dir: PathBuf,
-    }
-
-    impl SecretMount {
-        fn new(alias: &str, body: &str) -> Self {
-            static COUNTER: AtomicU64 = AtomicU64::new(0);
-            let unique = COUNTER.fetch_add(1, Ordering::Relaxed);
-            let base = std::env::temp_dir().join(format!(
-                "akri-http-post-connector-config-test-{}-{unique}",
-                std::process::id()
-            ));
-            let metadata_dir = base.join("metadata");
-            let secrets_dir = base.join("secrets");
-            std::fs::create_dir_all(&metadata_dir).unwrap();
-            std::fs::create_dir_all(&secrets_dir).unwrap();
-            std::fs::write(metadata_dir.join(alias), "content").unwrap();
-            std::fs::write(secrets_dir.join("content"), body).unwrap();
-            Self {
-                metadata_dir,
-                secrets_dir,
-            }
-        }
-    }
-
-    impl Drop for SecretMount {
-        fn drop(&mut self) {
-            if let Some(base) = self.metadata_dir.parent() {
-                let _ = std::fs::remove_dir_all(base);
-            }
-        }
-    }
 
     fn valid_dataset_json() -> String {
         r#"{
@@ -363,88 +293,26 @@ mod tests {
 
     #[test]
     fn compile_plan_succeeds_for_valid_inputs() {
-        let mount = SecretMount::new("body-secret", "hello world");
-        let plan = compile_plan(
-            "https://example.local/path",
-            None,
-            &valid_dataset_json(),
-            &mount.metadata_dir,
-            &mount.secrets_dir,
-        )
-        .unwrap();
-        assert_eq!(plan.endpoint.address.scheme(), "https");
+        let plan = compile_plan(None, &valid_dataset_json()).unwrap();
         assert_eq!(plan.dataset.request.body_secret_alias, "body-secret");
-        assert_eq!(plan.resolved_body, "hello world");
+        assert!(plan.data_source.is_none());
     }
 
     #[test]
-    fn compile_plan_resolves_relative_data_source() {
-        let mount = SecretMount::new("body-secret", "hello world");
-        let plan = compile_plan(
-            "https://example.local/base",
-            Some("/api/v1/query"),
-            &valid_dataset_json(),
-            &mount.metadata_dir,
-            &mount.secrets_dir,
-        )
-        .unwrap();
-        assert_eq!(
-            plan.endpoint.address.as_str(),
-            "https://example.local/api/v1/query"
-        );
+    fn compile_plan_retains_relative_data_source() {
+        let plan = compile_plan(Some("/api/v1/query"), &valid_dataset_json()).unwrap();
+        assert_eq!(plan.data_source.as_deref(), Some("/api/v1/query"));
     }
 
     #[test]
-    fn compile_plan_fails_when_endpoint_invalid() {
-        let unused_mount = Path::new("/nonexistent-mount");
-        assert!(compile_plan(
-            "not a url",
-            None,
-            &valid_dataset_json(),
-            unused_mount,
-            unused_mount
-        )
-        .is_err());
-    }
-
-    #[test]
-    fn compile_plan_fails_when_data_source_changes_origin() {
-        let unused_mount = Path::new("/nonexistent-mount");
-        assert!(compile_plan(
-            "https://example.local/base",
-            Some("https://other.local/steal"),
-            &valid_dataset_json(),
-            unused_mount,
-            unused_mount
-        )
-        .is_err());
+    fn compile_plan_fails_when_data_source_is_absolute() {
+        assert!(compile_plan(Some("https://other.local/steal"), &valid_dataset_json()).is_err());
     }
 
     #[test]
     fn compile_plan_fails_when_dataset_invalid() {
-        let unused_mount = Path::new("/nonexistent-mount");
         let raw = valid_dataset_json().replace("\"schemaVersion\": 2", "\"schemaVersion\": 9");
-        assert!(compile_plan(
-            "https://example.local/path",
-            None,
-            &raw,
-            unused_mount,
-            unused_mount
-        )
-        .is_err());
-    }
-
-    #[test]
-    fn compile_plan_fails_when_secret_alias_unresolvable() {
-        let unresolvable_mount = Path::new("/nonexistent-mount");
-        assert!(compile_plan(
-            "https://example.local/path",
-            None,
-            &valid_dataset_json(),
-            unresolvable_mount,
-            unresolvable_mount
-        )
-        .is_err());
+        assert!(compile_plan(None, &raw).is_err());
     }
 
     #[test]

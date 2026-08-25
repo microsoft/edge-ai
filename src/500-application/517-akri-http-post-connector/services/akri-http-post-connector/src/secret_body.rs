@@ -1,7 +1,6 @@
 //! Resolves a dataset's `request.bodySecretAlias` to its request body content via
-//! the Akri operator's connector-template secrets mount, using only synchronous
-//! local file reads (`std::fs`). No Kubernetes API client or additional RBAC grant
-//! is required.
+//! the Akri operator's connector-template secrets mount using async local file
+//! reads. No Kubernetes API client or additional RBAC grant is required.
 //!
 //! Mounted layout (per the Akri connector-template secrets contract): the file
 //! `{secrets_metadata_mount}/{secret_alias}` contains a path, relative to
@@ -21,18 +20,20 @@ use crate::config::MAX_REQUEST_BODY_BYTES;
 /// [`MAX_REQUEST_BODY_BYTES`] ceiling shared with the rest of the request body
 /// contract, and rejects empty content. Never panics; every failure is returned as
 /// `Err`.
-pub fn resolve_body(
+pub async fn resolve_body(
     secrets_metadata_mount: &Path,
     secrets_mount: &Path,
     secret_alias: &str,
 ) -> Result<String, String> {
     let alias_file = secrets_metadata_mount.join(secret_alias);
-    let relative_path_raw = std::fs::read_to_string(&alias_file).map_err(|err| {
-        format!(
-            "failed to read secret alias metadata '{}': {err}",
-            alias_file.display()
-        )
-    })?;
+    let relative_path_raw = tokio::fs::read_to_string(&alias_file)
+        .await
+        .map_err(|err| {
+            format!(
+                "failed to read secret alias metadata '{}': {err}",
+                alias_file.display()
+            )
+        })?;
     let relative_path = relative_path_raw.trim();
     if relative_path.is_empty() {
         return Err(format!(
@@ -54,12 +55,14 @@ pub fn resolve_body(
     }
 
     let content_file = secrets_mount.join(relative_path);
-    let content = std::fs::read_to_string(&content_file).map_err(|err| {
-        format!(
-            "failed to read secret content '{}': {err}",
-            content_file.display()
-        )
-    })?;
+    let content = tokio::fs::read_to_string(&content_file)
+        .await
+        .map_err(|err| {
+            format!(
+                "failed to read secret content '{}': {err}",
+                content_file.display()
+            )
+        })?;
     if content.is_empty() {
         return Err(format!(
             "secret content '{}' is empty",
@@ -126,61 +129,87 @@ mod tests {
         }
     }
 
-    #[test]
-    fn resolves_body_from_alias_and_content_files() {
+    #[tokio::test]
+    async fn resolves_body_from_alias_and_content_files() {
         let mount = TestMount::new();
         mount.write_alias("body-alias", "request-body\n");
         mount.write_content("request-body", "hello world");
 
-        let resolved = resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias").unwrap();
+        let resolved = resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias")
+            .await
+            .unwrap();
         assert_eq!(resolved, "hello world");
     }
 
-    #[test]
-    fn rejects_missing_alias_file() {
+    #[tokio::test]
+    async fn rejects_missing_alias_file() {
         let mount = TestMount::new();
-        assert!(resolve_body(&mount.metadata_dir, &mount.secrets_dir, "missing-alias").is_err());
+        assert!(
+            resolve_body(&mount.metadata_dir, &mount.secrets_dir, "missing-alias")
+                .await
+                .is_err()
+        );
     }
 
-    #[test]
-    fn rejects_missing_content_file() {
+    #[tokio::test]
+    async fn rejects_missing_content_file() {
         let mount = TestMount::new();
         mount.write_alias("body-alias", "missing-content");
 
-        assert!(resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias").is_err());
+        assert!(
+            resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias")
+                .await
+                .is_err()
+        );
     }
 
-    #[test]
-    fn rejects_oversized_content() {
+    #[tokio::test]
+    async fn rejects_oversized_content() {
         let mount = TestMount::new();
         mount.write_alias("body-alias", "request-body");
         mount.write_content("request-body", &"a".repeat(MAX_REQUEST_BODY_BYTES + 1));
 
-        assert!(resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias").is_err());
+        assert!(
+            resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias")
+                .await
+                .is_err()
+        );
     }
 
-    #[test]
-    fn rejects_empty_content() {
+    #[tokio::test]
+    async fn rejects_empty_content() {
         let mount = TestMount::new();
         mount.write_alias("body-alias", "request-body");
         mount.write_content("request-body", "");
 
-        assert!(resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias").is_err());
+        assert!(
+            resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias")
+                .await
+                .is_err()
+        );
     }
 
-    #[test]
-    fn rejects_parent_dir_traversal_in_relative_path() {
+    #[tokio::test]
+    async fn rejects_parent_dir_traversal_in_relative_path() {
         let mount = TestMount::new();
         mount.write_alias("body-alias", "../../etc/passwd");
 
-        assert!(resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias").is_err());
+        assert!(
+            resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias")
+                .await
+                .is_err()
+        );
     }
 
-    #[test]
-    fn rejects_absolute_relative_path() {
+    #[tokio::test]
+    async fn rejects_absolute_relative_path() {
         let mount = TestMount::new();
         mount.write_alias("body-alias", "/etc/passwd");
 
-        assert!(resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias").is_err());
+        assert!(
+            resolve_body(&mount.metadata_dir, &mount.secrets_dir, "body-alias")
+                .await
+                .is_err()
+        );
     }
 }

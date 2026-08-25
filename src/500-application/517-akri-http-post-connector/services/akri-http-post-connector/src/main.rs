@@ -19,24 +19,17 @@ use anyhow::{Context, Result};
 use azure_iot_operations_connector::base_connector::{BaseConnector, OptionsBuilder};
 use azure_iot_operations_connector::deployment_artifacts::connector::ConnectorArtifacts;
 use azure_iot_operations_protocol::application::ApplicationContextBuilder;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use std::sync::Arc;
 
 /// Maximum number of POST requests allowed in flight at once across every data
 /// operation owned by this connector instance.
 const GLOBAL_CONCURRENCY_LIMIT: usize = 8;
 
-fn init_logging() -> Result<()> {
-    let filter = EnvFilter::try_from_default_env().or_else(|_| EnvFilter::try_new("info"))?;
-    let _ = tracing_subscriber::registry()
-        .with(filter)
-        .with(fmt::layer().with_target(true))
-        .try_init();
-    Ok(())
-}
-
 #[tokio::main]
 async fn main() -> Result<()> {
-    init_logging()?;
+    let _telemetry_guard = telemetry::init("akri-http-post-connector")
+        .map_err(anyhow::Error::msg)
+        .context("failed to initialize telemetry")?;
 
     let connector_artifacts = ConnectorArtifacts::new_from_deployment()
         .map_err(|err| anyhow::anyhow!(err.to_string()))
@@ -68,6 +61,11 @@ async fn main() -> Result<()> {
     let base_connector_options = OptionsBuilder::default()
         .build()
         .context("failed to build base connector options")?;
+    let endpoint_policy = Arc::new(
+        policy::EndpointPolicy::from_env()
+            .map_err(anyhow::Error::msg)
+            .context("failed to load endpoint authority policy")?,
+    );
 
     let base_connector = BaseConnector::new(
         application_context,
@@ -90,6 +88,7 @@ async fn main() -> Result<()> {
         concurrency,
         connector_secrets_metadata_mount,
         connector_secrets_mount,
+        endpoint_policy,
     ));
 
     tokio::select! {

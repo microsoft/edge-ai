@@ -2,20 +2,21 @@
 //!
 //! The SDK requires a [`MessageSchema`] to be reported at least once before any
 //! [`Data`] can be forwarded to a data operation's configured destination(s).
-//! [`SchemaCache`] tracks the last reported response content type so the schema is
-//! only re-derived and re-reported when it actually changes, avoiding redundant
-//! schema registry writes on every tick.
+//! [`SchemaCache`] tracks the last reported schema identity so the schema is only
+//! re-reported when its content, format, or type changes, avoiding redundant schema
+//! registry writes on every tick.
 
 use azure_iot_operations_connector::base_connector::managed_azure_device_registry::DataOperationClient;
 use azure_iot_operations_connector::data_processor::derived_json;
 use azure_iot_operations_connector::{Data, MessageSchema, MessageSchemaBuilder};
 use azure_iot_operations_services::schema_registry::{Format, SchemaType};
+use sha2::{Digest, Sha256};
 
-/// Tracks whether the response content type observed on the most recent successful
-/// tick still matches the last reported message schema.
+/// Tracks whether the schema derived on the most recent successful tick still
+/// matches the last reported message schema.
 #[derive(Debug, Default)]
 pub struct SchemaCache {
-    last_content_type: Option<String>,
+    last_fingerprint: Option<[u8; 32]>,
 }
 
 impl SchemaCache {
@@ -23,13 +24,23 @@ impl SchemaCache {
         Self::default()
     }
 
-    fn needs_update(&self, content_type: &str) -> bool {
-        self.last_content_type.as_deref() != Some(content_type)
+    fn needs_update(&self, schema: &MessageSchema) -> bool {
+        self.last_fingerprint != Some(schema_fingerprint(schema))
     }
 
-    fn record(&mut self, content_type: &str) {
-        self.last_content_type = Some(content_type.to_string());
+    fn record(&mut self, schema: &MessageSchema) {
+        self.last_fingerprint = Some(schema_fingerprint(schema));
     }
+}
+
+fn schema_fingerprint(schema: &MessageSchema) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(schema.schema_content.as_bytes());
+    hasher.update([0]);
+    hasher.update(format!("{:?}", schema.format).as_bytes());
+    hasher.update([0]);
+    hasher.update(format!("{:?}", schema.schema_type).as_bytes());
+    hasher.finalize().into()
 }
 
 /// Derives a [`MessageSchema`] for a response payload: a real JSON Schema when the
@@ -65,13 +76,14 @@ pub async fn forward_response(
     payload: Vec<u8>,
     content_type: String,
 ) -> Result<(), String> {
-    if schema_cache.needs_update(&content_type) {
-        let schema = build_schema(&payload, &content_type);
+    let schema = build_schema(&payload, &content_type);
+    if schema_cache.needs_update(&schema) {
+        let schema_to_report = schema.clone();
         data_operation_client
-            .report_message_schema_if_modified(move |_current| Some(schema.clone()))
+            .report_message_schema_if_modified(move |_current| Some(schema_to_report.clone()))
             .await
             .map_err(|err| format!("failed to report message schema: {err}"))?;
-        schema_cache.record(&content_type);
+        schema_cache.record(&schema);
     }
 
     let data = Data {
@@ -93,21 +105,34 @@ mod tests {
     #[test]
     fn schema_cache_requires_update_on_first_use() {
         let cache = SchemaCache::new();
-        assert!(cache.needs_update("application/json"));
+        let schema = build_schema(br#"{"value": 1}"#, "application/json");
+        assert!(cache.needs_update(&schema));
     }
 
     #[test]
     fn schema_cache_skips_update_when_content_type_unchanged() {
         let mut cache = SchemaCache::new();
-        cache.record("application/json");
-        assert!(!cache.needs_update("application/json"));
+        let schema = build_schema(br#"{"value": 1}"#, "application/json");
+        cache.record(&schema);
+        assert!(!cache.needs_update(&schema));
     }
 
     #[test]
     fn schema_cache_requires_update_when_content_type_changes() {
         let mut cache = SchemaCache::new();
-        cache.record("application/json");
-        assert!(cache.needs_update("text/plain"));
+        let json_schema = build_schema(br#"{"value": 1}"#, "application/json");
+        let text_schema = build_schema(b"plain text body", "text/plain");
+        cache.record(&json_schema);
+        assert!(cache.needs_update(&text_schema));
+    }
+
+    #[test]
+    fn schema_cache_requires_update_when_payload_shape_changes() {
+        let mut cache = SchemaCache::new();
+        let first = build_schema(br#"{"value": 1}"#, "application/json");
+        let second = build_schema(br#"{"value": "one"}"#, "application/json");
+        cache.record(&first);
+        assert!(cache.needs_update(&second));
     }
 
     #[test]

@@ -6,10 +6,15 @@
 //! response bodies up to [`policy::MAX_RESPONSE_BODY_BYTES`] regardless of what the
 //! response's `Content-Length` header claims.
 
+use std::collections::HashSet;
+use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 
 use azure_iot_operations_connector::base_connector::managed_azure_device_registry::Authentication;
+use opentelemetry::propagation::Injector;
 use reqwest::{Client, ClientBuilder, Response};
+use tracing::{field, Instrument, Span};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::policy;
 
@@ -24,6 +29,12 @@ pub enum EndpointCredentials {
     ClientCertificate,
     /// Send an HTTP Basic Authorization header with every request.
     BasicAuth { username: String, password: String },
+}
+
+impl EndpointCredentials {
+    fn is_authenticated(&self) -> bool {
+        !matches!(self, Self::None)
+    }
 }
 
 /// Loads endpoint credentials from the device's projected authentication mode,
@@ -77,9 +88,10 @@ fn read_file_to_string(path: &Path) -> Result<String, String> {
 /// redirects and proxy discovery disabled, explicit connect/total timeouts, an
 /// optional client identity, and an optional directory of PEM trust-bundle CA
 /// certificates layered on top of the platform's built-in trust roots.
-pub fn build_client(
+fn build_client(
     trust_bundle_dir: Option<&PathBuf>,
     identity: Option<reqwest::Identity>,
+    pinned_host: Option<(&str, &[SocketAddr])>,
 ) -> Result<Client, String> {
     let mut builder = ClientBuilder::new()
         .connect_timeout(policy::CONNECT_TIMEOUT)
@@ -88,17 +100,80 @@ pub fn build_client(
         .no_proxy();
 
     if let Some(dir) = trust_bundle_dir {
-        for cert in load_trust_bundle(dir)? {
+        let certs = load_trust_bundle(dir)?;
+        if certs.is_empty() {
+            return Err("endpoint trust bundle must contain at least one certificate".to_string());
+        }
+        builder = builder.tls_built_in_root_certs(false);
+        for cert in certs {
             builder = builder.add_root_certificate(cert);
         }
     }
     if let Some(identity) = identity {
         builder = builder.identity(identity);
     }
+    if let Some((host, addresses)) = pinned_host {
+        builder = builder.resolve_to_addrs(host, addresses);
+    }
 
     builder
         .build()
         .map_err(|err| format!("failed to build HTTP client: {err}"))
+}
+
+/// Resolves, validates, and pins an endpoint before returning its HTTP client and
+/// request credentials. Rebuilding this client on an endpoint update refreshes the
+/// complete DNS answer set atomically.
+pub async fn build_endpoint_client(
+    endpoint: &reqwest::Url,
+    authentication: &Authentication,
+    trust_bundle_dir: Option<&PathBuf>,
+    endpoint_policy: &policy::EndpointPolicy,
+) -> Result<(Client, EndpointCredentials), String> {
+    endpoint_policy.validate_url(endpoint)?;
+    let (credentials, identity) = load_credentials(authentication)?;
+    validate_transport(endpoint, &credentials, endpoint_policy)?;
+
+    let host = endpoint
+        .host_str()
+        .ok_or_else(|| "endpoint URL host is missing".to_string())?;
+    let port = endpoint
+        .port_or_known_default()
+        .ok_or_else(|| "endpoint URL port is unavailable".to_string())?;
+    let addresses = resolve_addresses(host, port).await?;
+    let unique_addresses: HashSet<IpAddr> = addresses.iter().map(SocketAddr::ip).collect();
+    endpoint_policy
+        .validate_addresses(&unique_addresses.iter().copied().collect::<Vec<IpAddr>>())?;
+
+    let client = build_client(trust_bundle_dir, identity, Some((host, &addresses)))?;
+    Ok((client, credentials))
+}
+
+async fn resolve_addresses(host: &str, port: u16) -> Result<Vec<SocketAddr>, String> {
+    let addresses: HashSet<SocketAddr> = tokio::net::lookup_host((host, port))
+        .await
+        .map_err(|_| "endpoint DNS resolution failed".to_string())?
+        .collect();
+    if addresses.is_empty() {
+        return Err("endpoint DNS resolution returned no addresses".to_string());
+    }
+    Ok(addresses.into_iter().collect())
+}
+
+fn validate_transport(
+    endpoint: &reqwest::Url,
+    credentials: &EndpointCredentials,
+    endpoint_policy: &policy::EndpointPolicy,
+) -> Result<(), String> {
+    if endpoint.scheme() == "http" {
+        if credentials.is_authenticated() {
+            return Err("endpoint credentials require HTTPS".to_string());
+        }
+        if !endpoint_policy.allows_anonymous_http() {
+            return Err("anonymous HTTP endpoints are disabled".to_string());
+        }
+    }
+    Ok(())
 }
 
 fn load_trust_bundle(dir: &Path) -> Result<Vec<reqwest::Certificate>, String> {
@@ -135,6 +210,20 @@ pub struct PostResponse {
     pub body: Vec<u8>,
 }
 
+struct HeaderInjector<'a>(&'a mut reqwest::header::HeaderMap);
+
+impl Injector for HeaderInjector<'_> {
+    fn set(&mut self, key: &str, value: String) {
+        let Ok(name) = reqwest::header::HeaderName::from_bytes(key.as_bytes()) else {
+            return;
+        };
+        let Ok(value) = reqwest::header::HeaderValue::from_str(&value) else {
+            return;
+        };
+        self.0.insert(name, value);
+    }
+}
+
 /// Sends a single bounded POST request for the given resolved request URL, request
 /// body, and content type, applying HTTP Basic Auth credentials when configured.
 /// Validates the response content type and reads at most
@@ -147,35 +236,65 @@ pub async fn execute_post(
     content_type: &str,
     credentials: &EndpointCredentials,
 ) -> Result<PostResponse, String> {
-    let mut request = client
-        .post(url)
-        .header(reqwest::header::CONTENT_TYPE, content_type)
-        .body(body);
-    if let EndpointCredentials::BasicAuth { username, password } = credentials {
-        request = request.basic_auth(username, Some(password));
+    if url.scheme() != "https" && credentials.is_authenticated() {
+        return Err("endpoint credentials require HTTPS".to_string());
     }
+    let server_address = url.host_str().unwrap_or("unknown").to_string();
+    let server_port = url.port_or_known_default().unwrap_or_default();
+    let span = tracing::info_span!(
+        "http.client.request",
+        otel.kind = "client",
+        http.request.method = "POST",
+        server.address = %server_address,
+        server.port = server_port,
+        http.response.status_code = field::Empty,
+        error.type = field::Empty,
+    );
 
-    let response = request
-        .send()
-        .await
-        .map_err(|err| format!("POST request failed: {err}"))?
-        .error_for_status()
-        .map_err(|err| format!("POST response indicated failure: {err}"))?;
+    async move {
+        let mut request = client
+            .post(url)
+            .header(reqwest::header::CONTENT_TYPE, content_type)
+            .body(body);
+        if let EndpointCredentials::BasicAuth { username, password } = credentials {
+            request = request.basic_auth(username, Some(password));
+        }
+        let mut request = request
+            .build()
+            .map_err(|_| "failed to build POST request".to_string())?;
+        let context = Span::current().context();
+        opentelemetry::global::get_text_map_propagator(|propagator| {
+            propagator.inject_context(&context, &mut HeaderInjector(request.headers_mut()));
+        });
 
-    let response_content_type = response
-        .headers()
-        .get(reqwest::header::CONTENT_TYPE)
-        .and_then(|value| value.to_str().ok())
-        .filter(|value| policy::is_textual_mime(value))
-        .unwrap_or("application/octet-stream")
-        .to_string();
+        let response = client.execute(request).await.map_err(|_| {
+            Span::current().record("error.type", "request_failed");
+            "POST request failed".to_string()
+        })?;
+        let status = response.status();
+        Span::current().record("http.response.status_code", status.as_u16());
+        if !status.is_success() {
+            Span::current().record("error.type", "unsuccessful_status");
+            return Err("POST response status was not successful".to_string());
+        }
 
-    let body = read_bounded_body(response).await?;
+        let response_content_type = response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|value| value.to_str().ok())
+            .filter(|value| policy::is_textual_mime(value))
+            .unwrap_or("application/octet-stream")
+            .to_string();
 
-    Ok(PostResponse {
-        content_type: response_content_type,
-        body,
-    })
+        let body = read_bounded_body(response).await?;
+
+        Ok(PostResponse {
+            content_type: response_content_type,
+            body,
+        })
+    }
+    .instrument(span)
+    .await
 }
 
 /// Reads a response body in chunks, stopping with an error before the accumulated
@@ -185,7 +304,7 @@ async fn read_bounded_body(mut response: Response) -> Result<Vec<u8>, String> {
     while let Some(chunk) = response
         .chunk()
         .await
-        .map_err(|err| format!("failed reading response body: {err}"))?
+        .map_err(|_| "failed reading response body".to_string())?
     {
         if buffer.len() + chunk.len() > policy::MAX_RESPONSE_BODY_BYTES {
             return Err(format!(
@@ -202,28 +321,41 @@ async fn read_bounded_body(mut response: Response) -> Result<Vec<u8>, String> {
 mod tests {
     use std::convert::Infallible;
     use std::net::SocketAddr;
+    use std::sync::OnceLock;
 
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
+    use tokio::sync::oneshot;
+    use tracing::Instrument;
 
     use super::*;
+
+    static TELEMETRY: OnceLock<crate::telemetry::TelemetryGuard> = OnceLock::new();
 
     /// Starts a minimal single-request HTTP/1.1 mock server that ignores the
     /// request and replies with `response`, then stops listening.
     async fn serve_once(response: &'static str) -> SocketAddr {
+        serve_once_capturing(response).await.0
+    }
+
+    async fn serve_once_capturing(
+        response: &'static str,
+    ) -> (SocketAddr, oneshot::Receiver<Vec<u8>>) {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
+        let (request_tx, request_rx) = oneshot::channel();
         tokio::spawn(async move {
             let (mut socket, _) = listener.accept().await.unwrap();
             let mut buf = [0u8; 4096];
             // Drain whatever the client sent; a real HTTP client will close the
             // write side once it has sent headers+body, we just need to read some.
-            let _ = socket.read(&mut buf).await;
+            let bytes_read = socket.read(&mut buf).await.unwrap();
+            let _ = request_tx.send(buf[..bytes_read].to_vec());
             let _: Result<(), Infallible> = Ok(());
             socket.write_all(response.as_bytes()).await.unwrap();
             socket.shutdown().await.unwrap();
         });
-        addr
+        (addr, request_rx)
     }
 
     #[tokio::test]
@@ -232,7 +364,7 @@ mod tests {
             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello",
         )
         .await;
-        let client = build_client(None, None).unwrap();
+        let client = build_client(None, None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let response = execute_post(
             &client,
@@ -253,7 +385,7 @@ mod tests {
             "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 3\r\nConnection: close\r\n\r\nabc",
         )
         .await;
-        let client = build_client(None, None).unwrap();
+        let client = build_client(None, None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let response = execute_post(
             &client,
@@ -277,7 +409,7 @@ mod tests {
         );
         let response: &'static str = Box::leak(response.into_boxed_str());
         let addr = serve_once(response).await;
-        let client = build_client(None, None).unwrap();
+        let client = build_client(None, None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let result = execute_post(
             &client,
@@ -296,10 +428,8 @@ mod tests {
             "HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:9/elsewhere\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
         )
         .await;
-        let client = build_client(None, None).unwrap();
+        let client = build_client(None, None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
-        // error_for_status() only rejects 4xx/5xx; a 302 with redirects disabled is
-        // surfaced as a successful (non-followed) response rather than an error.
         let result = execute_post(
             &client,
             url,
@@ -308,6 +438,32 @@ mod tests {
             &EndpointCredentials::None,
         )
         .await;
-        assert!(result.is_ok());
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn injects_traceparent_without_url_path_attributes() {
+        TELEMETRY.get_or_init(|| crate::telemetry::init("http-post-test").unwrap());
+        let (addr, request_rx) = serve_once_capturing(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok",
+        )
+        .await;
+        let client = build_client(None, None, None).unwrap();
+        let url = reqwest::Url::parse(&format!("http://{addr}/private?secret=value")).unwrap();
+        let parent = tracing::info_span!("test.parent");
+
+        execute_post(
+            &client,
+            url,
+            "body".to_string(),
+            "text/plain",
+            &EndpointCredentials::None,
+        )
+        .instrument(parent)
+        .await
+        .unwrap();
+
+        let request = String::from_utf8(request_rx.await.unwrap()).unwrap();
+        assert!(request.to_ascii_lowercase().contains("\r\ntraceparent: "));
     }
 }
