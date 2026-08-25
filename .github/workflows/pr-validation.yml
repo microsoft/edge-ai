@@ -388,6 +388,52 @@ jobs:
           path: test-results/
           retention-days: 30
 
+  # Fabric ontology credential-free contract and lifecycle qualification
+  fabric-ontology-qualification:
+    name: Fabric Ontology Qualification
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install \
+            attrs==26.1.0 \
+            jsonschema==4.26.0 \
+            jsonschema-specifications==2025.9.1 \
+            pyyaml==6.0.3 \
+            referencing==0.37.0 \
+            rpds-py==0.30.0 \
+            typing-extensions==4.15.0
+
+      - name: Install yq
+        shell: bash
+        run: |
+          YQ_VERSION="v4.53.6"
+          YQ_SHA256="c5f056448f973ae7d39b5401949648a78f2dc1947d6a8eb65be60d5c504b9385"
+          YQ_PATH="${RUNNER_TEMP}/yq"
+          curl --fail --location --retry 3 \
+            --output "${YQ_PATH}" \
+            "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
+          echo "${YQ_SHA256}  ${YQ_PATH}" | sha256sum --check -
+          chmod +x "${YQ_PATH}"
+          echo "${RUNNER_TEMP}" >>"${GITHUB_PATH}"
+
+      - name: Run Fabric Ontology Qualification
+        working-directory: src/000-cloud/033-fabric-ontology
+        shell: bash
+        run: ./tests/validate-generation.sh
+
   # Aggregator gate - single required check for branch protection
   pr-validation-gate:
     name: PR Validation Gate
@@ -419,6 +465,7 @@ jobs:
       - terraform-module-tests
       - application-matrix-builds
       - pester-tests
+      - fabric-ontology-qualification
     permissions:
       contents: read
     steps:
