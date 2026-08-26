@@ -36,7 +36,8 @@ To maintain code quality and the OSSF Best Practices Badge, we enforce the follo
 | **Blueprint IaC**        | Go / Terratest           | Contract and deployment tests under blueprint `tests/`    |
 | **Rust**                 | `cargo test`             | `#[cfg(test)]` module covering core logic                 |
 | **.NET**                 | xUnit / NUnit            | Test project covering business logic                      |
-| **JavaScript**           | Jest / TypeScript        | Docs tests and `tsc --noEmit` checks                      |
+| **JavaScript (application)** | vitest | Test file with 80% coverage threshold |
+| **JavaScript (docs)** | Jest / TypeScript | Docs tests and `tsc --noEmit` checks |
 
 ## Testing Philosophy
 
