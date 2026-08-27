@@ -13,13 +13,12 @@ dependencies = [
 
 [[package]]
 name = "akri-http-post-connector"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "azure_iot_operations_connector",
  "azure_iot_operations_protocol",
  "azure_iot_operations_services",
- "ipnet",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",

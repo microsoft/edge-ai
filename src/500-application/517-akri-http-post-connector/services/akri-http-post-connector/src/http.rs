@@ -6,8 +6,6 @@
 //! response bodies up to [`policy::MAX_RESPONSE_BODY_BYTES`] regardless of what the
 //! response's `Content-Length` header claims.
 
-use std::collections::HashSet;
-use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 
 use azure_iot_operations_connector::base_connector::managed_azure_device_registry::Authentication;
@@ -91,7 +89,6 @@ fn read_file_to_string(path: &Path) -> Result<String, String> {
 fn build_client(
     trust_bundle_dir: Option<&PathBuf>,
     identity: Option<reqwest::Identity>,
-    pinned_host: Option<(&str, &[SocketAddr])>,
 ) -> Result<Client, String> {
     let mut builder = ClientBuilder::new()
         .connect_timeout(policy::CONNECT_TIMEOUT)
@@ -112,66 +109,41 @@ fn build_client(
     if let Some(identity) = identity {
         builder = builder.identity(identity);
     }
-    if let Some((host, addresses)) = pinned_host {
-        builder = builder.resolve_to_addrs(host, addresses);
-    }
-
     builder
         .build()
         .map_err(|err| format!("failed to build HTTP client: {err}"))
 }
 
-/// Resolves, validates, and pins an endpoint before returning its HTTP client and
-/// request credentials. Rebuilding this client on an endpoint update refreshes the
-/// complete DNS answer set atomically.
-pub async fn build_endpoint_client(
+/// Validates an endpoint before returning its HTTP client and request credentials.
+pub fn build_endpoint_client(
     endpoint: &reqwest::Url,
     authentication: &Authentication,
     trust_bundle_dir: Option<&PathBuf>,
-    endpoint_policy: &policy::EndpointPolicy,
 ) -> Result<(Client, EndpointCredentials), String> {
-    endpoint_policy.validate_url(endpoint)?;
+    validate_endpoint_url(endpoint)?;
     let (credentials, identity) = load_credentials(authentication)?;
-    validate_transport(endpoint, &credentials, endpoint_policy)?;
+    validate_transport(endpoint, &credentials)?;
 
-    let host = endpoint
-        .host_str()
-        .ok_or_else(|| "endpoint URL host is missing".to_string())?;
-    let port = endpoint
-        .port_or_known_default()
-        .ok_or_else(|| "endpoint URL port is unavailable".to_string())?;
-    let addresses = resolve_addresses(host, port).await?;
-    let unique_addresses: HashSet<IpAddr> = addresses.iter().map(SocketAddr::ip).collect();
-    endpoint_policy
-        .validate_addresses(&unique_addresses.iter().copied().collect::<Vec<IpAddr>>())?;
-
-    let client = build_client(trust_bundle_dir, identity, Some((host, &addresses)))?;
+    let client = build_client(trust_bundle_dir, identity)?;
     Ok((client, credentials))
 }
 
-async fn resolve_addresses(host: &str, port: u16) -> Result<Vec<SocketAddr>, String> {
-    let addresses: HashSet<SocketAddr> = tokio::net::lookup_host((host, port))
-        .await
-        .map_err(|_| "endpoint DNS resolution failed".to_string())?
-        .collect();
-    if addresses.is_empty() {
-        return Err("endpoint DNS resolution returned no addresses".to_string());
+fn validate_endpoint_url(endpoint: &reqwest::Url) -> Result<(), String> {
+    if !endpoint.username().is_empty() || endpoint.password().is_some() {
+        return Err("endpoint URL userinfo is not permitted".to_string());
     }
-    Ok(addresses.into_iter().collect())
+    endpoint
+        .host_str()
+        .ok_or_else(|| "endpoint URL host is missing".to_string())?;
+    Ok(())
 }
 
 fn validate_transport(
     endpoint: &reqwest::Url,
     credentials: &EndpointCredentials,
-    endpoint_policy: &policy::EndpointPolicy,
 ) -> Result<(), String> {
-    if endpoint.scheme() == "http" {
-        if credentials.is_authenticated() {
-            return Err("endpoint credentials require HTTPS".to_string());
-        }
-        if !endpoint_policy.allows_anonymous_http() {
-            return Err("anonymous HTTP endpoints are disabled".to_string());
-        }
+    if endpoint.scheme() == "http" && credentials.is_authenticated() {
+        return Err("endpoint credentials require HTTPS".to_string());
     }
     Ok(())
 }
@@ -364,7 +336,7 @@ mod tests {
             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello",
         )
         .await;
-        let client = build_client(None, None, None).unwrap();
+        let client = build_client(None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let response = execute_post(
             &client,
@@ -385,7 +357,7 @@ mod tests {
             "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: 3\r\nConnection: close\r\n\r\nabc",
         )
         .await;
-        let client = build_client(None, None, None).unwrap();
+        let client = build_client(None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let response = execute_post(
             &client,
@@ -409,7 +381,7 @@ mod tests {
         );
         let response: &'static str = Box::leak(response.into_boxed_str());
         let addr = serve_once(response).await;
-        let client = build_client(None, None, None).unwrap();
+        let client = build_client(None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let result = execute_post(
             &client,
@@ -428,7 +400,7 @@ mod tests {
             "HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:9/elsewhere\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
         )
         .await;
-        let client = build_client(None, None, None).unwrap();
+        let client = build_client(None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
         let result = execute_post(
             &client,
@@ -448,7 +420,7 @@ mod tests {
             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok",
         )
         .await;
-        let client = build_client(None, None, None).unwrap();
+        let client = build_client(None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/private?secret=value")).unwrap();
         let parent = tracing::info_span!("test.parent");
 

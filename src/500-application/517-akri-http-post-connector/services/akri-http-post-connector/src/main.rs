@@ -19,7 +19,6 @@ use anyhow::{Context, Result};
 use azure_iot_operations_connector::base_connector::{BaseConnector, OptionsBuilder};
 use azure_iot_operations_connector::deployment_artifacts::connector::ConnectorArtifacts;
 use azure_iot_operations_protocol::application::ApplicationContextBuilder;
-use std::sync::Arc;
 
 /// Maximum number of POST requests allowed in flight at once across every data
 /// operation owned by this connector instance.
@@ -61,12 +60,6 @@ async fn main() -> Result<()> {
     let base_connector_options = OptionsBuilder::default()
         .build()
         .context("failed to build base connector options")?;
-    let endpoint_policy = Arc::new(
-        policy::EndpointPolicy::from_env()
-            .map_err(anyhow::Error::msg)
-            .context("failed to load endpoint authority policy")?,
-    );
-
     let base_connector = BaseConnector::new(
         application_context,
         connector_artifacts,
@@ -88,7 +81,6 @@ async fn main() -> Result<()> {
         concurrency,
         connector_secrets_metadata_mount,
         connector_secrets_mount,
-        endpoint_policy,
     ));
 
     tokio::select! {

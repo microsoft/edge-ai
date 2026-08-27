@@ -35,7 +35,7 @@ Version 1.0 supports:
 * HTTP `POST` only; there is no configurable request method.
 * Textual request bodies only, including JSON and other text-based MIME types.
 * A configurable request `Content-Type`, owned by the Akri dataset configuration.
-* A dataset-configuration schema version 2 contract: `request.bodySecretAlias` names a Kubernetes
+* A dataset-configuration contract: `request.bodySecretAlias` names a Kubernetes
   Secret resolved through the Akri operator's connector-template secrets mount, rather than an
   inline request body. See [`docs/request-body-secret.md`](docs/request-body-secret.md) for the
   manual `kubectl create secret generic` prerequisite this requires.

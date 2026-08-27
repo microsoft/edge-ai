@@ -2,9 +2,9 @@
 //! and inbound endpoint address.
 //!
 //! Field names mirror the `datasetConfigurationSchema` published in
-//! `connector-metadata/connector-metadata.json` (`schemaVersion`,
-//! `request.bodySecretAlias`, `request.contentType`, `request.idempotent`,
-//! `samplingIntervalMs`). `request.bodySecretAlias` is resolved to request body
+//! `connector-metadata/connector-metadata.json` (`request.bodySecretAlias`,
+//! `request.contentType`, `request.idempotent`, `samplingIntervalMs`).
+//! `request.bodySecretAlias` is resolved to request body
 //! content via [`crate::secret_body::resolve_body`]; see that module and
 //! `docs/request-body-secret.md` for the resolution contract and its manual
 //! `kubectl create secret generic` prerequisite.
@@ -13,9 +13,6 @@ use serde::Deserialize;
 use url::Url;
 
 use crate::policy;
-
-/// Dataset configuration schema version accepted by this connector (v2 contract).
-pub const DATASET_CONFIGURATION_SCHEMA_VERSION: u32 = 2;
 
 /// Maximum accepted request body length in bytes, enforced against the content
 /// resolved from `request.bodySecretAlias`. This is a ceiling only; the contract
@@ -35,7 +32,6 @@ pub const MIN_SAMPLING_INTERVAL_MS: u32 = 100;
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DatasetConfiguration {
-    pub schema_version: u32,
     pub request: RequestConfiguration,
     pub sampling_interval_ms: u32,
 }
@@ -68,16 +64,10 @@ pub fn parse_dataset_configuration(raw: &str) -> Result<DatasetConfiguration, St
     serde_json::from_str(raw).map_err(|err| format!("invalid dataset configuration JSON: {err}"))
 }
 
-/// Validates a parsed [`DatasetConfiguration`] against the v2 contract: schema
-/// version, textual content type, `body_secret_alias` format, and sampling
-/// interval floor. Request body size is checked whenever the alias is resolved.
+/// Validates a parsed [`DatasetConfiguration`] against the connector contract:
+/// textual content type, `body_secret_alias` format, and sampling interval floor.
+/// Request body size is checked whenever the alias is resolved.
 pub fn validate_dataset_configuration(config: &DatasetConfiguration) -> Result<(), String> {
-    if config.schema_version != DATASET_CONFIGURATION_SCHEMA_VERSION {
-        return Err(format!(
-            "unsupported dataset configuration schemaVersion {} (expected {})",
-            config.schema_version, DATASET_CONFIGURATION_SCHEMA_VERSION
-        ));
-    }
     if config.request.content_type.trim().is_empty() {
         return Err("request.contentType must not be empty".to_string());
     }
@@ -169,7 +159,6 @@ mod tests {
 
     fn valid_dataset_json() -> String {
         r#"{
-            "schemaVersion": 2,
             "request": { "bodySecretAlias": "body-secret", "contentType": "application/json" },
             "samplingIntervalMs": 1000
         }"#
@@ -180,22 +169,13 @@ mod tests {
     fn parses_valid_dataset_configuration() {
         let config = parse_dataset_configuration(&valid_dataset_json()).unwrap();
         validate_dataset_configuration(&config).unwrap();
-        assert_eq!(config.schema_version, DATASET_CONFIGURATION_SCHEMA_VERSION);
         assert_eq!(config.request.body_secret_alias, "body-secret");
         assert_eq!(config.sampling_interval_ms, 1000);
     }
 
     #[test]
-    fn rejects_v1_schema_version() {
-        let raw = valid_dataset_json().replace("\"schemaVersion\": 2", "\"schemaVersion\": 1");
-        let config = parse_dataset_configuration(&raw).unwrap();
-        assert!(validate_dataset_configuration(&config).is_err());
-    }
-
-    #[test]
-    fn rejects_v1_configuration_with_inline_body_field() {
+    fn rejects_configuration_with_inline_body_field() {
         let raw = r#"{
-            "schemaVersion": 1,
             "request": { "body": "hello world", "contentType": "application/json" },
             "samplingIntervalMs": 1000
         }"#;
@@ -307,12 +287,6 @@ mod tests {
     #[test]
     fn compile_plan_fails_when_data_source_is_absolute() {
         assert!(compile_plan(Some("https://other.local/steal"), &valid_dataset_json()).is_err());
-    }
-
-    #[test]
-    fn compile_plan_fails_when_dataset_invalid() {
-        let raw = valid_dataset_json().replace("\"schemaVersion\": 2", "\"schemaVersion\": 9");
-        assert!(compile_plan(None, &raw).is_err());
     }
 
     #[test]

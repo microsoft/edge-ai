@@ -88,18 +88,12 @@ impl EndpointState {
     async fn build(
         device_endpoint_client: &DeviceEndpointClient,
         trust_bundle_dir: Option<&PathBuf>,
-        endpoint_policy: &policy::EndpointPolicy,
     ) -> Result<Self, String> {
         let specification = device_endpoint_client.specification();
         let inbound = specification.endpoints.inbound;
         let address = config::parse_endpoint_address(&inbound.address)?;
-        let (client, credentials) = http::build_endpoint_client(
-            &address,
-            &inbound.authentication,
-            trust_bundle_dir,
-            endpoint_policy,
-        )
-        .await?;
+        let (client, credentials) =
+            http::build_endpoint_client(&address, &inbound.authentication, trust_bundle_dir)?;
         Ok(Self {
             client,
             credentials,
@@ -160,7 +154,6 @@ pub async fn run(
     concurrency: GlobalConcurrency,
     secrets_metadata_mount: PathBuf,
     secrets_mount: PathBuf,
-    endpoint_policy: Arc<policy::EndpointPolicy>,
 ) -> Result<(), String> {
     let mut endpoint_tasks = JoinSet::new();
     loop {
@@ -172,7 +165,6 @@ pub async fn run(
                     concurrency.clone(),
                     secrets_metadata_mount.clone(),
                     secrets_mount.clone(),
-                    Arc::clone(&endpoint_policy),
                     CancellationToken::new(),
                 ));
             }
@@ -192,7 +184,6 @@ async fn run_device_endpoint(
     concurrency: GlobalConcurrency,
     secrets_metadata_mount: PathBuf,
     secrets_mount: PathBuf,
-    endpoint_policy: Arc<policy::EndpointPolicy>,
     cancellation: CancellationToken,
 ) {
     let reporter = device_endpoint_client.get_status_reporter();
@@ -202,7 +193,6 @@ async fn run_device_endpoint(
         trust_bundle_dir.as_ref(),
         &endpoint_state,
         &reporter,
-        &endpoint_policy,
     )
     .await;
 
@@ -230,7 +220,6 @@ async fn run_device_endpoint(
                             trust_bundle_dir.as_ref(),
                             &endpoint_state,
                             &reporter,
-                            &endpoint_policy,
                         )
                         .await;
                     }
@@ -258,9 +247,8 @@ async fn rebuild_endpoint_state(
     trust_bundle_dir: Option<&PathBuf>,
     endpoint_state: &SharedEndpointState,
     reporter: &DeviceEndpointStatusReporter,
-    endpoint_policy: &policy::EndpointPolicy,
 ) {
-    match EndpointState::build(device_endpoint_client, trust_bundle_dir, endpoint_policy).await {
+    match EndpointState::build(device_endpoint_client, trust_bundle_dir).await {
         Ok(state) => {
             endpoint_state.replace(Some(state)).await;
             report_device_endpoint_status(reporter, telemetry::ok_status()).await;
@@ -734,7 +722,6 @@ mod tests {
         ObservationPlan {
             data_source: Some("/retrieval".to_string()),
             dataset: DatasetConfiguration {
-                schema_version: config::DATASET_CONFIGURATION_SCHEMA_VERSION,
                 request: RequestConfiguration {
                     body_secret_alias: "body-secret".to_string(),
                     content_type: "application/json".to_string(),

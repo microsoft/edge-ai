@@ -2,11 +2,11 @@
   "$schema": "https://json.schemastore.org/aio-connector-metadata-11.0-preview.json",
   "name": "EdgeAiHttpPostConnector",
   "description": "POST-only connector for HTTP endpoints that require a textual request body, with the body resolved from a Kubernetes Secret alias",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "supportedArchitectures": ["linux/amd64"],
   "imageConfigurationSettings": {
     "imageName": "akri-http-post-connector",
-    "tag": "1.0.0"
+    "tag": "1.0.1"
   },
   "inboundEndpoints": [
     {
@@ -47,14 +47,8 @@
         "datasetConfigurationSchema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "required": ["schemaVersion", "request", "samplingIntervalMs"],
+          "required": ["request", "samplingIntervalMs"],
           "properties": {
-            "schemaVersion": {
-              "type": "integer",
-              "enum": [2],
-              "default": 2,
-              "readOnly": true
-            },
             "request": {
               "type": "object",
               "required": ["bodySecretAlias", "contentType"],
