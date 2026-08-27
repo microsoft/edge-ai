@@ -6,6 +6,7 @@
 //! response bodies up to [`policy::MAX_RESPONSE_BODY_BYTES`] regardless of what the
 //! response's `Content-Length` header claims.
 
+use std::error::Error as _;
 use std::path::{Path, PathBuf};
 
 use azure_iot_operations_connector::base_connector::managed_azure_device_registry::Authentication;
@@ -174,6 +175,45 @@ fn load_trust_bundle(dir: &Path) -> Result<Vec<reqwest::Certificate>, String> {
     Ok(certs)
 }
 
+fn request_target(url: &reqwest::Url) -> String {
+    let host = match url.host() {
+        Some(url::Host::Ipv6(address)) => format!("[{address}]"),
+        Some(host) => host.to_string(),
+        None => "unknown".to_string(),
+    };
+    let port = url.port_or_known_default().unwrap_or_default();
+    format!("{}://{host}:{port}", url.scheme())
+}
+
+fn format_request_error(context: &str, target: &str, error: reqwest::Error) -> String {
+    let category = if error.is_timeout() {
+        "timeout"
+    } else if error.is_connect() {
+        "connect"
+    } else if error.is_body() {
+        "body"
+    } else if error.is_decode() {
+        "decode"
+    } else if error.is_redirect() {
+        "redirect"
+    } else if error.is_status() {
+        "status"
+    } else if error.is_builder() {
+        "builder"
+    } else {
+        "request"
+    };
+    let error = error.without_url();
+    let mut message = format!("{context}: category={category} target={target}: {error}");
+    let mut source = error.source();
+    while let Some(cause) = source {
+        message.push_str(": caused by: ");
+        message.push_str(&cause.to_string());
+        source = cause.source();
+    }
+    message
+}
+
 /// The outcome of a single POST execution: the validated response content type
 /// (falling back to `application/octet-stream` for non-textual or missing values)
 /// and its bounded, fully-read body.
@@ -211,6 +251,7 @@ pub async fn execute_post(
     if url.scheme() != "https" && credentials.is_authenticated() {
         return Err("endpoint credentials require HTTPS".to_string());
     }
+    let target = request_target(&url);
     let server_address = url.host_str().unwrap_or("unknown").to_string();
     let server_port = url.port_or_known_default().unwrap_or_default();
     let span = tracing::info_span!(
@@ -231,9 +272,9 @@ pub async fn execute_post(
         if let EndpointCredentials::BasicAuth { username, password } = credentials {
             request = request.basic_auth(username, Some(password));
         }
-        let mut request = request
-            .build()
-            .map_err(|error| format!("failed to build POST request: {}", error.without_url()))?;
+        let mut request = request.build().map_err(|error| {
+            format_request_error("failed to build POST request", &target, error)
+        })?;
         let context = Span::current().context();
         opentelemetry::global::get_text_map_propagator(|propagator| {
             propagator.inject_context(&context, &mut HeaderInjector(request.headers_mut()));
@@ -241,7 +282,7 @@ pub async fn execute_post(
 
         let response = client.execute(request).await.map_err(|error| {
             Span::current().record("error.type", "request_failed");
-            format!("POST request failed: {}", error.without_url())
+            format_request_error("POST request failed", &target, error)
         })?;
         let status = response.status();
         Span::current().record("http.response.status_code", status.as_u16());
