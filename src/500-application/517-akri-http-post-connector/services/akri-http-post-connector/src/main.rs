@@ -34,9 +34,7 @@ async fn main() -> Result<()> {
         .map_err(|err| anyhow::anyhow!(err.to_string()))
         .context("failed to load connector artifacts")?;
     // Extracted before `connector_artifacts` is consumed by `BaseConnector::new` below.
-    let trust_bundle_dir = connector_artifacts
-        .device_endpoint_trust_bundle_mount
-        .clone();
+    let trust_bundle_dir = connector_artifacts.connector_trust_settings_mount.clone();
     // Both secrets mount paths resolve `request.bodySecretAlias` (see `secret_body`);
     // either being absent is a startup configuration error, not a per-request one.
     let connector_secrets_metadata_mount = connector_artifacts

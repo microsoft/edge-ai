@@ -74,7 +74,10 @@ impl EndpointStore {
 
 enum WorkerOutcome {
     Response(http::PostResponse),
-    Failed(telemetry::FailureReason),
+    Failed {
+        reason: telemetry::FailureReason,
+        error: Option<String>,
+    },
     Cancelled,
 }
 
@@ -551,8 +554,11 @@ async fn execute_worker(
 
     let mut result = execute_post(&plan, &request, &cancellation).await;
     if matches!(
-        result,
-        WorkerOutcome::Failed(telemetry::FailureReason::RequestFailed)
+        &result,
+        WorkerOutcome::Failed {
+            reason: telemetry::FailureReason::RequestFailed,
+            ..
+        }
     ) && policy::retry_eligible(plan.dataset.request.idempotent, false)
     {
         result = execute_post(&plan, &request, &cancellation).await;
@@ -572,11 +578,16 @@ async fn resolve_request(
         _ = cancellation.cancelled() => return Err(WorkerOutcome::Cancelled),
         state = endpoint_state.snapshot() => state,
     }
-    .ok_or(WorkerOutcome::Failed(
-        telemetry::FailureReason::EndpointUnavailable,
-    ))?;
-    let url = policy::resolve_request_url(&state.address, plan.data_source.as_deref())
-        .map_err(|_| WorkerOutcome::Failed(telemetry::FailureReason::InvalidEndpoint))?;
+    .ok_or(WorkerOutcome::Failed {
+        reason: telemetry::FailureReason::EndpointUnavailable,
+        error: None,
+    })?;
+    let url = policy::resolve_request_url(&state.address, plan.data_source.as_deref()).map_err(
+        |error| WorkerOutcome::Failed {
+            reason: telemetry::FailureReason::InvalidEndpoint,
+            error: Some(error),
+        },
+    )?;
     let body = tokio::select! {
         biased;
         _ = cancellation.cancelled() => return Err(WorkerOutcome::Cancelled),
@@ -584,7 +595,10 @@ async fn resolve_request(
             secrets_metadata_mount,
             secrets_mount,
             &plan.dataset.request.body_secret_alias,
-        ) => body.map_err(|_| WorkerOutcome::Failed(telemetry::FailureReason::BodyUnavailable))?,
+        ) => body.map_err(|error| WorkerOutcome::Failed {
+            reason: telemetry::FailureReason::BodyUnavailable,
+            error: Some(error),
+        })?,
     };
     proof::record(&body);
     Ok(ResolvedRequest { state, url, body })
@@ -606,7 +620,10 @@ async fn execute_post(
             &request.state.credentials,
         ) => match result {
             Ok(response) => WorkerOutcome::Response(response),
-            Err(_) => WorkerOutcome::Failed(telemetry::FailureReason::RequestFailed),
+            Err(error) => WorkerOutcome::Failed {
+                reason: telemetry::FailureReason::RequestFailed,
+                error: Some(error),
+            },
         },
     }
 }
@@ -618,7 +635,7 @@ async fn handle_worker_outcome(
     reporter: &DataOperationStatusReporter,
     cancellation: &CancellationToken,
 ) {
-    let result = match outcome {
+    let result: Result<(), (telemetry::FailureReason, Option<String>)> = match outcome {
         WorkerOutcome::Response(response) => tokio::select! {
             biased;
             _ = cancellation.cancelled() => return,
@@ -627,9 +644,9 @@ async fn handle_worker_outcome(
                 schema_cache,
                 response.body,
                 response.content_type,
-            ) => result.map_err(|_| telemetry::FailureReason::ForwardingFailed),
+            ) => result.map_err(|error| (telemetry::FailureReason::ForwardingFailed, Some(error))),
         },
-        WorkerOutcome::Failed(failure) => Err(failure),
+        WorkerOutcome::Failed { reason, error } => Err((reason, error)),
         WorkerOutcome::Cancelled => return,
     };
 
@@ -638,9 +655,9 @@ async fn handle_worker_outcome(
             report_dataset_status(reporter, telemetry::ok_status()).await;
             reporter.report_health_event(RuntimeHealthEvent::Available);
         }
-        Err(failure) => {
-            warn!(reason = failure.code(), "POST attempt failed");
-            report_dataset_unavailable(reporter, failure).await;
+        Err((reason, error)) => {
+            warn!(reason = reason.code(), error, "POST attempt failed");
+            report_dataset_unavailable(reporter, reason).await;
         }
     }
 }

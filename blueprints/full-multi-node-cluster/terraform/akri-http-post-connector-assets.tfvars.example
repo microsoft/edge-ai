@@ -30,6 +30,8 @@
  *   3. Create the Kubernetes Secret referenced by the `secrets` entry below (request body
  *      content). See
  *      src/500-application/517-akri-http-post-connector/docs/request-body-secret.md.
+ *   4. For HTTPS endpoints signed by a private CA, create a synced Secret containing the CA
+ *      certificate and set `trust_settings.trust_list_secret_ref` below to its name.
  */
 
 /*
@@ -51,10 +53,13 @@ custom_akri_connectors = [
     custom_endpoint_type          = "EdgeAi.HttpPost"
     custom_endpoint_version       = "1.0"
     custom_image_name             = "akri-http-post-connector"
-    custom_connector_metadata_ref = "akri-http-post-connector-metadata:1.0.0"
+    custom_connector_metadata_ref = "akri-http-post-connector-metadata:1.0.2"
     registry                      = "<acr_name>.azurecr.io"
     image_pull_secrets            = ["acr-pull-secret"]
-    image_tag                     = "1.0.0"
+    image_tag                     = "1.0.2"
+    trust_settings = {
+      trust_list_secret_ref = "http-post-connector-trust-list"
+    }
     secrets = [
       {
         secret_alias = "field-selection-body"

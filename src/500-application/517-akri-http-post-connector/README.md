@@ -176,6 +176,9 @@ custom_akri_connectors = [
     registry                      = "<acr_name>.azurecr.io"
     image_pull_secrets            = ["acr-pull-secret"]
     image_tag                     = "<image_tag>"
+    trust_settings = {
+      trust_list_secret_ref = "http-post-connector-trust-list"
+    }
     secrets = [
       {
         secret_alias = "field-selection-body"
@@ -190,6 +193,26 @@ custom_akri_connectors = [
 `image_pull_secrets` names existing Kubernetes docker-registry Secrets (see Prerequisites) used for
 authenticated pulls; omitting it falls back to the anonymous `registry` pull and fails with
 `ImagePullBackOff` against a private ACR.
+
+`trust_settings.trust_list_secret_ref` names a synced Secret containing the PEM CA certificates
+used to validate HTTPS server certificates. The Akri operator projects this connector-template
+trust list into the connector container; it is separate from client certificates configured on a
+device endpoint. Create the synced Secret and attach it to the template with the same workflow as
+the built-in HTTP connector:
+
+```bash
+az iot ops secretsync secret set \
+  --instance <aio-instance-name> \
+  --resource-group <resource-group> \
+  --name http-post-connector-trust-list \
+  --secret target=ca.crt source=<key-vault-ca-secret-name>
+
+az iot ops connector template update \
+  --name akri-http-post-connector \
+  --instance <aio-instance-name> \
+  --resource-group <resource-group> \
+  --trust-settings-secret-ref http-post-connector-trust-list
+```
 
 `secrets` declares the Kubernetes Secret aliases dataset configurations reference through
 `request.bodySecretAlias`; see [`docs/request-body-secret.md`](docs/request-body-secret.md) for the

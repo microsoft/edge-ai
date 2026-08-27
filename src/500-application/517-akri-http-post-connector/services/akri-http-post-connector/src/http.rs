@@ -233,21 +233,21 @@ pub async fn execute_post(
         }
         let mut request = request
             .build()
-            .map_err(|_| "failed to build POST request".to_string())?;
+            .map_err(|error| format!("failed to build POST request: {}", error.without_url()))?;
         let context = Span::current().context();
         opentelemetry::global::get_text_map_propagator(|propagator| {
             propagator.inject_context(&context, &mut HeaderInjector(request.headers_mut()));
         });
 
-        let response = client.execute(request).await.map_err(|_| {
+        let response = client.execute(request).await.map_err(|error| {
             Span::current().record("error.type", "request_failed");
-            "POST request failed".to_string()
+            format!("POST request failed: {}", error.without_url())
         })?;
         let status = response.status();
         Span::current().record("http.response.status_code", status.as_u16());
         if !status.is_success() {
             Span::current().record("error.type", "unsuccessful_status");
-            return Err("POST response status was not successful".to_string());
+            return Err(format!("POST response status was not successful: {status}"));
         }
 
         let response_content_type = response
@@ -276,7 +276,7 @@ async fn read_bounded_body(mut response: Response) -> Result<Vec<u8>, String> {
     while let Some(chunk) = response
         .chunk()
         .await
-        .map_err(|_| "failed reading response body".to_string())?
+        .map_err(|error| format!("failed reading response body: {}", error.without_url()))?
     {
         if buffer.len() + chunk.len() > policy::MAX_RESPONSE_BODY_BYTES {
             return Err(format!(
