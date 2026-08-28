@@ -19,7 +19,7 @@ use azure_iot_operations_connector::AdrConfigError;
 use tokio::sync::{watch, RwLock};
 use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 use crate::config::{self, ObservationPlan};
 use crate::destination::{self, SchemaCache};
@@ -74,10 +74,7 @@ impl EndpointStore {
 
 enum WorkerOutcome {
     Response(http::PostResponse),
-    Failed {
-        reason: telemetry::FailureReason,
-        error: Option<String>,
-    },
+    Failed { reason: telemetry::FailureReason },
     Cancelled,
 }
 
@@ -536,9 +533,13 @@ async fn execute_worker(
 ) -> WorkerOutcome {
     let _permit = tokio::select! {
         biased;
-        _ = cancellation.cancelled() => return WorkerOutcome::Cancelled,
+        _ = cancellation.cancelled() => {
+            debug!("POST worker cancelled while awaiting concurrency permit");
+            return WorkerOutcome::Cancelled;
+        },
         permit = concurrency.acquire() => permit,
     };
+    debug!("POST worker acquired concurrency permit");
     let request = match resolve_request(
         &plan,
         &endpoint_state,
@@ -552,15 +553,20 @@ async fn execute_worker(
         Err(outcome) => return outcome,
     };
 
+    debug!(attempt = 1, "starting POST attempt");
     let mut result = execute_post(&plan, &request, &cancellation).await;
-    if matches!(
+    let retry_eligible = matches!(
         &result,
         WorkerOutcome::Failed {
             reason: telemetry::FailureReason::RequestFailed,
-            ..
         }
-    ) && policy::retry_eligible(plan.dataset.request.idempotent, false)
-    {
+    ) && policy::retry_eligible(plan.dataset.request.idempotent, false);
+    debug!(
+        first_attempt_succeeded = matches!(&result, WorkerOutcome::Response(_)),
+        retry_eligible, "POST attempt completed"
+    );
+    if retry_eligible {
+        debug!(attempt = 2, "retrying idempotent POST request");
         result = execute_post(&plan, &request, &cancellation).await;
     }
     result
@@ -578,16 +584,29 @@ async fn resolve_request(
         _ = cancellation.cancelled() => return Err(WorkerOutcome::Cancelled),
         state = endpoint_state.snapshot() => state,
     }
-    .ok_or(WorkerOutcome::Failed {
-        reason: telemetry::FailureReason::EndpointUnavailable,
-        error: None,
+    .ok_or_else(|| {
+        debug!("POST request resolution failed because endpoint state is unavailable");
+        WorkerOutcome::Failed {
+            reason: telemetry::FailureReason::EndpointUnavailable,
+        }
     })?;
-    let url = policy::resolve_request_url(&state.address, plan.data_source.as_deref()).map_err(
-        |error| WorkerOutcome::Failed {
-            reason: telemetry::FailureReason::InvalidEndpoint,
-            error: Some(error),
-        },
-    )?;
+    debug!(
+        credential_kind = state.credentials.kind(),
+        "POST request endpoint state resolved"
+    );
+    let url =
+        policy::resolve_request_url(&state.address, plan.data_source.as_deref()).map_err(|_| {
+            debug!("POST request URL resolution failed");
+            WorkerOutcome::Failed {
+                reason: telemetry::FailureReason::InvalidEndpoint,
+            }
+        })?;
+    debug!(
+        scheme = url.scheme(),
+        port = url.port_or_known_default().unwrap_or_default(),
+        data_source_configured = plan.data_source.is_some(),
+        "POST request URL resolved"
+    );
     let body = tokio::select! {
         biased;
         _ = cancellation.cancelled() => return Err(WorkerOutcome::Cancelled),
@@ -595,12 +614,16 @@ async fn resolve_request(
             secrets_metadata_mount,
             secrets_mount,
             &plan.dataset.request.body_secret_alias,
-        ) => body.map_err(|error| WorkerOutcome::Failed {
-            reason: telemetry::FailureReason::BodyUnavailable,
-            error: Some(error),
+        ) => body.map_err(|_| {
+            debug!("POST request body secret resolution failed");
+            WorkerOutcome::Failed {
+                reason: telemetry::FailureReason::BodyUnavailable,
+            }
         })?,
     };
+    debug!("POST request body secret resolved");
     proof::record(&body);
+    debug!("POST request proof recorded");
     Ok(ResolvedRequest { state, url, body })
 }
 
@@ -620,9 +643,8 @@ async fn execute_post(
             &request.state.credentials,
         ) => match result {
             Ok(response) => WorkerOutcome::Response(response),
-            Err(error) => WorkerOutcome::Failed {
+            Err(_) => WorkerOutcome::Failed {
                 reason: telemetry::FailureReason::RequestFailed,
-                error: Some(error),
             },
         },
     }
@@ -635,28 +657,33 @@ async fn handle_worker_outcome(
     reporter: &DataOperationStatusReporter,
     cancellation: &CancellationToken,
 ) {
-    let result: Result<(), (telemetry::FailureReason, Option<String>)> = match outcome {
+    let result: Result<(), telemetry::FailureReason> = match outcome {
         WorkerOutcome::Response(response) => tokio::select! {
             biased;
             _ = cancellation.cancelled() => return,
-            result = destination::forward_response(
-                data_operation_client,
-                schema_cache,
-                response.body,
-                response.content_type,
-            ) => result.map_err(|error| (telemetry::FailureReason::ForwardingFailed, Some(error))),
+            result = async {
+                debug!("forwarding POST response to configured destination");
+                destination::forward_response(
+                    data_operation_client,
+                    schema_cache,
+                    response.body,
+                    response.content_type,
+                ).await
+            } => result.map_err(|_| telemetry::FailureReason::ForwardingFailed),
         },
-        WorkerOutcome::Failed { reason, error } => Err((reason, error)),
+        WorkerOutcome::Failed { reason } => Err(reason),
         WorkerOutcome::Cancelled => return,
     };
 
     match result {
         Ok(()) => {
+            debug!("POST response forwarded successfully");
             report_dataset_status(reporter, telemetry::ok_status()).await;
             reporter.report_health_event(RuntimeHealthEvent::Available);
         }
-        Err((reason, error)) => {
-            warn!(reason = reason.code(), error, "POST attempt failed");
+        Err(reason) => {
+            debug!(reason = reason.code(), "POST worker stage failed");
+            warn!(reason = reason.code(), "POST attempt failed");
             report_dataset_unavailable(reporter, reason).await;
         }
     }

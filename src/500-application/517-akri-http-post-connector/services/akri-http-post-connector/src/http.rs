@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use azure_iot_operations_connector::base_connector::managed_azure_device_registry::Authentication;
 use opentelemetry::propagation::Injector;
 use reqwest::{Client, ClientBuilder, Response};
-use tracing::{field, Instrument, Span};
+use tracing::{debug, field, Instrument, Span};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::policy;
@@ -33,6 +33,14 @@ pub enum EndpointCredentials {
 impl EndpointCredentials {
     fn is_authenticated(&self) -> bool {
         !matches!(self, Self::None)
+    }
+
+    pub(crate) fn kind(&self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::ClientCertificate => "client_certificate",
+            Self::BasicAuth { .. } => "basic_auth",
+        }
     }
 }
 
@@ -91,6 +99,13 @@ fn build_client(
     trust_bundle_dir: Option<&PathBuf>,
     identity: Option<reqwest::Identity>,
 ) -> Result<Client, String> {
+    debug!(
+        custom_trust_bundle = trust_bundle_dir.is_some(),
+        client_identity = identity.is_some(),
+        redirects_enabled = false,
+        proxy_enabled = false,
+        "configuring endpoint HTTP client"
+    );
     let mut builder = ClientBuilder::new()
         .connect_timeout(policy::CONNECT_TIMEOUT)
         .timeout(policy::TOTAL_TIMEOUT)
@@ -98,7 +113,13 @@ fn build_client(
         .no_proxy();
 
     if let Some(dir) = trust_bundle_dir {
-        let certs = load_trust_bundle(dir)?;
+        let certs = load_trust_bundle(dir).inspect_err(|_| {
+            debug!("endpoint trust bundle loading failed");
+        })?;
+        debug!(
+            certificate_count = certs.len(),
+            "loaded endpoint trust bundle"
+        );
         if certs.is_empty() {
             return Err("endpoint trust bundle must contain at least one certificate".to_string());
         }
@@ -112,7 +133,13 @@ fn build_client(
     }
     builder
         .build()
-        .map_err(|err| format!("failed to build HTTP client: {err}"))
+        .inspect(|_| {
+            debug!("endpoint HTTP client configured");
+        })
+        .map_err(|err| {
+            debug!("endpoint HTTP client configuration failed");
+            format!("failed to build HTTP client: {err}")
+        })
 }
 
 /// Validates an endpoint before returning its HTTP client and request credentials.
@@ -121,9 +148,27 @@ pub fn build_endpoint_client(
     authentication: &Authentication,
     trust_bundle_dir: Option<&PathBuf>,
 ) -> Result<(Client, EndpointCredentials), String> {
-    validate_endpoint_url(endpoint)?;
-    let (credentials, identity) = load_credentials(authentication)?;
-    validate_transport(endpoint, &credentials)?;
+    debug!(
+        scheme = endpoint.scheme(),
+        port = endpoint.port_or_known_default().unwrap_or_default(),
+        custom_trust_bundle = trust_bundle_dir.is_some(),
+        "validating endpoint HTTP configuration"
+    );
+    validate_endpoint_url(endpoint).inspect_err(|_| {
+        debug!("endpoint URL validation failed");
+    })?;
+    debug!("endpoint URL validation completed");
+    let (credentials, identity) = load_credentials(authentication).inspect_err(|_| {
+        debug!("endpoint credential loading failed");
+    })?;
+    debug!(
+        credential_kind = credentials.kind(),
+        "endpoint credentials loaded"
+    );
+    validate_transport(endpoint, &credentials).inspect_err(|_| {
+        debug!("endpoint transport validation failed");
+    })?;
+    debug!("endpoint transport validation completed");
 
     let client = build_client(trust_bundle_dir, identity)?;
     Ok((client, credentials))
@@ -185,8 +230,8 @@ fn request_target(url: &reqwest::Url) -> String {
     format!("{}://{host}:{port}", url.scheme())
 }
 
-fn format_request_error(context: &str, target: &str, error: reqwest::Error) -> String {
-    let category = if error.is_timeout() {
+fn request_error_category(error: &reqwest::Error) -> &'static str {
+    if error.is_timeout() {
         "timeout"
     } else if error.is_connect() {
         "connect"
@@ -202,7 +247,11 @@ fn format_request_error(context: &str, target: &str, error: reqwest::Error) -> S
         "builder"
     } else {
         "request"
-    };
+    }
+}
+
+fn format_request_error(context: &str, target: &str, error: reqwest::Error) -> String {
+    let category = request_error_category(&error);
     let error = error.without_url();
     let mut message = format!("{context}: category={category} target={target}: {error}");
     let mut source = error.source();
@@ -265,6 +314,12 @@ pub async fn execute_post(
     );
 
     async move {
+        debug!(
+            scheme = url.scheme(),
+            port = server_port,
+            credential_kind = credentials.kind(),
+            "preparing POST request"
+        );
         let mut request = client
             .post(url)
             .header(reqwest::header::CONTENT_TYPE, content_type)
@@ -273,21 +328,46 @@ pub async fn execute_post(
             request = request.basic_auth(username, Some(password));
         }
         let mut request = request.build().map_err(|error| {
+            debug!(
+                error_category = request_error_category(&error),
+                "POST request construction failed"
+            );
             format_request_error("failed to build POST request", &target, error)
         })?;
+        debug!("POST request built");
         let context = Span::current().context();
         opentelemetry::global::get_text_map_propagator(|propagator| {
             propagator.inject_context(&context, &mut HeaderInjector(request.headers_mut()));
         });
+        debug!("trace context injected into POST request");
 
+        debug!("dispatching POST request");
         let response = client.execute(request).await.map_err(|error| {
             Span::current().record("error.type", "request_failed");
+            debug!(
+                error_category = request_error_category(&error),
+                "POST request dispatch failed"
+            );
             format_request_error("POST request failed", &target, error)
         })?;
         let status = response.status();
+        debug!(
+            status_code = status.as_u16(),
+            authentication_challenge = response
+                .headers()
+                .contains_key(reqwest::header::WWW_AUTHENTICATE),
+            content_type_present = response
+                .headers()
+                .contains_key(reqwest::header::CONTENT_TYPE),
+            "POST response headers received"
+        );
         Span::current().record("http.response.status_code", status.as_u16());
         if !status.is_success() {
             Span::current().record("error.type", "unsuccessful_status");
+            debug!(
+                status_code = status.as_u16(),
+                "POST response rejected before body processing"
+            );
             return Err(format!("POST response status was not successful: {status}"));
         }
 
@@ -298,8 +378,16 @@ pub async fn execute_post(
             .filter(|value| policy::is_textual_mime(value))
             .unwrap_or("application/octet-stream")
             .to_string();
+        debug!(
+            textual_content_type = response_content_type != "application/octet-stream",
+            "POST response content type classified"
+        );
 
         let body = read_bounded_body(response).await?;
+        debug!(
+            response_body_bytes = body.len(),
+            "POST response body read completed"
+        );
 
         Ok(PostResponse {
             content_type: response_content_type,
@@ -313,13 +401,20 @@ pub async fn execute_post(
 /// Reads a response body in chunks, stopping with an error before the accumulated
 /// buffer would exceed [`policy::MAX_RESPONSE_BODY_BYTES`].
 async fn read_bounded_body(mut response: Response) -> Result<Vec<u8>, String> {
+    debug!(
+        response_body_byte_ceiling = policy::MAX_RESPONSE_BODY_BYTES,
+        "reading bounded POST response body"
+    );
     let mut buffer = Vec::new();
-    while let Some(chunk) = response
-        .chunk()
-        .await
-        .map_err(|error| format!("failed reading response body: {}", error.without_url()))?
-    {
+    while let Some(chunk) = response.chunk().await.map_err(|error| {
+        debug!(
+            error_category = request_error_category(&error),
+            "POST response body read failed"
+        );
+        format!("failed reading response body: {}", error.without_url())
+    })? {
         if buffer.len() + chunk.len() > policy::MAX_RESPONSE_BODY_BYTES {
+            debug!("POST response body exceeded configured byte ceiling");
             return Err(format!(
                 "response body exceeded the {} byte ceiling",
                 policy::MAX_RESPONSE_BODY_BYTES
@@ -456,7 +551,7 @@ mod tests {
 
     #[tokio::test]
     async fn injects_traceparent_without_url_path_attributes() {
-        TELEMETRY.get_or_init(|| crate::telemetry::init("http-post-test").unwrap());
+        TELEMETRY.get_or_init(|| crate::telemetry::init("http-post-test", None).unwrap());
         let (addr, request_rx) = serve_once_capturing(
             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok",
         )

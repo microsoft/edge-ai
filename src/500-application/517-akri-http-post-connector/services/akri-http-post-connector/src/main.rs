@@ -26,13 +26,17 @@ const GLOBAL_CONCURRENCY_LIMIT: usize = 8;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _telemetry_guard = telemetry::init("akri-http-post-connector")
-        .map_err(anyhow::Error::msg)
-        .context("failed to initialize telemetry")?;
-
     let connector_artifacts = ConnectorArtifacts::new_from_deployment()
         .map_err(|err| anyhow::anyhow!(err.to_string()))
         .context("failed to load connector artifacts")?;
+    let configured_log_level = connector_artifacts
+        .connector_configuration
+        .diagnostics
+        .as_ref()
+        .map(|diagnostics| diagnostics.logs.level.as_str());
+    let _telemetry_guard = telemetry::init("akri-http-post-connector", configured_log_level)
+        .map_err(anyhow::Error::msg)
+        .context("failed to initialize telemetry")?;
     // Extracted before `connector_artifacts` is consumed by `BaseConnector::new` below.
     let trust_bundle_dir = connector_artifacts.connector_trust_settings_mount.clone();
     // Both secrets mount paths resolve `request.bodySecretAlias` (see `secret_body`);

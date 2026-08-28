@@ -29,7 +29,10 @@ impl Drop for TelemetryGuard {
 }
 
 /// Installs console tracing, W3C propagation, and an optional OTLP exporter.
-pub fn init(service_name: &'static str) -> Result<TelemetryGuard, String> {
+pub fn init(
+    service_name: &'static str,
+    configured_log_level: Option<&str>,
+) -> Result<TelemetryGuard, String> {
     opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
     let resource = Resource::builder()
         .with_service_name(service_name)
@@ -45,8 +48,18 @@ pub fn init(service_name: &'static str) -> Result<TelemetryGuard, String> {
     }
     let provider = provider_builder.build();
     let tracer = provider.tracer(service_name);
-    let filter = EnvFilter::try_from_default_env()
-        .or_else(|_| EnvFilter::try_new("info"))
+    let env_filter_configured = std::env::var_os(EnvFilter::DEFAULT_ENV).is_some();
+    let filter = std::env::var(EnvFilter::DEFAULT_ENV)
+        .map_err(|error| error.to_string())
+        .and_then(|directive| EnvFilter::try_new(directive).map_err(|error| error.to_string()))
+        .or_else(|error| {
+            if env_filter_configured {
+                Err(error)
+            } else {
+                EnvFilter::try_new(configured_log_level.unwrap_or("info"))
+                    .map_err(|error| error.to_string())
+            }
+        })
         .map_err(|_| "failed to configure tracing filter".to_string())?;
     tracing_subscriber::registry()
         .with(filter)
@@ -54,6 +67,14 @@ pub fn init(service_name: &'static str) -> Result<TelemetryGuard, String> {
         .with(tracing_opentelemetry::layer().with_tracer(tracer))
         .try_init()
         .map_err(|_| "failed to initialize tracing subscriber".to_string())?;
+    let filter_source = if env_filter_configured {
+        EnvFilter::DEFAULT_ENV
+    } else if configured_log_level.is_some() {
+        "connector_diagnostics"
+    } else {
+        "default"
+    };
+    tracing::info!(filter_source, "tracing initialized");
     Ok(TelemetryGuard { provider })
 }
 
