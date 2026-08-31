@@ -9,6 +9,9 @@
 //! `docs/request-body-secret.md` for the resolution contract and its manual
 //! `kubectl create secret generic` prerequisite.
 
+use std::collections::BTreeMap;
+
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use serde::Deserialize;
 use url::Url;
 
@@ -27,6 +30,25 @@ pub const MAX_BODY_SECRET_ALIAS_LEN: usize = 253;
 /// Minimum accepted sampling interval, matching `datasetConfigurationSchema`.
 pub const MIN_SAMPLING_INTERVAL_MS: u32 = 100;
 
+const MAX_CUSTOM_HEADERS: usize = 32;
+const MAX_CUSTOM_HEADER_NAME_BYTES: usize = 128;
+const MAX_CUSTOM_HEADER_VALUE_BYTES: usize = 4_096;
+
+// These headers control credentials, message framing, content typing, or trace
+// propagation and must remain owned by the connector or HTTP transport.
+const RESERVED_HEADER_NAMES: [&str; 10] = [
+    "authorization",
+    "proxy-authorization",
+    "host",
+    "content-length",
+    "transfer-encoding",
+    "connection",
+    "content-type",
+    "traceparent",
+    "tracestate",
+    "baggage",
+];
+
 /// Projected dataset configuration, parsed from the Device Registry dataset's
 /// `dataset_configuration` JSON.
 #[derive(Debug, Clone, Deserialize)]
@@ -44,6 +66,8 @@ pub struct DatasetConfiguration {
 pub struct RequestConfiguration {
     pub body_secret_alias: String,
     pub content_type: String,
+    #[serde(default)]
+    pub headers: BTreeMap<String, String>,
     /// Whether this POST request is safe to retry once after a failed send.
     /// Defaults to `false`, matching the contract's default single-attempt
     /// semantics for non-idempotent requests.
@@ -78,6 +102,7 @@ pub fn validate_dataset_configuration(config: &DatasetConfiguration) -> Result<(
         ));
     }
     validate_body_secret_alias(&config.request.body_secret_alias)?;
+    build_custom_headers(&config.request.headers)?;
     if config.sampling_interval_ms < MIN_SAMPLING_INTERVAL_MS {
         return Err(format!(
             "samplingIntervalMs {} is below the minimum of {}",
@@ -85,6 +110,46 @@ pub fn validate_dataset_configuration(config: &DatasetConfiguration) -> Result<(
         ));
     }
     Ok(())
+}
+
+/// Builds custom request headers after validating their names and values.
+pub fn build_custom_headers(headers: &BTreeMap<String, String>) -> Result<HeaderMap, String> {
+    if headers.len() > MAX_CUSTOM_HEADERS {
+        return Err(format!(
+            "request.headers contains {} entries, exceeding the maximum of {MAX_CUSTOM_HEADERS}",
+            headers.len()
+        ));
+    }
+
+    let mut validated = HeaderMap::with_capacity(headers.len());
+    for (name, value) in headers {
+        if name.len() > MAX_CUSTOM_HEADER_NAME_BYTES {
+            return Err(format!(
+                "request.headers name exceeds the {MAX_CUSTOM_HEADER_NAME_BYTES} byte ceiling"
+            ));
+        }
+        let header_name = HeaderName::from_bytes(name.as_bytes())
+            .map_err(|err| format!("request.headers contains invalid name '{name}': {err}"))?;
+        if RESERVED_HEADER_NAMES.contains(&header_name.as_str()) {
+            return Err(format!(
+                "request.headers must not override reserved header '{name}'"
+            ));
+        }
+        if validated.contains_key(&header_name) {
+            return Err(format!(
+                "request.headers contains duplicate case-insensitive name '{name}'"
+            ));
+        }
+        if value.len() > MAX_CUSTOM_HEADER_VALUE_BYTES {
+            return Err(format!(
+                "request.headers value for '{name}' exceeds the {MAX_CUSTOM_HEADER_VALUE_BYTES} byte ceiling"
+            ));
+        }
+        let header_value = HeaderValue::from_str(value)
+            .map_err(|err| format!("request.headers contains invalid value for '{name}': {err}"))?;
+        validated.insert(header_name, header_value);
+    }
+    Ok(validated)
 }
 
 /// Validates `request.bodySecretAlias`: non-empty, at most
@@ -159,7 +224,11 @@ mod tests {
 
     fn valid_dataset_json() -> String {
         r#"{
-            "request": { "bodySecretAlias": "body-secret", "contentType": "application/json" },
+            "request": {
+                "bodySecretAlias": "body-secret",
+                "contentType": "application/json",
+                "headers": { "X-Requested-With": "XMLHttpRequest" }
+            },
             "samplingIntervalMs": 1000
         }"#
         .to_string()
@@ -170,6 +239,10 @@ mod tests {
         let config = parse_dataset_configuration(&valid_dataset_json()).unwrap();
         validate_dataset_configuration(&config).unwrap();
         assert_eq!(config.request.body_secret_alias, "body-secret");
+        assert_eq!(
+            config.request.headers.get("X-Requested-With"),
+            Some(&"XMLHttpRequest".to_string())
+        );
         assert_eq!(config.sampling_interval_ms, 1000);
     }
 
@@ -246,6 +319,33 @@ mod tests {
     #[test]
     fn rejects_malformed_json() {
         assert!(parse_dataset_configuration("not json").is_err());
+    }
+
+    #[test]
+    fn rejects_all_reserved_custom_headers_case_insensitively() {
+        for name in RESERVED_HEADER_NAMES {
+            let headers = BTreeMap::from([(name.to_ascii_uppercase(), "value".to_string())]);
+            assert!(build_custom_headers(&headers).is_err(), "accepted {name}");
+        }
+    }
+
+    #[test]
+    fn rejects_custom_header_value_containing_newline() {
+        let raw = valid_dataset_json().replace(
+            "\"XMLHttpRequest\"",
+            "\"XMLHttpRequest\\r\\nInjected: value\"",
+        );
+        let config = parse_dataset_configuration(&raw).unwrap();
+        assert!(validate_dataset_configuration(&config).is_err());
+    }
+
+    #[test]
+    fn accepts_customer_managed_routing_header() {
+        let headers = BTreeMap::from([(
+            "X-Envoy-Original-Dst-Host".to_string(),
+            "internal.example".to_string(),
+        )]);
+        assert!(build_custom_headers(&headers).is_ok());
     }
 
     #[test]

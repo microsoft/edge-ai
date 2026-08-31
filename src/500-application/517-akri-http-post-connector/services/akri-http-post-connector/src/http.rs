@@ -6,6 +6,7 @@
 //! response bodies up to [`policy::MAX_RESPONSE_BODY_BYTES`] regardless of what the
 //! response's `Content-Length` header claims.
 
+use std::collections::BTreeMap;
 use std::error::Error as _;
 use std::path::{Path, PathBuf};
 
@@ -295,6 +296,7 @@ pub async fn execute_post(
     url: reqwest::Url,
     body: String,
     content_type: &str,
+    headers: &BTreeMap<String, String>,
     credentials: &EndpointCredentials,
 ) -> Result<PostResponse, String> {
     if url.scheme() != "https" && credentials.is_authenticated() {
@@ -320,9 +322,11 @@ pub async fn execute_post(
             credential_kind = credentials.kind(),
             "preparing POST request"
         );
+        let custom_headers = crate::config::build_custom_headers(headers)?;
         let mut request = client
             .post(url)
             .header(reqwest::header::CONTENT_TYPE, content_type)
+            .headers(custom_headers)
             .body(body);
         if let EndpointCredentials::BasicAuth { username, password } = credentials {
             request = request.basic_auth(username, Some(password));
@@ -479,6 +483,7 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
+            &Default::default(),
             &EndpointCredentials::None,
         )
         .await
@@ -500,6 +505,7 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
+            &Default::default(),
             &EndpointCredentials::None,
         )
         .await
@@ -524,6 +530,7 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
+            &Default::default(),
             &EndpointCredentials::None,
         )
         .await;
@@ -543,10 +550,39 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
+            &Default::default(),
             &EndpointCredentials::None,
         )
         .await;
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn sends_allowed_custom_request_header() {
+        let (addr, request_rx) = serve_once_capturing(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok",
+        )
+        .await;
+        let client = build_client(None, None).unwrap();
+        let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
+        let headers =
+            BTreeMap::from([("X-Requested-With".to_string(), "XMLHttpRequest".to_string())]);
+
+        execute_post(
+            &client,
+            url,
+            "body".to_string(),
+            "application/json",
+            &headers,
+            &EndpointCredentials::None,
+        )
+        .await
+        .unwrap();
+
+        let request = String::from_utf8(request_rx.await.unwrap()).unwrap();
+        assert!(request
+            .to_ascii_lowercase()
+            .contains("\r\nx-requested-with: xmlhttprequest\r\n"));
     }
 
     #[tokio::test]
@@ -565,6 +601,7 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
+            &Default::default(),
             &EndpointCredentials::None,
         )
         .instrument(parent)

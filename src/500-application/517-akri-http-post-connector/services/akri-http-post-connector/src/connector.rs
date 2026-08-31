@@ -640,6 +640,7 @@ async fn execute_post(
             request.url.clone(),
             request.body.clone(),
             &plan.dataset.request.content_type,
+            &plan.dataset.request.headers,
             &request.state.credentials,
         ) => match result {
             Ok(response) => WorkerOutcome::Response(response),
@@ -769,6 +770,7 @@ mod tests {
                 request: RequestConfiguration {
                     body_secret_alias: "body-secret".to_string(),
                     content_type: "application/json".to_string(),
+                    headers: Default::default(),
                     idempotent: false,
                 },
                 sampling_interval_ms,

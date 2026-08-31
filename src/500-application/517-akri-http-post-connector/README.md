@@ -44,7 +44,6 @@ Version 1.0 does not support:
 
 * HTTP `GET`. Use the official [`Microsoft.Http` connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-use-http-connector)
   for `GET`-based polling scenarios.
-* Custom request headers.
 * Binary or multipart request bodies.
 * Automatic redirect following.
 * Proxy discovery.
@@ -67,10 +66,18 @@ Azure Resource Manager (ARM) rather than `kubectl` YAML.
 
 * Request bodies are textual only in v1.0; no binary or multipart encoding is accepted.
 * The connector does not follow HTTP redirects and does not perform proxy discovery.
-* The connector does not forward custom request headers in v1.0.
+* Dataset configurations can add non-sensitive request headers through `request.headers`.
+  Credential, framing, content-type, and trace-propagation headers remain reserved by the
+  connector.
 * Secrets are never placed in the request body; authentication and trust material come from Device
   Registry-projected credentials, following the same model as the official connector.
 * A failed non-idempotent `POST` is not automatically replayed.
+
+> [!WARNING]
+> Custom headers are sent to the configured endpoint as provided. You are responsible for the
+> behavior of routing, forwarding, and application-specific headers accepted by that endpoint.
+> Header values are stored in Device Registry configuration; use projected secrets for sensitive
+> values.
 
 ## Local Development Prerequisites
 

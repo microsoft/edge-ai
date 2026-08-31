@@ -2,11 +2,11 @@
   "$schema": "https://json.schemastore.org/aio-connector-metadata-11.0-preview.json",
   "name": "EdgeAiHttpPostConnector",
   "description": "POST-only connector for HTTP endpoints that require a textual request body, with the body resolved from a Kubernetes Secret alias",
-  "version": "1.0.3",
+  "version": "1.0.10",
   "supportedArchitectures": ["linux/amd64"],
   "imageConfigurationSettings": {
     "imageName": "akri-http-post-connector",
-    "tag": "1.0.3"
+    "tag": "1.0.10"
   },
   "inboundEndpoints": [
     {
@@ -60,6 +60,13 @@
                   "pattern": "^[A-Za-z0-9_.-]+$"
                 },
                 "contentType": { "type": "string", "minLength": 1 },
+                "headers": {
+                  "type": "object",
+                  "maxProperties": 32,
+                  "propertyNames": { "maxLength": 128 },
+                  "additionalProperties": { "type": "string", "maxLength": 4096 },
+                  "description": "WARNING: Optional non-sensitive request headers are sent to the configured endpoint. Customers are responsible for the behavior of routing, forwarding, and application-specific headers. Credential, framing, content-type, and trace-propagation headers are reserved by the connector."
+                },
                 "idempotent": { "type": "boolean", "default": false }
               }
             },

@@ -129,7 +129,7 @@ namespaced_assets = [
         # Bounded POST fixture served by the 505 sensor-simulator; see its README for the GET vs POST endpoint split.
         data_source = "/retrieval"
 
-        dataset_configuration = "{\"schemaVersion\": 2, \"request\": {\"bodySecretAlias\": \"field-selection-body\", \"contentType\": \"application/json\"}, \"samplingIntervalMs\": 15000}"
+        dataset_configuration = "{\"schemaVersion\": 2, \"request\": {\"bodySecretAlias\": \"field-selection-body\", \"contentType\": \"application/json\", \"headers\": {\"Accept\": \"application/json\"}}, \"samplingIntervalMs\": 15000}"
 
         data_points = []
 
