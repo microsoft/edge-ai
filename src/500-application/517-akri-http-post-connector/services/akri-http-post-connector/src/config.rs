@@ -3,13 +3,12 @@
 //!
 //! Field names mirror the `datasetConfigurationSchema` published in
 //! `connector-metadata/connector-metadata.json` (`request.bodySecretAlias`,
-//! `request.contentType`, `request.idempotent`, `samplingIntervalMs`).
+//! `request.contentType`, `request.headerName`, `request.headerValue`,
+//! `request.idempotent`, `samplingIntervalMs`).
 //! `request.bodySecretAlias` is resolved to request body
 //! content via [`crate::secret_body::resolve_body`]; see that module and
 //! `docs/request-body-secret.md` for the resolution contract and its manual
 //! `kubectl create secret generic` prerequisite.
-
-use std::collections::BTreeMap;
 
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use serde::Deserialize;
@@ -30,7 +29,6 @@ pub const MAX_BODY_SECRET_ALIAS_LEN: usize = 253;
 /// Minimum accepted sampling interval, matching `datasetConfigurationSchema`.
 pub const MIN_SAMPLING_INTERVAL_MS: u32 = 100;
 
-const MAX_CUSTOM_HEADERS: usize = 32;
 const MAX_CUSTOM_HEADER_NAME_BYTES: usize = 128;
 const MAX_CUSTOM_HEADER_VALUE_BYTES: usize = 4_096;
 
@@ -67,7 +65,9 @@ pub struct RequestConfiguration {
     pub body_secret_alias: String,
     pub content_type: String,
     #[serde(default)]
-    pub headers: BTreeMap<String, String>,
+    pub header_name: Option<String>,
+    #[serde(default)]
+    pub header_value: Option<String>,
     /// Whether this POST request is safe to retry once after a failed send.
     /// Defaults to `false`, matching the contract's default single-attempt
     /// semantics for non-idempotent requests.
@@ -102,7 +102,10 @@ pub fn validate_dataset_configuration(config: &DatasetConfiguration) -> Result<(
         ));
     }
     validate_body_secret_alias(&config.request.body_secret_alias)?;
-    build_custom_headers(&config.request.headers)?;
+    build_custom_header(
+        config.request.header_name.as_deref(),
+        config.request.header_value.as_deref(),
+    )?;
     if config.sampling_interval_ms < MIN_SAMPLING_INTERVAL_MS {
         return Err(format!(
             "samplingIntervalMs {} is below the minimum of {}",
@@ -112,43 +115,50 @@ pub fn validate_dataset_configuration(config: &DatasetConfiguration) -> Result<(
     Ok(())
 }
 
-/// Builds custom request headers after validating their names and values.
-pub fn build_custom_headers(headers: &BTreeMap<String, String>) -> Result<HeaderMap, String> {
-    if headers.len() > MAX_CUSTOM_HEADERS {
+/// Builds the optional custom request header after validating its name and value.
+pub fn build_custom_header(name: Option<&str>, value: Option<&str>) -> Result<HeaderMap, String> {
+    let (name, value) = match (name, value) {
+        (None, None) | (Some(""), Some("")) => return Ok(HeaderMap::new()),
+        (Some(_), None) => {
+            return Err(
+                "request.headerValue is required when request.headerName is set".to_string(),
+            )
+        }
+        (None, Some(_)) => {
+            return Err(
+                "request.headerName is required when request.headerValue is set".to_string(),
+            )
+        }
+        (Some(name), Some(value)) => (name, value),
+    };
+
+    if name.is_empty() {
+        return Err("request.headerName must not be empty".to_string());
+    }
+    if name.len() > MAX_CUSTOM_HEADER_NAME_BYTES {
         return Err(format!(
-            "request.headers contains {} entries, exceeding the maximum of {MAX_CUSTOM_HEADERS}",
-            headers.len()
+            "request.headerName exceeds the {MAX_CUSTOM_HEADER_NAME_BYTES} byte ceiling"
         ));
     }
-
-    let mut validated = HeaderMap::with_capacity(headers.len());
-    for (name, value) in headers {
-        if name.len() > MAX_CUSTOM_HEADER_NAME_BYTES {
-            return Err(format!(
-                "request.headers name exceeds the {MAX_CUSTOM_HEADER_NAME_BYTES} byte ceiling"
-            ));
-        }
-        let header_name = HeaderName::from_bytes(name.as_bytes())
-            .map_err(|err| format!("request.headers contains invalid name '{name}': {err}"))?;
-        if RESERVED_HEADER_NAMES.contains(&header_name.as_str()) {
-            return Err(format!(
-                "request.headers must not override reserved header '{name}'"
-            ));
-        }
-        if validated.contains_key(&header_name) {
-            return Err(format!(
-                "request.headers contains duplicate case-insensitive name '{name}'"
-            ));
-        }
-        if value.len() > MAX_CUSTOM_HEADER_VALUE_BYTES {
-            return Err(format!(
-                "request.headers value for '{name}' exceeds the {MAX_CUSTOM_HEADER_VALUE_BYTES} byte ceiling"
-            ));
-        }
-        let header_value = HeaderValue::from_str(value)
-            .map_err(|err| format!("request.headers contains invalid value for '{name}': {err}"))?;
-        validated.insert(header_name, header_value);
+    let header_name = HeaderName::from_bytes(name.as_bytes())
+        .map_err(|err| format!("request.headerName '{name}' is invalid: {err}"))?;
+    if RESERVED_HEADER_NAMES.contains(&header_name.as_str()) {
+        return Err(format!(
+            "request.headerName must not override reserved header '{name}'"
+        ));
     }
+    if value.is_empty() {
+        return Err("request.headerValue must not be empty".to_string());
+    }
+    if value.len() > MAX_CUSTOM_HEADER_VALUE_BYTES {
+        return Err(format!(
+            "request.headerValue exceeds the {MAX_CUSTOM_HEADER_VALUE_BYTES} byte ceiling"
+        ));
+    }
+    let header_value = HeaderValue::from_str(value)
+        .map_err(|err| format!("request.headerValue for '{name}' is invalid: {err}"))?;
+    let mut validated = HeaderMap::with_capacity(1);
+    validated.insert(header_name, header_value);
     Ok(validated)
 }
 
@@ -227,7 +237,8 @@ mod tests {
             "request": {
                 "bodySecretAlias": "body-secret",
                 "contentType": "application/json",
-                "headers": { "X-Requested-With": "XMLHttpRequest" }
+                "headerName": "X-Requested-With",
+                "headerValue": "XMLHttpRequest"
             },
             "samplingIntervalMs": 1000
         }"#
@@ -240,8 +251,12 @@ mod tests {
         validate_dataset_configuration(&config).unwrap();
         assert_eq!(config.request.body_secret_alias, "body-secret");
         assert_eq!(
-            config.request.headers.get("X-Requested-With"),
-            Some(&"XMLHttpRequest".to_string())
+            config.request.header_name.as_deref(),
+            Some("X-Requested-With")
+        );
+        assert_eq!(
+            config.request.header_value.as_deref(),
+            Some("XMLHttpRequest")
         );
         assert_eq!(config.sampling_interval_ms, 1000);
     }
@@ -324,9 +339,26 @@ mod tests {
     #[test]
     fn rejects_all_reserved_custom_headers_case_insensitively() {
         for name in RESERVED_HEADER_NAMES {
-            let headers = BTreeMap::from([(name.to_ascii_uppercase(), "value".to_string())]);
-            assert!(build_custom_headers(&headers).is_err(), "accepted {name}");
+            assert!(
+                build_custom_header(Some(&name.to_ascii_uppercase()), Some("value")).is_err(),
+                "accepted {name}"
+            );
         }
+    }
+
+    #[test]
+    fn rejects_custom_header_name_without_value() {
+        assert!(build_custom_header(Some("X-Requested-With"), None).is_err());
+    }
+
+    #[test]
+    fn rejects_custom_header_value_without_name() {
+        assert!(build_custom_header(None, Some("XMLHttpRequest")).is_err());
+    }
+
+    #[test]
+    fn accepts_cleared_optional_custom_header_fields() {
+        assert!(build_custom_header(Some(""), Some("")).is_ok());
     }
 
     #[test]
@@ -341,11 +373,10 @@ mod tests {
 
     #[test]
     fn accepts_customer_managed_routing_header() {
-        let headers = BTreeMap::from([(
-            "X-Envoy-Original-Dst-Host".to_string(),
-            "internal.example".to_string(),
-        )]);
-        assert!(build_custom_headers(&headers).is_ok());
+        assert!(
+            build_custom_header(Some("X-Envoy-Original-Dst-Host"), Some("internal.example"))
+                .is_ok()
+        );
     }
 
     #[test]

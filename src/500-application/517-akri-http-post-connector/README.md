@@ -66,17 +66,17 @@ Azure Resource Manager (ARM) rather than `kubectl` YAML.
 
 * Request bodies are textual only in v1.0; no binary or multipart encoding is accepted.
 * The connector does not follow HTTP redirects and does not perform proxy discovery.
-* Dataset configurations can add non-sensitive request headers through `request.headers`.
-  Credential, framing, content-type, and trace-propagation headers remain reserved by the
-  connector.
+* Dataset configurations can add one non-sensitive request header through the optional
+  `request.headerName` and `request.headerValue` pair. Both fields must be set together.
+  Credential, framing, content-type, and trace-propagation headers remain reserved by the connector.
 * Secrets are never placed in the request body; authentication and trust material come from Device
   Registry-projected credentials, following the same model as the official connector.
 * A failed non-idempotent `POST` is not automatically replayed.
 
 > [!WARNING]
-> Custom headers are sent to the configured endpoint as provided. You are responsible for the
+> A custom header is sent to the configured endpoint as provided. You are responsible for the
 > behavior of routing, forwarding, and application-specific headers accepted by that endpoint.
-> Header values are stored in Device Registry configuration; use projected secrets for sensitive
+> The header value is stored in Device Registry configuration; use projected secrets for sensitive
 > values.
 
 ## Local Development Prerequisites

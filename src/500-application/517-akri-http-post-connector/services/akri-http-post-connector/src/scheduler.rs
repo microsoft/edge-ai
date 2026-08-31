@@ -7,14 +7,10 @@ use tokio::sync::{Semaphore, SemaphorePermit};
 use tokio::time::{Interval, MissedTickBehavior};
 
 /// Builds a tick interval for a dataset's `sampling_interval_ms`, configured to
-/// delay (rather than burst) missed ticks. `Interval`'s period cannot be changed in
-/// place; callers must construct a new interval whenever the sampling interval
-/// changes and replace their loop-owned instance with it.
-///
-/// Delaying missed ticks naturally coalesces scheduled work: if a tick's POST
-/// execution takes longer than the sampling interval, the next tick fires one
-/// interval after the previous tick completed rather than firing immediately to
-/// "catch up" on a backlog.
+/// delay rather than burst subsequent missed ticks. Callers reset the interval
+/// after each worker completes so the next request waits for a full period.
+/// `Interval`'s period cannot be changed in place; callers must construct a new
+/// interval whenever the sampling interval changes.
 pub fn interval_for(sampling_interval_ms: u32) -> Interval {
     let mut interval =
         tokio::time::interval(Duration::from_millis(u64::from(sampling_interval_ms)));

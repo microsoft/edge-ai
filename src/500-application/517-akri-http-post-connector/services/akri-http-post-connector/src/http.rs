@@ -6,7 +6,6 @@
 //! response bodies up to [`policy::MAX_RESPONSE_BODY_BYTES`] regardless of what the
 //! response's `Content-Length` header claims.
 
-use std::collections::BTreeMap;
 use std::error::Error as _;
 use std::path::{Path, PathBuf};
 
@@ -296,7 +295,8 @@ pub async fn execute_post(
     url: reqwest::Url,
     body: String,
     content_type: &str,
-    headers: &BTreeMap<String, String>,
+    header_name: Option<&str>,
+    header_value: Option<&str>,
     credentials: &EndpointCredentials,
 ) -> Result<PostResponse, String> {
     if url.scheme() != "https" && credentials.is_authenticated() {
@@ -322,7 +322,7 @@ pub async fn execute_post(
             credential_kind = credentials.kind(),
             "preparing POST request"
         );
-        let custom_headers = crate::config::build_custom_headers(headers)?;
+        let custom_headers = crate::config::build_custom_header(header_name, header_value)?;
         let mut request = client
             .post(url)
             .header(reqwest::header::CONTENT_TYPE, content_type)
@@ -483,7 +483,8 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
-            &Default::default(),
+            None,
+            None,
             &EndpointCredentials::None,
         )
         .await
@@ -505,7 +506,8 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
-            &Default::default(),
+            None,
+            None,
             &EndpointCredentials::None,
         )
         .await
@@ -530,7 +532,8 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
-            &Default::default(),
+            None,
+            None,
             &EndpointCredentials::None,
         )
         .await;
@@ -550,7 +553,8 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
-            &Default::default(),
+            None,
+            None,
             &EndpointCredentials::None,
         )
         .await;
@@ -565,15 +569,13 @@ mod tests {
         .await;
         let client = build_client(None, None).unwrap();
         let url = reqwest::Url::parse(&format!("http://{addr}/path")).unwrap();
-        let headers =
-            BTreeMap::from([("X-Requested-With".to_string(), "XMLHttpRequest".to_string())]);
-
         execute_post(
             &client,
             url,
             "body".to_string(),
             "application/json",
-            &headers,
+            Some("X-Requested-With"),
+            Some("XMLHttpRequest"),
             &EndpointCredentials::None,
         )
         .await
@@ -601,7 +603,8 @@ mod tests {
             url,
             "body".to_string(),
             "text/plain",
-            &Default::default(),
+            None,
+            None,
             &EndpointCredentials::None,
         )
         .instrument(parent)

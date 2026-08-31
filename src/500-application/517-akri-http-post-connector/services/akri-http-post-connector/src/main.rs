@@ -10,7 +10,6 @@ mod connector;
 mod destination;
 mod http;
 mod policy;
-mod proof;
 mod scheduler;
 mod secret_body;
 mod telemetry;

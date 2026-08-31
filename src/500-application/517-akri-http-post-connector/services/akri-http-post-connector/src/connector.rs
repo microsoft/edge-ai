@@ -25,7 +25,6 @@ use crate::config::{self, ObservationPlan};
 use crate::destination::{self, SchemaCache};
 use crate::http::{self, EndpointCredentials};
 use crate::policy;
-use crate::proof;
 use crate::scheduler::{self, GlobalConcurrency};
 use crate::secret_body;
 use crate::telemetry;
@@ -359,7 +358,8 @@ async fn run_data_operation(
 
     match compile_and_store_plan(&data_operation_client, &mut tick_state) {
         Ok(()) => report_dataset_status(&reporter, telemetry::ok_status()).await,
-        Err(_) => {
+        Err(error) => {
+            debug!(error = %error, "initial dataset configuration rejection details");
             warn!(
                 reason = telemetry::FailureReason::ConfigurationRejected.code(),
                 "initial dataset configuration rejected; awaiting an update"
@@ -399,7 +399,8 @@ async fn run_data_operation(
                                 info!("observation plan replaced after update");
                                 report_dataset_status(&reporter, telemetry::ok_status()).await;
                             }
-                            Err(_) => {
+                            Err(error) => {
+                                debug!(error = %error, "updated dataset configuration rejection details");
                                 warn!(reason = telemetry::FailureReason::ConfigurationRejected.code(), "updated dataset configuration rejected");
                                 tick_state.clear();
                                 report_dataset_unavailable(
@@ -622,8 +623,6 @@ async fn resolve_request(
         })?,
     };
     debug!("POST request body secret resolved");
-    proof::record(&body);
-    debug!("POST request proof recorded");
     Ok(ResolvedRequest { state, url, body })
 }
 
@@ -640,7 +639,8 @@ async fn execute_post(
             request.url.clone(),
             request.body.clone(),
             &plan.dataset.request.content_type,
-            &plan.dataset.request.headers,
+            plan.dataset.request.header_name.as_deref(),
+            plan.dataset.request.header_value.as_deref(),
             &request.state.credentials,
         ) => match result {
             Ok(response) => WorkerOutcome::Response(response),
@@ -770,7 +770,8 @@ mod tests {
                 request: RequestConfiguration {
                     body_secret_alias: "body-secret".to_string(),
                     content_type: "application/json".to_string(),
-                    headers: Default::default(),
+                    header_name: None,
+                    header_value: None,
                     idempotent: false,
                 },
                 sampling_interval_ms,

@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "akri-http-post-connector"
-version = "1.0.10"
+version = "1.0.4"
 dependencies = [
  "anyhow",
  "azure_iot_operations_connector",
