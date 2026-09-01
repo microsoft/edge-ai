@@ -704,7 +704,7 @@ Placeholders:
 
 ## Terraform Dataflow Configuration Template
 
-Add this entry to the `dataflow_graphs` variable array in blueprint Terraform configuration (see `blueprints/full-single-node-cluster/terraform/dataflow-graphs.tfvars.example`).
+Add this entry to the `dataflow_graphs` variable array in blueprint Terraform configuration (see `blueprints/full-multi-node-cluster/terraform/dataflow-graphs.tfvars.example`).
 
 ```hcl
 {

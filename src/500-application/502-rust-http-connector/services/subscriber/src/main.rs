@@ -1,7 +1,6 @@
-use azure_iot_operations_mqtt::control_packet::QoS;
-use azure_iot_operations_mqtt::interface::{ManagedClient, MqttPubSub, PubReceiver};
+use azure_iot_operations_mqtt::aio::connection_settings::MqttConnectionSettingsBuilder;
+use azure_iot_operations_mqtt::control_packet::{QoS, RetainOptions, SubscribeProperties, TopicFilter};
 use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionOptionsBuilder};
-use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
 use std::env;
 use tokio::task;
 use tracing::{event, info, Level};
@@ -83,24 +82,37 @@ async fn subscribe_and_receive(client: SessionManagedClient, topic_env_var: &str
 
     info!("Preparing to subscribe to {} topic '{}'", label, topic);
 
-    // Create a filtered receiver for the specified MQTT topic
-    let mut receiver = match client.create_filtered_pub_receiver(&topic) {
-        Ok(r) => r,
+    // Validate the topic filter
+    let topic_filter = match TopicFilter::new(&topic) {
+        Ok(tf) => tf,
         Err(e) => {
             event!(
                 Level::ERROR,
-                "Failed to create filtered pub receiver for {}: {:?}",
+                "Invalid topic filter for {} topic '{}': {:?}",
                 label,
+                topic,
                 e
             );
             return;
         }
     };
 
+    // Create a filtered receiver for the specified MQTT topic
+    let mut receiver = client.create_filtered_pub_receiver(topic_filter.clone());
+
     info!("Created filtered receiver for {} topic '{}'", label, topic);
 
     // Subscribe to the MQTT topic with QoS level AtLeastOnce
-    if let Err(e) = client.subscribe(topic.clone(), QoS::AtLeastOnce).await {
+    if let Err(e) = client
+        .subscribe(
+            topic_filter,
+            QoS::AtLeastOnce,
+            false,
+            RetainOptions::default(),
+            SubscribeProperties::default(),
+        )
+        .await
+    {
         event!(
             Level::ERROR,
             "Failed to subscribe to {} topic {}: {:?}",

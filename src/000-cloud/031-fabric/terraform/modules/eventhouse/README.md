@@ -10,20 +10,20 @@ time-series and telemetry data from IoT devices and streaming sources.
 | Name      | Version          |
 |-----------|------------------|
 | terraform | >= 1.12.0, < 2.0 |
-| fabric    | 1.3.0            |
+| fabric    | 1.10.0           |
 
 ## Providers
 
 | Name   | Version |
 |--------|---------|
-| fabric | 1.3.0   |
+| fabric | 1.10.0  |
 
 ## Resources
 
-| Name                                                                                                                         | Type     |
-|------------------------------------------------------------------------------------------------------------------------------|----------|
-| [fabric_eventhouse.this](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/resources/eventhouse)           | resource |
-| [fabric_kql_database.additional](https://registry.terraform.io/providers/microsoft/fabric/1.3.0/docs/resources/kql_database) | resource |
+| Name                                                                                                                          | Type     |
+|-------------------------------------------------------------------------------------------------------------------------------|----------|
+| [fabric_eventhouse.this](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/resources/eventhouse)           | resource |
+| [fabric_kql_database.additional](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/resources/kql_database) | resource |
 
 ## Inputs
 

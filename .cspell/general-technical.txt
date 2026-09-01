@@ -373,6 +373,7 @@ dataset
 datasets
 datasize
 dataverse
+datediff
 datefmt
 davinci
 dbcc
@@ -395,6 +396,7 @@ demangling
 denoising
 denormalized
 Deque
+deployers
 describedby
 deselections
 deserialize
@@ -1009,6 +1011,7 @@ paletteuse
 palo
 parallelization
 param
+parameterizes
 parameterless
 parquet
 passcode

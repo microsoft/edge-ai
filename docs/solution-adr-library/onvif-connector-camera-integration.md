@@ -409,7 +409,7 @@ docker exec -it onvif-mqtt-monitor mosquitto_pub \
 Blueprint-based deployment:
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 terraform apply -var-file="onvif-connector-assets.tfvars"
 ```
 
@@ -620,7 +620,7 @@ For existing camera integrations using vendor-specific APIs or RTSP:
 - [Azure IoT Operations Documentation](https://learn.microsoft.com/azure/iot-operations/)
 - [Akri Connector Framework](https://github.com/Azure/iot-operations-sdks)
 - [ONVIF Connector Implementation](https://github.com/microsoft/edge-ai/blob/main/src/500-application/510-onvif-connector/README.md)
-- [Blueprint Configuration Example](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-single-node-cluster/terraform/onvif-connector-assets.tfvars.example)
+- [Blueprint Configuration Example](https://github.com/microsoft/edge-ai/blob/main/blueprints/full-multi-node-cluster/terraform/onvif-connector-assets.tfvars.example)
 - [ONVIF Device Test Tool](https://www.onvif.org/conformance/)
 
 ## Implementation Timeline

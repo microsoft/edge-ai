@@ -1,8 +1,8 @@
 /**
- * # Full Multi Node Cluster Blueprint (Updated)
+ * # Full Multi Node Cluster Blueprint
  *
- * Deploys the complete Edge AI solution for a multi-node edge cluster, aligning module orchestration
- * with the single-node blueprint while preserving multi-node specific capabilities.
+ * Deploys the complete Edge AI solution for a single- or multi-node edge cluster, targeting either a
+ * VM or a pre-existing Arc-enabled machine.
  */
 
 locals {
@@ -13,16 +13,34 @@ locals {
   cluster_machine_count           = local.should_use_arc_machines ? var.arc_machine_count : var.host_machine_count
   cluster_node_machine_count      = max(local.cluster_machine_count - 1, 0)
 
+  alert_eventhub_name     = coalesce(var.alert_eventhub_name, "evh-${var.resource_prefix}-alerts-${var.environment}-${var.instance}")
+  eventhub_namespace_name = "evhns-${var.resource_prefix}-aio-${var.environment}-${var.instance}"
+
+  alert_eventhub_config = var.should_create_azure_functions ? {
+    (local.alert_eventhub_name) = {}
+  } : {}
+
+  eventhubs = merge(local.alert_eventhub_config, var.eventhubs)
+
+  function_app_computed_settings = var.should_create_azure_functions ? {
+    "EventHubConnection__fullyQualifiedNamespace" = "${local.eventhub_namespace_name}.servicebus.windows.net"
+    "EventHubConnection__credential"              = "managedidentity"
+    "ALERT_EVENTHUB_NAME"                         = local.alert_eventhub_name
+    "ALERT_EVENTHUB_CONSUMER_GROUP"               = var.alert_eventhub_consumer_group
+  } : {}
+
   acr_registry_endpoint = var.should_include_acr_registry_endpoint ? [{
     name                           = "acr-${var.resource_prefix}"
     host                           = "${module.cloud_acr.acr.name}.azurecr.io"
     acr_resource_id                = module.cloud_acr.acr.id
     should_assign_acr_pull_for_aio = true
     authentication = {
-      method                                    = "SystemAssignedManagedIdentity"
-      system_assigned_managed_identity_settings = null
-      user_assigned_managed_identity_settings   = null
-      artifact_pull_secret_settings             = null
+      method = "SystemAssignedManagedIdentity"
+      system_assigned_managed_identity_settings = {
+        audience = "https://containerregistry.azure.net"
+      }
+      user_assigned_managed_identity_settings = null
+      artifact_pull_secret_settings           = null
     }
   }] : []
 
@@ -45,14 +63,14 @@ resource "terraform_data" "defer_arc_machine_prefix" {
 data "azurerm_arc_machine" "arc_machines" {
   count = local.should_use_arc_machines ? length(range(var.arc_machine_count)) : 0
 
-  name                = "${terraform_data.defer_arc_machine_prefix[0].output.arc_machine_name_prefix}${count.index + 1}"
+  name                = coalesce(var.arc_machine_count == 1 ? var.arc_machine_name : null, "${terraform_data.defer_arc_machine_prefix[0].output.arc_machine_name_prefix}${count.index + 1}")
   resource_group_name = coalesce(var.arc_machine_resource_group_name, var.resource_group_name, module.cloud_resource_group.resource_group.name)
 }
 
 module "cloud_resource_group" {
   source = "../../../src/000-cloud/000-resource-group/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -80,6 +98,32 @@ module "cloud_networking" {
   nat_gateway_idle_timeout_minutes = var.nat_gateway_idle_timeout_minutes
   nat_gateway_public_ip_count      = var.nat_gateway_public_ip_count
   nat_gateway_zones                = var.nat_gateway_zones
+
+  should_use_network_security_perimeter                  = var.should_use_network_security_perimeter
+  network_security_perimeter_allowed_ip_address_prefixes = var.network_security_perimeter_allowed_ip_address_prefixes
+
+  use_existing_virtual_network = var.use_existing_networking
+  existing_resource_group_name = var.existing_networking_resource_group_name
+  virtual_network_name         = var.virtual_network_name
+  subnet_name                  = var.subnet_name
+  network_security_group_name  = var.network_security_group_name
+}
+
+// Defer computation to prevent the VPN Gateway lookup from querying for state on `terraform plan`.
+resource "terraform_data" "defer_vpn_gateway_name" {
+  count = var.use_existing_networking ? 1 : 0
+
+  input = {
+    vpn_gateway_name = coalesce(var.vpn_gateway_name, "vng-${var.resource_prefix}-${var.environment}-${var.instance}")
+  }
+}
+
+// Informational only; the multi-node cluster does not depend on Step 1's VPN Gateway.
+data "azurerm_virtual_network_gateway" "existing" {
+  count = var.use_existing_networking ? 1 : 0
+
+  name                = terraform_data.defer_vpn_gateway_name[0].output.vpn_gateway_name
+  resource_group_name = coalesce(var.existing_networking_resource_group_name, var.resource_group_name, module.cloud_resource_group.resource_group.name)
 }
 
 module "cloud_security_identity" {
@@ -103,6 +147,12 @@ module "cloud_security_identity" {
   should_create_secret_sync_identity       = var.should_deploy_aio
   log_analytics_workspace_id               = module.cloud_observability.log_analytics_workspace.id
   should_enable_diagnostic_settings        = true
+
+  network_security_perimeter_id                  = try(module.cloud_networking.network_security_perimeter.id, null)
+  network_security_perimeter_profile_id          = try(module.cloud_networking.network_security_perimeter.profile_id, null)
+  network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
+  network_security_perimeter_propagation_trigger = try(module.cloud_networking.network_security_perimeter.propagation_trigger, null)
+  should_use_network_security_perimeter          = var.should_use_network_security_perimeter
 }
 
 module "cloud_vpn_gateway" {
@@ -135,7 +185,7 @@ module "cloud_vpn_gateway" {
 module "cloud_observability" {
   source = "../../../src/000-cloud/020-observability/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   environment     = var.environment
   location        = var.location
   resource_prefix = var.resource_prefix
@@ -143,7 +193,8 @@ module "cloud_observability" {
 
   azmon_resource_group = module.cloud_resource_group.resource_group
 
-  should_enable_private_endpoints = var.should_enable_private_endpoints
+  should_enable_private_endpoints = coalesce(var.should_enable_observability_private_endpoints, var.should_enable_private_endpoints)
+  should_create_blob_dns_zone     = var.should_enable_private_endpoints
   private_endpoint_subnet_id      = var.should_enable_private_endpoints ? module.cloud_networking.subnet_id : null
   virtual_network_id              = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
 }
@@ -172,6 +223,12 @@ module "cloud_data" {
   should_create_adr_namespace   = var.should_deploy_aio
 
   schemas = var.schemas
+
+  network_security_perimeter_id                  = try(module.cloud_networking.network_security_perimeter.id, null)
+  network_security_perimeter_profile_id          = try(module.cloud_networking.network_security_perimeter.profile_id, null)
+  network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
+  network_security_perimeter_propagation_trigger = try(module.cloud_networking.network_security_perimeter.propagation_trigger, null)
+  should_use_network_security_perimeter          = var.should_use_network_security_perimeter
 }
 
 module "cloud_postgresql" {
@@ -239,16 +296,48 @@ module "cloud_managed_redis" {
 module "cloud_messaging" {
   source = "../../../src/000-cloud/040-messaging/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   resource_group  = module.cloud_resource_group.resource_group
   aio_identity    = module.cloud_security_identity.aio_identity
   environment     = var.environment
   resource_prefix = var.resource_prefix
   instance        = var.instance
 
-  should_create_azure_functions     = var.should_create_azure_functions
+  should_create_azure_functions = var.should_create_azure_functions
+
+  // Event Hub configuration with alerts hub merged when Functions are enabled
+  eventhubs = local.eventhubs
+
+  function_app_settings = merge(var.function_app_settings, local.function_app_computed_settings)
+
   log_analytics_workspace_id        = module.cloud_observability.log_analytics_workspace.id
   should_enable_diagnostic_settings = true
+}
+
+module "cloud_notification" {
+  count  = var.should_deploy_notification ? 1 : 0
+  source = "../../../src/000-cloud/045-notification/terraform"
+
+  depends_on = [module.cloud_messaging]
+
+  environment     = var.environment
+  location        = var.location
+  resource_prefix = var.resource_prefix
+  instance        = var.instance
+
+  resource_group = module.cloud_resource_group.resource_group
+
+  eventhub_namespace = module.cloud_messaging.eventhub_namespace
+  eventhub_name      = local.alert_eventhub_name
+  storage_account    = module.cloud_data.storage_account
+
+  event_schema                  = var.notification_event_schema
+  notification_message_template = var.notification_message_template
+  closure_message_template      = var.closure_message_template
+  partition_key_field           = var.notification_partition_key_field
+  teams_recipient_id            = var.teams_recipient_id
+  teams_group_id                = var.teams_group_id
+  teams_post_location           = var.teams_post_location
 }
 
 module "cloud_vm_host" {
@@ -389,7 +478,7 @@ module "cloud_ai_foundry" {
   count  = var.should_deploy_ai_foundry ? 1 : 0
   source = "../../../src/000-cloud/085-ai-foundry/terraform"
 
-  tags            = merge(var.tags, { blueprint = "full-multi-cluster" })
+  tags            = merge({ blueprint = "full-multi-cluster" }, var.tags)
   environment     = var.environment
   resource_prefix = var.resource_prefix
   location        = var.location
@@ -433,10 +522,10 @@ module "edge_cncf_cluster" {
   )
   cluster_node_machine_count = local.cluster_node_machine_count
 
-  cluster_server_ip = try(coalesce(var.cluster_server_ip, local.vm_host_private_ips[0]), null)
+  cluster_server_ip = var.host_machine_count > 1 || local.should_use_arc_machines ? try(coalesce(var.cluster_server_ip, local.vm_host_private_ips[0]), null) : var.cluster_server_ip
 
   should_deploy_arc_machines            = local.should_use_arc_machines
-  should_generate_cluster_server_token  = true
+  should_generate_cluster_server_token  = var.host_machine_count > 1 || local.should_use_arc_machines
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
   cluster_admin_group_oid               = var.cluster_admin_group_oid
@@ -444,6 +533,9 @@ module "edge_cncf_cluster" {
 
   cluster_server_host_machine_username = var.cluster_server_host_machine_username
   key_vault                            = module.cloud_security_identity.key_vault
+
+  should_upload_to_key_vault                = var.should_upload_to_key_vault
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
 }
 
 module "edge_arc_extensions" {
@@ -527,7 +619,7 @@ module "edge_messaging" {
   aio_instance         = module.edge_iot_ops[0].aio_instance
   aio_identity         = module.cloud_security_identity.aio_identity
   eventgrid            = module.cloud_messaging.eventgrid
-  eventhub             = module.cloud_messaging.eventhubs[0]
+  eventhub             = try([for eh in module.cloud_messaging.eventhubs : eh if eh.eventhub_name != local.alert_eventhub_name][0], try(module.cloud_messaging.eventhubs[0], null))
   adr_namespace        = module.cloud_data.adr_namespace
 
   dataflow_graphs    = var.dataflow_graphs

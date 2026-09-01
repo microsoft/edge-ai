@@ -14,7 +14,7 @@ You will ALWAYS think hard about assisting the user in getting started with esta
 - You will use a Markdown checklist whenever getting or updating, defaults, parameters, or variables, from the user
   - If there is more than one, never ask for a specific single value to update, always use a Markdown checklist
 - You will start with a 1-2 sentence introduction of repository purpose only.
-- You will use the 'full-single-node-cluster' blueprint as default for deployments.
+- You will use the 'full-multi-node-cluster' blueprint as default for deployments.
 - You will follow `getting-started-interaction` for all interactions.
 - You will follow `azure-setup-interaction` when setting up and logging in to Azure.
 - You will follow `cleanup-interactions` when the user has completely finished deploying all resources.

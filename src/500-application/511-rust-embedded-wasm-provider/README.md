@@ -163,7 +163,7 @@ cargo binstall wasm-tools
 
 ## Prerequisites
 
-- [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint deployed with dataflow graph configuration (see [dataflow-graphs.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs.tfvars.example))
+- [Full Multi-Node Cluster](../../../blueprints/full-multi-node-cluster/) blueprint deployed with dataflow graph configuration (see [dataflow-graphs.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs.tfvars.example))
 - [Rust toolchain](https://rustup.rs/) with `wasm32-wasip2` target
 - [`wasm-tools` CLI](https://github.com/bytecodealliance/wasm-tools) for module composition
 - [ORAS CLI](https://oras.land/docs/installation) for pushing to container registry
@@ -208,7 +208,7 @@ This pushes:
 
 ### Step 5: Deploy Dataflow Graph
 
-After pushing to ACR, the dataflow graph is deployed through the `full-single-node-cluster` blueprint with the dataflow graph configuration enabled. The graph definition references the composed module and wires it between a source and sink endpoint.
+After pushing to ACR, the dataflow graph is deployed through the `full-multi-node-cluster` blueprint with the dataflow graph configuration enabled. The graph definition references the composed module and wires it between a source and sink endpoint.
 
 ## Operator Details
 
@@ -253,7 +253,7 @@ To release a new version of the operators:
    version = "2.0.0"
    ```
 
-2. Update the graph artifact reference in [blueprints/full-single-node-cluster/terraform/terraform.tfvars](../../../blueprints/full-single-node-cluster/terraform/terraform.tfvars) to match the new version:
+2. Update the graph artifact reference in [blueprints/full-multi-node-cluster/terraform/terraform.tfvars](../../../blueprints/full-multi-node-cluster/terraform/terraform.tfvars) to match the new version:
 
    ```hcl
    artifact = "graph-simple-map-custom:2.0.0"
@@ -289,12 +289,12 @@ To release a new version of the operators:
 
 ## Integration with Azure IoT Operations
 
-Deploy the `full-single-node-cluster` blueprint with dataflow graph configuration as a prerequisite. Then build and push the operators:
+Deploy the `full-multi-node-cluster` blueprint with dataflow graph configuration as a prerequisite. Then build and push the operators:
 
 1. Build the WASM modules: `./scripts/build-wasm.sh`
 2. Push to your ACR: `./scripts/push-to-acr.sh <acr_name>`
 
-The blueprint configures the AIO instance with a registry endpoint pointing to the ACR, and the dataflow graph resource references the pushed modules. See the [dataflow-graphs.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/dataflow-graphs.tfvars.example) for the required variable configuration.
+The blueprint configures the AIO instance with a registry endpoint pointing to the ACR, and the dataflow graph resource references the pushed modules. See the [dataflow-graphs.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/dataflow-graphs.tfvars.example) for the required variable configuration.
 
 ## Development
 

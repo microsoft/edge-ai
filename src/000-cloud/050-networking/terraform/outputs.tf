@@ -5,8 +5,8 @@
 output "network_security_group" {
   description = "The network security group object."
   value = {
-    id   = azurerm_network_security_group.main.id
-    name = azurerm_network_security_group.main.name
+    id   = var.use_existing_virtual_network ? data.azurerm_network_security_group.existing[0].id : azurerm_network_security_group.main[0].id
+    name = local.network_security_group_name
   }
 }
 
@@ -16,14 +16,14 @@ output "network_security_group" {
 
 output "subnet_id" {
   description = "The ID of the subnet."
-  value       = azurerm_subnet.main.id
+  value       = var.use_existing_virtual_network ? data.azurerm_subnet.existing[0].id : azurerm_subnet.main[0].id
 }
 
 output "virtual_network" {
   description = "The virtual network object."
   value = {
-    id   = azurerm_virtual_network.main.id
-    name = azurerm_virtual_network.main.name
+    id   = var.use_existing_virtual_network ? data.azurerm_virtual_network.existing[0].id : azurerm_virtual_network.main[0].id
+    name = local.virtual_network_name
   }
 }
 
@@ -55,4 +55,17 @@ output "nat_gateway" {
 output "nat_gateway_public_ips" {
   description = "Public IP resources associated with the NAT gateway keyed by name"
   value       = try(module.nat_gateway[0].public_ips, {})
+}
+
+/*
+ * Network Security Perimeter Outputs
+ */
+
+output "network_security_perimeter" {
+  description = "The Network Security Perimeter and profile used to secure supported PaaS resources"
+  value = var.should_use_network_security_perimeter ? {
+    id                  = module.network_security_perimeter[0].id
+    profile_id          = module.network_security_perimeter[0].profile_id
+    propagation_trigger = module.network_security_perimeter[0].propagation_trigger
+  } : null
 }

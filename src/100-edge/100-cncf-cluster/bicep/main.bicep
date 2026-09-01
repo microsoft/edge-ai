@@ -31,6 +31,9 @@ param arcOnboardingSpPrincipalId string?
 @description('The resource name for the identity used for Arc onboarding.')
 param arcOnboardingIdentityName string?
 
+@description('The principal IDs of the Arc-enabled machine system-assigned identities used for onboarding. (Supplied instead of arcOnboardingIdentityName when targeting pre-existing Arc machines)')
+param arcOnboardingPrincipalIds string[]?
+
 /*
   Arc Configuration Parameters
 */
@@ -68,6 +71,12 @@ param clusterNodeVirtualMachineNames string[]?
 @minLength(3)
 param clusterServerVirtualMachineName string?
 
+@description('The name of the Arc-enabled server machine. (Used instead of clusterServerVirtualMachineName when shouldDeployArcMachines is true)')
+param clusterServerArcMachineName string?
+
+@description('The names of the Arc-enabled node machines. (Used instead of clusterNodeVirtualMachineNames when shouldDeployArcMachines is true)')
+param clusterNodeArcMachineNames string[]?
+
 @description('Username used for the host machines that will be given kube-config settings on setup. (Otherwise, resource_prefix if it exists as a user)')
 param clusterServerHostMachineUsername string = common.resourcePrefix
 
@@ -84,6 +93,9 @@ param serverToken string?
 
 @description('Whether to assign roles for Arc Onboarding.')
 param shouldAssignRoles bool = true
+
+@description('Whether to deploy the scripts to pre-existing Azure Arc-enabled machines instead of Azure VMs.')
+param shouldDeployArcMachines bool = false
 
 @description('Whether to deploy the scripts to the VM.')
 param shouldDeployScriptToVm bool = true
@@ -123,7 +135,11 @@ param telemetry_opt_out bool = false
   Variables
 */
 
-var arcOnboardingPrincipalId = arcOnboardingIdentity.?properties.principalId ?? arcOnboardingSpPrincipalId ?? fail('Either arcOnboardingIdentityName or arcOnboardingSpPrincipalId is required')
+var arcOnboardingPrincipalIdList = !empty(arcOnboardingPrincipalIds)
+  ? arcOnboardingPrincipalIds!
+  : [
+      arcOnboardingIdentity.?properties.principalId ?? arcOnboardingSpPrincipalId ?? fail('Either arcOnboardingIdentityName, arcOnboardingSpPrincipalId, or arcOnboardingPrincipalIds is required')
+    ]
 
 var clusterServerScriptSecretName = ubuntuK3s.outputs.clusterServerScriptSecretName
 var clusterNodeScriptSecretName = ubuntuK3s.outputs.clusterNodeScriptSecretName
@@ -185,7 +201,7 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
 module roleAssignment './modules/arc-onboarding-role-assignment.bicep' = if (shouldAssignRoles) {
   name: '${deployment().name}-ra1'
   params: {
-    arcOnboardingPrincipalId: arcOnboardingPrincipalId
+    arcOnboardingPrincipalIds: arcOnboardingPrincipalIdList
   }
 }
 
@@ -194,7 +210,7 @@ module keyVaultRoleAssignments './modules/key-vault-role-assignment.bicep' = if 
   scope: resourceGroup(deployKeyVaultResourceGroupName)
   params: {
     keyVaultName: deployKeyVaultName
-    arcOnboardingPrincipalId: arcOnboardingPrincipalId
+    arcOnboardingPrincipalIds: arcOnboardingPrincipalIdList
     serverScriptSecretName: clusterServerScriptSecretName
     nodeScriptSecretName: clusterNodeScriptSecretName
   }
@@ -204,7 +220,7 @@ module keyVaultRoleAssignments './modules/key-vault-role-assignment.bicep' = if 
   Deploy Script
 */
 
-module deployScriptsToVm './modules/deploy-scripts-to-vm.bicep' = if (shouldDeployScriptToVm) {
+module deployScriptsToVm './modules/deploy-scripts-to-vm.bicep' = if (shouldDeployScriptToVm && !shouldDeployArcMachines) {
   name: '${deployment().name}-ds3'
   dependsOn: [
     roleAssignment
@@ -214,6 +230,21 @@ module deployScriptsToVm './modules/deploy-scripts-to-vm.bicep' = if (shouldDepl
     common: common
     clusterServerVirtualMachineName: clusterServerVirtualMachineName ?? fail('At least "clusterServerVirtualMachineName" required when "shouldDeployScriptToVm" is true')
     clusterNodeVirtualMachineNames: clusterNodeVirtualMachineNames ?? []
+    clusterServerScript: ubuntuK3s.outputs.clusterServerScript
+    clusterNodeScript: ubuntuK3s.outputs.clusterNodeScript
+  }
+}
+
+module deployScriptsToArc './modules/deploy-scripts-to-arc.bicep' = if (shouldDeployScriptToVm && shouldDeployArcMachines) {
+  name: '${deployment().name}-da4'
+  dependsOn: [
+    roleAssignment
+    keyVaultRoleAssignments
+  ]
+  params: {
+    common: common
+    clusterServerArcMachineName: clusterServerArcMachineName ?? fail('"clusterServerArcMachineName" is required when "shouldDeployArcMachines" is true')
+    clusterNodeArcMachineNames: clusterNodeArcMachineNames ?? []
     clusterServerScript: ubuntuK3s.outputs.clusterServerScript
     clusterNodeScript: ubuntuK3s.outputs.clusterNodeScript
   }

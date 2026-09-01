@@ -26,12 +26,12 @@ jobs:
     env:
       TAG_NAME: ${{ inputs.tag || github.ref_name }}
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: chainguard-dev/actions/setup-gitsign@5f020827ba80ff5d64d45116542d0c733e8e7e71 # v1.6.23
+      - uses: chainguard-dev/actions/setup-gitsign@0ffab11a71c1b7bd68ddf94665a8ec88b116223d # v1.6.33
 
       - name: Verify gitsign tag signature
         run: |

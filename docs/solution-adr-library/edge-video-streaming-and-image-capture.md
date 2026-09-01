@@ -122,7 +122,7 @@ Data flow:
 
 Based on the features available to securely interact and operate edge-attached cameras provided by the [Media Connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/overview-media-connector). The connector deploys to an Arc-enabled Kubernetes cluster on the edge as part of an Azure IoT Operations deployment.
 
-**Production Deployment**: The Media Connector is deployed via blueprints (e.g., `blueprints/full-single-node-cluster`) by enabling the `should_enable_akri_media_connector` flag or using the `custom_akri_connectors` variable for advanced configuration.
+**Production Deployment**: The Media Connector is deployed via blueprints (e.g., `blueprints/full-multi-node-cluster`) by enabling the `should_enable_akri_media_connector` flag or using the `custom_akri_connectors` variable for advanced configuration.
 
 **Local Development**: A Docker Compose development environment is available in `src/500-application/508-media-connector` for testing without requiring a full Kubernetes cluster.
 

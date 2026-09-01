@@ -1,0 +1,25 @@
+---
+services:
+  chat-with-your-factory:
+    image: ${REGISTRY:-local}/${APPLICATION:-chat-with-your-factory}/chat-app:${BUILD_ID:-latest}
+    build:
+      context: ./services/chat-with-your-factory
+      dockerfile: Dockerfile
+    container_name: chat-with-your-factory
+    restart: unless-stopped
+    ports:
+      - "${SERVICE_PORT:-3978}:3978"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      # Standalone dev: synthesize a dev user (no Teams/AAD). SKIP_AUTH only works
+      # for true loopback, which container-to-container traffic is not.
+      - AUTH_REQUIRED=false
+      - AGENT_BACKEND=${AGENT_BACKEND:-foundry}
+    networks:
+      - chat-with-your-factory-network
+
+networks:
+  chat-with-your-factory-network:
+    driver: bridge

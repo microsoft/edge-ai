@@ -105,11 +105,9 @@ flowchart TD
 
 **Blueprints** are pre-configured compositions that combine **Cloud Foundation**, **Edge Infrastructure**, **IoT Platform**, and **Observability** components to deliver **Industrial Automation**, **AI Workloads**, and **System Reliability**.
 
-#### **🏗️ Nine Blueprint Types**
+#### **🏗️ Seven Blueprint Types**
 
-- **Full Single Node** → Complete solution with all components for comprehensive edge deployment
-- **Full Multi Node** → Enhanced distributed edge computing with load balancing and redundancy
-- **Full Arc Multi Node** → Hybrid cloud + edge with AKS and multiple edge nodes
+- **Full Cluster** → Complete solution on a single- or multi-node cluster, targeting a VM or pre-existing Arc-enabled machine
 - **Minimal Single Node** → Core components only for resource-optimized deployment
 - **Partial Single Node** → Partially configured edge solution for specific use cases
 - **Edge IoT Only** → Add Azure IoT Operations to existing infrastructure

@@ -20,7 +20,7 @@ keywords:
 
 This directory provides a **local development and testing environment** for the Azure IoT Operations Media Connector using Docker Compose. It includes mock RTSP cameras, MQTT broker, and monitoring tools for development without requiring a full Kubernetes cluster.
 
-**For production deployment**, the Media Connector is deployed via blueprints (e.g., `blueprints/full-single-node-cluster`) by enabling the Akri media connector feature.
+**For production deployment**, the Media Connector is deployed via blueprints (e.g., `blueprints/full-multi-node-cluster`) by enabling the Akri media connector feature.
 
 ## Overview
 
@@ -198,7 +198,7 @@ docker compose down
 
 #### Setup Prerequisites
 
-1. Deploy the `full-single-node-cluster` blueprint (or another blueprint with IoT Operations)
+1. Deploy the `full-multi-node-cluster` blueprint (or another blueprint with IoT Operations)
 2. Ensure media sources (cameras, RTSP streams) are accessible from the cluster
 
 #### Step 1: Deploy the Media Connector Template
@@ -208,7 +208,7 @@ Choose one of two deployment options:
 ##### Option A: Simple Enablement (Recommended for Getting Started)
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Edit terraform.tfvars
 cat >> terraform.tfvars <<EOF
@@ -256,7 +256,7 @@ terraform apply
 After deploying the connector template, configure your cameras (devices) and capture tasks (assets):
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Create or edit media-connector-assets.tfvars
 # Copy example configuration (when available)
@@ -333,7 +333,7 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
          --cafile /var/run/certs/ca.crt --topic 'media/#' -v"
 ```
 
-**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/media-connector-assets.tfvars.example`
+**Configuration Reference**: See `blueprints/full-multi-node-cluster/terraform/media-connector-assets.tfvars.example`
 for a complete example of all available configuration options including device and asset definitions.
 
 ## Configuring Media Connector Assets
@@ -452,7 +452,7 @@ Configure different media connector tasks via `dataset_configuration` JSON:
 | **stream-to-rtsp**   | `{"taskType":"stream-to-rtsp","mediaServerEndpoint":"rtsp://mediamtx:8554/stream"}`                     |
 | **stream-to-rtsps**  | `{"taskType":"stream-to-rtsps","mediaServerEndpoint":"rtsps://mediamtx:8555/stream","tlsEnabled":true}` |
 
-**Complete Configuration Example**: See `blueprints/full-single-node-cluster/terraform/media-connector-assets.tfvars.example` for a production-ready configuration file with multiple cameras, authentication, and various task types.
+**Complete Configuration Example**: See `blueprints/full-multi-node-cluster/terraform/media-connector-assets.tfvars.example` for a production-ready configuration file with multiple cameras, authentication, and various task types.
 
 ## Local Development and Testing
 
@@ -612,7 +612,7 @@ Specific camera and asset configuration is managed through **Device** and **Asse
 Deploy media connector with default settings and configure snapshot capture:
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Enable media connector (simple flag approach)
 cat >> terraform.tfvars <<EOF
@@ -811,7 +811,7 @@ When deploying via blueprints, the media connector integrates with Arc-enabled K
 
 #### Monitoring Components Deployed by Blueprints
 
-The `full-single-node-cluster` and related blueprints deploy:
+The `full-multi-node-cluster` and related blueprints deploy:
 
 - **Azure Monitor Workspace** - Managed Prometheus for metrics collection
 - **Azure Managed Grafana** - Hosted Grafana instance with built-in dashboards

@@ -121,8 +121,8 @@ Describe 'Get-FilePathData for Bicep paths' -Tag 'Unit' {
     }
 
     It 'returns the blueprint folder for changed blueprint Bicep files' {
-        @(Get-FilePathData -Paths @('blueprints/full-single-node-cluster/bicep/main.bicep')) |
-            Should -Contain 'blueprints/full-single-node-cluster'
+        @(Get-FilePathData -Paths @('blueprints/full-multi-node-cluster/bicep/main.bicep')) |
+            Should -Contain 'blueprints/full-multi-node-cluster'
     }
 
     It 'excludes shared blueprint modules from scoped folder output' {
@@ -134,7 +134,7 @@ Describe 'Get-DependentBicepBlueprintPath' -Tag 'Unit' {
     BeforeEach {
         $script:RepoRoot = Join-Path $TestDrive 'repo'
         $script:BlueprintRoot = Join-Path $script:RepoRoot 'blueprints'
-        $dependentBlueprint = Join-Path $script:BlueprintRoot 'full-single-node-cluster/bicep'
+        $dependentBlueprint = Join-Path $script:BlueprintRoot 'full-multi-node-cluster/bicep'
         $unrelatedBlueprint = Join-Path $script:BlueprintRoot 'fabric/bicep'
 
         New-Item -ItemType Directory -Path $dependentBlueprint, $unrelatedBlueprint -Force | Out-Null
@@ -157,7 +157,7 @@ module fabric '../../../src/000-cloud/031-fabric/bicep/main.bicep' = {
                 -ChangedPaths @('src/000-cloud/000-resource-group') `
                 -BlueprintRoot $script:BlueprintRoot)
 
-        $result | Should -Contain 'blueprints/full-single-node-cluster'
+        $result | Should -Contain 'blueprints/full-multi-node-cluster'
         $result | Should -Not -Contain 'blueprints/fabric'
         $result | Should -HaveCount 1
     }
@@ -170,7 +170,7 @@ module fabric '../../../src/000-cloud/031-fabric/bicep/main.bicep' = {
                 ) `
                 -BlueprintRoot $script:BlueprintRoot)
 
-        $result | Should -Contain 'blueprints/full-single-node-cluster'
+        $result | Should -Contain 'blueprints/full-multi-node-cluster'
         $result | Should -HaveCount 1
     }
 }

@@ -1,0 +1,702 @@
+//! WASM map operator that enriches messages with data from the AIO Distributed State Store.
+//!
+//! Extracts a lookup key from a configurable JSON Pointer path in the incoming message,
+//! reads the corresponding record from the DSS, and merges selected fields into the
+//! outgoing message.
+//!
+//! Configuration (via `ModuleConfiguration.properties`):
+//! - `keyPath`    (required): JSON Pointer (RFC 6901) to the key field
+//! - `keyPrefix`  (required): Non-empty prefix prepended to the extracted key for namespace isolation
+//! - `outputPath` (optional): RFC 6901 JSON Pointer where enriched data is injected; empty = root merge
+//! - `fields`     (optional): Comma-separated fields to extract; `*` = all; default `*`
+//! - `onMissing`  (optional): `skip` (default), `error`, or `default`
+//! - `onError`    (optional): `skip` (default) or `error`
+//!
+//! Logging note: per-message passthrough and skip paths log at `Debug` because
+//! they include runtime values (lookup keys derived from message content) that
+//! may be sensitive. Enable `Debug` logging only in trusted/diagnostic contexts.
+
+use std::sync::OnceLock;
+
+use wasm_graph_sdk::logger::{self, Level};
+use wasm_graph_sdk::macros::map_operator;
+use wasm_graph_sdk::state_store;
+
+const MODULE_NAME: &str = "dss-enricher-key";
+
+#[derive(Debug, Clone, PartialEq)]
+enum OnMissing {
+    Skip,
+    Error,
+    Default,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum OnError {
+    Skip,
+    Error,
+}
+
+#[derive(Debug)]
+enum FieldSelection {
+    All,
+    Named(Vec<String>),
+}
+
+#[derive(Debug)]
+struct OperatorConfig {
+    key_path: String,
+    key_prefix: String,
+    output_path: Option<String>,
+    fields: FieldSelection,
+    on_missing: OnMissing,
+    on_error: OnError,
+}
+
+static CONFIG: OnceLock<OperatorConfig> = OnceLock::new();
+
+/// Converts a JSON scalar value to a string suitable for use as a state store key.
+/// Returns `None` for null, objects, and arrays.
+fn value_to_key_string(value: &serde_json::Value) -> Option<String> {
+    match value {
+        serde_json::Value::String(s) => Some(s.clone()),
+        serde_json::Value::Number(n) => Some(n.to_string()),
+        serde_json::Value::Bool(b) => Some(b.to_string()),
+        _ => None,
+    }
+}
+
+/// Extracts selected fields from a stored JSON object based on field configuration.
+fn extract_fields(
+    stored: &serde_json::Value,
+    fields: &FieldSelection,
+) -> serde_json::Value {
+    match fields {
+        FieldSelection::All => stored.clone(),
+        FieldSelection::Named(names) => {
+            let mut result = serde_json::Map::new();
+            if let Some(obj) = stored.as_object() {
+                for name in names {
+                    if let Some(value) = obj.get(name) {
+                        result.insert(name.clone(), value.clone());
+                    }
+                }
+            }
+            serde_json::Value::Object(result)
+        }
+    }
+}
+
+/// Decodes a single RFC 6901 JSON Pointer reference token (`~1` -> `/`, `~0` -> `~`).
+fn decode_json_pointer_token(token: &str) -> String {
+    token.replace("~1", "/").replace("~0", "~")
+}
+
+/// Merges enrichment data into the message at the configured output path.
+/// `output_path`, when present, is an RFC 6901 JSON Pointer (matching `keyPath`);
+/// intermediate objects are created as needed.
+fn merge_into_message(
+    message: &mut serde_json::Value,
+    enrichment: serde_json::Value,
+    output_path: &Option<String>,
+) {
+    match output_path {
+        Some(pointer) => {
+            // Inject under the JSON Pointer location, creating nested objects as needed
+            let Some(obj) = message.as_object_mut() else {
+                return;
+            };
+            let tokens: Vec<String> = pointer
+                .split('/')
+                .skip(1)
+                .map(decode_json_pointer_token)
+                .collect();
+            let Some((last, parents)) = tokens.split_last() else {
+                return;
+            };
+            let mut current = obj;
+            for token in parents {
+                let entry = current
+                    .entry(token.clone())
+                    .or_insert_with(|| serde_json::Value::Object(serde_json::Map::new()));
+                if !entry.is_object() {
+                    *entry = serde_json::Value::Object(serde_json::Map::new());
+                }
+                current = entry.as_object_mut().expect("entry coerced to object");
+            }
+            current.insert(last.clone(), enrichment);
+        }
+        None => {
+            // Merge at root level — stored fields are added alongside source fields
+            if let (Some(msg_obj), Some(enrich_obj)) =
+                (message.as_object_mut(), enrichment.as_object())
+            {
+                for (k, v) in enrich_obj {
+                    // Source fields take precedence — do not overwrite
+                    if !msg_obj.contains_key(k) {
+                        msg_obj.insert(k.clone(), v.clone());
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Parses and validates operator configuration from key-value properties.
+fn parse_config(properties: &[(String, String)]) -> Result<OperatorConfig, String> {
+    // keyPath — REQUIRED
+    let key_path = match properties
+        .iter()
+        .find(|(k, _)| k == "keyPath")
+        .map(|(_, v)| v.clone())
+    {
+        Some(path) if !path.is_empty() && path.starts_with('/') => path,
+        Some(other) => {
+            return Err(format!(
+                "Invalid keyPath '{}': must start with '/'. \
+                 Use RFC 6901 JSON Pointer syntax, e.g. /id, /data/entityId",
+                other
+            ));
+        }
+        None => {
+            return Err(
+                "Missing required configuration: 'keyPath'. \
+                 Provide a JSON Pointer path to the lookup key field."
+                    .to_string(),
+            );
+        }
+    };
+
+    // keyPrefix — REQUIRED (non-empty) for namespace isolation
+    let key_prefix = match properties
+        .iter()
+        .find(|(k, _)| k == "keyPrefix")
+        .map(|(_, v)| v.clone())
+    {
+        Some(prefix) if !prefix.is_empty() => prefix,
+        Some(_) => {
+            return Err(
+                "Invalid keyPrefix: must be a non-empty namespace prefix. \
+                 Use the same prefix as the writer, e.g. device:"
+                    .to_string(),
+            );
+        }
+        None => {
+            return Err(
+                "Missing required configuration: 'keyPrefix'. \
+                 Provide a non-empty namespace prefix matching the writer, e.g. device:"
+                    .to_string(),
+            );
+        }
+    };
+
+    // outputPath — OPTIONAL (RFC 6901 JSON Pointer, matching keyPath)
+    let output_path = match properties
+        .iter()
+        .find(|(k, _)| k == "outputPath")
+        .map(|(_, v)| v.clone())
+        .filter(|v| !v.is_empty())
+    {
+        Some(path) if path.starts_with('/') => Some(path),
+        Some(other) => {
+            return Err(format!(
+                "Invalid outputPath '{}': must start with '/'. \
+                 Use RFC 6901 JSON Pointer syntax, e.g. /context, /data/context",
+                other
+            ));
+        }
+        None => None,
+    };
+
+    // fields — OPTIONAL (default: *)
+    let fields = match properties
+        .iter()
+        .find(|(k, _)| k == "fields")
+        .map(|(_, v)| v.clone())
+    {
+        Some(f) if f == "*" || f.is_empty() => FieldSelection::All,
+        Some(f) => {
+            let names: Vec<String> = f.split(',').map(|s| s.trim().to_string()).collect();
+            if names.iter().any(|n| n.is_empty()) {
+                return Err(format!(
+                    "Invalid fields '{}': contains empty field name after splitting on comma",
+                    f
+                ));
+            }
+            FieldSelection::Named(names)
+        }
+        None => FieldSelection::All,
+    };
+
+    // onMissing — OPTIONAL (default: skip)
+    let on_missing = match properties
+        .iter()
+        .find(|(k, _)| k == "onMissing")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_else(|| "skip".to_string())
+        .as_str()
+    {
+        "skip" => OnMissing::Skip,
+        "error" => OnMissing::Error,
+        "default" => OnMissing::Default,
+        other => {
+            return Err(format!(
+                "Invalid onMissing value '{}': must be 'skip', 'error', or 'default'.",
+                other
+            ));
+        }
+    };
+
+    // onError — OPTIONAL (default: skip)
+    let on_error = match properties
+        .iter()
+        .find(|(k, _)| k == "onError")
+        .map(|(_, v)| v.clone())
+        .unwrap_or_else(|| "skip".to_string())
+        .as_str()
+    {
+        "skip" => OnError::Skip,
+        "error" => OnError::Error,
+        other => {
+            return Err(format!(
+                "Invalid onError value '{}': must be 'skip' or 'error'.",
+                other
+            ));
+        }
+    };
+
+    Ok(OperatorConfig {
+        key_path,
+        key_prefix,
+        output_path,
+        fields,
+        on_missing,
+        on_error,
+    })
+}
+
+fn dss_enricher_key_init(configuration: ModuleConfiguration) -> bool {
+    logger::log(Level::Info, MODULE_NAME, "Initializing operator");
+
+    for (key, _) in &configuration.properties {
+        logger::log(
+            Level::Info,
+            MODULE_NAME,
+            &format!("Configuration property received: {}", key),
+        );
+    }
+
+    match parse_config(&configuration.properties) {
+        Ok(config) => {
+            logger::log(
+                Level::Info,
+                MODULE_NAME,
+                &format!(
+                    "Initialized: keyPath='{}', keyPrefix='{}', outputPath={:?}, \
+                     fields={:?}, onMissing={:?}, onError={:?}",
+                    config.key_path,
+                    config.key_prefix,
+                    config.output_path,
+                    config.fields,
+                    config.on_missing,
+                    config.on_error,
+                ),
+            );
+            let _ = CONFIG.set(config);
+            true
+        }
+        Err(msg) => {
+            logger::log(Level::Error, MODULE_NAME, &msg);
+            false
+        }
+    }
+}
+
+#[map_operator(init = "dss_enricher_key_init")]
+fn dss_enricher_key(input: DataModel) -> Result<DataModel, Error> {
+    let config = CONFIG.get().ok_or_else(|| Error {
+        message: "Operator not initialized".to_string(),
+    })?;
+
+    let DataModel::Message(ref message) = input else {
+        return Ok(input);
+    };
+
+    let payload = match &message.payload {
+        BufferOrBytes::Buffer(buffer) => buffer.read(),
+        BufferOrBytes::Bytes(bytes) => bytes.clone(),
+    };
+
+    // Parse incoming message
+    let json_str = match std::str::from_utf8(&payload) {
+        Ok(s) => s,
+        Err(_) => {
+            logger::log(
+                Level::Debug,
+                MODULE_NAME,
+                "Payload is not valid UTF-8 — passing through unchanged",
+            );
+            return Ok(input);
+        }
+    };
+
+    let mut parsed: serde_json::Value = match serde_json::from_str(json_str) {
+        Ok(v) => v,
+        Err(e) => {
+            logger::log(
+                Level::Debug,
+                MODULE_NAME,
+                &format!("Payload is not valid JSON ({}). Passing through unchanged.", e),
+            );
+            return Ok(input);
+        }
+    };
+
+    // Extract the lookup key value using JSON Pointer
+    let key_value = match parsed.pointer(&config.key_path) {
+        Some(value) => match value_to_key_string(value) {
+            Some(s) => s,
+            None => {
+                let msg = format!(
+                    "Value at keyPath '{}' is not a scalar (string/number/bool) — cannot use as key",
+                    config.key_path
+                );
+                match config.on_missing {
+                    OnMissing::Error => return Err(Error { message: msg }),
+                    _ => {
+                        logger::log(Level::Debug, MODULE_NAME, &msg);
+                        return Ok(input);
+                    }
+                }
+            }
+        },
+        None => {
+            let msg = format!("keyPath '{}' not found in message", config.key_path);
+            match config.on_missing {
+                OnMissing::Error => return Err(Error { message: msg }),
+                _ => {
+                    logger::log(Level::Debug, MODULE_NAME, &msg);
+                    return Ok(input);
+                }
+            }
+        }
+    };
+
+    // Construct the full DSS key
+    let store_key = format!("{}{}", config.key_prefix, key_value);
+
+    // Read from state store
+    let stored_value = match state_store::get(store_key.as_bytes(), None) {
+        Ok(resp) => match resp.response {
+            Some(bytes) => {
+                match std::str::from_utf8(&bytes) {
+                    Ok(s) => match serde_json::from_str::<serde_json::Value>(s) {
+                        Ok(v) => Some(v),
+                        Err(e) => {
+                            let msg = format!(
+                                "Stored value for key '{}' is not valid JSON: {}",
+                                store_key, e
+                            );
+                            match config.on_error {
+                                OnError::Error => return Err(Error { message: msg }),
+                                OnError::Skip => {
+                                    logger::log(Level::Debug, MODULE_NAME, &msg);
+                                    None
+                                }
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        let msg = format!(
+                            "Stored value for key '{}' is not valid UTF-8: {}",
+                            store_key, e
+                        );
+                        match config.on_error {
+                            OnError::Error => return Err(Error { message: msg }),
+                            OnError::Skip => {
+                                logger::log(Level::Debug, MODULE_NAME, &msg);
+                                None
+                            }
+                        }
+                    }
+                }
+            }
+            None => {
+                // Key not found in state store
+                let msg = format!("Key '{}' not found in state store", store_key);
+                match config.on_missing {
+                    OnMissing::Error => return Err(Error { message: msg }),
+                    OnMissing::Default => {
+                        logger::log(Level::Debug, MODULE_NAME, &msg);
+                        Some(serde_json::Value::Object(serde_json::Map::new()))
+                    }
+                    OnMissing::Skip => {
+                        logger::log(Level::Debug, MODULE_NAME, &msg);
+                        None
+                    }
+                }
+            }
+        },
+        Err(e) => {
+            let msg = format!(
+                "State store read failed for key '{}': {:?}",
+                store_key, e
+            );
+            match config.on_error {
+                OnError::Error => return Err(Error { message: msg }),
+                OnError::Skip => {
+                    logger::log(Level::Debug, MODULE_NAME, &msg);
+                    None
+                }
+            }
+        }
+    };
+
+    // If we have stored data, extract fields and merge into message
+    if let Some(stored) = stored_value {
+        let enrichment = extract_fields(&stored, &config.fields);
+        merge_into_message(&mut parsed, enrichment, &config.output_path);
+
+        // Serialize enriched message. serde_json is built with `preserve_order`,
+        // so original field order is retained and enrichment fields appended.
+        let enriched_bytes = serde_json::to_vec(&parsed).map_err(|e| Error {
+            message: format!("Failed to serialize enriched message: {}", e),
+        })?;
+
+        let DataModel::Message(mut output) = input else {
+            unreachable!("input was already matched as DataModel::Message");
+        };
+        output.payload = BufferOrBytes::Bytes(enriched_bytes);
+        return Ok(DataModel::Message(output));
+    }
+
+    // No enrichment performed — return original message unchanged
+    Ok(input)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ─── value_to_key_string ─────────────────────────────────────────────
+
+    #[test]
+    fn string_value_converts_to_key_string() {
+        let v = serde_json::json!("abc-123");
+        assert_eq!(value_to_key_string(&v), Some("abc-123".to_string()));
+    }
+
+    #[test]
+    fn number_value_converts_to_key_string() {
+        let v = serde_json::json!(42);
+        assert_eq!(value_to_key_string(&v), Some("42".to_string()));
+    }
+
+    #[test]
+    fn bool_value_converts_to_key_string() {
+        let v = serde_json::json!(true);
+        assert_eq!(value_to_key_string(&v), Some("true".to_string()));
+    }
+
+    #[test]
+    fn null_value_returns_no_key_string() {
+        let v = serde_json::Value::Null;
+        assert_eq!(value_to_key_string(&v), None);
+    }
+
+    #[test]
+    fn object_value_returns_no_key_string() {
+        let v = serde_json::json!({"a": 1});
+        assert_eq!(value_to_key_string(&v), None);
+    }
+
+    #[test]
+    fn array_value_returns_no_key_string() {
+        let v = serde_json::json!([1, 2]);
+        assert_eq!(value_to_key_string(&v), None);
+    }
+
+    // ─── extract_fields ──────────────────────────────────────────────────
+
+    #[test]
+    fn given_all_selection_extract_returns_full_object() {
+        let stored = serde_json::json!({"a": 1, "b": "two", "c": true});
+        let result = extract_fields(&stored, &FieldSelection::All);
+        assert_eq!(result, stored);
+    }
+
+    #[test]
+    fn given_named_selection_extract_returns_subset() {
+        let stored = serde_json::json!({"a": 1, "b": "two", "c": true});
+        let fields = FieldSelection::Named(vec!["a".to_string(), "c".to_string()]);
+        let result = extract_fields(&stored, &fields);
+        assert_eq!(result, serde_json::json!({"a": 1, "c": true}));
+    }
+
+    #[test]
+    fn given_named_selection_with_missing_field_extract_omits_it() {
+        let stored = serde_json::json!({"a": 1});
+        let fields = FieldSelection::Named(vec!["a".to_string(), "missing".to_string()]);
+        let result = extract_fields(&stored, &fields);
+        assert_eq!(result, serde_json::json!({"a": 1}));
+    }
+
+    // ─── merge_into_message ──────────────────────────────────────────────
+
+    #[test]
+    fn given_root_merge_existing_fields_are_not_overwritten() {
+        let mut msg = serde_json::json!({"id": "x", "temp": 22});
+        let enrichment = serde_json::json!({"location": "lab", "id": "SHOULD_NOT_OVERWRITE"});
+        merge_into_message(&mut msg, enrichment, &None);
+        assert_eq!(msg, serde_json::json!({"id": "x", "temp": 22, "location": "lab"}));
+    }
+
+    #[test]
+    fn given_output_path_enrichment_nests_under_path() {
+        let mut msg = serde_json::json!({"id": "x", "temp": 22});
+        let enrichment = serde_json::json!({"location": "lab"});
+        merge_into_message(&mut msg, enrichment.clone(), &Some("/context".to_string()));
+        assert_eq!(
+            msg,
+            serde_json::json!({"id": "x", "temp": 22, "context": {"location": "lab"}})
+        );
+    }
+
+    #[test]
+    fn given_nested_output_path_merge_creates_intermediate_objects() {
+        let mut msg = serde_json::json!({"id": "x"});
+        let enrichment = serde_json::json!({"location": "lab"});
+        merge_into_message(&mut msg, enrichment, &Some("/data/context".to_string()));
+        assert_eq!(
+            msg,
+            serde_json::json!({"id": "x", "data": {"context": {"location": "lab"}}})
+        );
+    }
+
+    #[test]
+    fn merge_preserves_original_field_order() {
+        // With preserve_order, original keys keep their order and enrichment is appended.
+        let mut msg: serde_json::Value =
+            serde_json::from_str(r#"{"zebra":1,"apple":2,"mango":3}"#).unwrap();
+        let enrichment = serde_json::json!({"location": "lab"});
+        merge_into_message(&mut msg, enrichment, &None);
+        let serialized = serde_json::to_string(&msg).unwrap();
+        assert_eq!(serialized, r#"{"zebra":1,"apple":2,"mango":3,"location":"lab"}"#);
+    }
+
+    // ─── parse_config ────────────────────────────────────────────────────
+
+    #[test]
+    fn given_minimal_properties_parse_returns_config() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+        ];
+        let config = parse_config(&props).unwrap();
+        assert_eq!(config.key_path, "/id");
+        assert_eq!(config.key_prefix, "device:");
+        assert_eq!(config.output_path, None);
+        assert_eq!(config.on_missing, OnMissing::Skip);
+        assert_eq!(config.on_error, OnError::Skip);
+    }
+
+    #[test]
+    fn given_all_properties_parse_returns_config() {
+        let props = vec![
+            ("keyPath".to_string(), "/data/ref".to_string()),
+            ("keyPrefix".to_string(), "entity:".to_string()),
+            ("outputPath".to_string(), "/enriched".to_string()),
+            ("fields".to_string(), "name,category".to_string()),
+            ("onMissing".to_string(), "error".to_string()),
+            ("onError".to_string(), "error".to_string()),
+        ];
+        let config = parse_config(&props).unwrap();
+        assert_eq!(config.key_path, "/data/ref");
+        assert_eq!(config.key_prefix, "entity:");
+        assert_eq!(config.output_path, Some("/enriched".to_string()));
+        assert_eq!(config.on_missing, OnMissing::Error);
+        assert_eq!(config.on_error, OnError::Error);
+    }
+
+    #[test]
+    fn given_missing_key_path_parse_returns_error() {
+        let props = vec![("keyPrefix".to_string(), "x:".to_string())];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Missing required configuration: 'keyPath'"));
+    }
+
+    #[test]
+    fn given_key_path_without_leading_slash_parse_returns_error() {
+        let props = vec![("keyPath".to_string(), "noslash".to_string())];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("must start with '/'"));
+    }
+
+    #[test]
+    fn given_missing_key_prefix_parse_returns_error() {
+        let props = vec![("keyPath".to_string(), "/id".to_string())];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains("Missing required configuration: 'keyPrefix'"));
+    }
+
+    #[test]
+    fn given_empty_key_prefix_parse_returns_error() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "".to_string()),
+        ];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("non-empty namespace prefix"));
+    }
+
+    #[test]
+    fn given_invalid_output_path_parse_returns_error() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+            ("outputPath".to_string(), "no-leading-slash".to_string()),
+        ];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Invalid outputPath"));
+    }
+
+    #[test]
+    fn given_nested_output_path_parse_returns_config() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+            ("outputPath".to_string(), "/data/context".to_string()),
+        ];
+        let config = parse_config(&props).unwrap();
+        assert_eq!(config.output_path, Some("/data/context".to_string()));
+    }
+
+    #[test]
+    fn given_invalid_on_missing_parse_returns_error() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+            ("onMissing".to_string(), "invalid".to_string()),
+        ];
+        let result = parse_config(&props);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn given_on_missing_default_parse_returns_default_variant() {
+        let props = vec![
+            ("keyPath".to_string(), "/id".to_string()),
+            ("keyPrefix".to_string(), "device:".to_string()),
+            ("onMissing".to_string(), "default".to_string()),
+        ];
+        let config = parse_config(&props).unwrap();
+        assert_eq!(config.on_missing, OnMissing::Default);
+    }
+}

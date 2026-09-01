@@ -745,7 +745,7 @@ if ($tfFiles) {
                         $pattern = "source\s*=\s*`"(\.\./)+$escapedComponentPath/terraform`""
 
                         if ($content -match $pattern) {
-                            # Extract blueprint path (e.g., "blueprints/full-single-node-cluster")
+                            # Extract blueprint path (e.g., "blueprints/full-multi-node-cluster")
                             $blueprintPath = $blueprintFile.Directory.Parent.FullName
                             $blueprintRelativePath = $blueprintPath -replace '.*[/\\]blueprints[/\\]', 'blueprints/'
                             $blueprintRelativePath = $blueprintRelativePath -replace '\\', '/'

@@ -48,6 +48,15 @@ param keyVaultVirtualNetworkId string?
 @description('Whether to enable public network access on the Key Vault.')
 param shouldEnableKeyVaultPublicNetworkAccess bool = true
 
+@description('Name of the Network Security Perimeter to associate the Key Vault with.')
+param networkSecurityPerimeterName string?
+
+@description('Resource group containing the Network Security Perimeter.')
+param networkSecurityPerimeterResourceGroupName string?
+
+@description('Name of the Network Security Perimeter profile to associate the Key Vault with.')
+param networkSecurityPerimeterProfileName string?
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
 
@@ -72,6 +81,12 @@ resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemet
   Modules
 */
 
+var shouldAssociateNetworkSecurityPerimeter = networkSecurityPerimeterName != null && networkSecurityPerimeterResourceGroupName != null && networkSecurityPerimeterProfileName != null
+var hasPartialNetworkSecurityPerimeterConfiguration = networkSecurityPerimeterName != null || networkSecurityPerimeterResourceGroupName != null || networkSecurityPerimeterProfileName != null
+var validatedNetworkSecurityPerimeterConfiguration = hasPartialNetworkSecurityPerimeterConfiguration && !shouldAssociateNetworkSecurityPerimeter
+  ? fail('networkSecurityPerimeterName, networkSecurityPerimeterResourceGroupName, and networkSecurityPerimeterProfileName must all be provided together.')
+  : shouldAssociateNetworkSecurityPerimeter
+
 module identity 'modules/identity.bicep' = {
   name: '${deployment().name}-identity'
   params: {
@@ -92,6 +107,17 @@ module keyVault 'modules/key-vault.bicep' = if (shouldCreateKeyVault) {
     privateEndpointSubnetId: keyVaultPrivateEndpointSubnetId
     virtualNetworkId: keyVaultVirtualNetworkId
     shouldEnablePublicNetworkAccess: shouldEnableKeyVaultPublicNetworkAccess
+  }
+}
+
+module keyVaultNetworkSecurityPerimeterAssociation 'modules/network-security-perimeter-association.bicep' = if (shouldCreateKeyVault && validatedNetworkSecurityPerimeterConfiguration) {
+  name: '${deployment().name}-keyVaultNspAssociation'
+  scope: resourceGroup(networkSecurityPerimeterResourceGroupName!)
+  params: {
+    associationName: 'key-vault-${keyVault!.outputs.keyVaultName}'
+    networkSecurityPerimeterName: networkSecurityPerimeterName!
+    networkSecurityPerimeterProfileName: networkSecurityPerimeterProfileName!
+    privateLinkResourceId: keyVault!.outputs.keyVaultId
   }
 }
 

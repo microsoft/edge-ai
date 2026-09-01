@@ -7,47 +7,54 @@ Creates storage resources including Azure Storage Account and Schema Registry fo
 
 ## Parameters
 
-| Name                                   | Description                                                                                                        | Type                                                       | Default                                                                                                                                                                         | Required |
-|:---------------------------------------|:-------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------|
-| common                                 | The common component configuration.                                                                                | `[_2.Common](#user-defined-types)`                         | n/a                                                                                                                                                                             | yes      |
-| shouldCreateStorageAccount             | Whether to create the Storage Account.                                                                             | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| storageAccountResourceGroupName        | The name for the Resource Group for the Storage Account.                                                           | `string`                                                   | [if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]                 | no       |
-| storageAccountName                     | The name for the Storage Account used by the Schema Registry.                                                      | `string`                                                   | [if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))] | no       |
-| storageAccountSettings                 | The settings for the new Storage Account.                                                                          | `[_1.StorageAccountSettings](#user-defined-types)`         | [variables('_1.storageAccountSettingsDefaults')]                                                                                                                                | no       |
-| shouldEnableStoragePrivateEndpoint     | Whether to enable a private endpoint for the Storage Account.                                                      | `bool`                                                     | `false`                                                                                                                                                                         | no       |
-| storagePrivateEndpointSubnetId         | Subnet resource ID used when deploying the Storage Account private endpoint.                                       | `string`                                                   | n/a                                                                                                                                                                             | no       |
-| storageVirtualNetworkId                | Virtual network resource ID for Storage Account private DNS links.                                                 | `string`                                                   | n/a                                                                                                                                                                             | no       |
-| shouldEnableStoragePublicNetworkAccess | Whether to enable public network access for the Storage Account.                                                   | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| shouldCreateBlobPrivateDnsZone         | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component. | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| blobPrivateDnsZoneId                   | Existing blob Private DNS zone ID to reuse when private endpoints are enabled.                                     | `string`                                                   | n/a                                                                                                                                                                             | no       |
-| shouldCreateSchemaRegistry             | Whether to create the ADR Schema Registry.                                                                         | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| shouldCreateSchemaContainer            | Whether to create the Blob Container for schemas.                                                                  | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| schemaContainerName                    | The name for the Blob Container for schemas.                                                                       | `string`                                                   | schemas                                                                                                                                                                         | no       |
-| schemaRegistryName                     | The name for the ADR Schema Registry.                                                                              | `string`                                                   | [format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]                                                | no       |
-| schemaRegistryNamespace                | The ADLS Gen2 namespace for the ADR Schema Registry.                                                               | `string`                                                   | [format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]                                              | no       |
-| shouldCreateAdrNamespace               | Whether to create the ADR Namespace.                                                                               | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| adrNamespaceName                       | The name for the ADR Namespace.                                                                                    | `string`                                                   | [format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]                                             | no       |
-| adrNamespaceMessagingEndpoints         | Dictionary of messaging endpoints for the ADR namespace.                                                           | `[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)` | n/a                                                                                                                                                                             | no       |
-| adrNamespaceEnableIdentity             | Whether to enable system-assigned managed identity for the ADR namespace.                                          | `bool`                                                     | `true`                                                                                                                                                                          | no       |
-| telemetry_opt_out                      | Whether to opt out of telemetry data collection.                                                                   | `bool`                                                     | `false`                                                                                                                                                                         | no       |
+| Name                                      | Description                                                                                                        | Type                                                       | Default                                                                                                                                                                         | Required |
+|:------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------|
+| common                                    | The common component configuration.                                                                                | `[_2.Common](#user-defined-types)`                         | n/a                                                                                                                                                                             | yes      |
+| shouldCreateStorageAccount                | Whether to create the Storage Account.                                                                             | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| storageAccountResourceGroupName           | The name for the Resource Group for the Storage Account.                                                           | `string`                                                   | [if(parameters('shouldCreateStorageAccount'), resourceGroup().name, fail('storageAccountResourceGroupName required when shouldCreateStorageAccount is false'))]                 | no       |
+| storageAccountName                        | The name for the Storage Account used by the Schema Registry.                                                      | `string`                                                   | [if(parameters('shouldCreateStorageAccount'), format('st{0}', uniqueString(resourceGroup().id)), fail('storageAccountName required when shouldCreateStorageAccount is false'))] | no       |
+| storageAccountSettings                    | The settings for the new Storage Account.                                                                          | `[_1.StorageAccountSettings](#user-defined-types)`         | [variables('_1.storageAccountSettingsDefaults')]                                                                                                                                | no       |
+| shouldEnableStoragePrivateEndpoint        | Whether to enable a private endpoint for the Storage Account.                                                      | `bool`                                                     | `false`                                                                                                                                                                         | no       |
+| storagePrivateEndpointSubnetId            | Subnet resource ID used when deploying the Storage Account private endpoint.                                       | `string`                                                   | n/a                                                                                                                                                                             | no       |
+| storageVirtualNetworkId                   | Virtual network resource ID for Storage Account private DNS links.                                                 | `string`                                                   | n/a                                                                                                                                                                             | no       |
+| shouldEnableStoragePublicNetworkAccess    | Whether to enable public network access for the Storage Account.                                                   | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| networkSecurityPerimeterName              | Name of the Network Security Perimeter to associate with the Storage Account.                                      | `string`                                                   | n/a                                                                                                                                                                             | no       |
+| networkSecurityPerimeterResourceGroupName | Resource group containing the Network Security Perimeter.                                                          | `string`                                                   | n/a                                                                                                                                                                             | no       |
+| networkSecurityPerimeterProfileName       | Name of the Network Security Perimeter profile applied to the Storage Account.                                     | `string`                                                   | n/a                                                                                                                                                                             | no       |
+| shouldCreateBlobPrivateDnsZone            | Whether to create the blob private DNS zone. Set to false if using a shared DNS zone from observability component. | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| blobPrivateDnsZoneId                      | Existing blob Private DNS zone ID to reuse when private endpoints are enabled.                                     | `string`                                                   | n/a                                                                                                                                                                             | no       |
+| shouldCreateSchemaRegistry                | Whether to create the ADR Schema Registry.                                                                         | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| shouldCreateSchemaContainer               | Whether to create the Blob Container for schemas.                                                                  | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| schemaContainerName                       | The name for the Blob Container for schemas.                                                                       | `string`                                                   | schemas                                                                                                                                                                         | no       |
+| schemaRegistryName                        | The name for the ADR Schema Registry.                                                                              | `string`                                                   | [format('sr-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]                                                | no       |
+| schemaRegistryNamespace                   | The ADLS Gen2 namespace for the ADR Schema Registry.                                                               | `string`                                                   | [format('srns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]                                              | no       |
+| shouldCreateAdrNamespace                  | Whether to create the ADR Namespace.                                                                               | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| adrNamespaceName                          | The name for the ADR Namespace.                                                                                    | `string`                                                   | [format('adrns-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)]                                             | no       |
+| adrNamespaceMessagingEndpoints            | Dictionary of messaging endpoints for the ADR namespace.                                                           | `[_1.AdrNamespaceMessagingEndpoints](#user-defined-types)` | n/a                                                                                                                                                                             | no       |
+| adrNamespaceEnableIdentity                | Whether to enable system-assigned managed identity for the ADR namespace.                                          | `bool`                                                     | `true`                                                                                                                                                                          | no       |
+| telemetry_opt_out                         | Whether to opt out of telemetry data collection.                                                                   | `bool`                                                     | `false`                                                                                                                                                                         | no       |
 
 ## Resources
 
-| Name                         | Type                              | API Version |
-|:-----------------------------|:----------------------------------|:------------|
-| storageAccount               | `Microsoft.Resources/deployments` | 2025-04-01  |
-| schemaRegistry               | `Microsoft.Resources/deployments` | 2025-04-01  |
-| schemaRegistryRoleAssignment | `Microsoft.Resources/deployments` | 2025-04-01  |
-| adrNamespace                 | `Microsoft.Resources/deployments` | 2025-04-01  |
+| Name                                | Type                              | API Version |
+|:------------------------------------|:----------------------------------|:------------|
+| storageAccount                      | `Microsoft.Resources/deployments` | 2025-04-01  |
+| networkSecurityPerimeterAssociation | `Microsoft.Resources/deployments` | 2025-04-01  |
+| schemaContainer                     | `Microsoft.Resources/deployments` | 2025-04-01  |
+| schemaRegistry                      | `Microsoft.Resources/deployments` | 2025-04-01  |
+| schemaRegistryRoleAssignment        | `Microsoft.Resources/deployments` | 2025-04-01  |
+| adrNamespace                        | `Microsoft.Resources/deployments` | 2025-04-01  |
 
 ## Modules
 
-| Name                         | Description                                                                                                 |
-|:-----------------------------|:------------------------------------------------------------------------------------------------------------|
-| storageAccount               | Creates an Azure Storage Account and blob container for storing schemas.                                    |
-| schemaRegistry               | Creates an Azure Device Registry (ADR) Schema Registry for storing and managing device schemas.             |
-| schemaRegistryRoleAssignment | Creates role assignments for the Schema Registry to access the storage account.                             |
-| adrNamespace                 | Creates an Azure Device Registry (ADR) Namespace for organizing assets and devices in Azure IoT Operations. |
+| Name                                | Description                                                                                                 |
+|:------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| storageAccount                      | Creates an Azure Storage Account and blob container for storing schemas.                                    |
+| networkSecurityPerimeterAssociation | Associates a Storage Account with a Network Security Perimeter profile in Enforced mode.                    |
+| schemaContainer                     | Creates the blob container used by Azure Device Registry schemas.                                           |
+| schemaRegistry                      | Creates an Azure Device Registry (ADR) Schema Registry for storing and managing device schemas.             |
+| schemaRegistryRoleAssignment        | Creates role assignments for the Schema Registry to access the storage account.                             |
+| adrNamespace                        | Creates an Azure Device Registry (ADR) Namespace for organizing assets and devices in Azure IoT Operations. |
 
 ## Module Details
 
@@ -104,6 +111,54 @@ Creates an Azure Storage Account and blob container for storing schemas.
 | storageBlobPrivateEndpointIp | `string` | The blob private endpoint IP address when created.               |
 | blobPrivateDnsZoneId         | `string` | The blob private DNS zone ID when available.                     |
 | blobPrivateDnsZoneName       | `string` | The blob private DNS zone name when managed by this component.   |
+
+### networkSecurityPerimeterAssociation
+
+Associates a Storage Account with a Network Security Perimeter profile in Enforced mode.
+
+#### Parameters for networkSecurityPerimeterAssociation
+
+| Name                                | Description                                                       | Type     | Default | Required |
+|:------------------------------------|:------------------------------------------------------------------|:---------|:--------|:---------|
+| networkSecurityPerimeterName        | Name of the Network Security Perimeter.                           | `string` | n/a     | yes      |
+| networkSecurityPerimeterProfileName | Name of the Network Security Perimeter profile.                   | `string` | n/a     | yes      |
+| storageAccountId                    | Resource ID of the Storage Account associated with the perimeter. | `string` | n/a     | yes      |
+| storageAccountName                  | Name of the Storage Account associated with the perimeter.        | `string` | n/a     | yes      |
+
+#### Resources for networkSecurityPerimeterAssociation
+
+| Name                                                                                                                     | Type                                                               | API Version |
+|:-------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------|:------------|
+| [format('{0}/{1}', parameters('networkSecurityPerimeterName'), format('storage-{0}', parameters('storageAccountName')))] | `Microsoft.Network/networkSecurityPerimeters/resourceAssociations` | 2025-01-01  |
+
+#### Outputs for networkSecurityPerimeterAssociation
+
+| Name          | Type     | Description                                                    |
+|:--------------|:---------|:---------------------------------------------------------------|
+| associationId | `string` | The resource ID of the Network Security Perimeter association. |
+
+### schemaContainer
+
+Creates the blob container used by Azure Device Registry schemas.
+
+#### Parameters for schemaContainer
+
+| Name                | Description                            | Type     | Default | Required |
+|:--------------------|:---------------------------------------|:---------|:--------|:---------|
+| storageAccountName  | The name of the Storage Account.       | `string` | n/a     | yes      |
+| schemaContainerName | The name of the schema blob container. | `string` | n/a     | yes      |
+
+#### Resources for schemaContainer
+
+| Name                                                                                                    | Type                                                        | API Version |
+|:--------------------------------------------------------------------------------------------------------|:------------------------------------------------------------|:------------|
+| [format('{0}/{1}/{2}', parameters('storageAccountName'), 'default', parameters('schemaContainerName'))] | `Microsoft.Storage/storageAccounts/blobServices/containers` | 2024-01-01  |
+
+#### Outputs for schemaContainer
+
+| Name              | Type     | Description                                   |
+|:------------------|:---------|:----------------------------------------------|
+| schemaContainerId | `string` | The resource ID of the schema blob container. |
 
 ### schemaRegistry
 

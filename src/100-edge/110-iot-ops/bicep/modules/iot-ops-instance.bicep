@@ -283,7 +283,7 @@ resource defaultSecretSyncSecretProviderClass 'Microsoft.SecretSyncController/az
   }
 }
 
-resource aioInstance 'Microsoft.IoTOperations/instances@2026-03-01' = {
+resource aioInstance 'Microsoft.IoTOperations/instances@2026-07-01' = {
   name: aioInstanceName
   location: common.location
   extendedLocation: {
@@ -321,7 +321,7 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2026-03-01' = {
   )
 }
 
-resource broker 'Microsoft.IoTOperations/instances/brokers@2026-03-01' = {
+resource broker 'Microsoft.IoTOperations/instances/brokers@2026-07-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -372,7 +372,7 @@ resource broker 'Microsoft.IoTOperations/instances/brokers@2026-03-01' = {
   )
 }
 
-resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2026-03-01' = {
+resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2026-07-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -391,7 +391,7 @@ resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@
   }
 }
 
-resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2026-03-01' = {
+resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2026-07-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -420,7 +420,7 @@ resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@202
   }
 }
 
-resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2026-03-01' = if (shouldCreateAnonymousBrokerListener) {
+resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2026-07-01' = if (shouldCreateAnonymousBrokerListener) {
   parent: broker
   name: 'default-anon'
   extendedLocation: {
@@ -442,7 +442,7 @@ resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/list
   ]
 }
 
-resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01' = {
+resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-07-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -454,7 +454,7 @@ resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@202
   }
 }
 
-resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-03-01' = {
+resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-07-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {

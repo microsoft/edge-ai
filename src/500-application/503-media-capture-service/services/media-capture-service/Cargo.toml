@@ -11,13 +11,14 @@ path = "src/multi_trigger_binary.rs"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
+reqwest = { version = "0.12.28", default-features = false, features = ["rustls-tls", "json"] }
 tokio = { version = "1.14.0", features = ["full"] }
 lazy_static = "1.4.0"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.73"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-azure_iot_operations_mqtt = { version = "0.9.0", registry = "aio-sdks" }
+azure_iot_operations_mqtt = "1.0.2"
 tokio-stream = { version = "0.1", features = ["fs"] }
 futures-util = "0.3.31"
 opencv = { version = "0.94.4", features = ["videoio", "imgproc", "highgui", "clang-runtime"] }

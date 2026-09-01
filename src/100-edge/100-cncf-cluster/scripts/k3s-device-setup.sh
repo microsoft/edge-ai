@@ -177,7 +177,7 @@ if [[ ! $SKIP_AZ_LOGIN ]]; then
   else
     if [[ $CLIENT_ID ]]; then
       log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
-      if ! az login --identity --username "$CLIENT_ID" --allow-no-subscriptions; then
+      if ! az login --identity --client-id "$CLIENT_ID" --allow-no-subscriptions; then
         err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
       fi
     else
@@ -364,6 +364,10 @@ metadata:
     kubernetes.io/service-account.name: deploy-user
 type: kubernetes.io/service-account-token
 EOF
+  # data.token is populated asynchronously by the token controller; wait for it before reading.
+  if ! kubectl wait --for=jsonpath='{.data.token}' secret/deploy-user-secret --timeout=60s; then
+    err "Timeout waiting for deploy-user-secret token to be populated by the Kubernetes token controller."
+  fi
   CLUSTER_ADMIN_TOKEN=$(kubectl get secret deploy-user-secret -o jsonpath='{$.data.token}' | base64 -d | sed 's/$/\n/g')
 fi
 

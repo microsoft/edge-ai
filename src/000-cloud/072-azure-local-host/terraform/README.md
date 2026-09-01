@@ -5,19 +5,19 @@ Creates Azure Stack HCI (Azure Local) cluster resources.
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azapi     | >= 2.3.0         |
-| azurerm   | >= 4.8.0         |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azapi     | >= 2.3.0          |
+| azurerm   | >= 4.8.0, < 5.0.0 |
 
 ## Providers
 
-| Name    | Version  |
-|---------|----------|
-| azapi   | >= 2.3.0 |
-| azurerm | >= 4.8.0 |
-| tls     | n/a      |
+| Name    | Version           |
+|---------|-------------------|
+| azapi   | >= 2.3.0          |
+| azurerm | >= 4.8.0, < 5.0.0 |
+| tls     | n/a               |
 
 ## Resources
 

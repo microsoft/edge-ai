@@ -7,34 +7,39 @@ Provisions cloud resources required for Azure IoT Operations including Schema Re
 
 ## Parameters
 
-| Name                                    | Description                                                                                | Type                               | Default                                                                                                                          | Required |
-|:----------------------------------------|:-------------------------------------------------------------------------------------------|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|:---------|
-| common                                  | The common component configuration.                                                        | `[_1.Common](#user-defined-types)` | n/a                                                                                                                              | yes      |
-| shouldCreateArcOnboardingUami           | Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.  | `bool`                             | `true`                                                                                                                           | no       |
-| shouldCreateKeyVault                    | Whether or not to create a new Key Vault for the Secret Sync Extension.                    | `bool`                             | `true`                                                                                                                           | no       |
-| keyVaultName                            | The name of the Key Vault.                                                                 | `string`                           | [format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
-| keyVaultResourceGroupName               | The name for the Resource Group for the Key Vault.                                         | `string`                           | [resourceGroup().name]                                                                                                           | no       |
-| shouldAssignAdminUserRole               | Whether or not to create a role assignment for an admin user.                              | `bool`                             | `true`                                                                                                                           | no       |
-| adminUserObjectId                       | The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role. | `string`                           | [deployer().objectId]                                                                                                            | no       |
-| shouldCreateKeyVaultPrivateEndpoint     | Whether to create a private endpoint for the Key Vault.                                    | `bool`                             | `false`                                                                                                                          | no       |
-| keyVaultPrivateEndpointSubnetId         | Subnet resource ID for the Key Vault private endpoint.                                     | `string`                           | n/a                                                                                                                              | no       |
-| keyVaultVirtualNetworkId                | Virtual network resource ID for the Key Vault private DNS link.                            | `string`                           | n/a                                                                                                                              | no       |
-| shouldEnableKeyVaultPublicNetworkAccess | Whether to enable public network access on the Key Vault.                                  | `bool`                             | `true`                                                                                                                           | no       |
-| telemetry_opt_out                       | Whether to opt out of telemetry data collection.                                           | `bool`                             | `false`                                                                                                                          | no       |
+| Name                                      | Description                                                                                | Type                               | Default                                                                                                                          | Required |
+|:------------------------------------------|:-------------------------------------------------------------------------------------------|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|:---------|
+| common                                    | The common component configuration.                                                        | `[_1.Common](#user-defined-types)` | n/a                                                                                                                              | yes      |
+| shouldCreateArcOnboardingUami             | Whether to create a User Assigned Managed Identity for onboarding a cluster to Azure Arc.  | `bool`                             | `true`                                                                                                                           | no       |
+| shouldCreateKeyVault                      | Whether or not to create a new Key Vault for the Secret Sync Extension.                    | `bool`                             | `true`                                                                                                                           | no       |
+| keyVaultName                              | The name of the Key Vault.                                                                 | `string`                           | [format('kv-{0}-{1}-{2}', parameters('common').resourcePrefix, parameters('common').environment, parameters('common').instance)] | no       |
+| keyVaultResourceGroupName                 | The name for the Resource Group for the Key Vault.                                         | `string`                           | [resourceGroup().name]                                                                                                           | no       |
+| shouldAssignAdminUserRole                 | Whether or not to create a role assignment for an admin user.                              | `bool`                             | `true`                                                                                                                           | no       |
+| adminUserObjectId                         | The Object ID for an admin user that will be granted the "Key Vault Secrets Officer" role. | `string`                           | [deployer().objectId]                                                                                                            | no       |
+| shouldCreateKeyVaultPrivateEndpoint       | Whether to create a private endpoint for the Key Vault.                                    | `bool`                             | `false`                                                                                                                          | no       |
+| keyVaultPrivateEndpointSubnetId           | Subnet resource ID for the Key Vault private endpoint.                                     | `string`                           | n/a                                                                                                                              | no       |
+| keyVaultVirtualNetworkId                  | Virtual network resource ID for the Key Vault private DNS link.                            | `string`                           | n/a                                                                                                                              | no       |
+| shouldEnableKeyVaultPublicNetworkAccess   | Whether to enable public network access on the Key Vault.                                  | `bool`                             | `true`                                                                                                                           | no       |
+| networkSecurityPerimeterName              | Name of the Network Security Perimeter to associate the Key Vault with.                    | `string`                           | n/a                                                                                                                              | no       |
+| networkSecurityPerimeterResourceGroupName | Resource group containing the Network Security Perimeter.                                  | `string`                           | n/a                                                                                                                              | no       |
+| networkSecurityPerimeterProfileName       | Name of the Network Security Perimeter profile to associate the Key Vault with.            | `string`                           | n/a                                                                                                                              | no       |
+| telemetry_opt_out                         | Whether to opt out of telemetry data collection.                                           | `bool`                             | `false`                                                                                                                          | no       |
 
 ## Resources
 
-| Name     | Type                              | API Version |
-|:---------|:----------------------------------|:------------|
-| identity | `Microsoft.Resources/deployments` | 2025-04-01  |
-| keyVault | `Microsoft.Resources/deployments` | 2025-04-01  |
+| Name                                        | Type                              | API Version |
+|:--------------------------------------------|:----------------------------------|:------------|
+| identity                                    | `Microsoft.Resources/deployments` | 2025-04-01  |
+| keyVault                                    | `Microsoft.Resources/deployments` | 2025-04-01  |
+| keyVaultNetworkSecurityPerimeterAssociation | `Microsoft.Resources/deployments` | 2025-04-01  |
 
 ## Modules
 
-| Name     | Description                                                                                                                         |
-|:---------|:------------------------------------------------------------------------------------------------------------------------------------|
-| identity | Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding. |
-| keyVault | Creates an Azure Key Vault for use with the Secret Sync Extension to securely store and synchronize secrets.                        |
+| Name                                        | Description                                                                                                                         |
+|:--------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
+| identity                                    | Creates user-assigned managed identities for Secret Store Extension, Azure IoT Operations components and optionally Arc onboarding. |
+| keyVault                                    | Creates an Azure Key Vault for use with the Secret Sync Extension to securely store and synchronize secrets.                        |
+| keyVaultNetworkSecurityPerimeterAssociation | Associates a supported private-link resource with a Network Security Perimeter profile in Enforced mode.                            |
 
 ## Module Details
 
@@ -113,6 +118,31 @@ Creates an Azure Key Vault for use with the Secret Sync Extension to securely st
 | keyVaultPrivateEndpointIp   | `string` | The Key Vault private endpoint IP address when created.  |
 | keyVaultPrivateDnsZoneId    | `string` | The Key Vault private DNS zone ID when created.          |
 | keyVaultPrivateDnsZoneName  | `string` | The Key Vault private DNS zone name when created.        |
+
+### keyVaultNetworkSecurityPerimeterAssociation
+
+Associates a supported private-link resource with a Network Security Perimeter profile in Enforced mode.
+
+#### Parameters for keyVaultNetworkSecurityPerimeterAssociation
+
+| Name                                | Description                                                             | Type     | Default | Required |
+|:------------------------------------|:------------------------------------------------------------------------|:---------|:--------|:---------|
+| networkSecurityPerimeterName        | Name of the Network Security Perimeter.                                 | `string` | n/a     | yes      |
+| networkSecurityPerimeterProfileName | Name of the Network Security Perimeter profile.                         | `string` | n/a     | yes      |
+| associationName                     | Name of the Network Security Perimeter resource association.            | `string` | n/a     | yes      |
+| privateLinkResourceId               | Resource ID of the private-link resource associated with the perimeter. | `string` | n/a     | yes      |
+
+#### Resources for keyVaultNetworkSecurityPerimeterAssociation
+
+| Name                                                                                           | Type                                                               | API Version |
+|:-----------------------------------------------------------------------------------------------|:-------------------------------------------------------------------|:------------|
+| [format('{0}/{1}', parameters('networkSecurityPerimeterName'), parameters('associationName'))] | `Microsoft.Network/networkSecurityPerimeters/resourceAssociations` | 2025-01-01  |
+
+#### Outputs for keyVaultNetworkSecurityPerimeterAssociation
+
+| Name          | Type     | Description                                                    |
+|:--------------|:---------|:---------------------------------------------------------------|
+| associationId | `string` | The resource ID of the Network Security Perimeter association. |
 
 ## User Defined Types
 

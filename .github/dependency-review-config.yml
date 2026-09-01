@@ -1,0 +1,4 @@
+---
+fail-on-severity: high
+warn-on-openssf-scorecard-level: 3
+comment-summary-in-pr: on-failure

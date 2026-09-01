@@ -9,7 +9,7 @@
 #
 # Usage:
 # Apply with: kubectl apply -f mqtt-tools.yaml
-# Connect to the pod: kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -- sh
+# Connect to the pod: kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -c mqtt-tools -- sh
 #
 # The deployment is configured to work with authenticated MQTT brokers in Azure IoT Operations
 # using service account token authentication and the appropriate trust bundle.

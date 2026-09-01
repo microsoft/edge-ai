@@ -98,7 +98,12 @@ TERRAFORM_VARS_FILE = "./src/100-edge/110-iot-ops/terraform/variables.init.tf"
 TERRAFORM_VARS_INSTANCE_FILE = (
     "./src/100-edge/110-iot-ops/terraform/variables.instance.tf"
 )
+# cert-manager and container storage extensions live in the 109-arc-extensions component
+TERRAFORM_ARC_EXTENSIONS_FILE = (
+    "./src/100-edge/109-arc-extensions/terraform/variables.tf"
+)
 BICEP_VARS_FILE = "./src/100-edge/110-iot-ops/bicep/types.bicep"
+BICEP_ARC_EXTENSIONS_FILE = "./src/100-edge/109-arc-extensions/bicep/types.bicep"
 
 # IaC type definition (discriminated union)
 IaCType = Literal["terraform", "bicep"]
@@ -112,10 +117,16 @@ TERRAFORM_COMPONENTS = [
 
 # Component mappings for Bicep (bicep_name:remote_name)
 BICEP_COMPONENTS = [
-    "aioCertManagerExtensionDefaults:certManager",
+    "certManagerExtensionDefaults:certManager",
     "secretStoreExtensionDefaults:secretStore",
     "aioExtensionDefaults:iotOperations",  # Maps to iotOperations in manifest
 ]
+
+# Bicep variables whose declaration lives outside BICEP_VARS_FILE (110-iot-ops).
+# Maps the bicep variable name to the file that declares it.
+BICEP_COMPONENT_FILES = {
+    "certManagerExtensionDefaults": BICEP_ARC_EXTENSIONS_FILE,
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -400,6 +411,26 @@ def download_manifests(
     return manifest_data
 
 
+def _unwrap_hcl(value: Any) -> Any:
+    """
+    Normalize a value parsed by python-hcl2.
+
+    Recent python-hcl2 releases wrap block bodies (such as a variable's
+    ``default``) in a single-element list, e.g. ``[{...}]`` instead of ``{...}``.
+    This helper unwraps that list so callers can treat the result as a dict.
+
+    Args:
+        value (Any): A value produced by ``hcl2.load``.
+
+    Returns:
+        Any: The inner dict when ``value`` is a single-element list wrapping a
+            dict; otherwise ``value`` unchanged.
+    """
+    if isinstance(value, list) and len(value) == 1:
+        return value[0]
+    return value
+
+
 def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
     """
     Extract component information from the Terraform variables file using HCL2 parser.
@@ -451,7 +482,7 @@ def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
 
                     # Check if default exists and contains version/train
                     if isinstance(var_props, dict) and "default" in var_props:
-                        defaults = var_props["default"]
+                        defaults = _unwrap_hcl(var_props["default"])
                         if isinstance(defaults, dict):
                             version = defaults.get("version", "")
                             train = defaults.get("train", "")
@@ -462,6 +493,7 @@ def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
                                         "name": var_name,
                                         "version": version,
                                         "train": train,
+                                        "local_file": tf_file,
                                     }
                                 )
 
@@ -510,7 +542,7 @@ def extract_tf_instance_variables(tf_instance_file: str) -> list[dict[str, str]]
                 ops_config = var_item["operations_config"]
 
                 if isinstance(ops_config, dict) and "default" in ops_config:
-                    defaults = ops_config["default"]
+                    defaults = _unwrap_hcl(ops_config["default"])
 
                     if isinstance(defaults, dict):
                         version = defaults.get("version", "")
@@ -524,11 +556,84 @@ def extract_tf_instance_variables(tf_instance_file: str) -> list[dict[str, str]]
                                     "version": version,
                                     "train": train,
                                     "namespace": namespace,
+                                    "local_file": tf_instance_file,
                                 }
                             )
                             break
 
     return variable_blocks
+
+
+def extract_tf_arc_extension_variables(
+    tf_arc_file: str,
+) -> list[dict[str, str]]:
+    """
+    Extract cert-manager version info from the 109-arc-extensions Terraform variables.
+
+    The arc extensions component nests extension settings inside the
+    ``arc_extensions`` variable default, e.g.::
+
+        variable "arc_extensions" {
+          default = {
+            cert_manager_extension = {
+              version = "0.13.3"
+              train   = "stable"
+            }
+          }
+        }
+
+    Only cert-manager is tracked against the AIO manifest; container storage is
+    intentionally excluded because the manifest no longer publishes a version
+    for it.
+
+    Args:
+        tf_arc_file (str): Path to the 109-arc-extensions Terraform variables file.
+
+    Returns:
+        List[Dict[str, str]]: A list with a single ``cert_manager`` entry when a
+            version/train is found; otherwise an empty list.
+
+    Raises:
+        SystemExit: If the file cannot be read or parsed.
+    """
+    logger.debug(f"Reading Terraform arc-extensions file: {tf_arc_file}")
+
+    try:
+        with open(tf_arc_file) as f:
+            parsed = hcl2.load(f)
+    except Exception as e:
+        logger.error(f"Failed to parse Terraform arc-extensions file: {e}")
+        sys.exit(1)
+
+    for var_item in parsed.get("variable", []):
+        if not (isinstance(var_item, dict) and "arc_extensions" in var_item):
+            continue
+
+        arc_props = var_item["arc_extensions"]
+        if not (isinstance(arc_props, dict) and "default" in arc_props):
+            continue
+
+        defaults = _unwrap_hcl(arc_props["default"])
+        if not isinstance(defaults, dict):
+            continue
+
+        cert_manager = _unwrap_hcl(defaults.get("cert_manager_extension", {}))
+        if not isinstance(cert_manager, dict):
+            continue
+
+        version = cert_manager.get("version", "")
+        train = cert_manager.get("train", "")
+        if version or train:
+            return [
+                {
+                    "name": "cert_manager",
+                    "version": version,
+                    "train": train,
+                    "local_file": tf_arc_file,
+                }
+            ]
+
+    return []
 
 
 def extract_bicep_variables(bicep_file: str) -> list[dict[str, str]]:
@@ -560,18 +665,29 @@ def extract_bicep_variables(bicep_file: str) -> list[dict[str, str]]:
     """
     logger.debug(f"Reading Bicep variables file: {bicep_file}")
 
-    try:
-        with open(bicep_file) as f:
-            content = f.read()
-    except OSError as e:
-        logger.error(f"Failed to read Bicep file: {e}")
-        sys.exit(1)
+    # Cache file contents so each file is read at most once.
+    file_cache: dict[str, str] = {}
+
+    def _read(path: str) -> str:
+        if path not in file_cache:
+            try:
+                with open(path) as f:
+                    file_cache[path] = f.read()
+            except OSError as e:
+                logger.error(f"Failed to read Bicep file: {e}")
+                sys.exit(1)
+        return file_cache[path]
 
     variable_blocks = []
 
     # Use the specific Bicep component names for searching
     for bicep_component in BICEP_COMPONENTS:
         bicep_name, remote_name = bicep_component.split(":")
+
+        # Some components (e.g. cert-manager) are declared outside the default
+        # 110-iot-ops types file.
+        component_file = BICEP_COMPONENT_FILES.get(bicep_name, bicep_file)
+        content = _read(component_file)
 
         # Find the component definition block
         var_pattern = f"var {bicep_name} = {{([\\s\\S]*?)}}"
@@ -612,7 +728,12 @@ def extract_bicep_variables(bicep_file: str) -> list[dict[str, str]]:
                     component_name = "azure-iot-operations"
 
                 variable_blocks.append(
-                    {"name": component_name, "version": version, "train": train}
+                    {
+                        "name": component_name,
+                        "version": version,
+                        "train": train,
+                        "local_file": component_file,
+                    }
                 )
 
     return variable_blocks
@@ -641,7 +762,9 @@ def extract_variables(iac_type: IaCType, file_path: str) -> list[dict[str, str]]
         variables = extract_tf_variables(TERRAFORM_VARS_FILE)
         instance_variables = extract_tf_instance_variables(
             TERRAFORM_VARS_INSTANCE_FILE)
-        return variables + instance_variables
+        arc_variables = extract_tf_arc_extension_variables(
+            TERRAFORM_ARC_EXTENSIONS_FILE)
+        return variables + instance_variables + arc_variables
     elif iac_type == "bicep":
         return extract_bicep_variables(file_path)
     else:
@@ -785,7 +908,7 @@ def compare_versions(
                 mismatches.append(
                     {
                         "name": name,
-                        "local_file": file_path,
+                        "local_file": component.get("local_file", file_path),
                         "remote_url": manifest_url,
                         "local_version": local_version,
                         "remote_version": remote_version,

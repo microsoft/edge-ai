@@ -1,6 +1,6 @@
 ---
-title: Deploy a Leak Detection Scenario on full-single-node-cluster
-description: End-to-end deployment of a vision-based leak detection scenario built on the full-single-node-cluster blueprint, using edge AI inference, video capture, and cloud alerting
+title: Deploy a Leak Detection Scenario on full-multi-node-cluster
+description: End-to-end deployment of a vision-based leak detection scenario built on the full-multi-node-cluster blueprint, using edge AI inference, video capture, and cloud alerting
 author: Edge AI Team
 ms.date: 2026-03-12
 ms.topic: tutorial
@@ -14,9 +14,9 @@ keywords:
   - scenario deployment
 ---
 
-## Deploy a Leak Detection Scenario on full-single-node-cluster
+## Deploy a Leak Detection Scenario on full-multi-node-cluster
 
-This guide walks through a vision-based leak detection scenario built on top of the [`full-single-node-cluster`](../../blueprints/full-single-node-cluster/README.md) blueprint. There is no dedicated `leak-detection` blueprint; the scenario is enabled by applying the `full-single-node-cluster` Terraform with the provided `leak-detection.tfvars.example` and supporting CI/CD scripts.
+This guide walks through a vision-based leak detection scenario built on top of the [`full-multi-node-cluster`](../../blueprints/full-multi-node-cluster/README.md) blueprint. There is no dedicated `leak-detection` blueprint; the scenario is enabled by applying the `full-multi-node-cluster` Terraform with the provided `leak-detection.tfvars.example` and supporting CI/CD scripts.
 
 The pipeline captures camera frames at the edge, runs AI inference for leak detection, routes alerts to Microsoft Teams, and stores video clips for review.
 
@@ -89,13 +89,13 @@ graph LR
 
 **Estimated time:** ~20 minutes + provisioning
 
-The `blueprints/full-single-node-cluster/terraform/` directory contains the infrastructure-as-code for this scenario. A dedicated variable file `leak-detection.tfvars.example` enables the leak-detection-specific components.
+The `blueprints/full-multi-node-cluster/terraform/` directory contains the infrastructure-as-code for this scenario. A dedicated variable file `leak-detection.tfvars.example` enables the leak-detection-specific components.
 
 #### Configure Variables
 
 ```bash
 source scripts/az-sub-init.sh
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 cp leak-detection.tfvars.example leak-detection.tfvars
 ```
 
@@ -148,7 +148,7 @@ The scenario uses three application container images, built from this repository
 #### Option A: Automated Build
 
 ```bash
-cd blueprints/full-single-node-cluster
+cd blueprints/full-multi-node-cluster
 
 ../../src/501-ci-cd/scripts/build-leak-detection-images.sh \
   --acr-name "$(cd terraform && terraform output -raw container_registry | jq -r .name)" \
@@ -160,7 +160,7 @@ cd blueprints/full-single-node-cluster
 Build and push the three images individually. The image names must match those produced by the automated build because Phase 3 manifests reference them by these exact tags.
 
 ```bash
-ACR_NAME=$(cd blueprints/full-single-node-cluster/terraform && terraform output -raw container_registry | jq -r .name)
+ACR_NAME=$(cd blueprints/full-multi-node-cluster/terraform && terraform output -raw container_registry | jq -r .name)
 TAG="latest"
 
 az acr login --name "$ACR_NAME"
@@ -210,7 +210,7 @@ Expected repositories: `ai-edge-inference`, `sse-server`, `media-capture-service
 #### Option A: Automated Deployment
 
 ```bash
-cd blueprints/full-single-node-cluster
+cd blueprints/full-multi-node-cluster
 
 ../../src/501-ci-cd/scripts/deploy-leak-detection-apps.sh
 ```

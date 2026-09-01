@@ -32,7 +32,7 @@ The connector enables Azure IoT Operations to periodically perform GET requests 
 endpoints and forward the retrieved data to destinations such as MQTT brokers or state stores.
 
 > **💡 RECOMMENDED APPROACH**: For production deployments, use the Terraform-based configuration in
-> the `full-single-node-cluster` blueprint with the `rest-connector-assets.tfvars.example` file as a
+> the `full-multi-node-cluster` blueprint with the `rest-connector-assets.tfvars.example` file as a
 > reference for configuring your REST connector assets.
 
 ## Local Development Architecture
@@ -63,10 +63,10 @@ For Azure IoT Operations deployments, the component uses:
 
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
-- **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with REST connector variables
+- **Blueprint Deployment**: Use `full-multi-node-cluster` blueprint with REST connector variables
 - **Terraform**: Version 1.12.0 or later
 - **Azure Subscription**: Active subscription with appropriate permissions
-- **Example Configuration**: Reference `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`
+- **Example Configuration**: Reference `blueprints/full-multi-node-cluster/terraform/rest-connector-assets.tfvars.example`
 
 ## Quick Start
 
@@ -97,7 +97,7 @@ docker compose down
 
 #### Setup Prerequisites
 
-1. Deploy the `full-single-node-cluster` blueprint (or another blueprint with IoT Operations)
+1. Deploy the `full-multi-node-cluster` blueprint (or another blueprint with IoT Operations)
 2. Ensure Docker Compose environment is running (for testing with mock endpoints)
 
 #### Terraform Configuration
@@ -105,7 +105,7 @@ docker compose down
 Create or modify `rest-connector-assets.tfvars` in the blueprint:
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Copy example configuration
 cp rest-connector-assets.tfvars.example rest-connector-assets.tfvars
@@ -141,7 +141,7 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
          --insecure"
 ```
 
-**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`
+**Configuration Reference**: See `blueprints/full-multi-node-cluster/terraform/rest-connector-assets.tfvars.example`
 for a complete example of all available configuration options.
 
 ## Field-Based API
@@ -266,7 +266,7 @@ namespaced_assets = [
 - **Multiple datasets**: You can define multiple datasets per asset, each with different field combinations and polling intervals
 - **MQTT destinations**: Configure topic routing, QoS levels, and retention policies for each dataset
 
-For a complete example, refer to `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`.
+For a complete example, refer to `blueprints/full-multi-node-cluster/terraform/rest-connector-assets.tfvars.example`.
 
 ## Field Configuration
 
@@ -526,7 +526,7 @@ DEVICE_TOPIC=akri/device-001/status
 ### Azure Deployment Configuration
 
 Azure deployments are configured through Terraform variables in the blueprint. See
-`blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example` for a
+`blueprints/full-multi-node-cluster/terraform/rest-connector-assets.tfvars.example` for a
 complete reference of all available configuration options.
 
 Key configuration includes:
@@ -674,7 +674,7 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
 This component integrates with the broader edge-ai project architecture:
 
 - **Infrastructure Foundation**: Uses the `akri-connectors` module from `src/100-edge/110-iot-ops`
-- **Blueprint Integration**: Can be included in blueprints like `full-single-node-cluster`
+- **Blueprint Integration**: Can be included in blueprints like `full-multi-node-cluster`
 - **Asset Management**: Works with `src/100-edge/111-assets` for device discovery
 - **Application Layer**: Part of the `500-application` workload components
 
@@ -748,7 +748,7 @@ docker compose down
 
 - **Explore Integration**: See how this component integrates with IoT Operations in
   `src/100-edge/110-iot-ops`
-- **Deploy Complete Solutions**: Use blueprints like `full-single-node-cluster` for end-to-end
+- **Deploy Complete Solutions**: Use blueprints like `full-multi-node-cluster` for end-to-end
   deployments
 - **Custom Connectors**: Use this as a template for building other Akri connectors
 - **Production Deployment**: Integrate with your Azure IoT Operations clusters using Terraform
@@ -777,7 +777,7 @@ When contributing to this component:
 For issues and questions:
 
 - Check the troubleshooting section above
-- Review `blueprints/full-single-node-cluster/terraform/rest-connector-assets.tfvars.example`
+- Review `blueprints/full-multi-node-cluster/terraform/rest-connector-assets.tfvars.example`
   for configuration reference
 - Review Azure IoT Operations documentation
 - File issues in the project repository

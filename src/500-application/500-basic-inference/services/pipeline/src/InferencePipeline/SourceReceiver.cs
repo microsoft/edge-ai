@@ -1,6 +1,7 @@
 using Azure.Iot.Operations.Protocol;
 using Azure.Iot.Operations.Protocol.Telemetry;
 using Azure.Iot.Operations.Services.SchemaRegistry;
+using Azure.Iot.Operations.Services.SchemaRegistry.Generated.Common;
 
 namespace InferencePipeline;
 

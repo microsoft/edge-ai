@@ -15,6 +15,7 @@ keywords:
   - teams connector
   - managed identity
   - terraform
+  - bicep
 estimated_reading_time: 5
 ---
 
@@ -192,6 +193,21 @@ Refer to [Terraform Components - Getting Started](../../README.md#terraform-comp
 deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
+
+### Bicep
+
+A Bicep implementation provides the same Event Hub to Teams notification pipeline. It consolidates each
+Terraform `azurerm_logic_app_trigger_custom`/`azurerm_logic_app_action_custom` resource into a single
+Workflow Definition Language (WDL) `properties.definition` per workflow, resolves the close-session callback
+URL via the `listCallbackUrl()` function, and creates role assignments through `modules/*-role-assignment.bicep`.
+
+Learn more about the required parameters by reading the [./bicep/README.md](./bicep/README.md)
+
+> [!NOTE]
+> Unlike the Terraform `close_session_endpoint` output, the Bicep `closeSessionEndpoint` output cannot be marked
+> sensitive at the field level. Bicep only supports `@secure()` on parameters, so the callback URL is emitted in
+> clear text. Treat the value as a secret in downstream consumers and avoid logging it. The output is annotated
+> with `#disable-next-line outputs-should-not-contain-secrets` to document this intentional limitation.
 
 ---
 

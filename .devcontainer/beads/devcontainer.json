@@ -1,6 +1,6 @@
 {
   "name": "edge-ai-beads-devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},

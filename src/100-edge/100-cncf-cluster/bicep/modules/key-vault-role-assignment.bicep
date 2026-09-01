@@ -5,8 +5,8 @@ metadata description = 'Assigns appropriate roles to access Key Vault secrets.'
   Identity Parameters
 */
 
-@description('The principal ID of the Arc identity that needs access to the secrets.')
-param arcOnboardingPrincipalId string
+@description('The principal IDs of the Arc identities that need access to the secrets.')
+param arcOnboardingPrincipalIds string[]
 
 /*
   Key Vault Parameters
@@ -38,84 +38,84 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
 }
 
 // Key Vault Secrets Officer role at the vault level
-resource keyVaultSecretsOfficerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, arcOnboardingPrincipalId, 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
-  scope: keyVault
-  properties: {
-    // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-officer
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
-    )
-    principalId: arcOnboardingPrincipalId
-    principalType: 'ServicePrincipal'
+resource keyVaultSecretsOfficerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for principalId in arcOnboardingPrincipalIds: {
+    name: guid(resourceGroup().id, principalId, 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7')
+    scope: keyVault
+    properties: {
+      // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-officer
+      roleDefinitionId: subscriptionResourceId(
+        'Microsoft.Authorization/roleDefinitions',
+        'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+      )
+      principalId: principalId
+      principalType: 'ServicePrincipal'
+    }
   }
-}
+]
 
 // Role assignments for server script secret
-resource keyVaultReaderServerSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(
-    resourceGroup().id,
-    arcOnboardingPrincipalId,
-    serverScriptSecretName,
-    '21090545-7ca7-4776-b22c-e363652d74d2'
-  )
-  scope: keyVault::serverScriptSecret
-  properties: {
-    // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-reader
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '21090545-7ca7-4776-b22c-e363652d74d2'
-    )
-    principalId: arcOnboardingPrincipalId
-    principalType: 'ServicePrincipal'
+resource keyVaultReaderServerSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for principalId in arcOnboardingPrincipalIds: {
+    name: guid(resourceGroup().id, principalId, serverScriptSecretName, '21090545-7ca7-4776-b22c-e363652d74d2')
+    scope: keyVault::serverScriptSecret
+    properties: {
+      // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-reader
+      roleDefinitionId: subscriptionResourceId(
+        'Microsoft.Authorization/roleDefinitions',
+        '21090545-7ca7-4776-b22c-e363652d74d2'
+      )
+      principalId: principalId
+      principalType: 'ServicePrincipal'
+    }
   }
-}
+]
 
-resource keyVaultSecretsUserServerSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(
-    resourceGroup().id,
-    arcOnboardingPrincipalId,
-    serverScriptSecretName,
-    '4633458b-17de-408a-b874-0445c86b69e6'
-  )
-  scope: keyVault::serverScriptSecret
-  properties: {
-    // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-user
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '4633458b-17de-408a-b874-0445c86b69e6'
-    )
-    principalId: arcOnboardingPrincipalId
-    principalType: 'ServicePrincipal'
+resource keyVaultSecretsUserServerSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for principalId in arcOnboardingPrincipalIds: {
+    name: guid(resourceGroup().id, principalId, serverScriptSecretName, '4633458b-17de-408a-b874-0445c86b69e6')
+    scope: keyVault::serverScriptSecret
+    properties: {
+      // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-user
+      roleDefinitionId: subscriptionResourceId(
+        'Microsoft.Authorization/roleDefinitions',
+        '4633458b-17de-408a-b874-0445c86b69e6'
+      )
+      principalId: principalId
+      principalType: 'ServicePrincipal'
+    }
   }
-}
+]
 
 // Role assignments for node script secret
-resource keyVaultReaderNodeSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, arcOnboardingPrincipalId, nodeScriptSecretName, '21090545-7ca7-4776-b22c-e363652d74d2')
-  scope: keyVault::nodeScriptSecret
-  properties: {
-    // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-reader
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '21090545-7ca7-4776-b22c-e363652d74d2'
-    )
-    principalId: arcOnboardingPrincipalId
-    principalType: 'ServicePrincipal'
+resource keyVaultReaderNodeSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for principalId in arcOnboardingPrincipalIds: {
+    name: guid(resourceGroup().id, principalId, nodeScriptSecretName, '21090545-7ca7-4776-b22c-e363652d74d2')
+    scope: keyVault::nodeScriptSecret
+    properties: {
+      // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-reader
+      roleDefinitionId: subscriptionResourceId(
+        'Microsoft.Authorization/roleDefinitions',
+        '21090545-7ca7-4776-b22c-e363652d74d2'
+      )
+      principalId: principalId
+      principalType: 'ServicePrincipal'
+    }
   }
-}
+]
 
-resource keyVaultSecretsUserNodeSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(resourceGroup().id, arcOnboardingPrincipalId, nodeScriptSecretName, '4633458b-17de-408a-b874-0445c86b69e6')
-  scope: keyVault::nodeScriptSecret
-  properties: {
-    // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-user
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '4633458b-17de-408a-b874-0445c86b69e6'
-    )
-    principalId: arcOnboardingPrincipalId
-    principalType: 'ServicePrincipal'
+resource keyVaultSecretsUserNodeSecret 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for principalId in arcOnboardingPrincipalIds: {
+    name: guid(resourceGroup().id, principalId, nodeScriptSecretName, '4633458b-17de-408a-b874-0445c86b69e6')
+    scope: keyVault::nodeScriptSecret
+    properties: {
+      // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/security#key-vault-secrets-user
+      roleDefinitionId: subscriptionResourceId(
+        'Microsoft.Authorization/roleDefinitions',
+        '4633458b-17de-408a-b874-0445c86b69e6'
+      )
+      principalId: principalId
+      principalType: 'ServicePrincipal'
+    }
   }
-}
+]

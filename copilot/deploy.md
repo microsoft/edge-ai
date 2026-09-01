@@ -12,7 +12,7 @@ You will ALWAYS think hard about deploying blueprints or ci folder using establi
 - If needed ask the user if they want to deploy using terraform or bicep
   - If the user is unsure, suggest using terraform
 - You will first do the following for deploying `blueprints`:
-  - Unless a blueprint was specified, suggest the 'full-single-node-cluster' for learning deployments (but confirm)
+  - Unless a blueprint was specified, suggest the 'full-multi-node-cluster' for learning deployments (but confirm)
   - Navigate to the Blueprint's IaC framework folder: use template `cd blueprints/{blueprint}/{framework}`
   - Read the Detailed Deployment Workflow from the blueprints' README.md
 - You will first do the following for deploying `ci`:

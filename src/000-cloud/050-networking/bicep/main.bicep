@@ -27,17 +27,64 @@ param privateResolverConfig types.PrivateResolverConfig = types.privateResolverC
 @description('Whether default outbound access is enabled for subnets.')
 param defaultOutboundAccessEnabled bool = false
 
+@description('Whether to create a Network Security Perimeter that allows the detected deployment client IP for supported PaaS resources.')
+param shouldUseNetworkSecurityPerimeter bool = false
+
+@description('Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically.')
+param networkSecurityPerimeterAllowedIpAddressPrefixes string[] = []
+
 @description('Whether to opt out of telemetry data collection.')
 param telemetry_opt_out bool = false
+
+/*
+  Existing Networking Parameters
+*/
+
+@description('Whether to reference an existing virtual network, subnet, and network security group instead of creating new ones.')
+param useExistingVirtualNetwork bool = false
+
+@description('Resource group name containing the existing virtual network when useExistingVirtualNetwork is true. Otherwise, the deployment resource group.')
+param existingResourceGroupName string?
+
+@description('Name of the virtual network to create or reference. Otherwise, computed from common naming.')
+param virtualNetworkName string?
+
+@description('Name of the subnet to create or reference. Otherwise, computed from common naming.')
+param subnetName string?
+
+@description('Name of the network security group to create or reference. Otherwise, computed from common naming.')
+param networkSecurityGroupName string?
 
 /*
   Local Variables
 */
 
 var resourceNamePrefix = '${common.resourcePrefix}-aio-${common.environment}-${common.instance}'
-var networkSecurityGroupName = 'nsg-${resourceNamePrefix}'
-var virtualNetworkName = 'vnet-${resourceNamePrefix}'
-var defaultSubnetName = 'subnet-${resourceNamePrefix}'
+var resolvedNetworkSecurityGroupName = networkSecurityGroupName ?? 'nsg-${resourceNamePrefix}'
+var resolvedVirtualNetworkName = virtualNetworkName ?? 'vnet-${resourceNamePrefix}'
+var resolvedSubnetName = subnetName ?? 'subnet-${resourceNamePrefix}'
+var resolvedExistingResourceGroupName = existingResourceGroupName ?? resourceGroup().name
+// Resource group that owns the virtual network/subnet/NSG referenced by the resolved IDs below.
+var targetResourceGroupName = useExistingVirtualNetwork ? resolvedExistingResourceGroupName : resourceGroup().name
+var resolvedVirtualNetworkId = resourceId(
+  subscription().subscriptionId,
+  targetResourceGroupName,
+  'Microsoft.Network/virtualNetworks',
+  resolvedVirtualNetworkName
+)
+var resolvedNetworkSecurityGroupId = resourceId(
+  subscription().subscriptionId,
+  targetResourceGroupName,
+  'Microsoft.Network/networkSecurityGroups',
+  resolvedNetworkSecurityGroupName
+)
+var resolvedSubnetId = resourceId(
+  subscription().subscriptionId,
+  targetResourceGroupName,
+  'Microsoft.Network/virtualNetworks/subnets',
+  resolvedVirtualNetworkName,
+  resolvedSubnetName
+)
 
 /*
   Resources
@@ -55,8 +102,8 @@ resource attribution 'Microsoft.Resources/deployments@2020-06-01' = if (!telemet
   }
 }
 
-resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2025-01-01' = {
-  name: networkSecurityGroupName
+resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2025-01-01' = if (!useExistingVirtualNetwork) {
+  name: resolvedNetworkSecurityGroupName
   location: common.location
   properties: {}
 }
@@ -65,7 +112,7 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2025-01-0
   Modules
 */
 
-module natGateway './modules/nat-gateway.bicep' = if (natGatewayConfig.shouldEnable) {
+module natGateway './modules/nat-gateway.bicep' = if (!useExistingVirtualNetwork && natGatewayConfig.shouldEnable) {
   name: '${deployment().name}-nat'
   params: {
     resourcePrefix: common.resourcePrefix
@@ -82,8 +129,8 @@ module natGateway './modules/nat-gateway.bicep' = if (natGatewayConfig.shouldEna
 }
 
 // VNet without inline subnets to avoid InUseSubnetCannotBeDeleted errors on redeployment
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2025-01-01' = {
-  name: virtualNetworkName
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2025-01-01' = if (!useExistingVirtualNetwork) {
+  name: resolvedVirtualNetworkName
   location: common.location
   properties: {
     addressSpace: {
@@ -93,20 +140,20 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2025-01-01' = {
 }
 
 // Default subnet as separate child resource
-resource defaultSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
+resource defaultSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = if (!useExistingVirtualNetwork) {
   parent: virtualNetwork
-  name: defaultSubnetName
+  name: resolvedSubnetName
   properties: {
     addressPrefix: networkingConfig.subnetAddressPrefix
     defaultOutboundAccess: defaultOutboundAccessEnabled
     networkSecurityGroup: {
-      id: networkSecurityGroup.id
+      id: resolvedNetworkSecurityGroupId
     }
     natGateway: natGatewayConfig.shouldEnable && natGateway != null ? { id: natGateway!.outputs.natGatewayId } : null
   }
 }
 
-module privateResolver './modules/private-resolver.bicep' = if (privateResolverConfig.shouldEnable) {
+module privateResolver './modules/private-resolver.bicep' = if (!useExistingVirtualNetwork && privateResolverConfig.shouldEnable) {
   name: '${deployment().name}-resolver'
   dependsOn: [defaultSubnet]
   params: {
@@ -114,8 +161,8 @@ module privateResolver './modules/private-resolver.bicep' = if (privateResolverC
     location: common.location
     environment: common.environment
     instance: common.instance
-    virtualNetworkId: virtualNetwork.id
-    virtualNetworkName: virtualNetwork.name
+    virtualNetworkId: resolvedVirtualNetworkId
+    virtualNetworkName: resolvedVirtualNetworkName
     subnetAddressPrefix: privateResolverConfig.subnetAddressPrefix
     natGatewayId: natGatewayConfig.shouldEnable ? natGateway.?outputs.?natGatewayId : null
     defaultOutboundAccessEnabled: defaultOutboundAccessEnabled
@@ -125,27 +172,35 @@ module privateResolver './modules/private-resolver.bicep' = if (privateResolverC
   }
 }
 
+module networkSecurityPerimeter './modules/network-security-perimeter.bicep' = if (shouldUseNetworkSecurityPerimeter) {
+  name: '${deployment().name}-networkSecurityPerimeter'
+  params: {
+    common: common
+    allowedIpAddressPrefixes: networkSecurityPerimeterAllowedIpAddressPrefixes
+  }
+}
+
 /*
   Outputs
 */
 
 @description('The ID of the created network security group.')
-output networkSecurityGroupId string = networkSecurityGroup.id
+output networkSecurityGroupId string = resolvedNetworkSecurityGroupId
 
 @description('The name of the created network security group.')
-output networkSecurityGroupName string = networkSecurityGroup.name
+output networkSecurityGroupName string = resolvedNetworkSecurityGroupName
 
 @description('The ID of the created subnet.')
-output subnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, defaultSubnetName)
+output subnetId string = resolvedSubnetId
 
 @description('The name of the created subnet.')
-output subnetName string = defaultSubnetName
+output subnetName string = resolvedSubnetName
 
 @description('The ID of the created virtual network.')
-output virtualNetworkId string = virtualNetwork.id
+output virtualNetworkId string = resolvedVirtualNetworkId
 
 @description('The name of the created virtual network.')
-output virtualNetworkName string = virtualNetwork.name
+output virtualNetworkName string = resolvedVirtualNetworkName
 
 @description('The ID of the NAT Gateway (if enabled).')
 output natGatewayId string? = natGatewayConfig.shouldEnable ? natGateway.?outputs.?natGatewayId : null
@@ -173,3 +228,18 @@ output subnetAddressPrefix string = networkingConfig.subnetAddressPrefix
 
 @description('The address prefix allocated to the virtual network.')
 output virtualNetworkAddressPrefix string = networkingConfig.addressPrefix
+
+@description('The resource ID of the Network Security Perimeter when created.')
+output networkSecurityPerimeterId string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.networkSecurityPerimeterId
+  : null
+
+@description('The resource group containing the Network Security Perimeter when created.')
+output networkSecurityPerimeterResourceGroupName string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.networkSecurityPerimeterResourceGroupName
+  : null
+
+@description('The resource ID of the Network Security Perimeter profile when created.')
+output networkSecurityPerimeterProfileId string? = shouldUseNetworkSecurityPerimeter
+  ? networkSecurityPerimeter!.outputs.profileId
+  : null

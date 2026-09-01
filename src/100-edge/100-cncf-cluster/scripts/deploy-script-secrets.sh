@@ -98,7 +98,7 @@ if ! command -v "az" &>/dev/null; then
     case "$OS_TYPE" in
       ubuntu)
         # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
-        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
+        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.88.0}"
         sudo apt-get update
         sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
         sudo mkdir -p /etc/apt/keyrings
@@ -125,7 +125,7 @@ fi
 if [ -z "$SKIP_AZ_LOGIN" ]; then
   if [ -n "$CLIENT_ID" ]; then
     log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
-    if ! az login --identity --username "$CLIENT_ID"; then
+    if ! az login --identity --client-id "$CLIENT_ID"; then
       err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
     fi
   else

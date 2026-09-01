@@ -88,8 +88,7 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 
 ## Related Blueprints
 
-- **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment including edge components
-- **[Full Multi-node Cluster](../full-multi-node-cluster/README.md)**: Multi-node high-availability deployment
+- **[Full Multi-Node Cluster](../full-multi-node-cluster/README.md)**: Complete deployment including edge components
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
 
 ---

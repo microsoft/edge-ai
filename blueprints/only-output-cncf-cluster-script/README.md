@@ -106,8 +106,7 @@ The scripts handle:
 
 ## Related Resources
 
-- See the [full-single-cluster](../full-single-cluster/README.md) blueprint for complete deployment including the cluster
-- See the [full-multi-node-cluster](../full-multi-node-cluster/README.md) blueprint for multi-node deployments
+- See the [full-multi-node-cluster](../full-multi-node-cluster/README.md) blueprint for complete deployment including the cluster and multi-node deployments
 
 ---
 

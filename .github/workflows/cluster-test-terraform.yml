@@ -44,7 +44,7 @@
 #   custom-terraform-test:
 #     uses: ./.github/workflows/cluster-test-terraform.yml
 #     with:
-#       working-directory: 'blueprints/full-single-cluster/terraform'
+#       working-directory: 'blueprints/full-multi-node-cluster/terraform'
 #       terraform-version: '1.12.2'
 #       terraform-vars-file: './test.tfvars'
 #       backend-key: 'custom-state.tfstate'
@@ -130,7 +130,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Process working directory: extract paths and check for CI folders
       - name: Process working directories
@@ -176,7 +176,7 @@ jobs:
           fi
 
       - name: Azure Login
-        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3.0.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
@@ -339,7 +339,7 @@ jobs:
         run: exit 1
 
       - name: Setup Node.js for test processing
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
           cache: 'npm'

@@ -90,9 +90,8 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 
 ## Related Blueprints
 
-- **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment including cloud and edge components
+- **[Full Multi-Node Cluster](../full-multi-node-cluster/README.md)**: Complete deployment including cloud and edge components
 - **[Only Cloud Single Node Cluster](../only-cloud-single-node-cluster/README.md)**: Deploy only the cloud resources
-- **[Full Multi-node Cluster](../full-multi-node-cluster/README.md)**: Multi-node high-availability deployment
 
 ---
 

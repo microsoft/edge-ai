@@ -35,7 +35,7 @@ This minimal blueprint creates:
 
 ### Required Existing Infrastructure
 
-This blueprint requires the following infrastructure to already be deployed (typically via `full-single-node-cluster` or similar blueprints):
+This blueprint requires the following infrastructure to already be deployed (typically via `full-multi-node-cluster` or similar blueprints):
 
 - **Azure Resource Group** with all AIO resources
 - **Azure IoT Operations (AIO) Instance** with running workloads

@@ -66,7 +66,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Azure CLI with Bicep
         run: |
@@ -75,7 +75,7 @@ jobs:
           if ! command -v az &>/dev/null; then
             echo "Azure CLI is not installed. Installing now..."
             # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
-            AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
+            AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.88.0}"
             sudo apt-get update
             sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
             sudo mkdir -p /etc/apt/keyrings

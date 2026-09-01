@@ -18,21 +18,26 @@ module "key_vault" {
 
   source = "./modules/key-vault"
 
-  location                             = var.location
-  resource_group                       = var.aio_resource_group
-  resource_prefix                      = var.resource_prefix
-  environment                          = var.environment
-  instance                             = var.instance
-  key_vault_name                       = var.key_vault_name
-  key_vault_admin_principal_id         = local.key_vault_admin_principal_id
-  should_create_private_endpoint       = var.should_create_key_vault_private_endpoint
-  private_endpoint_subnet_id           = var.key_vault_private_endpoint_subnet_id
-  virtual_network_id                   = var.key_vault_virtual_network_id
-  should_enable_public_network_access  = var.should_enable_public_network_access
-  should_enable_purge_protection       = var.should_enable_purge_protection
-  should_add_key_vault_role_assignment = local.should_add_key_vault_role_assignment
-  log_analytics_workspace_id           = var.log_analytics_workspace_id
-  should_enable_diagnostic_settings    = var.should_enable_diagnostic_settings
+  location                                       = var.location
+  resource_group                                 = var.aio_resource_group
+  resource_prefix                                = var.resource_prefix
+  environment                                    = var.environment
+  instance                                       = var.instance
+  key_vault_name                                 = var.key_vault_name
+  key_vault_admin_principal_id                   = local.key_vault_admin_principal_id
+  should_create_private_endpoint                 = var.should_create_key_vault_private_endpoint
+  private_endpoint_subnet_id                     = var.key_vault_private_endpoint_subnet_id
+  virtual_network_id                             = var.key_vault_virtual_network_id
+  should_enable_public_network_access            = var.should_enable_public_network_access
+  should_enable_purge_protection                 = var.should_enable_purge_protection
+  should_add_key_vault_role_assignment           = local.should_add_key_vault_role_assignment
+  log_analytics_workspace_id                     = var.log_analytics_workspace_id
+  should_enable_diagnostic_settings              = var.should_enable_diagnostic_settings
+  should_use_network_security_perimeter          = var.should_use_network_security_perimeter
+  network_security_perimeter_id                  = var.network_security_perimeter_id
+  network_security_perimeter_profile_id          = var.network_security_perimeter_profile_id
+  network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
+  network_security_perimeter_propagation_trigger = var.network_security_perimeter_id == null ? null : coalesce(var.network_security_perimeter_propagation_trigger, sha256("${var.network_security_perimeter_id}:${var.network_security_perimeter_profile_id}"))
 }
 
 module "identity" {

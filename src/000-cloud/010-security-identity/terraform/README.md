@@ -7,18 +7,19 @@ access to resources.
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
-| azapi     | >= 2.3.0         |
-| azuread   | >= 3.0.2         |
-| azurerm   | >= 4.51.0        |
+| Name      | Version            |
+|-----------|--------------------|
+| terraform | >= 1.12.0, < 2.0   |
+| azapi     | >= 2.3.0           |
+| azuread   | >= 3.0.2           |
+| azurerm   | >= 4.51.0, < 5.0.0 |
+| time      | >= 0.13.0          |
 
 ## Providers
 
-| Name    | Version   |
-|---------|-----------|
-| azurerm | >= 4.51.0 |
+| Name    | Version            |
+|---------|--------------------|
+| azurerm | >= 4.51.0, < 5.0.0 |
 
 ## Resources
 
@@ -35,30 +36,35 @@ access to resources.
 
 ## Inputs
 
-| Name                                          | Description                                                                                                                                   | Type                                                          | Default | Required |
-|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|---------|:--------:|
-| aio\_resource\_group                          | n/a                                                                                                                                           | ```object({ id = string name = string location = string })``` | n/a     |   yes    |
-| environment                                   | Environment for all resources in this module: dev, test, or prod                                                                              | `string`                                                      | n/a     |   yes    |
-| location                                      | Azure region where all resources will be deployed                                                                                             | `string`                                                      | n/a     |   yes    |
-| resource\_prefix                              | Prefix for all resources in this module                                                                                                       | `string`                                                      | n/a     |   yes    |
-| instance                                      | Instance identifier for naming resources: 001, 002, etc                                                                                       | `string`                                                      | `"001"` |    no    |
-| key\_vault\_admin\_principal\_id              | The Principal ID or Object ID for the admin that will have access to update secrets on the Key Vault.                                         | `string`                                                      | `null`  |    no    |
-| key\_vault\_name                              | The name of the Key Vault to store secrets. If not provided, defaults to 'kv-{resource\_prefix}-{environment}-{instance}'                     | `string`                                                      | `null`  |    no    |
-| key\_vault\_private\_endpoint\_subnet\_id     | The ID of the subnet where the Key Vault private endpoint will be created. Required if should\_create\_key\_vault\_private\_endpoint is true. | `string`                                                      | `null`  |    no    |
-| key\_vault\_virtual\_network\_id              | The ID of the virtual network to link to the Key Vault private DNS zone. Required if should\_create\_key\_vault\_private\_endpoint is true.   | `string`                                                      | `null`  |    no    |
-| log\_analytics\_workspace\_id                 | The ID of the Log Analytics workspace for diagnostic settings. If null, diagnostics are not enabled                                           | `string`                                                      | `null`  |    no    |
-| onboard\_identity\_type                       | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - id - sp - skip                                              | `string`                                                      | `"id"`  |    no    |
-| should\_create\_aio\_identity                 | Whether to create a user-assigned identity for Azure IoT Operations.                                                                          | `bool`                                                        | `true`  |    no    |
-| should\_create\_aks\_identity                 | Whether to create a user-assigned identity for AKS cluster when using custom private DNS zones.                                               | `bool`                                                        | `false` |    no    |
-| should\_create\_identities                    | Whether to create the identities used for Arc Onboarding, Secret Sync, and AIO.                                                               | `bool`                                                        | `true`  |    no    |
-| should\_create\_key\_vault                    | Whether to create the Key Vault.                                                                                                              | `bool`                                                        | `true`  |    no    |
-| should\_create\_key\_vault\_private\_endpoint | Whether to create a private endpoint for the Key Vault.                                                                                       | `bool`                                                        | `false` |    no    |
-| should\_create\_ml\_workload\_identity        | Whether to create a user-assigned identity for AzureML workloads.                                                                             | `bool`                                                        | `false` |    no    |
-| should\_create\_secret\_sync\_identity        | Whether to create a user-assigned identity for Secret Sync Extension.                                                                         | `bool`                                                        | `true`  |    no    |
-| should\_enable\_diagnostic\_settings          | Whether to enable diagnostic settings for Key Vault                                                                                           | `bool`                                                        | `false` |    no    |
-| should\_enable\_public\_network\_access       | Whether to enable public network access for the Key Vault                                                                                     | `bool`                                                        | `true`  |    no    |
-| should\_enable\_purge\_protection             | Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion                | `bool`                                                        | `false` |    no    |
-| should\_use\_current\_user\_key\_vault\_admin | Whether to give the current user the Key Vault Secrets Officer Role.                                                                          | `bool`                                                        | `true`  |    no    |
+| Name                                               | Description                                                                                                                                   | Type                                                          | Default | Required |
+|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------|---------|:--------:|
+| aio\_resource\_group                               | n/a                                                                                                                                           | ```object({ id = string name = string location = string })``` | n/a     |   yes    |
+| environment                                        | Environment for all resources in this module: dev, test, or prod                                                                              | `string`                                                      | n/a     |   yes    |
+| location                                           | Azure region where all resources will be deployed                                                                                             | `string`                                                      | n/a     |   yes    |
+| resource\_prefix                                   | Prefix for all resources in this module                                                                                                       | `string`                                                      | n/a     |   yes    |
+| instance                                           | Instance identifier for naming resources: 001, 002, etc                                                                                       | `string`                                                      | `"001"` |    no    |
+| key\_vault\_admin\_principal\_id                   | The Principal ID or Object ID for the admin that will have access to update secrets on the Key Vault.                                         | `string`                                                      | `null`  |    no    |
+| key\_vault\_name                                   | The name of the Key Vault to store secrets. If not provided, defaults to 'kv-{resource\_prefix}-{environment}-{instance}'                     | `string`                                                      | `null`  |    no    |
+| key\_vault\_private\_endpoint\_subnet\_id          | The ID of the subnet where the Key Vault private endpoint will be created. Required if should\_create\_key\_vault\_private\_endpoint is true. | `string`                                                      | `null`  |    no    |
+| key\_vault\_virtual\_network\_id                   | The ID of the virtual network to link to the Key Vault private DNS zone. Required if should\_create\_key\_vault\_private\_endpoint is true.   | `string`                                                      | `null`  |    no    |
+| log\_analytics\_workspace\_id                      | The ID of the Log Analytics workspace for diagnostic settings. If null, diagnostics are not enabled                                           | `string`                                                      | `null`  |    no    |
+| network\_security\_perimeter\_id                   | Resource ID of an existing Network Security Perimeter to associate the Key Vault with; null to skip association                               | `string`                                                      | `null`  |    no    |
+| network\_security\_perimeter\_profile\_id          | Resource ID of the Network Security Perimeter profile to associate the Key Vault with                                                         | `string`                                                      | `null`  |    no    |
+| network\_security\_perimeter\_propagation\_delay   | Duration to wait after enforcing Network Security Perimeter associations before allowing Terraform data-plane operations                      | `string`                                                      | `"15m"` |    no    |
+| network\_security\_perimeter\_propagation\_trigger | Value that changes when the Network Security Perimeter access rules change, used to re-trigger the propagation delay                          | `string`                                                      | `null`  |    no    |
+| onboard\_identity\_type                            | Identity type to use for onboarding the cluster to Azure Arc.  Allowed values:  - id - sp - skip                                              | `string`                                                      | `"id"`  |    no    |
+| should\_create\_aio\_identity                      | Whether to create a user-assigned identity for Azure IoT Operations.                                                                          | `bool`                                                        | `true`  |    no    |
+| should\_create\_aks\_identity                      | Whether to create a user-assigned identity for AKS cluster when using custom private DNS zones.                                               | `bool`                                                        | `false` |    no    |
+| should\_create\_identities                         | Whether to create the identities used for Arc Onboarding, Secret Sync, and AIO.                                                               | `bool`                                                        | `true`  |    no    |
+| should\_create\_key\_vault                         | Whether to create the Key Vault.                                                                                                              | `bool`                                                        | `true`  |    no    |
+| should\_create\_key\_vault\_private\_endpoint      | Whether to create a private endpoint for the Key Vault.                                                                                       | `bool`                                                        | `false` |    no    |
+| should\_create\_ml\_workload\_identity             | Whether to create a user-assigned identity for AzureML workloads.                                                                             | `bool`                                                        | `false` |    no    |
+| should\_create\_secret\_sync\_identity             | Whether to create a user-assigned identity for Secret Sync Extension.                                                                         | `bool`                                                        | `true`  |    no    |
+| should\_enable\_diagnostic\_settings               | Whether to enable diagnostic settings for Key Vault                                                                                           | `bool`                                                        | `false` |    no    |
+| should\_enable\_public\_network\_access            | Whether to enable public network access for the Key Vault                                                                                     | `bool`                                                        | `true`  |    no    |
+| should\_enable\_purge\_protection                  | Whether to enable purge protection for the Key Vault. Enable for production to prevent accidental or malicious secret deletion                | `bool`                                                        | `false` |    no    |
+| should\_use\_current\_user\_key\_vault\_admin      | Whether to give the current user the Key Vault Secrets Officer Role.                                                                          | `bool`                                                        | `true`  |    no    |
+| should\_use\_network\_security\_perimeter          | Whether to associate the Key Vault with a Network Security Perimeter                                                                          | `bool`                                                        | `false` |    no    |
 
 ## Outputs
 

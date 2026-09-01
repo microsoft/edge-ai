@@ -139,8 +139,8 @@ jobs:
       #   "src/040-iot-ops": {
       #     "folderName": "src/040-iot-ops"
       #   },
-      #   "blueprints/full-single-cluster": {
-      #     "folderName": "blueprints/full-single-cluster"
+      #   "blueprints/full-multi-node-cluster": {
+      #     "folderName": "blueprints/full-multi-node-cluster"
       #   }
       # ]
       - bash: |
@@ -154,12 +154,12 @@ jobs:
           echo "##vso[task.setvariable variable=folderBasename;isOutput=true]$FOLDER_BASENAME"
 
           # Create path-safe version (replace slashes with underscores)
-          # based on: "folderName": "blueprints/full-single-cluster"
+          # based on: "folderName": "blueprints/full-multi-node-cluster"
           # This will replace slashes with underscores for use in variable names
-          # e.g. "blueprints_full-single-cluster"
+          # e.g. "blueprints_full-multi-node-cluster"
           # This is used for log file names and other references
           # to avoid issues with slashes in variable names
-          # e.g. "blueprints/full-single-cluster" -> "blueprints_full-single-cluster"
+          # e.g. "blueprints/full-multi-node-cluster" -> "blueprints_full-multi-node-cluster"
           FOLDER_PATH_SAFE=$(echo "$FOLDER_PATH" | tr '/' '_')
           echo "Path-safe folder name: $FOLDER_PATH_SAFE"
           echo "##vso[task.setvariable variable=folderPathSafe;isOutput=true]$FOLDER_PATH_SAFE"

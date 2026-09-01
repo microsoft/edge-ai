@@ -38,7 +38,7 @@ camera events (motion detection, tampering), control PTZ (Pan-Tilt-Zoom) operati
 media stream URIs for video analytics workloads.
 
 > **💡 RECOMMENDED APPROACH**: For production deployments, use the Terraform-based configuration in
-> the `full-single-node-cluster` blueprint with the `onvif-connector-assets.tfvars.example` file as a
+> the `full-multi-node-cluster` blueprint with the `onvif-connector-assets.tfvars.example` file as a
 > reference for configuring your ONVIF connector assets.
 
 ## What is ONVIF?
@@ -146,13 +146,13 @@ For Azure IoT Operations deployments, the component uses:
 
 ### Azure IoT Operations Integration (Terraform - Recommended)
 
-- **Blueprint Deployment**: Use `full-single-node-cluster` blueprint with ONVIF connector variables
+- **Blueprint Deployment**: Use `full-multi-node-cluster` blueprint with ONVIF connector variables
 - **Terraform**: Version 1.12.0 or later
 
 ## Getting Started with Local Development
 
 - **Azure Subscription**: Active subscription with appropriate permissions
-- **Example Configuration**: Reference `blueprints/full-single-node-cluster/terraform/onvif-connector-assets.tfvars.example`
+- **Example Configuration**: Reference `blueprints/full-multi-node-cluster/terraform/onvif-connector-assets.tfvars.example`
 
 ## Quick Start
 
@@ -298,7 +298,7 @@ INFO - Statistics: {'events_received': 25, 'events_published': 25, 'ptz_commands
 
 ### Setup Prerequisites
 
-1. Deploy the `full-single-node-cluster` blueprint (or another blueprint with IoT Operations)
+1. Deploy the `full-multi-node-cluster` blueprint (or another blueprint with IoT Operations)
 2. Ensure ONVIF cameras are accessible from the cluster network
 3. Configure camera credentials if authentication is required
 
@@ -307,7 +307,7 @@ INFO - Statistics: {'events_received': 25, 'events_published': 25, 'ptz_commands
 Create or modify `onvif-connector-assets.tfvars` in the blueprint:
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Copy example configuration
 cp onvif-connector-assets.tfvars.example onvif-connector-assets.tfvars
@@ -416,7 +416,7 @@ kubectl exec -it mqtt-client -n azure-iot-operations -- \
          --message '{\"direction\": \"right\", \"speed\": 0.5}'"
 ```text
 
-**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/onvif-connector-assets.tfvars.example`
+**Configuration Reference**: See `blueprints/full-multi-node-cluster/terraform/onvif-connector-assets.tfvars.example`
 for a complete example of all available configuration options.
 
 ## ONVIF vs RTSP vs REST Connectors
@@ -868,7 +868,7 @@ The dashboard subscribes to `{prefix}/events/#` and displays incoming events wit
 
 - [AI Inference Service](../507-ai-inference/README.md) - Production AI inference with MQTT integration
 - [REST HTTP Connector](../505-akri-rest-http-connector/README.md) - REST-based device APIs
-- [Blueprint Documentation](../../../blueprints/full-single-node-cluster/README.md) - Full deployment guide
+- [Blueprint Documentation](../../../blueprints/full-multi-node-cluster/README.md) - Full deployment guide
 
 ## Contributing
 

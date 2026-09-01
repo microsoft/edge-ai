@@ -1,0 +1,17 @@
+---
+apiVersion: v2
+name: chat-with-your-factory
+description: A Helm chart for Chat With Factory voice-enabled AI agent
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://github.com/microsoft/edge-ai
+sources:
+  - https://github.com/microsoft/edge-ai
+maintainers:
+  - name: Edge AI Team
+keywords:
+  - ai
+  - edge
+  - chat
+  - voice-agent
