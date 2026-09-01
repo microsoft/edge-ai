@@ -130,19 +130,17 @@ resource "azurerm_private_dns_zone" "dns_zone" {
 resource "azurerm_private_dns_zone_virtual_network_link" "vnet_link" {
   count = var.should_create_private_endpoint ? 1 : 0
 
-  name                  = "vnet-pzl-kv-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.dns_zone[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-pzl-kv-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.dns_zone[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_a_record" "a_record" {
   count = var.should_create_private_endpoint ? 1 : 0
 
   name                = azurerm_key_vault.new.name
-  zone_name           = azurerm_private_dns_zone.dns_zone[0].name
-  resource_group_name = var.resource_group.name
+  private_dns_zone_id = azurerm_private_dns_zone.dns_zone[0].id
   ttl                 = 300
   records             = [azurerm_private_endpoint.key_vault[0].private_service_connection[0].private_ip_address]
 }

@@ -53,8 +53,7 @@ resource "azurerm_private_dns_zone" "postgres" {
 resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
   count = var.should_create_private_dns_zone ? 1 : 0
 
-  name                  = "pdnsz-link-${var.resource_prefix}-${var.environment}"
-  private_dns_zone_name = azurerm_private_dns_zone.postgres[0].name
-  virtual_network_id    = var.virtual_network.id
-  resource_group_name   = var.resource_group.name
+  name                = "pdnsz-link-${var.resource_prefix}-${var.environment}"
+  private_dns_zone_id = azurerm_private_dns_zone.postgres[0].id
+  virtual_network_id  = var.virtual_network.id
 }

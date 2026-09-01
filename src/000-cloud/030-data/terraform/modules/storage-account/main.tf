@@ -251,39 +251,35 @@ resource "azurerm_private_dns_zone" "dfs_dns_zone" {
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_vnet_link" {
   count = alltrue([var.should_enable_private_endpoint, var.should_create_blob_dns_zone]) ? 1 : 0
 
-  name                  = "vnet-pzl-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.blob_dns_zone[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-pzl-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.blob_dns_zone[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "file_vnet_link" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
-  name                  = "vnet-pzl-file-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.file_dns_zone[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-pzl-file-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.file_dns_zone[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "dfs_vnet_link" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
-  name                  = "vnet-pzl-dfs-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.dfs_dns_zone[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-pzl-dfs-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.dfs_dns_zone[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_a_record" "blob_a_record" {
   count = alltrue([var.should_enable_private_endpoint, var.should_create_blob_dns_zone]) ? 1 : 0
 
   name                = local.storage_account.name
-  zone_name           = try(azurerm_private_dns_zone.blob_dns_zone[0].name, var.blob_dns_zone.name, null)
-  resource_group_name = var.resource_group.name
+  private_dns_zone_id = try(azurerm_private_dns_zone.blob_dns_zone[0].id, var.blob_dns_zone.id, null)
   ttl                 = 300
   records             = [azurerm_private_endpoint.storage_blob_pe[0].private_service_connection[0].private_ip_address]
 }
@@ -292,8 +288,7 @@ resource "azurerm_private_dns_a_record" "file_a_record" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
   name                = local.storage_account.name
-  zone_name           = azurerm_private_dns_zone.file_dns_zone[0].name
-  resource_group_name = var.resource_group.name
+  private_dns_zone_id = azurerm_private_dns_zone.file_dns_zone[0].id
   ttl                 = 300
   records             = [azurerm_private_endpoint.storage_file_pe[0].private_service_connection[0].private_ip_address]
 }
@@ -302,8 +297,7 @@ resource "azurerm_private_dns_a_record" "dfs_a_record" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
   name                = local.storage_account.name
-  zone_name           = azurerm_private_dns_zone.dfs_dns_zone[0].name
-  resource_group_name = var.resource_group.name
+  private_dns_zone_id = azurerm_private_dns_zone.dfs_dns_zone[0].id
   ttl                 = 300
   records             = [azurerm_private_endpoint.storage_dfs_pe[0].private_service_connection[0].private_ip_address]
 }

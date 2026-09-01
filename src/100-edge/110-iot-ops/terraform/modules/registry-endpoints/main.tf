@@ -47,9 +47,9 @@ resource "azapi_resource" "registry_endpoint" {
         { method = each.value.authentication.method },
         each.value.authentication.method == "SystemAssignedManagedIdentity" ? {
           systemAssignedManagedIdentitySettings = each.value.authentication.system_assigned_managed_identity_settings != null ? {
-            audience = coalesce(each.value.authentication.system_assigned_managed_identity_settings.audience, "https://management.azure.com/")
+            audience = coalesce(each.value.authentication.system_assigned_managed_identity_settings.audience, "https://containerregistry.azure.net")
             } : {
-            audience = "https://management.azure.com/"
+            audience = "https://containerregistry.azure.net"
           }
         } : {},
         each.value.authentication.method == "UserAssignedManagedIdentity" ? {
