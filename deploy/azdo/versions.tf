@@ -18,8 +18,8 @@ terraform {
 
 provider "azurerm" {
   resource_provider_registrations = "none"
-  storage_use_azuread = true
-  partner_id          = "acce1e78-0375-4637-a593-86aa36dcfeac"
+  storage_use_azuread             = true
+  partner_id                      = "acce1e78-0375-4637-a593-86aa36dcfeac"
   features {
     enhanced_validation {
       locations          = true
