@@ -22,6 +22,15 @@ Custom agents are advanced AI assistant configurations that enable specialized c
 
 ## Available Custom Agents
 
+### [Camera Onboarding](camera-onboarding.agent.md)
+
+Specialized agent for onboarding cameras from discovery manifests into edge application configurations.
+
+* **Purpose**: Map camera discovery manifest fields to app-specific configs for 500-level applications
+* **Capabilities**: Manifest validation, Terraform device/asset generation, env var generation, credential resolution
+* **Best For**: Onboarding discovered cameras to 508-media-connector, 510-onvif-connector, and Camera Dashboard
+* **Philosophy**: Pluggable output generator pattern — one generator per target app
+
 ### [WASM Operator Builder](wasm-operator-builder.agent.md)
 
 Specialized implementation assistant for Rust-based WebAssembly operators in Azure IoT Operations dataflow graphs.
@@ -35,7 +44,8 @@ Specialized implementation assistant for Rust-based WebAssembly operators in Azu
 
 ### Selecting the Right Agent
 
-1. **WASM Operator Development**: Use WASM Operator Builder for Rust-based operator implementation
+1. **Camera Onboarding**: Use Camera Onboarding to generate app configs from discovery manifests
+2. **WASM Operator Development**: Use WASM Operator Builder for Rust-based operator implementation
 
 > **Note**: Shared agents for ADR creation, task planning, task research, PR review, security planning, workback planning, implementation support, and prompt engineering are available through the [hve-core](https://github.com/microsoft/hve-core) VS Code extension.
 
