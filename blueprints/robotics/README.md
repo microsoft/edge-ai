@@ -21,6 +21,9 @@ estimated_reading_time: 10
 
 Deploys robotics infrastructure with NVIDIA GPU support, KAI Scheduler, and optional Azure Machine Learning integration.
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Overview
 
 The Robotics Blueprint provides a complete infrastructure solution for robotics workloads on Azure, featuring GPU-accelerated compute, intelligent scheduling, and optional integration with Azure Machine Learning. This blueprint leverages the [Robotics Module](../modules/robotics/terraform/) to orchestrate foundational resources optimized for robotics scenarios.

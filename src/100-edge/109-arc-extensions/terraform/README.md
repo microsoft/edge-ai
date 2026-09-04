@@ -9,7 +9,7 @@ cert-manager and Azure Container Storage (ACSA).
 | Name      | Version           |
 |-----------|-------------------|
 | terraform | >= 1.12.0, < 2.0  |
-| azurerm   | >= 4.8.0, < 5.0.0 |
+| azurerm   | >= 5.3.0, < 6.0.0 |
 
 ## Modules
 

@@ -75,7 +75,7 @@ variable "private_endpoint_subnet_id" {
   description = "Subnet ID for the private endpoint"
 }
 
-variable "api_dns_zone_name" {
+variable "api_dns_zone_id" {
   type        = string
-  description = "Name of the privatelink.api.azureml.ms DNS zone (shared with workspace)"
+  description = "ID of the privatelink.api.azureml.ms DNS zone shared with the workspace"
 }
