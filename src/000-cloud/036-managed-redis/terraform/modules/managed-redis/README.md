@@ -6,16 +6,16 @@ All variables are required - defaults are provided at component level only.
 
 ## Requirements
 
-| Name      | Version            |
-|-----------|--------------------|
-| terraform | >= 1.12.0, < 2.0   |
-| azurerm   | >= 4.51.0, < 5.0.0 |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azurerm   | >= 5.3.0, < 6.0.0 |
 
 ## Providers
 
-| Name    | Version            |
-|---------|--------------------|
-| azurerm | >= 4.51.0, < 5.0.0 |
+| Name    | Version           |
+|---------|-------------------|
+| azurerm | >= 5.3.0, < 6.0.0 |
 
 ## Resources
 
@@ -29,21 +29,22 @@ All variables are required - defaults are provided at component level only.
 
 ## Inputs
 
-| Name                                  | Description                                                   | Type                                                                           | Default | Required |
-|---------------------------------------|---------------------------------------------------------------|--------------------------------------------------------------------------------|---------|:--------:|
-| access\_keys\_authentication\_enabled | Whether to enable access key authentication                   | `bool`                                                                         | n/a     |   yes    |
-| clustering\_policy                    | Redis clustering policy                                       | `string`                                                                       | n/a     |   yes    |
-| customer\_managed\_key                | Customer-managed key configuration for encryption at rest     | ```object({ key_vault_key_id = string user_assigned_identity_id = string })``` | n/a     |   yes    |
-| location                              | Azure region for resource deployment                          | `string`                                                                       | n/a     |   yes    |
-| managed\_identity\_id                 | User-assigned managed identity ID for Entra ID authentication | `string`                                                                       | n/a     |   yes    |
-| name                                  | Name of the Azure Managed Redis cache                         | `string`                                                                       | n/a     |   yes    |
-| private\_endpoint\_subnet\_id         | Subnet ID for private endpoint deployment                     | `string`                                                                       | n/a     |   yes    |
-| resource\_group\_name                 | Resource group name                                           | `string`                                                                       | n/a     |   yes    |
-| should\_create\_private\_dns\_zone    | Whether to create a new private DNS zone                      | `bool`                                                                         | n/a     |   yes    |
-| should\_enable\_high\_availability    | Whether to enable high availability mode                      | `bool`                                                                         | n/a     |   yes    |
-| should\_enable\_private\_endpoint     | Whether to create a private endpoint                          | `bool`                                                                         | n/a     |   yes    |
-| sku\_name                             | Azure Managed Redis SKU name                                  | `string`                                                                       | n/a     |   yes    |
-| virtual\_network\_id                  | Virtual network ID for private DNS zone linking               | `string`                                                                       | n/a     |   yes    |
+| Name                                  | Description                                                                        | Type                                                                           | Default | Required |
+|---------------------------------------|------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|---------|:--------:|
+| access\_keys\_authentication\_enabled | Whether to enable access key authentication                                        | `bool`                                                                         | n/a     |   yes    |
+| clustering\_policy                    | Redis clustering policy                                                            | `string`                                                                       | n/a     |   yes    |
+| customer\_managed\_key                | Customer-managed key configuration for encryption at rest                          | ```object({ key_vault_key_id = string user_assigned_identity_id = string })``` | n/a     |   yes    |
+| location                              | Azure region for resource deployment                                               | `string`                                                                       | n/a     |   yes    |
+| managed\_identity\_id                 | User-assigned managed identity ID for Entra ID authentication                      | `string`                                                                       | n/a     |   yes    |
+| name                                  | Name of the Azure Managed Redis cache                                              | `string`                                                                       | n/a     |   yes    |
+| private\_dns\_zone\_id                | Existing private DNS zone ID used when should\_create\_private\_dns\_zone is false | `string`                                                                       | n/a     |   yes    |
+| private\_endpoint\_subnet\_id         | Subnet ID for private endpoint deployment                                          | `string`                                                                       | n/a     |   yes    |
+| resource\_group\_name                 | Resource group name                                                                | `string`                                                                       | n/a     |   yes    |
+| should\_create\_private\_dns\_zone    | Whether to create a new private DNS zone                                           | `bool`                                                                         | n/a     |   yes    |
+| should\_enable\_high\_availability    | Whether to enable high availability mode                                           | `bool`                                                                         | n/a     |   yes    |
+| should\_enable\_private\_endpoint     | Whether to create a private endpoint                                               | `bool`                                                                         | n/a     |   yes    |
+| sku\_name                             | Azure Managed Redis SKU name                                                       | `string`                                                                       | n/a     |   yes    |
+| virtual\_network\_id                  | Virtual network ID for private DNS zone linking                                    | `string`                                                                       | n/a     |   yes    |
 
 ## Outputs
 

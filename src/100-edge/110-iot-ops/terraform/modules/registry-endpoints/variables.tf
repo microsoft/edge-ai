@@ -30,7 +30,7 @@ variable "registry_endpoints" {
     authentication = object({
       method = string
       system_assigned_managed_identity_settings = optional(object({
-        audience = optional(string, "https://management.azure.com/")
+        audience = optional(string, "https://containerregistry.azure.net")
       }))
       user_assigned_managed_identity_settings = optional(object({
         client_id = string

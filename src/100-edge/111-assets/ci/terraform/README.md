@@ -5,19 +5,19 @@ CI configuration for deploying Kubernetes assets.
 
 ## Requirements
 
-| Name      | Version            |
-|-----------|--------------------|
-| terraform | >= 1.12.0, < 2.0   |
-| azapi     | >= 2.3.0           |
-| azurerm   | >= 4.51.0, < 5.0.0 |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azapi     | >= 2.3.0          |
+| azurerm   | >= 5.3.0, < 6.0.0 |
 
 ## Providers
 
-| Name      | Version            |
-|-----------|--------------------|
-| azapi     | >= 2.3.0           |
-| azurerm   | >= 4.51.0, < 5.0.0 |
-| terraform | n/a                |
+| Name      | Version           |
+|-----------|-------------------|
+| azapi     | >= 2.3.0          |
+| azurerm   | >= 5.3.0, < 6.0.0 |
+| terraform | n/a               |
 
 ## Resources
 

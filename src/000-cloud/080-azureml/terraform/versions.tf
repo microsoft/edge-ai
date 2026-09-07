@@ -6,7 +6,7 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.51.0, < 5.0.0"
+      version = ">= 5.3.0, < 6.0.0"
     }
     tls = {
       source  = "hashicorp/tls"

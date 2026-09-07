@@ -5,18 +5,18 @@ Creates an Azure Machine Learning Registry with optional private endpoint suppor
 
 ## Requirements
 
-| Name      | Version            |
-|-----------|--------------------|
-| terraform | >= 1.12.0, < 2.0   |
-| azapi     | >= 1.0.0           |
-| azurerm   | >= 4.51.0, < 5.0.0 |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azapi     | >= 1.0.0          |
+| azurerm   | >= 5.3.0, < 6.0.0 |
 
 ## Providers
 
-| Name    | Version            |
-|---------|--------------------|
-| azapi   | >= 1.0.0           |
-| azurerm | >= 4.51.0, < 5.0.0 |
+| Name    | Version           |
+|---------|-------------------|
+| azapi   | >= 1.0.0          |
+| azurerm | >= 5.3.0, < 6.0.0 |
 
 ## Resources
 
@@ -31,7 +31,7 @@ Creates an Azure Machine Learning Registry with optional private endpoint suppor
 | Name                                    | Description                                                             | Type                                        | Default | Required |
 |-----------------------------------------|-------------------------------------------------------------------------|---------------------------------------------|---------|:--------:|
 | acr                                     | Azure Container Registry from cloud ACR component                       | ```object({ id = string name = string })``` | n/a     |   yes    |
-| api\_dns\_zone\_name                    | Name of the privatelink.api.azureml.ms DNS zone (shared with workspace) | `string`                                    | n/a     |   yes    |
+| api\_dns\_zone\_id                      | ID of the privatelink.api.azureml.ms DNS zone shared with the workspace | `string`                                    | n/a     |   yes    |
 | description                             | Description for the AzureML Registry                                    | `string`                                    | n/a     |   yes    |
 | environment                             | Environment for all resources in this module: dev, test, or prod        | `string`                                    | n/a     |   yes    |
 | instance                                | Instance identifier for naming resources: 001, 002, etc                 | `string`                                    | n/a     |   yes    |

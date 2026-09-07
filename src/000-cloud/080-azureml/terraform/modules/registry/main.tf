@@ -79,8 +79,7 @@ resource "azurerm_private_dns_a_record" "registry_endpoint" {
   count = var.should_enable_private_endpoint ? 1 : 0
 
   name                = local.registry_name
-  zone_name           = var.api_dns_zone_name
-  resource_group_name = var.resource_group_name
+  private_dns_zone_id = var.api_dns_zone_id
   ttl                 = 300
   records             = [azurerm_private_endpoint.registry_pe[0].private_service_connection[0].private_ip_address]
 }

@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.8.0, < 5.0.0"
+      version = ">= 5.3.0, < 6.0.0"
     }
     azapi = {
       source  = "Azure/azapi"
@@ -13,6 +13,12 @@ terraform {
 }
 
 provider "azurerm" {
-  storage_use_azuread = true
-  features {}
+  resource_provider_registrations = "none"
+  storage_use_azuread             = true
+  features {
+    enhanced_validation {
+      locations          = true
+      resource_providers = true
+    }
+  }
 }

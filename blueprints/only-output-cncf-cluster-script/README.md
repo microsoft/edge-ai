@@ -21,6 +21,9 @@ estimated_reading_time: 2
 
 This blueprint provides Infrastructure as Code (IaC) configurations for generating installation scripts that set up and configure K3s Kubernetes clusters with Azure Arc connectivity. Unlike the full deployment blueprints, this option focuses on script generation without actually deploying the cluster resources. The generated scripts can then be manually executed in your target environment.
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 There are two implementation options:
 
 - **Terraform**: Generates scripts that can be output to a local directory

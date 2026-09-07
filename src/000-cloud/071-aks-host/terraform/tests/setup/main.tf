@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.0"
+      version = ">= 5.3.0, < 6.0.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -13,7 +13,13 @@ terraform {
 }
 
 provider "azurerm" {
-  features {}
+  resource_provider_registrations = "none"
+  features {
+    enhanced_validation {
+      locations          = true
+      resource_providers = true
+    }
+  }
 }
 
 locals {

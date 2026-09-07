@@ -48,6 +48,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
     }
   }
 
+  node_provisioning_profile {
+    mode = "Manual"
+  }
+
   network_profile {
     // due to the dependency between network_plugin and network_policy, we need to set both
     // to the same value "azure" https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/kubernetes_cluster#network_policy-1
@@ -188,19 +192,17 @@ resource "azurerm_private_dns_zone" "aks_private_dns_zone" {
 resource "azurerm_private_dns_zone_virtual_network_link" "aks_vnet_link" {
   count = var.should_enable_private_endpoint && var.private_dns_zone_id == null ? 1 : 0
 
-  name                  = "vnet-pzl-aks-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.aks_private_dns_zone[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-pzl-aks-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.aks_private_dns_zone[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_a_record" "aks_a_record" {
   count = var.should_enable_private_endpoint && var.private_dns_zone_id == null ? 1 : 0
 
   name                = azurerm_kubernetes_cluster.aks.name
-  zone_name           = azurerm_private_dns_zone.aks_private_dns_zone[0].name
-  resource_group_name = var.resource_group.name
+  private_dns_zone_id = azurerm_private_dns_zone.aks_private_dns_zone[0].id
   ttl                 = 300
   records             = [azurerm_private_endpoint.aks_pe[0].private_service_connection[0].private_ip_address]
 }

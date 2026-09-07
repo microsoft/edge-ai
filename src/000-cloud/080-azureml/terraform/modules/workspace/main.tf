@@ -193,9 +193,8 @@ resource "azurerm_private_dns_zone" "azureml_zones" {
 resource "azurerm_private_dns_zone_virtual_network_link" "azureml_vnet_links" {
   for_each = toset(local.azureml_dns_zones)
 
-  name                  = "vnet-link-${replace(each.key, ".", "-")}-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.azureml_zones[each.key].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-link-${replace(each.key, ".", "-")}-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.azureml_zones[each.key].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
