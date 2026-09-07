@@ -81,9 +81,7 @@ var opcUaTemplateNamePrefix = 'azureiotoperationsconnectorforopcua-'
 
 var processedConnectors = [
   for conn in connectorTemplates: {
-    name: conn.type == 'opcua'
-      ? '${opcUaTemplateNamePrefix}${take(uniqueString(aioInstanceId), 4)}'
-      : conn.name
+    name: conn.type == 'opcua' ? '${opcUaTemplateNamePrefix}${take(uniqueString(aioInstanceId), 4)}' : conn.name
     type: conn.type
     isCustom: conn.type == 'custom'
 
