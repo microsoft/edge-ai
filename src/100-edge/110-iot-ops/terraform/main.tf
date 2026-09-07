@@ -171,6 +171,7 @@ module "akri_connectors" {
     var.should_enable_akri_media_connector,
     var.should_enable_akri_onvif_connector,
     var.should_enable_akri_sse_connector,
+    var.should_enable_akri_opcua_connector,
     length(var.custom_akri_connectors) > 0
   ]) ? 1 : 0
 
@@ -181,6 +182,7 @@ module "akri_connectors" {
   # Required inputs
   aio_instance_id    = module.iot_ops_instance.aio_instance.id
   custom_location_id = module.iot_ops_instance.custom_locations.id
+  connectors_version = var.connectors_config.version
 
   # Build connector templates list from enabled types
   connector_templates = concat(
@@ -199,6 +201,11 @@ module "akri_connectors" {
     var.should_enable_akri_sse_connector ? [{
       name = "sse-connector"
       type = "sse"
+    }] : [],
+    // The module generates the supervisor-adoptable name for OPC UA templates.
+    var.should_enable_akri_opcua_connector ? [{
+      name = "opcua-connector"
+      type = "opcua"
     }] : [],
     var.custom_akri_connectors
   )
