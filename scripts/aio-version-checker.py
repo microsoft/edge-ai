@@ -113,6 +113,7 @@ TERRAFORM_COMPONENTS = [
     "cert_manager:certManager",
     "secret_sync_controller:secretStore",
     "azure-iot-operations:iotOperations",  # Maps to iotOperations in manifest
+    "connectors:connectors",
 ]
 
 # Component mappings for Bicep (bicep_name:remote_name)
@@ -120,7 +121,11 @@ BICEP_COMPONENTS = [
     "certManagerExtensionDefaults:certManager",
     "secretStoreExtensionDefaults:secretStore",
     "aioExtensionDefaults:iotOperations",  # Maps to iotOperations in manifest
+    "connectorsDefaults:connectors",
 ]
+
+# Manifest keys published by the instance manifest rather than the enablement manifest.
+INSTANCE_MANIFEST_KEYS = {"iotOperations", "connectors"}
 
 # Bicep variables whose declaration lives outside BICEP_VARS_FILE (110-iot-ops).
 # Maps the bicep variable name to the file that declares it.
@@ -561,6 +566,29 @@ def extract_tf_instance_variables(tf_instance_file: str) -> list[dict[str, str]]
                             )
                             break
 
+        # Look for connectors_config, which pins the bundled connectors version.
+        # The manifest publishes no TRAINS entry for connectors, so train stays empty.
+        for var_item in variables:
+            if isinstance(var_item, dict) and "connectors_config" in var_item:
+                connectors_config = var_item["connectors_config"]
+
+                if isinstance(connectors_config, dict) and "default" in connectors_config:
+                    defaults = _unwrap_hcl(connectors_config["default"])
+
+                    if isinstance(defaults, dict):
+                        version = defaults.get("version", "")
+
+                        if version:
+                            variable_blocks.append(
+                                {
+                                    "name": "connectors",
+                                    "version": version,
+                                    "train": "",
+                                    "local_file": tf_instance_file,
+                                }
+                            )
+                            break
+
     return variable_blocks
 
 
@@ -821,9 +849,9 @@ def extract_remote_versions(
     for component in TERRAFORM_COMPONENTS:
         local_name, remote_name = component.split(":")
 
-        # Check if this is the IoT Operations component
-        if remote_name == "iotOperations":
-            # Get IoT Operations version from instance manifest
+        # Check if this component is published by the instance manifest
+        if remote_name in INSTANCE_MANIFEST_KEYS:
+            # Get the version from the instance manifest
             version = (
                 instance.get("variables", {}).get(
                     "VERSIONS", {}).get(remote_name, "")
@@ -831,7 +859,7 @@ def extract_remote_versions(
             train = instance.get("variables", {}).get(
                 "TRAINS", {}).get(remote_name, "")
             logger.debug(
-                f"Found IoT Operations in instance manifest: version={version}, train={train}"
+                f"Found {remote_name} in instance manifest: version={version}, train={train}"
             )
         else:
             # Get other components from enablement manifest
@@ -988,8 +1016,9 @@ def main() -> int:
     # Create a dictionary to track which component comes from which URL
     # Attribute mismatches to the actual source URLs used
     manifest_urls = {"default": enablement_url}
-    # IoT Operations comes from the instance manifest
+    # IoT Operations and the bundled connectors come from the instance manifest
     manifest_urls["azure-iot-operations"] = instance_url
+    manifest_urls["connectors"] = instance_url
 
     # Step 2: Extract variables based on IaC type
     all_mismatches = []

@@ -26,10 +26,16 @@ variable "should_enable_akri_sse_connector" {
   description = "Deploy Akri SSE Connector template to the IoT Operations instance."
 }
 
+variable "should_enable_akri_opcua_connector" {
+  type        = bool
+  default     = false
+  description = "Deploy the OPC UA Connector template to the IoT Operations instance. (Required to configure OPC UA assets)"
+}
+
 variable "custom_akri_connectors" {
   type = list(object({
     name = string
-    type = string // "rest", "media", "onvif", "sse", "custom"
+    type = string // "rest", "media", "onvif", "sse", "opcua", "custom"
 
     // Custom Connector Fields (required when type = "custom")
     custom_endpoint_type          = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
@@ -157,9 +163,9 @@ variable "custom_akri_connectors" {
   validation {
     condition = alltrue([
       for conn in var.custom_akri_connectors :
-      contains(["rest", "media", "onvif", "sse", "custom"], conn.type)
+      contains(["rest", "media", "onvif", "sse", "opcua", "custom"], conn.type)
     ])
-    error_message = "Connector type must be one of: rest, media, onvif, sse, custom."
+    error_message = "Connector type must be one of: rest, media, onvif, sse, opcua, custom."
   }
 
   validation {
