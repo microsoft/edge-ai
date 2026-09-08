@@ -28,9 +28,9 @@ resource "azurerm_log_analytics_workspace" "monitor" {
   daily_quota_gb    = var.daily_quota_in_gb
 
   // Keep ingestion public to avoid Application Insights billing feature lookup issues when enabling private endpoints
-  internet_ingestion_enabled = true
+  internet_ingestion_access_type = "Enabled"
   // Keep query private whenever the deployment is broadly private, even if the monitor private endpoints are disabled independently
-  internet_query_enabled = !(var.should_enable_private_endpoints || var.should_create_blob_dns_zone)
+  internet_query_access_type = (var.should_enable_private_endpoints || var.should_create_blob_dns_zone) ? "Disabled" : "Enabled"
 
   identity {
     type = "SystemAssigned"
@@ -338,50 +338,45 @@ resource "azurerm_private_dns_zone" "blob_core_windows_net" {
 resource "azurerm_private_dns_zone_virtual_network_link" "monitor_azure_com" {
   count = var.should_enable_private_endpoints ? 1 : 0
 
-  name                  = "vnet-link-monitor-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.azmon_resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.monitor_azure_com[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-link-monitor-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.monitor_azure_com[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "oms_opinsights_azure_com" {
   count = var.should_enable_private_endpoints ? 1 : 0
 
-  name                  = "vnet-link-oms-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.azmon_resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.oms_opinsights_azure_com[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-link-oms-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.oms_opinsights_azure_com[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "ods_opinsights_azure_com" {
   count = var.should_enable_private_endpoints ? 1 : 0
 
-  name                  = "vnet-link-ods-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.azmon_resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.ods_opinsights_azure_com[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-link-ods-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.ods_opinsights_azure_com[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "agentsvc_azure_automation_net" {
   count = var.should_enable_private_endpoints ? 1 : 0
 
-  name                  = "vnet-link-agentsvc-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.azmon_resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.agentsvc_azure_automation_net[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-link-agentsvc-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.agentsvc_azure_automation_net[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "blob_core_windows_net" {
   count = var.should_enable_private_endpoints || var.should_create_blob_dns_zone ? 1 : 0
 
-  name                  = "vnet-link-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
-  resource_group_name   = var.azmon_resource_group.name
-  private_dns_zone_name = azurerm_private_dns_zone.blob_core_windows_net[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  name                 = "vnet-link-blob-${var.resource_prefix}-${var.environment}-${var.instance}"
+  private_dns_zone_id  = azurerm_private_dns_zone.blob_core_windows_net[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 

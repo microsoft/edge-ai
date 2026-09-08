@@ -5,21 +5,21 @@ Adds Azure Machine Learning capabilities with optional foundational resource cre
 
 ## Requirements
 
-| Name      | Version            |
-|-----------|--------------------|
-| terraform | >= 1.12.0, < 2.0   |
-| azapi     | >= 2.3.0           |
-| azuread   | >= 3.0.2           |
-| azurerm   | >= 4.51.0, < 5.0.0 |
-| tls       | >= 4.0.6           |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azapi     | >= 2.3.0          |
+| azuread   | >= 3.0.2          |
+| azurerm   | >= 5.3.0, < 6.0.0 |
+| tls       | >= 4.0.6          |
 
 ## Providers
 
-| Name      | Version            |
-|-----------|--------------------|
-| azapi     | >= 2.3.0           |
-| azurerm   | >= 4.51.0, < 5.0.0 |
-| terraform | n/a                |
+| Name      | Version           |
+|-----------|-------------------|
+| azapi     | >= 2.3.0          |
+| azurerm   | >= 5.3.0, < 6.0.0 |
+| terraform | n/a               |
 
 ## Resources
 

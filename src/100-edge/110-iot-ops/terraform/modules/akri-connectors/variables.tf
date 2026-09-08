@@ -12,6 +12,11 @@ variable "custom_location_id" {
   description = "Custom location ID for the Azure IoT Operations deployment."
 }
 
+variable "connectors_version" {
+  type        = string
+  description = "Version of the connectors bundle shipped with the Azure IoT Operations release, used as the image and metadata tag for supervisor-managed connectors"
+}
+
 /*
  * Connector Configuration
  */
@@ -19,7 +24,7 @@ variable "custom_location_id" {
 variable "connector_templates" {
   type = list(object({
     name = string
-    type = string // "rest", "media", "onvif", "sse", "custom"
+    type = string // "rest", "media", "onvif", "sse", "opcua", "custom"
 
     // Custom Connector Fields (required when type = "custom")
     custom_endpoint_type          = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
@@ -28,10 +33,12 @@ variable "connector_templates" {
     custom_connector_metadata_ref = optional(string) // e.g., "my_acr.azurecr.io/custom-connector-metadata:1.0.0"
 
     // Runtime Configuration
-    registry          = optional(string) // Container registry for pulling connector images
-    image_tag         = optional(string)
-    replicas          = optional(number)
-    image_pull_policy = optional(string)
+    registry              = optional(string)       // Container registry hostname for pulling connector images (anonymous/public pulls)
+    registry_endpoint_ref = optional(string)       // Name of a Microsoft.IoTOperations registryEndpoints resource; AIO known issues 7710/4570 mean Akri connectors don't reliably honor this, prefer image_pull_secrets
+    image_pull_secrets    = optional(list(string)) // Names of existing Kubernetes docker-registry Secrets for authenticated pulls; mutually exclusive with registry_endpoint_ref
+    image_tag             = optional(string)
+    replicas              = optional(number)
+    image_pull_policy     = optional(string)
 
     // Diagnostics
     log_level = optional(string)
@@ -69,9 +76,9 @@ variable "connector_templates" {
   validation {
     condition = alltrue([
       for conn in var.connector_templates :
-      contains(["rest", "media", "onvif", "sse", "custom"], conn.type)
+      contains(["rest", "media", "onvif", "sse", "opcua", "custom"], conn.type)
     ])
-    error_message = "Connector type must be one of: rest, media, onvif, sse, custom."
+    error_message = "Connector type must be one of: rest, media, onvif, sse, opcua, custom."
   }
 
   validation {
@@ -104,6 +111,22 @@ variable "connector_templates" {
       coalesce(conn.replicas, 1) >= 1 && coalesce(conn.replicas, 1) <= 10
     ])
     error_message = "Connector replicas must be between 1 and 10."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.connector_templates :
+      conn.registry == null || conn.registry_endpoint_ref == null
+    ])
+    error_message = "Set only one of registry or registry_endpoint_ref per connector template."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.connector_templates :
+      conn.image_pull_secrets == null || conn.registry_endpoint_ref == null
+    ])
+    error_message = "image_pull_secrets only applies to the ContainerRegistry variant; set registry_endpoint_ref to null when using image_pull_secrets."
   }
 }
 

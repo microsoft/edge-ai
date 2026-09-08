@@ -352,6 +352,7 @@ module "cloud_vm_host" {
   instance        = var.instance
 
   host_machine_count = var.host_machine_count
+  vm_sku_size        = var.vm_sku_size
 
   resource_group          = module.cloud_resource_group.resource_group
   subnet_id               = module.cloud_networking.subnet_id

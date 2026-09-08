@@ -6,19 +6,19 @@ This component provides the foundational networking infrastructure for cloud res
 
 ## Requirements
 
-| Name      | Version            |
-|-----------|--------------------|
-| terraform | >= 1.12.0, < 2.0   |
-| azapi     | >= 2.3.0           |
-| azurerm   | >= 4.51.0, < 5.0.0 |
-| external  | >= 2.3.5           |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azapi     | >= 2.3.0          |
+| azurerm   | >= 5.3.0, < 6.0.0 |
+| external  | >= 2.3.5          |
 
 ## Providers
 
-| Name     | Version            |
-|----------|--------------------|
-| azurerm  | >= 4.51.0, < 5.0.0 |
-| external | >= 2.3.5           |
+| Name     | Version           |
+|----------|-------------------|
+| azurerm  | >= 5.3.0, < 6.0.0 |
+| external | >= 2.3.5          |
 
 ## Resources
 

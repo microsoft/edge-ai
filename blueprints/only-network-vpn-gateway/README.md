@@ -19,6 +19,9 @@ estimated_reading_time: 6
 
 This blueprint deploys a standalone resource group, virtual network, and Point-to-Site VPN Gateway. It creates no Key Vault, Storage Account, or Azure IoT Operations resources by itself (a Key Vault is created only when certificate-based VPN authentication is selected, solely to store the generated CA/client certificates).
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 It exists to support a two-step deployment pattern for environments where subscription policy blocks public network access on Key Vault or Storage:
 
 1. **Step 1 (this blueprint)**: Deploy the virtual network and VPN Gateway first, while public network access still defaults to enabled on any resources this blueprint creates.
@@ -32,7 +35,7 @@ It exists to support a two-step deployment pattern for environments where subscr
 > **Not to be confused with Azure Arc Gateway**: This blueprint's VPN Gateway provides *deployer* private
 > connectivity — a path for the person or pipeline running `terraform apply`/`az deployment` to reach
 > private-endpoint-protected resources (Key Vault, Storage, ACR) during deployment and ongoing management. It is
-> unrelated to [Azure Arc Gateway](https://learn.microsoft.com/azure/azure-arc/servers/arc-gateway-overview),
+> unrelated to [Azure Arc Gateway](https://learn.microsoft.com/azure/azure-arc/servers/arc-gateway),
 > which consolidates the *Arc-enabled cluster's own* outbound agent traffic into a small set of endpoints. This
 > repository does not deploy or configure Azure Arc Gateway; do not conflate the two when reading Azure IoT
 > Operations private connectivity documentation.
