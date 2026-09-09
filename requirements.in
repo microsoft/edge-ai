@@ -2,7 +2,7 @@
 # NOTE: Documentation site uses Docusaurus (see docs/docusaurus/)
 
 # Infrastructure as Code Processing
-python-hcl2~=8.1.2               # HCL2 (Terraform) configuration parser
+python-hcl2~=8.1.3               # HCL2 (Terraform) configuration parser
 jinja2~=3.1.6                    # Template engine for configuration generation
 
 # Security and Compliance Scanning
@@ -16,5 +16,5 @@ urllib3>=2.7.0                   # HTTP client library
                                  # Pinned >=2.5.0 to resolve CVE-2024-37891 (SSRF vulnerability)
 requests>=2.34.2                 # HTTP client library
                                  # Pinned >=2.33.0 to resolve CVE-2025-47083 (content-type header injection)
-gitpython>=3.1.58                # Git repository interaction (transitive via checkov)
+gitpython>=3.1.61                # Git repository interaction (transitive via checkov)
                                  # Pinned >=3.1.58 to resolve GitPython path traversal advisories
