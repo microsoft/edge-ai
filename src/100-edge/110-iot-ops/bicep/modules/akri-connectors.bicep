@@ -27,6 +27,7 @@ var connectorTypeMetadata = {
   rest: {
     endpointType: 'Microsoft.Http'
     imageName: 'azureiotoperations/akri-connectors/rest'
+    metadataImageName: 'azureiotoperations/akri-connectors/rest-metadata'
     version: '1.0'
     defaultTag: '1.0.6'
     defaultRegistry: 'mcr.microsoft.com'
@@ -35,6 +36,7 @@ var connectorTypeMetadata = {
   media: {
     endpointType: 'Microsoft.Media'
     imageName: 'azureiotoperations/akri-connectors/media'
+    metadataImageName: 'azureiotoperations/akri-connectors/media-metadata'
     version: '1.0'
     defaultTag: '1.2.39'
     defaultRegistry: 'mcr.microsoft.com'
@@ -43,6 +45,7 @@ var connectorTypeMetadata = {
   onvif: {
     endpointType: 'Microsoft.Onvif'
     imageName: 'azureiotoperations/akri-connectors/onvif'
+    metadataImageName: 'azureiotoperations/akri-connectors/onvif-metadata'
     version: '1.0'
     defaultTag: '1.2.39'
     defaultRegistry: 'mcr.microsoft.com'
@@ -51,16 +54,34 @@ var connectorTypeMetadata = {
   sse: {
     endpointType: 'Microsoft.Sse'
     imageName: 'azureiotoperations/akri-connectors/sse'
+    metadataImageName: 'azureiotoperations/akri-connectors/sse-metadata'
     version: '1.0'
     defaultTag: '1.0.5'
     defaultRegistry: 'mcr.microsoft.com'
     defaultMinVersion: '1.2.37'
   }
+  // OPC UA is supervisor-managed: the deployed image is the connectors supervisor, which creates
+  // the actual connector pods on demand. Its metadata image therefore does not follow the
+  // '<imageName>-metadata' convention used by the other connectors.
+  opcua: {
+    endpointType: 'Microsoft.OpcUa'
+    imageName: 'azureiotoperations/aio-connectors/supervisor'
+    metadataImageName: 'azureiotoperations/aio-connectors/opcua-metadata'
+    version: null
+    defaultTag: types.connectorsDefaults.version
+    defaultRegistry: 'mcr.microsoft.com'
+    defaultMinVersion: '1.2.100'
+  }
 }
+
+// The OPC UA supervisor only reconciles ConnectorTemplate CRs whose name carries this prefix.
+// Without it the template never reaches provisioningState 'Succeeded' and the ARM operation
+// hangs until the deployment times out.
+var opcUaTemplateNamePrefix = 'azureiotoperationsconnectorforopcua-'
 
 var processedConnectors = [
   for conn in connectorTemplates: {
-    name: conn.name
+    name: conn.type == 'opcua' ? '${opcUaTemplateNamePrefix}${take(uniqueString(aioInstanceId), 4)}' : conn.name
     type: conn.type
     isCustom: conn.type == 'custom'
 
@@ -88,7 +109,7 @@ var processedConnectors = [
 
     connectorMetadataRef: conn.type == 'custom' && conn.?customConnectorMetadataRef != null
       ? conn.customConnectorMetadataRef!
-      : '${conn.?registry ?? (conn.type != 'custom' ? connectorTypeMetadata[conn.type].defaultRegistry : 'mcr.microsoft.com')}/${conn.type == 'custom' ? conn.customImageName! : connectorTypeMetadata[conn.type].imageName}-metadata:${conn.?imageTag ?? (conn.type != 'custom' ? connectorTypeMetadata[conn.type].defaultTag : 'latest')}'
+      : '${conn.?registry ?? (conn.type != 'custom' ? connectorTypeMetadata[conn.type].defaultRegistry : 'mcr.microsoft.com')}/${conn.type == 'custom' ? '${conn.customImageName!}-metadata' : connectorTypeMetadata[conn.type].metadataImageName}:${conn.?imageTag ?? (conn.type != 'custom' ? connectorTypeMetadata[conn.type].defaultTag : 'latest')}'
 
     mqttConfig: conn.?mqttConfig ?? mqttSharedConfig
   }
@@ -110,10 +131,12 @@ resource connectorTemplate 'Microsoft.IoTOperations/instances/akriConnectorTempl
       {
         connectorMetadataRef: conn.connectorMetadataRef
         deviceInboundEndpointTypes: [
-          {
-            endpointType: conn.endpointType
-            version: conn.endpointVersion
-          }
+          union(
+            {
+              endpointType: conn.endpointType
+            },
+            conn.endpointVersion != null ? { version: conn.endpointVersion } : {}
+          )
         ]
         runtimeConfiguration: {
           runtimeConfigurationType: 'ManagedConfiguration'

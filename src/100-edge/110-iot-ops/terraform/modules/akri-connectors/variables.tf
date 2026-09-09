@@ -12,6 +12,11 @@ variable "custom_location_id" {
   description = "Custom location ID for the Azure IoT Operations deployment."
 }
 
+variable "connectors_version" {
+  type        = string
+  description = "Version of the connectors bundle shipped with the Azure IoT Operations release, used as the image and metadata tag for supervisor-managed connectors"
+}
+
 /*
  * Connector Configuration
  */
@@ -19,7 +24,7 @@ variable "custom_location_id" {
 variable "connector_templates" {
   type = list(object({
     name = string
-    type = string // "rest", "media", "onvif", "sse", "custom"
+    type = string // "rest", "media", "onvif", "sse", "opcua", "custom"
 
     // Custom Connector Fields (required when type = "custom")
     custom_endpoint_type          = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
@@ -71,9 +76,9 @@ variable "connector_templates" {
   validation {
     condition = alltrue([
       for conn in var.connector_templates :
-      contains(["rest", "media", "onvif", "sse", "custom"], conn.type)
+      contains(["rest", "media", "onvif", "sse", "opcua", "custom"], conn.type)
     ])
-    error_message = "Connector type must be one of: rest, media, onvif, sse, custom."
+    error_message = "Connector type must be one of: rest, media, onvif, sse, opcua, custom."
   }
 
   validation {
