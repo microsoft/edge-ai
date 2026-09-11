@@ -1,0 +1,151 @@
+# Example camera discovery manifest
+# Produced by the camera-discovery skill (hve-core)
+# Used as input to the camera-onboarding agent
+
+site:
+  name: "Factory Floor A"
+  location: "Building 3, Level 2"
+  discovered_at: "2026-05-18T20:33:55Z"
+  camera_count: 3
+
+cameras:
+  - label: "Loading Dock East"
+    ip_address: 192.168.1.221
+    manufacturer: Reolink
+    model: RLC-520A
+    serial_number: "00000000524288"
+    mac_address: "ec:71:db:23:21:91"
+    firmware_version: v3.0.0.2417_23070501
+    discovered_at: "2026-05-18T20:33:55Z"
+
+    streams:
+      main:
+        url: "rtsp://admin:****@192.168.1.221:554/h264Preview_01_main"
+        codec: h264
+        resolution: "2560x1920"
+        frame_rate: 30
+        bitrate_kbps: 6144
+        profile: High
+      sub:
+        url: "rtsp://admin:****@192.168.1.221:554/h264Preview_01_sub"
+        codec: h264
+        resolution: "640x480"
+        frame_rate: 10
+        bitrate_kbps: 256
+        profile: High
+
+    security:
+      https_enabled: true
+      onvif_enabled: true
+      onvif_port: 8000
+      auth_method: token
+
+    control:
+      ptz_type: fixed
+      pan_range: null
+      tilt_range: null
+      zoom_type: null
+      zoom_ratio: null
+      presets_available: null
+      ir_mode: Auto
+      focus_mode: null
+
+    ai_detection:
+      person: true
+      vehicle: true
+      pet: true
+      face: false
+
+  - label: "Assembly Line 1"
+    ip_address: 192.168.1.64
+    manufacturer: Hikvision
+    model: DS-2DE4A425IWG-E
+    serial_number: "DS-2DE4A425IWG-E20210312AACH842345678"
+    mac_address: "44:19:b6:a2:ff:10"
+    firmware_version: V5.7.14_230420
+    discovered_at: "2026-05-18T20:34:02Z"
+
+    streams:
+      main:
+        url: "rtsp://admin:****@192.168.1.64:554/Streaming/Channels/101"
+        codec: h265
+        resolution: "2560x1440"
+        frame_rate: 25
+        bitrate_kbps: 8192
+        profile: Main
+      sub:
+        url: "rtsp://admin:****@192.168.1.64:554/Streaming/Channels/102"
+        codec: h264
+        resolution: "704x576"
+        frame_rate: 15
+        bitrate_kbps: 512
+        profile: Main
+
+    security:
+      https_enabled: true
+      onvif_enabled: true
+      onvif_port: 80
+      auth_method: digest
+
+    control:
+      ptz_type: mechanical
+      pan_range: [0, 360]
+      tilt_range: [-15, 90]
+      zoom_type: optical
+      zoom_ratio: 25
+      presets_available: 256
+      ir_mode: Auto
+      focus_mode: auto
+
+    ai_detection:
+      person: true
+      vehicle: true
+      pet: false
+      face: true
+
+  - label: "Parking Lot North"
+    ip_address: 192.168.1.88
+    manufacturer: Dahua
+    model: IPC-HFW2831T-ZAS-S2
+    serial_number: "6L08B9DPAZ00042"
+    mac_address: "3c:ef:8c:1a:44:d0"
+    firmware_version: V2.820.0000000.48.R
+    discovered_at: "2026-05-18T20:34:15Z"
+
+    streams:
+      main:
+        url: "rtsp://admin:****@192.168.1.88:554/cam/realmonitor?channel=1&subtype=0"
+        codec: h265
+        resolution: "3840x2160"
+        frame_rate: 20
+        bitrate_kbps: 10240
+        profile: Main
+      sub:
+        url: "rtsp://admin:****@192.168.1.88:554/cam/realmonitor?channel=1&subtype=1"
+        codec: h264
+        resolution: "704x576"
+        frame_rate: 15
+        bitrate_kbps: 384
+        profile: Main
+
+    security:
+      https_enabled: false
+      onvif_enabled: true
+      onvif_port: 80
+      auth_method: digest
+
+    control:
+      ptz_type: motorized_varifocal
+      pan_range: null
+      tilt_range: null
+      zoom_type: optical
+      zoom_ratio: 5
+      presets_available: null
+      ir_mode: Auto
+      focus_mode: auto
+
+    ai_detection:
+      person: true
+      vehicle: true
+      pet: false
+      face: false
