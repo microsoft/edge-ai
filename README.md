@@ -196,6 +196,10 @@ git clone https://github.com/<your-organization>/<your-project>.git  # Replace w
 
 *💡 Perfect for teams wanting to adopt AI-assisted development patterns without duplicating files across repositories.*
 
+## 📋 Changelog
+
+Release history: [CHANGELOG.md](CHANGELOG.md) (Keep a Changelog). Auto-generated notes also ship with [GitHub Releases](https://github.com/microsoft/edge-ai/releases).
+
 ## 🤝 Contributing
 
 We ❤️ contributions! Whether you're fixing typos or adding new components:
