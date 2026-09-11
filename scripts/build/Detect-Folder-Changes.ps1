@@ -326,6 +326,7 @@ $fuzzPythonFolders = [PSCustomObject]@{ folderName = @() }
 $fuzzJsHasChanges = $false
 $fuzzJsFolders = [PSCustomObject]@{ folderName = @() }
 $rustHasChanges = $false
+$goContractTestsHasChanges = $false
 
 # Use native PowerShell commands where possible and minimize redundant operations
 
@@ -349,6 +350,38 @@ function Test-IsRustChangeFile {
     return $Path -match '(\.rs$|(^|/)Cargo\.(toml|lock)$|^\.github/workflows/(rust-tests|pr-validation)\.yml$|^codecov\.yml$)'
 }
 
+function Test-IsGoContractTestChangeFile {
+    <#
+    .SYNOPSIS
+        Returns $true when a repo-relative path should trigger the go-tests workflow.
+    .DESCRIPTION
+        Matches the full-single-node-cluster Terraform, Bicep, and Go contract test
+        inputs plus workflow and detector files that influence the static Go contract
+        test pipeline.
+    #>
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Path
+    )
+
+    return $Path -match '(^blueprints/full-single-node-cluster/(terraform|bicep)/|^blueprints/full-single-node-cluster/tests/([^/]+\.go|go\.(mod|sum))$|^src/900-tools-utilities/904-test-utilities/|^scripts/install-terraform-docs\.sh$|^scripts/linting/Invoke-GoTest\.ps1$|^scripts/tests/linting/Invoke-GoTest\.Tests\.ps1$|^\.github/workflows/(go-tests|matrix-folder-check|pr-validation)\.yml$|^scripts/build/Detect-Folder-Changes\.ps1$|^package(-lock)?\.json$)'
+}
+
+function Test-IsTerraformInstallChangeFile {
+    <#
+    .SYNOPSIS
+        Returns $true when a repo-relative path should trigger Terraform module tests.
+    #>
+    param (
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Path
+    )
+
+    return $Path -match '\.(tf|tfvars|tfstate|hcl)$'
+}
+
 function Test-RustHasChange {
     <#
     .SYNOPSIS
@@ -366,6 +399,30 @@ function Test-RustHasChange {
 
     foreach ($file in $ChangedFiles) {
         if (Test-IsRustChangeFile -Path $file) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-GoContractTestHasChange {
+    <#
+    .SYNOPSIS
+        Returns $true when any path in $ChangedFiles matches the Go contract-test gating ruleset.
+    #>
+    param (
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string[]]$ChangedFiles
+    )
+
+    if ($null -eq $ChangedFiles -or $ChangedFiles.Count -eq 0) {
+        return $false
+    }
+
+    foreach ($file in $ChangedFiles) {
+        if (Test-IsGoContractTestChangeFile -Path $file) {
             return $true
         }
     }
@@ -712,7 +769,7 @@ if ($IncludeAllIaC -and $VerbosePreference -ne 'SilentlyContinue') {
 }
 
 # Process IaC changes - ALWAYS scan, switch controls filter
-$tfFiles = $changedFiles | Where-Object { $_ -match '\.(tf|tfvars|tfstate|hcl)$' }
+$tfFiles = $changedFiles | Where-Object { Test-IsTerraformInstallChangeFile -Path $_ }
 $bicepFiles = $changedFiles | Where-Object { $_ -match '\.bicep$' }
 
 # Process paths in single batch operations
@@ -858,6 +915,12 @@ $rustHasChanges = Test-RustHasChange -ChangedFiles $changedFiles
 
 $jsonOutput | Add-Member -MemberType NoteProperty -Name "rust" -Value ([PSCustomObject]@{
         has_changes = [bool]$rustHasChanges
+    })
+
+$goContractTestsHasChanges = Test-GoContractTestHasChange -ChangedFiles $changedFiles
+
+$jsonOutput | Add-Member -MemberType NoteProperty -Name "goContractTests" -Value ([PSCustomObject]@{
+        has_changes = [bool]$goContractTestsHasChanges
     })
 
 # Convert to JSON
