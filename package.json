@@ -43,8 +43,8 @@
     "docs:clear": "npm run --prefix docs/docusaurus clear"
   },
   "dependencies": {
-    "cspell": "^10.1.1",
-    "eslint": "^10.9.1",
+    "cspell": "^10.2.2",
+    "eslint": "^10.10.0",
     "glob": "^13.0.0",
     "js-yaml": "^5.4.1",
     "markdown-table-formatter": "1.7.0",
