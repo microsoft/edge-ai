@@ -28,18 +28,37 @@ function Get-FilesRecursive {
     Returns all files matching specified extensions, excluding configured patterns.
     #>
     [CmdletBinding()]
+    [OutputType([System.IO.FileInfo])]
     param(
         [string]$Path = '.',
         [string[]]$Extension = @('.ps1', '.psm1', '.psd1'),
-        [string[]]$ExcludePattern = @('node_modules', '.copilot-tracking')
+        [string[]]$ExcludePattern = @('node_modules', '.copilot-tracking', 'packages', '.git', 'lint-results')
     )
 
-    $includeGlobs = $Extension | ForEach-Object { "*$_" }
+    $normalizedExtensions = $Extension | ForEach-Object {
+        if ($_.StartsWith('.')) { $_ } else { ".$_" }
+    }
+    $excludedPathSegments = $ExcludePattern | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    $rootPath = Resolve-Path -Path $Path -ErrorAction Stop
+    $rootItem = Get-Item -LiteralPath $rootPath.ProviderPath
 
-    Get-ChildItem -Path $Path -Recurse -File -Include $includeGlobs |
-        Where-Object {
-            $fullPath = $_.FullName
-            -not ($ExcludePattern | Where-Object { $fullPath -match [regex]::Escape($_) })
+    if ($rootItem -is [System.IO.FileInfo]) {
+        if ($normalizedExtensions -contains $rootItem.Extension) { return $rootItem }
+        return
+    }
+
+    $directoriesToSearch = [System.Collections.Generic.Stack[System.IO.DirectoryInfo]]::new()
+    $directoriesToSearch.Push($rootItem)
+
+    while ($directoriesToSearch.Count -gt 0) {
+        $currentDirectory = $directoriesToSearch.Pop()
+
+        Get-ChildItem -LiteralPath $currentDirectory.FullName -Directory -Force -ErrorAction SilentlyContinue |
+            Where-Object { $excludedPathSegments -notcontains $_.Name } |
+            ForEach-Object { $directoriesToSearch.Push($_) }
+
+        Get-ChildItem -LiteralPath $currentDirectory.FullName -File -Force -ErrorAction SilentlyContinue |
+            Where-Object { $normalizedExtensions -contains $_.Extension }
         }
 }
 
