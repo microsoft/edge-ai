@@ -43,7 +43,7 @@
     "docs:clear": "npm run --prefix docs/docusaurus clear"
   },
   "dependencies": {
-    "cspell": "^10.2.2",
+    "cspell": "^10.3.0",
     "eslint": "^10.10.0",
     "glob": "^13.0.0",
     "js-yaml": "^5.4.1",
@@ -56,7 +56,7 @@
     "@eslint/js": "10.0.1",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.5",
     "markdown-link-check": "3.15.0",
-    "marked": "^18.0.11",
+    "marked": "^18.0.12",
     "secretlint": "13.0.5",
     "tftest-to-junitxml": "0.2.0"
   },
