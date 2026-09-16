@@ -97,6 +97,12 @@ param shouldSkipAzCliLogin bool
 @description('Should skip downloading and installing Azure CLI on the server.')
 param shouldSkipInstallingAzCli bool
 
+@description('How Azure CLI is provided on the host. Empty defers to the script default of auto.')
+param azMode string
+
+@description('The Azure CLI container image used when azMode resolves to container. Digest-pinned references are recommended for production.')
+param azCliImage string
+
 /*
   Local variables
 */
@@ -136,6 +142,8 @@ var defaultEnvVars = {
   ARC_TENANT_ID: arcTenantId
   AZ_CLI_VER: ''
   AZ_CONNECTEDK8S_VER: ''
+  AZ_MODE: azMode
+  AZ_CLI_IMAGE: azCliImage
   CUSTOM_LOCATIONS_OID: customLocationsOid ?? ''
   DEVICE_USERNAME: clusterServerHostMachineUsername
   SKIP_INSTALL_AZ_CLI: shouldSkipInstallingAzCli ? 'true' : ''

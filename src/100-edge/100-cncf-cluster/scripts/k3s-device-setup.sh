@@ -28,6 +28,8 @@ ARC_SP_SECRET="${ARC_SP_SECRET}"                         # Service Principal Cli
 ARC_TENANT_ID="${ARC_TENANT_ID}"                         # Tenant where the new cluster will be connected to Azure Arc
 AZ_CLI_VER="${AZ_CLI_VER}"                               # The Azure CLI version to install (ex. '2.51.0')
 AZ_CONNECTEDK8S_VER="${AZ_CONNECTEDK8S_VER}"             # The Azure CLI extension connectedk8s version to install (ex. '1.10.0')
+AZ_MODE="${AZ_MODE}"                                     # How Azure CLI is provided: 'auto' (default), 'container', or 'host'
+AZ_CLI_IMAGE="${AZ_CLI_IMAGE}"                           # Azure CLI image used when AZ_MODE resolves to 'container' (digest-pinned recommended)
 CLIENT_ID="${CLIENT_ID}"                                 # Client ID for the managed identity used with Azure CLI `az login --identity`
 CUSTOM_LOCATIONS_OID="${CUSTOM_LOCATIONS_OID}"           # Custom Locations Object ID needed if permissions are not allowed
 DEVICE_USERNAME="${DEVICE_USERNAME}"                     # Username for this device that will also need access to the k3s cluster
@@ -61,8 +63,23 @@ err() {
   exit 1
 }
 
-install_azure_cli() {
-  log "Installing Azure CLI"
+# Azure CLI state is persisted outside the container so login survives between invocations.
+AZ_STATE_DIR="/tmp/az-cli-state"
+AZ_RESOLVED_MODE=""
+
+detect_pkg_mgr() {
+  if command -v apt-get &>/dev/null; then
+    echo "apt"
+  elif command -v tdnf &>/dev/null; then
+    echo "tdnf"
+  elif command -v dnf &>/dev/null; then
+    echo "dnf"
+  else
+    echo "none"
+  fi
+}
+
+install_azure_cli_apt() {
   export DEBIAN_FRONTEND=noninteractive
   sudo apt-get -o DPkg::Lock::Timeout=300 update
   sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes --no-install-recommends apt-transport-https ca-certificates curl gnupg lsb-release
@@ -82,6 +99,113 @@ Signed-by: /etc/apt/keyrings/microsoft.gpg" | sudo tee /etc/apt/sources.list.d/a
   sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli
 }
 
+install_azure_cli_rpm() {
+  local pkg_mgr="$1"
+  sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+  echo "[azure-cli]
+name=Azure CLI
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee /etc/yum.repos.d/azure-cli.repo >/dev/null
+  sudo "$pkg_mgr" install -y azure-cli
+}
+
+install_azure_cli() {
+  local pkg_mgr
+  pkg_mgr="$(detect_pkg_mgr)"
+  log "Installing Azure CLI using package manager: $pkg_mgr"
+  case "$pkg_mgr" in
+    apt) install_azure_cli_apt ;;
+    tdnf | dnf) install_azure_cli_rpm "$pkg_mgr" ;;
+    *)
+      log "No supported package manager found for installing Azure CLI"
+      return 1
+      ;;
+  esac
+}
+
+# k3s bundles containerd, so 'k3s ctr' is available on any platform once k3s is running.
+az_container_available() {
+  if command -v k3s &>/dev/null && sudo k3s ctr version &>/dev/null; then
+    return 0
+  fi
+  local runtime
+  for runtime in nerdctl podman docker; do
+    if command -v "$runtime" &>/dev/null; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Runs Azure CLI from a container image. Mounting the azcmagent directory and pointing IMDS at
+# localhost:40342 is what allows 'az login --identity' to work on an Arc-connected machine.
+az_run_container() {
+  local -a mounts=(
+    "--mount" "type=bind,src=/etc/rancher/k3s/k3s.yaml,dst=/root/.kube/config,options=rbind:ro"
+    "--mount" "type=bind,src=${AZ_STATE_DIR},dst=/root/.azure,options=rbind:rw"
+  )
+  local -a envs=()
+  if [[ -d /var/opt/azcmagent ]]; then
+    mounts+=("--mount" "type=bind,src=/var/opt/azcmagent,dst=/var/opt/azcmagent,options=rbind:ro")
+    envs+=(
+      "--env" "IMDS_ENDPOINT=http://localhost:40342"
+      "--env" "IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token"
+    )
+  fi
+  sudo k3s ctr run --rm --net-host "${mounts[@]}" "${envs[@]}" \
+    "$AZ_CLI_IMAGE" "az-$(date +%s%N)" az "$@"
+}
+
+resolve_az_mode() {
+  if [[ $AZ_RESOLVED_MODE ]]; then
+    return 0
+  fi
+
+  AZ_CLI_IMAGE="${AZ_CLI_IMAGE:-mcr.microsoft.com/azure-cli:latest}"
+  mkdir -p "$AZ_STATE_DIR"
+
+  case "${AZ_MODE,,}" in
+    host)
+      if ! command -v az &>/dev/null && [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
+        install_azure_cli || err "'AZ_MODE=host' was requested but Azure CLI could not be installed"
+      fi
+      command -v az &>/dev/null || err "'AZ_MODE=host' was requested but 'az' is missing"
+      AZ_RESOLVED_MODE="host"
+      ;;
+    container)
+      az_container_available || err "'AZ_MODE=container' was requested but no container runtime is available"
+      AZ_RESOLVED_MODE="container"
+      ;;
+    auto | "")
+      if command -v az &>/dev/null; then
+        AZ_RESOLVED_MODE="host"
+      elif az_container_available; then
+        AZ_RESOLVED_MODE="container"
+      elif [[ ! $SKIP_INSTALL_AZ_CLI ]] && install_azure_cli; then
+        AZ_RESOLVED_MODE="host"
+      else
+        err "Unable to provide Azure CLI: no host 'az', no container runtime, and no supported package manager"
+      fi
+      ;;
+    *)
+      err "Invalid AZ_MODE '$AZ_MODE'. Use 'auto', 'container', or 'host'."
+      ;;
+  esac
+
+  if [[ $AZ_RESOLVED_MODE == "container" ]]; then
+    if [[ $AZ_CLI_IMAGE != *"@sha256:"* ]]; then
+      log "WARNING: AZ_CLI_IMAGE is not digest-pinned (recommended for production)"
+    fi
+    log "Using Azure CLI from container image $AZ_CLI_IMAGE"
+    az() { az_run_container "$@"; }
+    sudo k3s ctr images pull "$AZ_CLI_IMAGE"
+  else
+    log "Using Azure CLI installed on the host"
+  fi
+}
+
 enable_debug() {
   echo "[ DEBUG ]: Enabling writing out all commands being executed"
   set -x
@@ -97,16 +221,21 @@ install_k3s_verified() {
   else
     log "WARNING: K3S_INSTALL_SCRIPT_SHA256 not set; skipping integrity verification (recommended for production)"
   fi
-  sh "$script_path"
+  INSTALL_K3S_SKIP_SELINUX_RPM=true sh "$script_path"
   rm -f "$script_path"
 }
 
 install_kubectl_verified() {
-  local version bin_path
+  local version bin_path arch
+  case "$(uname -m)" in
+    x86_64) arch="amd64" ;;
+    aarch64 | arm64) arch="arm64" ;;
+    *) err "Unsupported architecture for kubectl download: $(uname -m)" ;;
+  esac
   version="${KUBECTL_VERSION:-$(curl -fsSL https://dl.k8s.io/release/stable.txt)}"
   bin_path="$(mktemp)"
-  log "Downloading kubectl ${version}"
-  curl -fsSL "https://dl.k8s.io/release/${version}/bin/linux/amd64/kubectl" -o "$bin_path"
+  log "Downloading kubectl ${version} (${arch})"
+  curl -fsSL "https://dl.k8s.io/release/${version}/bin/linux/${arch}/kubectl" -o "$bin_path"
   if [[ -n ${KUBECTL_SHA256:-} ]]; then
     echo "${KUBECTL_SHA256}  ${bin_path}" | sha256sum -c - || err "kubectl SHA-256 verification failed"
   else
@@ -114,6 +243,55 @@ install_kubectl_verified() {
   fi
   chmod +x "$bin_path"
   sudo mv "$bin_path" /usr/local/bin/kubectl
+}
+
+setup_azure_cli_and_login() {
+  log "Setting up AZ CLI..."
+
+  resolve_az_mode
+
+  # Verify correct version of Azure CLI and install if needed. Only applies to apt-based hosts.
+
+  if [[ $AZ_CLI_VER && ! $SKIP_INSTALL_AZ_CLI && $AZ_RESOLVED_MODE == "host" && $(detect_pkg_mgr) == "apt" ]]; then
+    if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
+      log "Installing specified version of Azure CLI $AZ_CLI_VER"
+      sudo apt-get -o DPkg::Lock::Timeout=300 remove -y azure-cli && log "Removed Azure CLI to install specific version"
+      sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
+    fi
+  fi
+
+  # Enable Azure CLI extension connectedk8s.
+
+  if [[ $AZ_CONNECTEDK8S_VER ]]; then
+    if ! az version | grep "\"connectedk8s\"" | grep -Fq "$AZ_CONNECTEDK8S_VER"; then
+      az extension remove --name connectedk8s 2>/dev/null && log "Removed Azure CLI extension [connectedk8s]"
+      log "Enabling Azure CLI extension [connectedk8s] with version $AZ_CONNECTEDK8S_VER"
+      az extension add --name connectedk8s --version "$AZ_CONNECTEDK8S_VER" -y
+    fi
+  else
+    log "Enabling and upgrading Azure CLI extension [connectedk8s]"
+    az extension add --upgrade --name connectedk8s -y
+  fi
+
+  # Log in to the tenant with Azure CLI.
+
+  if [[ ! $SKIP_AZ_LOGIN ]]; then
+    if [[ $ARC_SP_CLIENT_ID && $ARC_SP_SECRET && $ARC_TENANT_ID ]]; then
+      az login --service-principal -u "$ARC_SP_CLIENT_ID" -p "$ARC_SP_SECRET" --tenant "$ARC_TENANT_ID"
+    else
+      if [[ $CLIENT_ID ]]; then
+        log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
+        if ! az login --identity --client-id "$CLIENT_ID" --allow-no-subscriptions; then
+          err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
+        fi
+      else
+        log "Logging in with default managed identity"
+        az login --identity --allow-no-subscriptions
+      fi
+    fi
+  fi
+
+  log "Finished setting up AZ CLI..."
 }
 
 if [[ $# -gt 0 ]]; then
@@ -129,65 +307,6 @@ fi
 
 set -e
 set -o pipefail
-
-####
-# Setup Azure CLI
-####
-
-log "Setting up AZ CLI..."
-
-# Install Azure CLI.
-
-if ! command -v "az" &>/dev/null; then
-  if [[ ! $SKIP_INSTALL_AZ_CLI ]]; then
-    install_azure_cli
-  else
-    err "'az' is missing and required"
-  fi
-fi
-
-# Verify correct version of Azure CLI and install if needed.
-
-if [[ $AZ_CLI_VER && ! $SKIP_INSTALL_AZ_CLI ]]; then
-  if ! az version | grep "\"azure-cli\"" | grep -Fq "$AZ_CLI_VER"; then
-    log "Installing specified version of Azure CLI $AZ_CLI_VER"
-    sudo apt-get -o DPkg::Lock::Timeout=300 remove -y azure-cli && log "Removed Azure CLI to install specific version"
-    sudo apt-get -o DPkg::Lock::Timeout=300 install --assume-yes azure-cli="$AZ_CLI_VER-1~$(lsb_release -cs)"
-  fi
-fi
-
-# Enable Azure CLI extension connectedk8s.
-
-if [[ $AZ_CONNECTEDK8S_VER ]]; then
-  if ! az version | grep "\"connectedk8s\"" | grep -Fq "$AZ_CONNECTEDK8S_VER"; then
-    az extension remove --name connectedk8s 2>/dev/null && log "Removed Azure CLI extension [connectedk8s]"
-    log "Enabling Azure CLI extension [connectedk8s] with version $AZ_CONNECTEDK8S_VER"
-    az extension add --name connectedk8s --version "$AZ_CONNECTEDK8S_VER" -y
-  fi
-else
-  log "Enabling and upgrading Azure CLI extension [connectedk8s]"
-  az extension add --upgrade --name connectedk8s -y
-fi
-
-# Log in to the tenant with Azure CLI.
-
-if [[ ! $SKIP_AZ_LOGIN ]]; then
-  if [[ $ARC_SP_CLIENT_ID && $ARC_SP_SECRET && $ARC_TENANT_ID ]]; then
-    az login --service-principal -u "$ARC_SP_CLIENT_ID" -p "$ARC_SP_SECRET" --tenant "$ARC_TENANT_ID"
-  else
-    if [[ $CLIENT_ID ]]; then
-      log "Logging into Azure CLI using managed identity client ID $CLIENT_ID"
-      if ! az login --identity --client-id "$CLIENT_ID" --allow-no-subscriptions; then
-        err "Azure CLI login failed for managed identity client ID $CLIENT_ID"
-      fi
-    else
-      log "Logging in with default managed identity"
-      az login --identity --allow-no-subscriptions
-    fi
-  fi
-fi
-
-log "Finished setting up AZ CLI..."
 
 ####
 # Setup k3s
@@ -230,7 +349,14 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
     fi
 
     # Get k3s token from Key Vault if name and secret are provided.
+    # This runs before k3s exists, so container mode is not yet possible and a host 'az' is required.
     if [[ $AKV_NAME && $AKV_K3S_TOKEN_SECRET ]]; then
+      if ! command -v az &>/dev/null; then
+        err "'AKV_NAME' and 'AKV_K3S_TOKEN_SECRET' on an agent node require Azure CLI on the host before k3s is installed. \
+          Set 'AZ_MODE=host', or pass 'K3S_TOKEN' directly instead."
+      fi
+      AZ_MODE="host"
+      setup_azure_cli_and_login
       log "Getting k3s token from key vault: $AKV_NAME (secret: $AKV_K3S_TOKEN_SECRET)"
       if akv_k3s_token="$(az keyvault secret show --name "$AKV_K3S_TOKEN_SECRET" --vault-name "$AKV_NAME" --query "value" -o tsv)"; then
         K3S_TOKEN="$akv_k3s_token"
@@ -262,10 +388,31 @@ if [[ ! $SKIP_INSTALL_K3S ]]; then
   fi
 fi
 
-# Install kubectl if it is missing (should come with k3s).
+# Pre-staged images ship k3s installed but never started, so this runs even when the install is skipped.
+
+if command -v 'k3s' &>/dev/null && systemctl cat k3s.service &>/dev/null && ! systemctl is-active --quiet k3s; then
+  log "Starting k3s server service"
+  sudo systemctl enable --now k3s
+fi
+
+####
+# Setup Azure CLI
+####
+
+# Runs after k3s so that container mode can use the containerd runtime k3s bundles.
+
+setup_azure_cli_and_login
+
+####
+# Setup kubectl
+####
+
+# k3s bundles kubectl, so only download a standalone binary when k3s was skipped.
 
 if ! command -v 'kubectl' &>/dev/null; then
-  if [[ ! $SKIP_INSTALL_KUBECTL ]]; then
+  if command -v 'k3s' &>/dev/null; then
+    kubectl() { sudo k3s kubectl "$@"; }
+  elif [[ ! $SKIP_INSTALL_KUBECTL ]]; then
     install_kubectl_verified
   else
     err "'kubectl' is missing and required"
@@ -399,6 +546,46 @@ fi
 log "Finished setting up k3s..."
 
 ####
+# Wait for Server Ready State
+####
+
+wait_for_k3s_server_ready() {
+  local timeout_seconds=1800
+  local start_time
+  local elapsed_time
+
+  start_time=$(date +%s)
+
+  log "Waiting for k3s server to be ready (timeout: ${timeout_seconds}s)..."
+
+  while true; do
+    elapsed_time=$(($(date +%s) - start_time))
+
+    if ((elapsed_time >= timeout_seconds)); then
+      err "Timeout waiting for k3s server to become ready after ${timeout_seconds} seconds. Check 'systemctl status k3s' and 'kubectl get nodes' for more information."
+    fi
+
+    if kubectl wait --for condition=ready node --all --timeout=60s; then
+      if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s \
+        && kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
+        if kubectl cluster-info | grep -c -E "(Kubernetes control plane|CoreDNS|Metrics-server).*running" | grep -q "3"; then
+          log "k3s server is ready and responding (${elapsed_time}s elapsed)"
+          return 0
+        fi
+      fi
+    fi
+
+    sleep 5
+    elapsed_time=$(($(date +%s) - start_time))
+    log "Still waiting for k3s server readiness... (${elapsed_time}s elapsed)"
+  done
+}
+
+# Arc onboarding installs agents that resolve through CoreDNS, so the cluster must be settled first.
+
+wait_for_k3s_server_ready
+
+####
 # Setup Azure Arc
 ####
 
@@ -476,44 +663,8 @@ if [[ ! $SKIP_ARC_CONNECT ]]; then
   fi
 fi
 
-####
-# Wait for Server Ready State
-####
+# The workload identity restart above cycles the API server, so confirm the cluster settled again.
 
-wait_for_k3s_server_ready() {
-  local timeout_seconds=1800
-  local start_time
-  local elapsed_time
-
-  start_time=$(date +%s)
-
-  log "Waiting for k3s server to be ready (timeout: ${timeout_seconds}s)..."
-
-  while true; do
-    elapsed_time=$(($(date +%s) - start_time))
-
-    if ((elapsed_time >= timeout_seconds)); then
-      err "Timeout waiting for k3s server to become ready after ${timeout_seconds} seconds. Check 'systemctl status k3s' and 'kubectl get nodes' for more information."
-    fi
-
-    if kubectl wait --for condition=ready node --all --timeout=60s; then
-      if kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l '!job-name' -n kube-system --timeout=60s \
-        && kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod -l 'job-name' -n kube-system --timeout=60s; then
-        if kubectl cluster-info | grep -c -E "(Kubernetes control plane|CoreDNS|Metrics-server).*running" | grep -q "3"; then
-          log "k3s server is ready and responding (${elapsed_time}s elapsed)"
-          return 0
-        fi
-      fi
-    fi
-
-    sleep 5
-    elapsed_time=$(($(date +%s) - start_time))
-    log "Still waiting for k3s server readiness... (${elapsed_time}s elapsed)"
-  done
-}
-
-if [[ ! $SKIP_INSTALL_K3S ]]; then
-  wait_for_k3s_server_ready
-fi
+wait_for_k3s_server_ready
 
 log "Finished setting up Azure Arc..."

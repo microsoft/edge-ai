@@ -106,6 +106,18 @@ param shouldSkipInstallingAzCli bool = false
 @description('Should skip login process with Azure CLI on the server.')
 param shouldSkipAzCliLogin bool = false
 
+@description('How Azure CLI is provided on the host. Empty defers to the script default of auto.')
+@allowed([
+  ''
+  'auto'
+  'container'
+  'host'
+])
+param azMode string = ''
+
+@description('The Azure CLI container image used when azMode resolves to container. Digest-pinned references are recommended for production.')
+param azCliImage string = ''
+
 /*
   Key Vault Parameters
 */
@@ -184,6 +196,8 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
     clusterServerIp: clusterServerIp ?? ''
     shouldSkipAzCliLogin: shouldSkipAzCliLogin
     shouldSkipInstallingAzCli: shouldSkipInstallingAzCli
+    azMode: azMode
+    azCliImage: azCliImage
     clusterServerHostMachineUsername: clusterServerHostMachineUsername
     keyVaultName: deployKeyVaultName
     serverScriptSecretName: serverScriptSecretName

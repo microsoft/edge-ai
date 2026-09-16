@@ -26,6 +26,9 @@ be used as the cluster.
 This script has been tested on the following operating systems:
 
 - Azure Virtual Machine with Ubuntu 22.04 LTS
+- Azure Local provisioned machine running Microsoft Azure Linux 3.0 (requires `AZ_MODE=auto` or `AZ_MODE=container`)
+
+The script does not require a host package manager on its default path. Azure CLI runs from a container image through the containerd runtime that k3s bundles, so distributions without an `apt` feed are supported.
 
 ## Key Features
 
@@ -100,16 +103,35 @@ sudo journalctl -u k3s
 sudo journalctl -u k3s-agent
 ```
 
+## Azure CLI resolution
+
+The `AZ_MODE` variable controls how the script obtains Azure CLI.
+
+| Mode        | Behavior                                                                                                     |
+|-------------|--------------------------------------------------------------------------------------------------------------|
+| `auto`      | Default. Uses an existing host `az`, otherwise a container runtime, otherwise installs through `apt` or `tdnf` |
+| `container` | Requires a container runtime. Fails rather than installing packages on the host                               |
+| `host`      | Requires Azure CLI on the host, installing it when a supported package manager is present                     |
+
+In container mode the script runs `mcr.microsoft.com/azure-cli` through `k3s ctr`. Set `AZ_CLI_IMAGE` to a digest-pinned reference for production, matching the guidance for `K3S_INSTALL_SCRIPT_SHA256` and `KUBECTL_SHA256`.
+
+On an Arc-connected machine the container mounts `/var/opt/azcmagent` and points `IMDS_ENDPOINT` and `IDENTITY_ENDPOINT` at the local Connected Machine agent, which is what allows `az login --identity` to succeed without a cloud IMDS endpoint.
+
+### Agent nodes and Key Vault
+
+Agent nodes retrieve the k3s join token before k3s is installed, so no container runtime exists at that point. Combining `AKV_NAME` and `AKV_K3S_TOKEN_SECRET` on an agent node requires `AZ_MODE=host`. Passing `K3S_TOKEN` directly avoids the limitation entirely and is what the Terraform module does by default.
+
 ## Script prerequisites
 
 - Service Principal or Managed Identify connected to the VM with the following permissions:
   - `Kubernetes Cluster - Azure Arc Onboarding`
+- For Arc-connected physical machines, the Connected Machine agent must be running with a system-assigned identity holding the same role
 
 ## Script overview
 
 The script performs the following steps:
 
-- Install K3s, Azure CLI, kubectl
+- Install K3s, then resolve Azure CLI and kubectl
 - Login to Azure CLI (Service Principal or Managed Identity)
 - Connect to Azure Arc and enable features: `custom-locations`, `oidc-issuer`, `workload-identity`, `cluster-connect` and optionally `auto-upgrade`
 - Optionally add the provided Entra ID user or group as a cluster admin and assign Azure Arc RBAC roles (`Azure Arc Kubernetes Viewer`, `Azure Arc Enabled Kubernetes Cluster User Role`) to enable `az connectedk8s proxy`
