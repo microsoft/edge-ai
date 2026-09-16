@@ -211,6 +211,59 @@ enable_debug() {
   set -x
 }
 
+# Azure Local images run k3s behind the machine-local Arc proxy with a loopback-only NO_PROXY.
+# The API server then dials the kubelet and in-cluster endpoints through that proxy, which
+# fails Arc onboarding pre-checks with a 502. Exclusions follow the documented Arc defaults.
+ensure_k3s_proxy_exclusions() {
+  local unit_env proxy_url current_no_proxy merged entry
+  local required=("localhost" "127.0.0.1" ".svc" ".svc.cluster.local"
+    "10.0.0.0/8" "172.16.0.0/12" "192.168.0.0/16")
+
+  systemctl cat k3s.service &>/dev/null || return 0
+
+  # Limited to an Arc-enabled host whose k3s proxy is the loopback Arc proxy. A site's own
+  # outbound proxy keeps its administrator-defined exclusions untouched.
+  [[ -d /var/opt/azcmagent ]] || return 0
+
+  unit_env="$(systemctl show k3s -p Environment --value 2>/dev/null || echo "")"
+  proxy_url="$(sed -nE 's/.*[[:space:]]?https?_proxy=([^[:space:]]*).*/\1/Ip' <<<"$unit_env" | head -1)"
+  if [[ ! $proxy_url =~ ^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?/?$ ]]; then
+    return 0
+  fi
+
+  current_no_proxy="$(sed -nE 's/.*[[:space:]]?no_proxy=([^[:space:]]*).*/\1/Ip' <<<"$unit_env" | head -1)"
+  merged="$current_no_proxy"
+  for entry in "${required[@]}"; do
+    if [[ ",$merged," != *",$entry,"* ]]; then
+      merged="${merged:+$merged,}$entry"
+    fi
+  done
+
+  if [[ $merged == "$current_no_proxy" ]]; then
+    return 0
+  fi
+
+  log "Adding in-cluster NO_PROXY exclusions to k3s: $merged"
+  sudo mkdir -p /etc/systemd/system/k3s.service.d
+  sudo tee /etc/systemd/system/k3s.service.d/10-no-proxy.conf >/dev/null <<EOF
+[Service]
+Environment="NO_PROXY=$merged"
+Environment="no_proxy=$merged"
+EOF
+  sudo systemctl daemon-reload
+  sudo systemctl restart k3s
+
+  local attempt
+  for attempt in $(seq 1 30); do
+    if sudo k3s kubectl get --raw /readyz &>/dev/null; then
+      log "k3s ready after NO_PROXY update (attempt $attempt)"
+      return 0
+    fi
+    sleep 5
+  done
+  err "k3s did not become ready after applying NO_PROXY exclusions"
+}
+
 install_k3s_verified() {
   local script_path
   script_path="$(mktemp)"
@@ -394,6 +447,8 @@ if command -v 'k3s' &>/dev/null && systemctl cat k3s.service &>/dev/null && ! sy
   log "Starting k3s server service"
   sudo systemctl enable --now k3s
 fi
+
+ensure_k3s_proxy_exclusions
 
 ####
 # Setup Azure CLI
