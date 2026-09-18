@@ -74,7 +74,7 @@ type ContainerStorageExtension = {
 var containerStorageExtensionDefaults = {
   enabled: true
   release: {
-    version: '2.6.0'
+    version: '2.12.0'
     train: 'stable'
   }
   settings: {
