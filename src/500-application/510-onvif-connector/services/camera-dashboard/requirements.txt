@@ -133,7 +133,7 @@ aiohttp==3.14.3 \
     --hash=sha256:fa9467a8113aa69d3d7c55a70ef0b7c636010a40993f3df9d9d0d73b3eb7ef24 \
     --hash=sha256:fd51ebf9d3a00c074df4ede271023f4d2dba289bcc740b88191872716014e3c5
     # via
-    #   -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    #   -r requirements.in
     #   nicegui
     #   onvif-zeep-async
     #   python-socketio
@@ -149,9 +149,9 @@ annotated-types==0.7.0 \
     --hash=sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53 \
     --hash=sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89
     # via pydantic
-anyio==4.13.0 \
-    --hash=sha256:08b310f9e24a9594186fd75b4f73f4a4152069e3853f1ed8bfbf58369f4ad708 \
-    --hash=sha256:334b70e641fd2221c1505b3890c69882fe4a2df910cba14d97019b90b24439dc
+anyio==4.14.2 \
+    --hash=sha256:9f505dda5ac9f0c8309b5e8bd445a8c2bf7246f3ce950121e45ea15bc41d1494 \
+    --hash=sha256:cfa139f3ed1a23ee8f88a145ddb5ac7605b8bbfd8592baacd7ce3d8bb4313c7f
     # via
     #   httpx
     #   starlette
@@ -379,7 +379,7 @@ click==8.3.3 \
 defusedxml==0.7.1 \
     --hash=sha256:1bb3032db185915b62d7c6209c5a8792be6a32ab2fedacc84e01b52c51aa3e69 \
     --hash=sha256:a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61
-    # via -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    # via -r requirements.in
 docutils==0.22.4 \
     --hash=sha256:4db53b1fde9abecbb74d91230d32ab626d94f6badfc575d6db9194a49df29968 \
     --hash=sha256:d0013f540772d1420576855455d050a2180186c91c15779301ac2ccb3eeb68de
@@ -746,7 +746,7 @@ lxml==6.1.1 \
     --hash=sha256:ff3f333630ab480244a1bff72043e511a91eb22e7595dead8653ee5612dd8f3d \
     --hash=sha256:ffecec8eb889b58ba9be5b95fb1cc78e22ea8eedea38e8736a1568fe1979250e
     # via
-    #   -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    #   -r requirements.in
     #   lxml-html-clean
     #   nicegui
     #   zeep
@@ -754,7 +754,7 @@ lxml-html-clean==0.4.5 \
     --hash=sha256:c76fcadd1e5bfb9b8bafc2200d51e4e78eb0dad67f56881c21dfb6484c7e7746 \
     --hash=sha256:e2a4c7d5beedd17cd7b484d848a0571e54baa239a4f9df5546e3acba7f990560
     # via
-    #   -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    #   -r requirements.in
     #   nicegui
 markdown2==2.5.5 \
     --hash=sha256:001547e68f6e7fcf0f1cb83f7e82f48aa7d48b2c6a321f0cd20a853a8a2d1664 \
@@ -1004,7 +1004,7 @@ multidict==6.7.1 \
 nicegui==3.12.0 \
     --hash=sha256:1bdc6ef423f091afddc05ea3bcf5beac1b3c3d27081b0df243aaccf03e612434 \
     --hash=sha256:f90d091a2b4855e090a9bad8d8ad10396799f7c7792a0846447a11aea396ead3
-    # via -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    # via -r requirements.in
 numpy==2.4.4 \
     --hash=sha256:07077278157d02f65c43b1b26a3886bce886f95d20aabd11f87932750dfb14ed \
     --hash=sha256:08f2e31ed5e6f04b118e49821397f12767934cfdd12a1ce86a058f91e004ee50 \
@@ -1082,7 +1082,7 @@ numpy==2.4.4 \
 onvif-zeep-async==4.0.4 \
     --hash=sha256:cf948368f26ce68ef34da29a1dddeb95ac1baeffcc7cc832b13af3e1bb9c7893 \
     --hash=sha256:e0b662a935008cca225b0ec377bc0dfdc5e0988d2166ea3efe4c45505f5b7b63
-    # via -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    # via -r requirements.in
 opencv-python-headless==4.13.0.92 \
     --hash=sha256:0525a3d2c0b46c611e2130b5fdebc94cf404845d8fa64d2f3a3b679572a5bd22 \
     --hash=sha256:0bd48544f77c68b2941392fcdf9bcd2b9cdf00e98cb8c29b2455d194763cf99e \
@@ -1092,7 +1092,7 @@ opencv-python-headless==4.13.0.92 \
     --hash=sha256:77a82fe35ddcec0f62c15f2ba8a12ecc2ed4207c17b0902c7a3151ae29f37fb6 \
     --hash=sha256:a7cf08e5b191f4ebb530791acc0825a7986e0d0dee2a3c491184bd8599848a4b \
     --hash=sha256:eb60e36b237b1ebd40a912da5384b348df8ed534f6f644d8e0b4f103e272ba7d
-    # via -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    # via -r requirements.in
 orjson==3.11.9 \
     --hash=sha256:011382e2a60fda9d46f1cdee31068cfc52ffe952b587d683ec0463002802a0f4 \
     --hash=sha256:03db380e3780fa0015ed776a90f20e8e20bb11dde13b216ce19e5718e3dfba62 \
@@ -1176,7 +1176,7 @@ packaging==26.2 \
 paho-mqtt==2.1.0 \
     --hash=sha256:12d6e7511d4137555a3f6ea167ae846af2c7357b10bc6fa4f7c3968fc1723834 \
     --hash=sha256:6db9ba9b34ed5bc6b6e3812718c7e06e2fd7444540df2455d2c51bd58808feee
-    # via -r src/500-application/510-onvif-connector/services/camera-dashboard/requirements.in
+    # via -r requirements.in
 platformdirs==4.9.6 \
     --hash=sha256:3bfa75b0ad0db84096ae777218481852c0ebc6c727b3168c1b9e0118e458cf0a \
     --hash=sha256:e61adb1d5e5cb3441b4b7710bea7e4c12250ca49439228cc1021c00dcfac0917
