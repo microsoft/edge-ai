@@ -6,10 +6,10 @@ Supports Microsoft Entra ID authentication and customer-managed key encryption.
 
 ## Requirements
 
-| Name      | Version            |
-|-----------|--------------------|
-| terraform | >= 1.12.0, < 2.0   |
-| azurerm   | >= 4.51.0, < 5.0.0 |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azurerm   | >= 5.3.0, < 6.0.0 |
 
 ## Providers
 
@@ -42,6 +42,7 @@ Supports Microsoft Entra ID authentication and customer-managed key encryption.
 | clustering\_policy                    | Redis clustering policy. Options: OSSCluster (default, Redis OSS), EnterpriseCluster (Redis Enterprise)                  | `string`                                                                       | `"OSSCluster"`   |    no    |
 | customer\_managed\_key                | Customer-managed key configuration for encryption at rest                                                                | ```object({ key_vault_key_id = string user_assigned_identity_id = string })``` | `null`           |    no    |
 | managed\_identity                     | User Assigned Managed Identity for Entra ID authentication. Required when access\_keys\_authentication\_enabled is false | ```object({ id = string })```                                                  | `null`           |    no    |
+| private\_dns\_zone\_id                | Existing private DNS zone ID used when should\_create\_private\_dns\_zone is false                                       | `string`                                                                       | `null`           |    no    |
 | private\_endpoint\_subnet             | Subnet for private endpoint deployment. Required when should\_enable\_private\_endpoint is true                          | ```object({ id = string })```                                                  | `null`           |    no    |
 | should\_create\_private\_dns\_zone    | Whether to create a new private DNS zone. Set to false if using existing zone                                            | `bool`                                                                         | `true`           |    no    |
 | should\_deploy\_redis                 | Whether to deploy Azure Managed Redis cache                                                                              | `bool`                                                                         | `true`           |    no    |

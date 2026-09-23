@@ -27,7 +27,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '1.5.1'
+    version: '1.5.2'
     train: 'stable'
   }
 }
@@ -53,7 +53,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.4.41'
+    version: '1.4.73'
     train: 'stable'
   }
   settings: {
@@ -61,6 +61,18 @@ var aioExtensionDefaults = {
     kubernetesDistro: 'K3s'
     agentOperationTimeoutInMinutes: 120
   }
+}
+
+@export()
+@description('The settings for the connectors bundled with the Azure IoT Operations release.')
+type ConnectorsConfig = {
+  @description('The version of the connectors bundle, used as the image and metadata tag for supervisor-managed connectors.')
+  version: string
+}
+
+@export()
+var connectorsDefaults = {
+  version: '1.4.11'
 }
 
 @description('AIO Instance features.')
@@ -693,7 +705,7 @@ type AkriConnectorTemplate = {
   name: string
 
   @description('Connector type.')
-  type: 'rest' | 'media' | 'onvif' | 'sse' | 'custom'
+  type: 'rest' | 'media' | 'onvif' | 'sse' | 'opcua' | 'custom'
 
   @description('Custom endpoint type (required for custom connectors).')
   customEndpointType: string?

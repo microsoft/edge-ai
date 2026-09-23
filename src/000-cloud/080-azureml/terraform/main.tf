@@ -95,7 +95,7 @@ module "registry" {
   private_endpoint_subnet_id     = var.private_endpoint_subnet_id
 
   // DNS integration (share workspace DNS zone)
-  api_dns_zone_name = try(module.workspace.private_dns_zones["privatelink.api.azureml.ms"].name, null)
+  api_dns_zone_id = try(module.workspace.private_dns_zones["privatelink.api.azureml.ms"].id, null)
 
   // Dependencies from other cloud components
   storage_account = var.registry_storage_account

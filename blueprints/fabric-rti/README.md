@@ -19,6 +19,9 @@ keywords:
 
 This blueprint deploys only the essential Microsoft Fabric Real-Time Intelligence (RTI) components on top of existing Azure IoT Operations infrastructure, using data sources to reference already deployed resources. It creates an EventStream with CustomEndpoint for AIO integration and configures the edge messaging dataflow endpoint.
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 This minimal blueprint creates:

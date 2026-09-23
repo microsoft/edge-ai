@@ -24,6 +24,9 @@ This blueprint deploys two complete Azure IoT Operations (AIO) environments with
 
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 This blueprint implements a **site-to-enterprise** MQTT communication pattern with two independent clusters:

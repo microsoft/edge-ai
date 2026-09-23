@@ -123,6 +123,10 @@ var trust = trustIssuerSettings ?? {
   configMapKey: ''
 }
 
+// Trust bundle the WASM graph controller reads the CA cert from. Unlike trustBundleSettings
+// (empty for self-signed), this always resolves; self-signed publishes the bundle under 'ca.crt'.
+var trustCaCertFileName = trustSource == 'CustomerManaged' ? trust.configMapKey : 'ca.crt'
+
 var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}:${aioMqBrokerConfig.brokerListenerPort}'
 
 var defaultConfigurationSettings = {
@@ -134,6 +138,8 @@ var defaultConfigurationSettings = {
   'dataFlows.values.tinyKube.mqttBroker.hostName': '${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}'
   'dataFlows.values.tinyKube.mqttBroker.port': any(aioMqBrokerConfig.brokerListenerPort)
   'dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
+  'dataFlows.values.wasmGraphController.mqttBroker.caCertConfigMapRef': trust.configMapName
+  'dataFlows.values.wasmGraphController.mqttBroker.caCertFileName': trustCaCertFileName
   'observability.metrics.enabled': '${metrics.enabled}'
   'observability.metrics.openTelemetryCollectorAddress': metrics.otelCollectorAddress
   #disable-next-line prefer-unquoted-property-names

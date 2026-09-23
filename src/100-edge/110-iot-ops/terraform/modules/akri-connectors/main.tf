@@ -2,16 +2,22 @@
  * # Akri Connectors Module
  *
  * Deploys multiple Azure IoT Operations Akri Connector Templates as part of
- * the IoT Operations deployment. Supports REST/HTTP, Media, ONVIF, and SSE
- * connector types with configurable runtime and MQTT settings.
+ * the IoT Operations deployment. Supports REST/HTTP, Media, ONVIF, SSE, and
+ * OPC UA connector types with configurable runtime and MQTT settings.
  */
 
 locals {
+  // The OPC UA supervisor only reconciles ConnectorTemplate CRs whose name carries this prefix.
+  // Without it the template never reaches provisioningState "Succeeded" and the ARM operation
+  // hangs until the deployment times out.
+  opcua_template_name_prefix = "azureiotoperationsconnectorforopcua-"
+
   // Connector type metadata mapping for built-in Microsoft connectors
   connector_type_metadata = {
     rest = {
       endpoint_type       = "Microsoft.Http"
       image_name          = "azureiotoperations/akri-connectors/rest"
+      metadata_image_name = "azureiotoperations/akri-connectors/rest-metadata"
       version             = "1.0"
       default_tag         = "1.0.6"
       default_registry    = "mcr.microsoft.com"
@@ -20,6 +26,7 @@ locals {
     media = {
       endpoint_type       = "Microsoft.Media"
       image_name          = "azureiotoperations/akri-connectors/media"
+      metadata_image_name = "azureiotoperations/akri-connectors/media-metadata"
       version             = "1.0"
       default_tag         = "1.2.39"
       default_registry    = "mcr.microsoft.com"
@@ -28,6 +35,7 @@ locals {
     onvif = {
       endpoint_type       = "Microsoft.Onvif"
       image_name          = "azureiotoperations/akri-connectors/onvif"
+      metadata_image_name = "azureiotoperations/akri-connectors/onvif-metadata"
       version             = "1.0"
       default_tag         = "1.2.39"
       default_registry    = "mcr.microsoft.com"
@@ -36,17 +44,30 @@ locals {
     sse = {
       endpoint_type       = "Microsoft.Sse"
       image_name          = "azureiotoperations/akri-connectors/sse"
+      metadata_image_name = "azureiotoperations/akri-connectors/sse-metadata"
       version             = "1.0"
       default_tag         = "1.0.5"
       default_registry    = "mcr.microsoft.com"
       default_min_version = "1.2.37"
+    }
+    // OPC UA is supervisor-managed: the deployed image is the connectors supervisor, which creates
+    // the actual connector pods on demand. Its metadata image therefore does not follow the
+    // "<image_name>-metadata" convention used by the other connectors.
+    opcua = {
+      endpoint_type       = "Microsoft.OpcUa"
+      image_name          = "azureiotoperations/aio-connectors/supervisor"
+      metadata_image_name = "azureiotoperations/aio-connectors/opcua-metadata"
+      version             = null
+      default_tag         = var.connectors_version
+      default_registry    = "mcr.microsoft.com"
+      default_min_version = "1.2.100"
     }
   }
 
   // Process connector configurations with defaults
   processed_connectors = {
     for conn in var.connector_templates : conn.name => {
-      name      = conn.name
+      name      = conn.type == "opcua" ? "${local.opcua_template_name_prefix}${substr(sha256(var.aio_instance_id), 0, 4)}" : conn.name
       type      = conn.type
       is_custom = conn.type == "custom"
 
@@ -57,6 +78,8 @@ locals {
 
       // Registry and image defaults with connector-specific fallbacks
       registry                 = coalesce(conn.registry, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_registry : "mcr.microsoft.com")
+      registry_endpoint_ref    = conn.registry_endpoint_ref
+      image_pull_secrets       = conn.image_pull_secrets
       image_tag                = coalesce(conn.image_tag, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_tag : "latest")
       replicas                 = coalesce(conn.replicas, 1)
       image_pull_policy        = coalesce(conn.image_pull_policy, "IfNotPresent")
@@ -72,7 +95,7 @@ locals {
       connector_metadata_ref = conn.type == "custom" && conn.custom_connector_metadata_ref != null ? (
         conn.custom_connector_metadata_ref
         ) : (
-        "${coalesce(conn.registry, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_registry : "mcr.microsoft.com")}/${conn.type == "custom" ? conn.custom_image_name : local.connector_type_metadata[conn.type].image_name}-metadata:${coalesce(conn.image_tag, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_tag : "latest")}"
+        "${coalesce(conn.registry, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_registry : "mcr.microsoft.com")}/${conn.type == "custom" ? "${conn.custom_image_name}-metadata" : local.connector_type_metadata[conn.type].metadata_image_name}:${coalesce(conn.image_tag, conn.type != "custom" ? local.connector_type_metadata[conn.type].default_tag : "latest")}"
       )
 
       // MQTT config - use connector-specific or fallback to shared
@@ -102,10 +125,12 @@ resource "azapi_resource" "connector_template" {
       {
         connectorMetadataRef = each.value.connector_metadata_ref
         deviceInboundEndpointTypes = [
-          {
-            endpointType = each.value.endpoint_type
-            version      = each.value.endpoint_version
-          }
+          merge(
+            {
+              endpointType = each.value.endpoint_type
+            },
+            each.value.endpoint_version != null ? { version = each.value.endpoint_version } : {}
+          )
         ]
         runtimeConfiguration = {
           runtimeConfigurationType = "ManagedConfiguration"
@@ -113,12 +138,20 @@ resource "azapi_resource" "connector_template" {
             {
               managedConfigurationType = "ImageConfiguration"
               imageConfigurationSettings = {
-                registrySettings = {
-                  registrySettingsType = "ContainerRegistry"
-                  containerRegistrySettings = {
-                    registry = each.value.registry
-                  }
-                }
+                registrySettings = merge(
+                  {
+                    registrySettingsType = each.value.registry_endpoint_ref != null ? "RegistryEndpointRef" : "ContainerRegistry"
+                  },
+                  each.value.registry_endpoint_ref != null ? { registryEndpointRef = each.value.registry_endpoint_ref } : {},
+                  each.value.registry_endpoint_ref == null ? {
+                    containerRegistrySettings = merge(
+                      { registry = each.value.registry },
+                      each.value.image_pull_secrets != null ? {
+                        imagePullSecrets = [for secret in each.value.image_pull_secrets : { secretRef = secret }]
+                      } : {}
+                    )
+                  } : {}
+                )
                 imageName       = each.value.image_name
                 imagePullPolicy = each.value.image_pull_policy
                 replicas        = each.value.replicas
@@ -130,8 +163,20 @@ resource "azapi_resource" "connector_template" {
             },
             each.value.allocation != null ? { allocation = each.value.allocation } : {},
             each.value.additional_configuration != null ? { additionalConfiguration = each.value.additional_configuration } : {},
-            each.value.secrets != null ? { secrets = each.value.secrets } : {},
-            each.value.trust_settings != null ? { trustSettings = each.value.trust_settings } : {}
+            each.value.secrets != null ? {
+              secrets = [
+                for secret in each.value.secrets : {
+                  secretAlias = secret.secret_alias
+                  secretKey   = secret.secret_key
+                  secretRef   = secret.secret_ref
+                }
+              ]
+            } : {},
+            each.value.trust_settings != null ? {
+              trustSettings = {
+                trustListSecretRef = each.value.trust_settings.trust_list_secret_ref
+              }
+            } : {}
           )
         }
         mqttConnectionConfiguration = {

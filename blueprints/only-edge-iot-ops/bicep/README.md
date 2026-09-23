@@ -118,6 +118,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | shouldEnableAkriMediaConnector      | Deploy Akri Media Connector template to the IoT Operations instance.                                                                                         | `bool`                                           | `false`                                                                                                                       | no       |
 | shouldEnableAkriOnvifConnector      | Deploy Akri ONVIF Connector template to the IoT Operations instance.                                                                                         | `bool`                                           | `false`                                                                                                                       | no       |
 | shouldEnableAkriSseConnector        | Deploy Akri SSE Connector template to the IoT Operations instance.                                                                                           | `bool`                                           | `false`                                                                                                                       | no       |
+| shouldEnableAkriOpcUaConnector      | Deploy the OPC UA Connector template to the IoT Operations instance. (Required to configure OPC UA assets)                                                   | `bool`                                           | `false`                                                                                                                       | no       |
 | customAkriConnectors                | List of custom Akri connector templates with user-defined endpoint types and container images.                                                               | `array`                                          | []                                                                                                                            | no       |
 | registryEndpoints                   | List of additional container registry endpoints for pulling custom artifacts. MCR is always added automatically.                                             | `array`                                          | []                                                                                                                            | no       |
 | akriMqttSharedConfig                | Shared MQTT connection configuration for all Akri connectors.                                                                                                | `[_1.AkriMqttConfig](#user-defined-types)`       | {'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}           | no       |
@@ -393,6 +394,14 @@ Broker persistence configuration for disk-backed message storage.
 | stateStore                | `object` | Controls which state store keys should be persisted to disk.     |
 | subscriberQueue           | `object` | Controls which subscriber queues should be persisted to disk.    |
 | persistentVolumeClaimSpec | `object` | Persistent volume claim specification for storage.               |
+
+### `_1.ConnectorsConfig`
+
+The settings for the connectors bundled with the Azure IoT Operations release.
+
+| Property | Type     | Description                                                                                                 |
+|:---------|:---------|:------------------------------------------------------------------------------------------------------------|
+| version  | `string` | The version of the connectors bundle, used as the image and metadata tag for supervisor-managed connectors. |
 
 ### `_1.CustomerManagedByoIssuerConfig`
 

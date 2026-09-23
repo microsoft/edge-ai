@@ -23,6 +23,9 @@ estimated_reading_time: 3
 This blueprint provides a complete end-to-end deployment of Azure IoT Operations (AIO) on a multi-node, Arc-enabled Kubernetes cluster. It deploys all necessary components from VM creation to AIO installation, resulting in a production-grade edge computing environment with high availability that integrates with Azure cloud services. AIO deployment is optional — set `should_deploy_aio = false` to deploy only the Arc-connected cluster with extensions and observability.
 Please follow general blueprint deployment and recommendations from blueprints [README.md](../README.md).
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 This blueprint deploys:

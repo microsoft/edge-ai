@@ -18,8 +18,12 @@ locals {
     configmap_name = local.selfsigned_configmap_name
     configmap_key  = ""
   }
-  custom_location_name = "cl-${var.connected_cluster_name}"
-  aio_instance_name    = "iotops-${var.connected_cluster_name}"
+
+  // Trust bundle the WASM graph controller reads the CA cert from. Unlike trustBundleSettings
+  // (empty for self-signed), this always resolves; self-signed publishes the bundle under "ca.crt".
+  trust_ca_cert_file_name = local.is_customer_managed ? local.trust.configmap_key : "ca.crt"
+  custom_location_name    = "cl-${var.connected_cluster_name}"
+  aio_instance_name       = "iotops-${var.connected_cluster_name}"
 
   mqtt_broker_hostname = "${var.mqtt_broker_config.brokerListenerServiceName}.${var.operations_config.namespace}"
   mqtt_broker_address  = "mqtts://${local.mqtt_broker_hostname}:${var.mqtt_broker_config.brokerListenerPort}"
@@ -46,6 +50,8 @@ locals {
     "dataFlows.values.tinyKube.mqttBroker.hostName"                                   = local.mqtt_broker_hostname
     "dataFlows.values.tinyKube.mqttBroker.port"                                       = tostring(var.mqtt_broker_config.brokerListenerPort)
     "dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience" = var.mqtt_broker_config.serviceAccountAudience
+    "dataFlows.values.wasmGraphController.mqttBroker.caCertConfigMapRef"              = local.trust.configmap_name
+    "dataFlows.values.wasmGraphController.mqttBroker.caCertFileName"                  = local.trust_ca_cert_file_name
     "observability.metrics.enabled"                                                   = local.metrics.enabled ? "true" : "false"
     "observability.metrics.openTelemetryCollectorAddress"                             = local.metrics.otelCollectorAddress
     "trustSource"                                                                     = var.trust_source

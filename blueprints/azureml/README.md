@@ -21,6 +21,9 @@ keywords:
 
 This blueprint composes the Azure Machine Learning component with optional networking, security, data, container registry, Kubernetes, and edge integrations. Toggle only the pieces you need so that you can land the workspace in an existing landing zone or provision everything end-to-end.
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 - **Azure Machine Learning workspace** – creates the workspace, assigns access, and connects storage, Application Insights, Key Vault, and optional registry resources. Public network access is disabled by default.

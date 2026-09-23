@@ -220,9 +220,11 @@ jobs:
           GRYPE_TARBALL="grype_${GRYPE_VER}_linux_amd64.tar.gz"
           GRYPE_TMP="$(mktemp -d)"
           echo "Installing Grype ${GRYPE_VERSION}..."
-          curl -sSfL -o "${GRYPE_TMP}/${GRYPE_TARBALL}" \
+          curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 10 --max-time 30 \
+            -o "${GRYPE_TMP}/${GRYPE_TARBALL}" \
             "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/${GRYPE_TARBALL}"
-          curl -sSfL -o "${GRYPE_TMP}/grype_checksums.txt" \
+          curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 10 --max-time 30 \
+            -o "${GRYPE_TMP}/grype_checksums.txt" \
             "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}/grype_${GRYPE_VER}_checksums.txt"
           (cd "${GRYPE_TMP}" && grep " ${GRYPE_TARBALL}$" grype_checksums.txt | sha256sum -c -)
           sudo tar -xzf "${GRYPE_TMP}/${GRYPE_TARBALL}" -C /usr/local/bin grype
