@@ -107,11 +107,11 @@ sudo journalctl -u k3s-agent
 
 The `AZ_MODE` variable controls how the script obtains Azure CLI.
 
-| Mode        | Behavior                                                                                                     |
-|-------------|--------------------------------------------------------------------------------------------------------------|
+| Mode        | Behavior                                                                                                       |
+|-------------|----------------------------------------------------------------------------------------------------------------|
 | `auto`      | Default. Uses an existing host `az`, otherwise a container runtime, otherwise installs through `apt` or `tdnf` |
-| `container` | Requires a container runtime. Fails rather than installing packages on the host                               |
-| `host`      | Requires Azure CLI on the host, installing it when a supported package manager is present                     |
+| `container` | Requires a container runtime. Fails rather than installing packages on the host                                |
+| `host`      | Requires Azure CLI on the host, installing it when a supported package manager is present                      |
 
 In container mode the script runs `mcr.microsoft.com/azure-cli` through `k3s ctr`. Set `AZ_CLI_IMAGE` to a digest-pinned reference for production, matching the guidance for `K3S_INSTALL_SCRIPT_SHA256` and `KUBECTL_SHA256`.
 
