@@ -33,6 +33,8 @@ locals {
     ARC_TENANT_ID         = var.arc_tenant_id
     AZ_CLI_VER            = "$${AZ_CLI_VER}"
     AZ_CONNECTEDK8S_VER   = "$${AZ_CONNECTEDK8S_VER}"
+    AZ_MODE               = coalesce(var.az_mode, "$${AZ_MODE}")
+    AZ_CLI_IMAGE          = coalesce(var.az_cli_image, "$${AZ_CLI_IMAGE}")
     CUSTOM_LOCATIONS_OID  = var.custom_locations_oid
     DEVICE_USERNAME       = var.cluster_server_host_machine_username
     SKIP_INSTALL_AZ_CLI   = var.should_skip_installing_az_cli ? "true" : "$${SKIP_INSTALL_AZ_CLI}"

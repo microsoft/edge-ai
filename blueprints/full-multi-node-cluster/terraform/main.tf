@@ -214,6 +214,7 @@ module "cloud_data" {
   virtual_network_id                  = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
   should_enable_public_network_access = var.should_enable_storage_public_network_access
   storage_account_is_hns_enabled      = var.storage_account_is_hns_enabled && !var.should_deploy_azureml
+  should_create_data_lake             = var.should_create_data_lake
 
   should_create_blob_dns_zone = !var.should_enable_private_endpoints
   blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null
@@ -526,6 +527,10 @@ module "edge_cncf_cluster" {
   cluster_server_ip = var.host_machine_count > 1 || local.should_use_arc_machines ? try(coalesce(var.cluster_server_ip, local.vm_host_private_ips[0]), null) : var.cluster_server_ip
 
   should_deploy_arc_machines            = local.should_use_arc_machines
+  should_deploy_over_ssh                = var.should_use_ssh_delivery
+  ssh_local_user                        = var.ssh_local_user
+  ssh_private_key_path                  = var.ssh_private_key_path
+  should_create_ssh_endpoint            = var.should_create_ssh_endpoint
   should_generate_cluster_server_token  = var.host_machine_count > 1 || local.should_use_arc_machines
   should_get_custom_locations_oid       = var.should_get_custom_locations_oid
   should_add_current_user_cluster_admin = var.should_add_current_user_cluster_admin
