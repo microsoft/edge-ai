@@ -9,7 +9,8 @@
  */
 
 locals {
-  deploy_script_secrets = file("${path.module}/../../../scripts/deploy-script-secrets.sh")
+  deploy_script_secrets  = file("${path.module}/../../../scripts/deploy-script-secrets.sh")
+  deploy_script_over_ssh = "${path.module}/../../../scripts/deploy-script-over-ssh.sh"
 
   script_env_vars = {
     CLIENT_ID          = try(var.arc_onboarding_identity.client_id, "")
@@ -20,10 +21,22 @@ locals {
   }
   env_vars_string = join("\n", [for k, v in local.script_env_vars : "${k}=\"${v}\"" if v != ""])
 
+  script_log_path = "/var/log/edge-ai/k3s-device-setup-${var.node_type}.log"
+
+  // Logging lives in the script rather than the SSH command line, where it would need nested quoting.
+  // 'install /dev/null' truncates the log to the current run and fixes its mode before tee opens it.
+  script_log_preamble = join("\n", [
+    "install -d -m 0750 /var/log/edge-ai",
+    "install -m 0600 /dev/null '${local.script_log_path}'",
+    "exec > >(tee '${local.script_log_path}') 2>&1",
+    "printf '========== Setup started at %s ==========\\n' \"$(date --iso-8601=seconds)\"",
+  ])
+
   // Matches the extension delivery path: shebang first, then runtime env vars for identity-based onboarding.
   rendered_script_to_deploy = join("\n", [
     "#!/usr/bin/env bash",
     local.env_vars_string,
+    local.script_log_preamble,
     var.should_use_script_from_secrets_for_deploy ? local.deploy_script_secrets : var.script_content,
   ])
 
@@ -31,7 +44,6 @@ locals {
   machine_id_parts   = split("/", var.arc_machine_id)
   machine_name       = element(local.machine_id_parts, length(local.machine_id_parts) - 1)
   machine_group_name = element(local.machine_id_parts, 4)
-  script_log_path    = "/var/log/edge-ai/k3s-device-setup-${var.node_type}.log"
 }
 
 /*
@@ -80,16 +92,16 @@ resource "terraform_data" "ssh_script_deployment" {
   }
 
   provisioner "local-exec" {
-    interpreter = ["/bin/bash", "-c"]
+    interpreter = ["/bin/bash"]
 
     environment = {
-      SCRIPT_B64 = base64encode(local.rendered_script_to_deploy)
+      ARC_RESOURCE_GROUP_NAME = local.machine_group_name
+      ARC_RESOURCE_NAME       = local.machine_name
+      SCRIPT_B64              = base64encode(local.rendered_script_to_deploy)
+      SSH_LOCAL_USER          = var.ssh_local_user
+      SSH_PRIVATE_KEY_PATH    = var.ssh_private_key_path
     }
 
-    // 'install /dev/null' truncates the log to the current run and fixes its mode before tee opens it.
-    command = <<-EOT
-      set -euo pipefail
-      az ssh arc --resource-group '${local.machine_group_name}' --name '${local.machine_name}' --local-user '${var.ssh_local_user}' --private-key-file '${var.ssh_private_key_path}' -- -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o LogLevel=ERROR "printf '%s' '$SCRIPT_B64' | sudo bash -c 'set -euo pipefail; install -d -m 0750 /var/log/edge-ai; install -m 0600 /dev/null ${local.script_log_path}; script_file=\$(mktemp /tmp/k3s-device-setup.XXXXXX); trap \"rm -f \$script_file\" EXIT; base64 -d > \"\$script_file\"; chmod 0700 \"\$script_file\"; { printf \"========== Setup started at %s ==========\\n\" \"\$(date --iso-8601=seconds)\"; bash \"\$script_file\"; } 2>&1 | tee ${local.script_log_path}'"
-    EOT
+    command = local.deploy_script_over_ssh
   }
 }
