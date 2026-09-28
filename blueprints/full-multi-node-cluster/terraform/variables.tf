@@ -900,6 +900,12 @@ variable "storage_account_is_hns_enabled" {
   default     = true
 }
 
+variable "should_create_data_lake" {
+  type        = bool
+  description = "Whether to create the data lake Blob container and Data Lake Gen2 filesystem"
+  default     = true
+}
+
 /*
  * PostgreSQL Configuration
  */

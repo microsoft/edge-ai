@@ -214,6 +214,7 @@ module "cloud_data" {
   virtual_network_id                  = var.should_enable_private_endpoints ? module.cloud_networking.virtual_network.id : null
   should_enable_public_network_access = var.should_enable_storage_public_network_access
   storage_account_is_hns_enabled      = var.storage_account_is_hns_enabled && !var.should_deploy_azureml
+  should_create_data_lake             = var.should_create_data_lake
 
   should_create_blob_dns_zone = !var.should_enable_private_endpoints
   blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability.blob_private_dns_zone : null

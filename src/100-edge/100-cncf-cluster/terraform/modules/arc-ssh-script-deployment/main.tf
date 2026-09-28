@@ -31,6 +31,7 @@ locals {
   machine_id_parts   = split("/", var.arc_machine_id)
   machine_name       = element(local.machine_id_parts, length(local.machine_id_parts) - 1)
   machine_group_name = element(local.machine_id_parts, 4)
+  script_log_path    = "/var/log/edge-ai/k3s-device-setup-${var.node_type}.log"
 }
 
 /*
@@ -73,8 +74,9 @@ resource "terraform_data" "ssh_script_deployment" {
 
   // The script digest reveals nothing about its contents, and triggers_replace cannot hold a sensitive value.
   triggers_replace = {
-    arc_machine_id = var.arc_machine_id
-    script_hash    = nonsensitive(sha256(local.rendered_script_to_deploy))
+    arc_machine_id  = var.arc_machine_id
+    script_hash     = nonsensitive(sha256(local.rendered_script_to_deploy))
+    script_log_path = local.script_log_path
   }
 
   provisioner "local-exec" {
@@ -84,9 +86,10 @@ resource "terraform_data" "ssh_script_deployment" {
       SCRIPT_B64 = base64encode(local.rendered_script_to_deploy)
     }
 
+    // 'install /dev/null' truncates the log to the current run and fixes its mode before tee opens it.
     command = <<-EOT
       set -euo pipefail
-      az ssh arc --resource-group '${local.machine_group_name}' --name '${local.machine_name}' --local-user '${var.ssh_local_user}' --private-key-file '${var.ssh_private_key_path}' -- -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o LogLevel=ERROR "echo $SCRIPT_B64 | base64 -d | sudo bash"
+      az ssh arc --resource-group '${local.machine_group_name}' --name '${local.machine_name}' --local-user '${var.ssh_local_user}' --private-key-file '${var.ssh_private_key_path}' -- -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o LogLevel=ERROR "printf '%s' '$SCRIPT_B64' | sudo bash -c 'set -euo pipefail; install -d -m 0750 /var/log/edge-ai; install -m 0600 /dev/null ${local.script_log_path}; script_file=\$(mktemp /tmp/k3s-device-setup.XXXXXX); trap \"rm -f \$script_file\" EXIT; base64 -d > \"\$script_file\"; chmod 0700 \"\$script_file\"; { printf \"========== Setup started at %s ==========\\n\" \"\$(date --iso-8601=seconds)\"; bash \"\$script_file\"; } 2>&1 | tee ${local.script_log_path}'"
     EOT
   }
 }
