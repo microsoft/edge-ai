@@ -279,7 +279,7 @@ For environments requiring least-privilege access, create a custom role with the
 
 ### Prerequisites
 
-**IMPORTANT:** We highly suggest using [this project's integrated dev container](./.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
+**IMPORTANT:** We highly suggest using [this project's integrated dev container](../.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
 
 Refer to the Environment Setup section in the [Root README](../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
 
@@ -636,7 +636,7 @@ terraform {
 
 The blueprints in this repository can be used to implement a variety of industry solutions across different pillars. We are working aggressively towards building blueprints for each of these scenarios as time move on.
 
-For a detailed list of industry pillars and scenarios, please see the [Industry Scenarios and Platform Capabilities](./industry-scenarios-platform-capabilities.md) document.
+For a detailed list of industry pillars and scenarios, please see the [Industry Scenarios and Platform Capabilities](../docs/project-planning/industry-scenarios-platform-capabilities.md) document.
 
 ## Getting Started with Your Industry Solution
 
