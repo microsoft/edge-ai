@@ -48,6 +48,12 @@ The Key Vault Script Retrieval method offers the following advantages:
 
 To enable Key Vault Script Retrieval, set the variable `should_use_script_from_secrets_for_deploy` to `true` in your Terraform configuration. This is enabled by default.
 
+Terraform stores the scripts as gzip-compressed, base64-encoded secret values (content type `application/gzip;base64`) to stay within the Key Vault 25,600 character secret limit. To retrieve a script manually, decode and decompress the value:
+
+```bash
+az keyvault secret show --vault-name <key-vault-name> --name ubuntu-k3s-server-script --query value -o tsv | base64 -d | gunzip > ./cluster-server-setup.sh
+```
+
 ## Terraform
 
 Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for
