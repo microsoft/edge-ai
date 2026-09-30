@@ -843,6 +843,7 @@ mitigations
 MJPG
 mkdir
 mklink
+mktemp
 mlflow
 mlops
 mmap
