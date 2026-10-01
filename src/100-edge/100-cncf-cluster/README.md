@@ -48,6 +48,18 @@ The Key Vault Script Retrieval method offers the following advantages:
 
 To enable Key Vault Script Retrieval, set the variable `should_use_script_from_secrets_for_deploy` to `true` in your Terraform configuration. This is enabled by default.
 
+Both Terraform and Bicep store the scripts as gzip-compressed, base64-encoded secret values (content type `application/gzip;base64`) to stay within the Key Vault 25,600 character secret limit. To retrieve a script manually, decode and decompress the value:
+
+```bash
+az keyvault secret show --vault-name <key-vault-name> --name ubuntu-k3s-server-script --query value -o tsv | base64 -d | gunzip > ./cluster-server-setup.sh
+```
+
+Terraform compresses the scripts with `base64gzip()`. Bicep has no compression function, so it uploads the scripts through a `Microsoft.Resources/deploymentScripts` resource that runs Azure CLI with a dedicated user-assigned managed identity granted the Key Vault Secrets Officer role. The Bicep deployment requires:
+
+- Permission to create role assignments on the Key Vault
+- The `Microsoft.ContainerInstance` and `Microsoft.Storage` resource providers registered in the subscription
+- Key Vault data plane access from the deployment script container, which runs without virtual network integration and cannot reach a Key Vault with public network access disabled
+
 ## Terraform
 
 Refer to [Terraform Components - Getting Started](../README.md#terraform-components---getting-started) for

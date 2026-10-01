@@ -26,7 +26,7 @@ resource "azurerm_storage_container" "schema_container" {
  */
 
 resource "azapi_resource" "schema_registry" {
-  type      = "Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview"
+  type      = "Microsoft.DeviceRegistry/schemaRegistries@2026-04-01"
   parent_id = var.resource_group.id
   name      = local.registry_name
   location  = var.location
