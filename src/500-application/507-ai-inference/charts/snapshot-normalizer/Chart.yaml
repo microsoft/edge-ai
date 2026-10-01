@@ -1,3 +1,4 @@
+---
 apiVersion: v2
 name: snapshot-normalizer
 description: Normalizes binary JPEG MQTT messages for edge inference
