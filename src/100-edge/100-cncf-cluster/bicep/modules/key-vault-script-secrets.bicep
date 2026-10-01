@@ -36,45 +36,6 @@ param clusterNodeScript string
 param clusterServerScript string
 
 /*
-  Variables
-*/
-
-var uploadScriptContent = '''
-set -euo pipefail
-
-upload_script_secret() {
-  local secret_name="$1"
-  local script_content="$2"
-  local secret_file
-  secret_file="$(mktemp)"
-  chmod 600 "$secret_file"
-
-  printf '%s' "$script_content" | gzip -9 -n | base64 -w0 >"$secret_file"
-
-  for attempt in $(seq 1 10); do
-    if az keyvault secret set \
-      --vault-name "$KEY_VAULT_NAME" \
-      --name "$secret_name" \
-      --file "$secret_file" \
-      --content-type 'application/gzip;base64' \
-      --output none; then
-      rm -f "$secret_file"
-      return 0
-    fi
-    echo "Setting Key Vault secret '$secret_name' attempt $attempt/10 failed, retrying in 30s..."
-    sleep 30
-  done
-
-  rm -f "$secret_file"
-  echo "Failed to set Key Vault secret '$secret_name'" >&2
-  return 1
-}
-
-upload_script_secret "$SERVER_SCRIPT_SECRET_NAME" "$SERVER_SCRIPT"
-upload_script_secret "$NODE_SCRIPT_SECRET_NAME" "$NODE_SCRIPT"
-'''
-
-/*
   Resources
 */
 
@@ -141,7 +102,7 @@ resource uploadScriptSecrets 'Microsoft.Resources/deploymentScripts@2023-08-01' 
         secureValue: clusterNodeScript
       }
     ]
-    scriptContent: uploadScriptContent
+    scriptContent: loadTextContent('../../scripts/upload-script-secrets.sh')
   }
 }
 
