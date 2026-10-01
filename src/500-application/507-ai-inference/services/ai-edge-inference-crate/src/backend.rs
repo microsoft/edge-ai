@@ -129,6 +129,10 @@ impl Backend {
 }
 
 /// Inference backend trait that allows multiple ML frameworks
+#[allow(
+    clippy::double_must_use,
+    reason = "async_trait emits #[must_use] on methods returning Pin<Box<dyn Future>>"
+)]
 #[async_trait]
 pub trait InferenceBackend: Send + Sync {
     /// Initialize the backend with configuration

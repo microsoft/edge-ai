@@ -36,7 +36,6 @@ struct CandleModel {
 
 #[cfg(feature = "candle")]
 #[derive(Debug)]
-#[expect(dead_code)]
 struct PreprocessingConfig {
     normalize_mean: Vec<f32>,
     normalize_std: Vec<f32>,
