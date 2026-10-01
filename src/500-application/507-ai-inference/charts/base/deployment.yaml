@@ -37,7 +37,7 @@ spec:
               mountPath: /models
       containers:
         - name: ai-edge-inference
-          image: acrmodules01.azurecr.io/ai-edge-inference:latest
+          image: ai-edge-inference:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
