@@ -2,9 +2,9 @@
 title: AI Inference Service
 description: Production-ready AI inference service with dual-backend machine learning capabilities for edge computing, supporting ONNX Runtime and Candle (pure Rust) inference engines with MQTT integration
 author: Edge AI Team
-ms.date: 2025-10-17
+ms.date: 2026-09-30
 ms.topic: how-to
-estimated_reading_time: 8
+estimated_reading_time: 10
 keywords:
   - ai inference
   - onnx runtime
@@ -16,6 +16,7 @@ keywords:
   - machine learning
   - docker compose
   - kubernetes
+  - image snapshot schema
 ---
 
 A production-ready AI inference service that provides dual-backend machine learning capabilities for edge computing environments. Supports both ONNX Runtime and Candle (pure Rust) inference engines with MQTT integration for real-time processing.
@@ -63,15 +64,79 @@ This component implements a scalable AI inference service designed for industria
 ├── docker-compose.yaml          # Local development environment
 ├── services/                    # Service implementations
 │   ├── ai-edge-inference/       # Main inference service (Rust)
-│   └── ai-edge-inference-crate/ # Shared Rust crate
+│   ├── ai-edge-inference-crate/ # Shared Rust crate
+│   └── snapshot-normalizer-core/ # Snapshot library and MQTT adapter (Rust)
 ├── charts/                      # Kubernetes deployment manifests
+│   ├── ai-edge-inference/       # Local ONNX inference Helm chart
 │   ├── base/                    # Base Kubernetes resources
+│   ├── snapshot-normalizer/     # Snapshot normalizer Helm chart
 │   └── model-downloader-job.yaml
 └── resources/                   # Configuration and model files
     ├── model_configs/           # Model configuration files
     ├── models/                  # ML model files (if present)
+    ├── schemas/                 # Published message contracts
     └── mosquitto.conf           # MQTT broker configuration
 ```
+
+## Snapshot Normalizer
+
+`services/snapshot-normalizer-core/` contains a pure Rust library and a thin
+Azure IoT Operations MQTT adapter. The library builds the canonical
+`image_snapshot` v1 request value from raw JPEG bytes. The adapter supplies
+configuration, timestamps, subscription, and publication around that library.
+
+### What the library does
+
+- Classifies a byte slice as JPEG by its start-of-image marker prefix
+- Applies caller-supplied maxima to the raw payload and to the serialized envelope
+- Base64-encodes the payload with the standard, padded alphabet
+- Builds and serializes the canonical envelope value
+- Offers a fixed-capacity recent-hash duplicate detector, a byte-free FNV-1a 64-bit payload digest, and a fixed-cardinality counter set
+
+Envelope construction is pure: it reads no clock, draws no randomness, performs
+no input or output, and depends on no transport. The same input always yields
+the same envelope.
+
+### Adapter behavior
+
+- Subscribes to a configurable topic carrying raw binary JPEG payloads
+- Publishes canonical `image_snapshot` JSON to a configurable output topic at MQTT QoS 1
+- Uses explicit `CAMERA_ID` and `DEVICE_NAME` values instead of topic-derived identity
+- Mounts the Azure IoT Operations trust bundle and SAT through the component Helm chart
+
+### Limits
+
+- No camera is acquired, opened, or driven; the Media connector or another producer supplies JPEG bytes.
+- The adapter does not infer identity from MQTT topics, and the envelope carries no `source_topic`.
+- No character-set check and no length bound are applied to identifiers.
+- `SizeLimits` holds caller-supplied maxima. A length equal to a maximum is accepted; only a greater length is rejected.
+- Payload digests are not a cryptographic commitment and payload bytes are never stored or logged.
+
+### Published contract
+
+The emitted value is defined by
+[`resources/schemas/image-snapshot-v1.schema.json`](resources/schemas/image-snapshot-v1.schema.json).
+
+Required: `message_type` (constant `image_snapshot`), `schema_version`,
+`camera_id`, `timestamp` (integer epoch seconds), `image_data` (standard-alphabet
+Base64), `device_name`.
+
+Optional and emitted when supplied: `metadata` (free-form object) and
+`correlation_id` (string). Both are omitted when absent rather than emitted as
+`null`.
+
+Optional and never emitted by this producer: `location`, a
+`[latitude, longitude]` pair reserved in the contract so consumers keep
+accepting envelopes from other producers.
+
+The schema sets `additionalProperties: true`. Readers are tolerant: unknown
+members are accepted and discarded rather than rejected, so a later field
+addition stays non-breaking. The schema documents recommended bounds of 4 MiB
+maximum raw JPEG and 8 MiB maximum serialized envelope; those are caller-configured
+defaults, not schema-enforced limits.
+
+See [`services/snapshot-normalizer-core/README.md`](services/snapshot-normalizer-core/README.md)
+for the full public surface.
 
 ## Quick Start
 
@@ -119,11 +184,43 @@ This component implements a scalable AI inference service designed for industria
 
 ### Production Deployment
 
-Deploy to Kubernetes using the provided manifests:
+Build and publish the inference image from the `services/` directory, where the
+Docker build context contains both Rust crates:
 
 ```bash
-kubectl apply -k charts/base/
+docker build \
+   --file ai-edge-inference/Dockerfile \
+   --tag <registry>/ai-edge-inference:0.2.0 \
+   .
+docker push <registry>/ai-edge-inference:0.2.0
 ```
+
+Populate an ONNX model claim before starting inference. The repository model
+files are placeholders and are not suitable for inference. To use a
+pre-populated claim, set `models.createClaim=false` and provide
+`models.existingClaim`.
+
+Deploy the normalizer and local inference workloads after the Azure IoT
+Operations infrastructure and camera Asset are ready:
+
+```bash
+helm upgrade --install snapshot-normalizer \
+   charts/snapshot-normalizer \
+   --namespace azure-iot-operations \
+   --set image.repository=<registry>/snapshot-normalizer \
+   --set normalizer.cameraId=camera-01 \
+   --set normalizer.deviceName=camera-01
+
+helm upgrade --install ai-edge-inference \
+   charts/ai-edge-inference \
+   --namespace azure-iot-operations \
+   --set image.repository=<registry>/ai-edge-inference \
+   --set models.createClaim=false \
+   --set models.existingClaim=<model-claim>
+```
+
+This path uses MQTT directly from the public Media connector through the
+normalizer and inference service. It does not require the interim HTTP bridge.
 
 ## Configuration
 

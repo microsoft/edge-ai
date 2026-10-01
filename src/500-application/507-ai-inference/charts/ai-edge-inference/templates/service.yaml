@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ai-edge-inference.fullname" . }}
+  namespace: {{ include "ai-edge-inference.namespace" . }}
+  labels:
+    {{- include "ai-edge-inference.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: metrics
+      port: {{ .Values.service.metricsPort }}
+      targetPort: metrics
+      protocol: TCP
+    - name: health
+      port: {{ .Values.service.healthPort }}
+      targetPort: health
+      protocol: TCP
+  selector:
+    {{- include "ai-edge-inference.selectorLabels" . | nindent 4 }}

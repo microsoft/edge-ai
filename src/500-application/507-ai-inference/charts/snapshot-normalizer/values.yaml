@@ -1,0 +1,62 @@
+---
+replicaCount: 1
+
+image:
+  repository: ""
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+namespace: azure-iot-operations
+serviceAccountName: ""
+
+normalizer:
+  cameraId: camera-01
+  deviceName: camera-device-01
+  inputTopic: edge-ai/cameras/snapshots/raw
+  outputTopic: edge-ai/inference/requests
+  maxJpegBytes: 4194304
+  maxEnvelopeBytes: 8388608
+  dedupCapacity: 1024
+
+mqtt:
+  brokerHostname: aio-broker.azure-iot-operations
+  brokerTcpPort: "18883"
+  clientId: snapshot-normalizer
+  tlsCaFile: /var/run/certs/ca.crt
+  satFile: /var/run/secrets/tokens/mq-sat
+
+volumes:
+  mqSat:
+    audience: aio-internal
+    expirationSeconds: 86400
+  trustBundle:
+    configMapName: azure-iot-operations-aio-ca-trust-bundle
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}

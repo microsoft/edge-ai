@@ -1,0 +1,12 @@
+---
+apiVersion: v2
+name: snapshot-normalizer
+description: Normalizes binary JPEG MQTT messages for edge inference
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/microsoft/edge-ai
+sources:
+  - https://github.com/microsoft/edge-ai
+maintainers:
+  - name: Edge AI Team
