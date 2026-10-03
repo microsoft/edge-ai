@@ -30,7 +30,7 @@ variable "arc_extensions" {
     }
     container_storage_extension = {
       enabled                    = true
-      version                    = "2.6.0"
+      version                    = "2.12.0"
       train                      = "stable"
       auto_upgrade_minor_version = false
       disk_storage_class         = ""
