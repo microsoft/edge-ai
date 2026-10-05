@@ -28,6 +28,27 @@ ignore:
       type: npm
       name: image-size
 
+  # braces 3.0.3 - HIGH severity, no fix available
+  # Justification: Used transitively by Docusaurus's build-time file watching and
+  # glob matching (chokidar, micromatch). Patterns come from repository-controlled
+  # configuration, not untrusted input. No patched braces release exists.
+  # References: GHSA-vfj7-8cjw-p6xm, CVE-2026-93687
+  - vulnerability: GHSA-vfj7-8cjw-p6xm
+    package:
+      type: npm
+      name: braces
+
+  # http-cache-semantics 4.2.0 - HIGH severity, no fix available
+  # Justification: Reached only through Docusaurus's update notifier
+  # (update-notifier -> latest-version -> package-json -> got -> cacheable-request),
+  # a single-user CLI version check. The repository does not run a shared HTTP
+  # cache serving multiple users. No patched http-cache-semantics release exists.
+  # References: GHSA-ch52-4w7c-c8xp, CVE-2026-93748
+  - vulnerability: GHSA-ch52-4w7c-c8xp
+    package:
+      type: npm
+      name: http-cache-semantics
+
   # golang.org/x/crypto/openpgp - no fix available
   # Justification: The deprecated openpgp packages are not imported by the Go
   # modules in this repository, and govulncheck reports no reachable findings.

@@ -4,5 +4,8 @@
   "description": "Pinned dependency wrapper so `npm ci` in docs-automation.yml satisfies the OSSF Scorecard npmCommand check.",
   "dependencies": {
     "markdown-link-check": "3.14.2"
+  },
+  "overrides": {
+    "basic-ftp": "^6.2.2"
   }
 }
