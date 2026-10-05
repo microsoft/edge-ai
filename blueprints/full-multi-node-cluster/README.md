@@ -134,45 +134,10 @@ For additional configuration options, review the variables in `variables.tf`.
 
 ### Example Configurations
 
-| Example File                                                                 | Description                                           |
-|------------------------------------------------------------------------------|-------------------------------------------------------|
-| [simple.tfvars.example](terraform/simple.tfvars.example)                     | Minimal configuration for Azure VM-based deployment   |
-| [simple-arc.tfvars.example](terraform/simple-arc.tfvars.example)             | Configuration for Azure Arc-enabled server deployment |
-| [vision-inference.tfvars.example](terraform/vision-inference.tfvars.example) | Media connector and camera snapshot profile           |
-
-### Vision inference profile
-
-The vision inference profile provisions the public Media connector template,
-a camera Device, and a snapshot Asset. Replace the documentation-only RTSP
-address with your camera endpoint before deployment. The Asset publishes raw
-JPEG messages to `edge-ai/cameras/snapshots/raw`.
-
-After the blueprint completes, build and publish the component 507 images and
-layer its workloads onto the cluster. The normalizer converts binary JPEG
-messages into the `image_snapshot` contract consumed by local ONNX inference:
-
-```bash
-helm upgrade --install snapshot-normalizer \
-  ../../src/500-application/507-ai-inference/charts/snapshot-normalizer \
-  --namespace azure-iot-operations \
-  --set image.repository=<registry>/snapshot-normalizer \
-  --set normalizer.cameraId=camera-01 \
-  --set normalizer.deviceName=camera-01
-
-helm upgrade --install ai-edge-inference \
-  ../../src/500-application/507-ai-inference/charts/ai-edge-inference \
-  --namespace azure-iot-operations \
-  --set image.repository=<registry>/ai-edge-inference \
-  --set models.createClaim=false \
-  --set models.existingClaim=<model-claim>
-```
-
-The model claim must contain a compatible `default.onnx`; repository model
-files are placeholders. See the component 507 documentation for image build
-and model storage details.
-
-The public path does not require an HTTP inference adapter. Component 507
-subscribes to the normalized MQTT topic and performs ONNX inference locally.
+| Example File                                                     | Description                                           |
+|------------------------------------------------------------------|-------------------------------------------------------|
+| [simple.tfvars.example](terraform/simple.tfvars.example)         | Minimal configuration for Azure VM-based deployment   |
+| [simple-arc.tfvars.example](terraform/simple-arc.tfvars.example) | Configuration for Azure Arc-enabled server deployment |
 
 > Note: The `aio_features` variable is a map that allows you to specify feature flags for Azure IoT Operations. This can be used to enable or disable specific features based on your deployment needs. For example, you can use the following format of variables to enable the preview feature [OPC UA asset discovery](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-autodetect-opc-ua-assets-use-akri):
 
