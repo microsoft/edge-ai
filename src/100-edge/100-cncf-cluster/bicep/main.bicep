@@ -153,8 +153,8 @@ var arcOnboardingPrincipalIdList = !empty(arcOnboardingPrincipalIds)
       arcOnboardingIdentity.?properties.principalId ?? arcOnboardingSpPrincipalId ?? fail('Either arcOnboardingIdentityName, arcOnboardingSpPrincipalId, or arcOnboardingPrincipalIds is required')
     ]
 
-var clusterServerScriptSecretName = ubuntuK3s.outputs.clusterServerScriptSecretName
-var clusterNodeScriptSecretName = ubuntuK3s.outputs.clusterNodeScriptSecretName
+var clusterServerScriptSecretName = keyVaultScriptSecrets.outputs.clusterServerScriptSecretName
+var clusterNodeScriptSecretName = keyVaultScriptSecrets.outputs.clusterNodeScriptSecretName
 
 /*
   Resources
@@ -200,11 +200,22 @@ module ubuntuK3s './modules/ubuntu-k3s.bicep' = {
     azCliImage: azCliImage
     clusterServerHostMachineUsername: clusterServerHostMachineUsername
     keyVaultName: deployKeyVaultName
-    serverScriptSecretName: serverScriptSecretName
-    nodeScriptSecretName: nodeScriptSecretName
     k3sTokenSecretName: k3sTokenSecretName
     deployUserTokenSecretName: deployUserTokenSecretName
     serverToken: serverToken
+  }
+}
+
+module keyVaultScriptSecrets './modules/key-vault-script-secrets.bicep' = {
+  name: '${deployment().name}-ks0'
+  scope: resourceGroup(deployKeyVaultResourceGroupName)
+  params: {
+    common: common
+    keyVaultName: deployKeyVaultName
+    serverScriptSecretName: serverScriptSecretName
+    nodeScriptSecretName: nodeScriptSecretName
+    clusterServerScript: ubuntuK3s.outputs.clusterServerScript
+    clusterNodeScript: ubuntuK3s.outputs.clusterNodeScript
   }
 }
 
@@ -284,7 +295,7 @@ output clusterServerScriptSecretName string = clusterServerScriptSecretName
 output clusterNodeScriptSecretName string = clusterNodeScriptSecretName
 
 @description('The AZ CLI command to get the cluster server script from Key Vault')
-output clusterServerScriptSecretShowCommand string = 'az keyvault secret show --name "${clusterServerScriptSecretName}" --vault-name "${deployKeyVaultName}" --query "value" -o tsv > ${clusterServerScriptSecretName}.sh && chmod +x ${clusterServerScriptSecretName}.sh'
+output clusterServerScriptSecretShowCommand string = 'az keyvault secret show --name "${clusterServerScriptSecretName}" --vault-name "${deployKeyVaultName}" --query "value" -o tsv | base64 -d | gunzip > ${clusterServerScriptSecretName}.sh && chmod +x ${clusterServerScriptSecretName}.sh'
 
 @description('The AZ CLI command to get the cluster node script from Key Vault')
-output clusterNodeScriptSecretShowCommand string = 'az keyvault secret show --name "${clusterNodeScriptSecretName}" --vault-name "${deployKeyVaultName}" --query "value" -o tsv > ${clusterNodeScriptSecretName}.sh && chmod +x ${clusterNodeScriptSecretName}.sh'
+output clusterNodeScriptSecretShowCommand string = 'az keyvault secret show --name "${clusterNodeScriptSecretName}" --vault-name "${deployKeyVaultName}" --query "value" -o tsv | base64 -d | gunzip > ${clusterNodeScriptSecretName}.sh && chmod +x ${clusterNodeScriptSecretName}.sh'

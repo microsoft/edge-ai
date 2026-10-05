@@ -105,6 +105,8 @@ description = "Generic API Key"
     "test_api_key",
     "mock_api_key",
     "9b10c9b9-24a2-486f-9649-53c93cbee746",
+    # Azure built-in role definition ID: Key Vault Secrets Officer
+    "b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
   ]
 
 [[rules]]

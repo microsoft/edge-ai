@@ -75,17 +75,11 @@ param serverToken string?
 @description('The name for the deploy user token secret in Key Vault.')
 param deployUserTokenSecretName string
 
-@description('The name of the Key Vault to save the scripts to.')
+@description('The name of the Key Vault the scripts use for cluster secrets.')
 param keyVaultName string
 
 @description('The name for the K3s token secret in Key Vault.')
 param k3sTokenSecretName string
-
-@description('The name for the node script secret in Key Vault.')
-param nodeScriptSecretName string
-
-@description('The name for the server script secret in Key Vault.')
-param serverScriptSecretName string
 
 /*
   Deployment Configuration Parameters
@@ -175,33 +169,6 @@ var effectiveClusterServerScript = '#!/usr/bin/env bash\n\n${resolvedServerEnvVa
 var effectiveClusterNodeScript = '#!/usr/bin/env bash\n\n${resolvedNodeEnvVarsString}\n\n${scriptFileContents}'
 
 /*
-  Resources
-*/
-
-resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
-  name: keyVaultName
-
-  resource serverScriptSecret 'secrets' = {
-    name: serverScriptSecretName
-    properties: {
-      value: effectiveClusterServerScript
-      contentType: 'text/plain'
-    }
-  }
-
-  resource nodeScriptSecret 'secrets' = {
-    name: nodeScriptSecretName
-    properties: {
-      value: effectiveClusterNodeScript
-      contentType: 'text/plain'
-    }
-  }
-
-  // Add secret for server token and deploy user token when @onlyIfNotExist() is supported.
-  // Update role assignment to only give secrets officer scoped to these secrets.
-}
-
-/*
   Outputs
 */
 
@@ -212,9 +179,3 @@ output clusterServerScript string = effectiveClusterServerScript
 @description('The script for setting up the host machine for the cluster node.')
 @secure()
 output clusterNodeScript string = effectiveClusterNodeScript
-
-@description('The Key Vault Secret name for the script for setting up the host machine for the cluster server.')
-output clusterServerScriptSecretName string = keyVault::serverScriptSecret.name
-
-@description('The Key Vault Secret name for the script for setting up the host machine for the cluster node.')
-output clusterNodeScriptSecretName string = keyVault::nodeScriptSecret.name

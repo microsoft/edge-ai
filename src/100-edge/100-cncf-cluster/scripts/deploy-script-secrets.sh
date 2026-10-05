@@ -150,27 +150,32 @@ else
   SECRET_NAME="${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
 fi
 
-# Path to the downloaded script
+# Script secrets are stored gzip-compressed and base64-encoded to fit the Key Vault secret size limit
 SCRIPT_PATH="./$SECRET_NAME.sh"
-trap 'rm "$SCRIPT_PATH"' EXIT
+SCRIPT_GZ_PATH="$SCRIPT_PATH.gz"
+trap 'rm -f "$SCRIPT_PATH" "$SCRIPT_GZ_PATH"' EXIT
 
-log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --file $SCRIPT_PATH"
+log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --encoding base64 --file $SCRIPT_GZ_PATH"
 
 # Download the script from Key Vault. Retry with backoff to handle RBAC
 # propagation delay when using system-assigned managed identity.
 KV_OK=false
 for attempt in $(seq 1 10); do
-  if az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH" 2>&1; then
+  if az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --encoding base64 --file "$SCRIPT_GZ_PATH" 2>&1; then
     KV_OK=true
     break
   fi
   log "Key Vault download attempt $attempt/10 failed, retrying in 30s..."
-  rm -f "$SCRIPT_PATH"
+  rm -f "$SCRIPT_GZ_PATH"
   sleep 30
 done
 
 if [ "$KV_OK" != true ]; then
   err "Failed to download script from Key Vault after 10 attempts"
+fi
+
+if ! gunzip -c "$SCRIPT_GZ_PATH" >"$SCRIPT_PATH"; then
+  err "Failed to decompress script downloaded from Key Vault secret '$SECRET_NAME'"
 fi
 
 # Make the script executable
