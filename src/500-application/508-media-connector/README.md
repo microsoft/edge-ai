@@ -2,7 +2,7 @@
 title: Media Connector for Azure IoT Operations
 description: Local development environment for testing Azure IoT Operations Media Connector with mock cameras, MQTT broker, and monitoring tools. Production deployment via blueprints.
 author: Edge AI Team
-ms.date: 11/12/2025
+ms.date: 2026-10-05
 ms.topic: reference
 estimated_reading_time: 12
 keywords:
@@ -482,6 +482,22 @@ Configure different media connector tasks via `dataset_configuration` JSON:
    # Publish test message
    mosquitto_pub -h localhost -t "media/test" -m '{"test": "message"}'
    ```
+
+### Testing with Mock RTSP Cameras on Kubernetes
+
+For cluster-based testing without physical cameras, deploy three mock RTSP cameras into a `mock-cameras` namespace:
+
+```bash
+kubectl apply -f src/500-application/508-media-connector/kubernetes/mock-rtsp-cameras.yaml
+```
+
+| Camera      | Resolution | FPS | Stream URL                                                                          |
+|-------------|------------|-----|-------------------------------------------------------------------------------------|
+| `pattern`   | 1920x1080  | 30  | `rtsp://mock-rtsp-pattern.mock-cameras.svc.cluster.local:8554/live.sdp/pattern`     |
+| `colorbars` | 1280x720   | 15  | `rtsp://mock-rtsp-colorbars.mock-cameras.svc.cluster.local:8554/live.sdp/colorbars` |
+| `ball`      | 640x480    | 25  | `rtsp://mock-rtsp-ball.mock-cameras.svc.cluster.local:8554/live.sdp/ball`           |
+
+The streams require the fixed test credentials `admin` and `password`. The services are cluster-internal; don't expose them outside the cluster. Remove the cameras with `kubectl delete namespace mock-cameras`.
 
 ### Testing RTSP Streams
 

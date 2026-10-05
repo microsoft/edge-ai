@@ -85,6 +85,26 @@ spec:
             - name: VIDEO_FEED_DELAY_SECONDS
               value: {{ .Values.mediaCapture.video.feedDelaySeconds | quote }}
 
+            # Camera Identity
+            - name: CAMERA_ID
+              value: {{ .Values.mediaCapture.camera.id | quote }}
+            - name: CAMERA_LOCATION
+              value: {{ .Values.mediaCapture.camera.location | quote }}
+
+            # Continuous Recording
+            - name: CONTINUOUS_RECORDING_ENABLED
+              value: {{ .Values.mediaCapture.continuousRecording.enabled | quote }}
+            {{- if .Values.mediaCapture.continuousRecording.enabled }}
+            - name: CONTINUOUS_SEGMENT_DURATION_SECONDS
+              value: {{ .Values.mediaCapture.continuousRecording.segmentDurationSeconds | quote }}
+            - name: OUTPUT_FORMAT
+              value: {{ .Values.mediaCapture.continuousRecording.outputFormat | quote }}
+            - name: LOCAL_RETENTION_HOURS
+              value: {{ .Values.mediaCapture.continuousRecording.localRetentionHours | quote }}
+            - name: CLEANUP_INTERVAL_MINUTES
+              value: {{ .Values.mediaCapture.continuousRecording.cleanupIntervalMinutes | quote }}
+            {{- end }}
+
             # Logging
             - name: RUST_LOG
               value: {{ .Values.logging.level | quote }}

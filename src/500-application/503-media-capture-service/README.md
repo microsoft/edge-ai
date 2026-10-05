@@ -16,6 +16,7 @@ The Media Capture Service is a Rust-based Kubernetes workload designed for video
 - **MQTT Subscription**: Listens for alert events and manual commands via Azure IoT Operations MQTT broker
 - **Video Ring Buffer**: Continuously buffers frames from RTSP video streams in memory for rapid segment extraction
 - **Event-Driven Capture**: Extracts relevant video segments triggered by alert events or manual commands
+- **Continuous Recording**: Optionally records back-to-back fixed-length segments with JSON metadata instead of event-driven clips
 - **Cloud Sync**: Automatically syncs captured video segments to Azure Blob Storage via ACSA
 
 ## Use Cases
@@ -653,31 +654,84 @@ kubectl logs -l app.kubernetes.io/name=media-capture-service -n azure-iot-operat
 helm template media-capture-service . --values values.yaml
 ```
 
+## Recording Modes
+
+Each deployment records one camera in one of two modes, selected by `CONTINUOUS_RECORDING_ENABLED` (`mediaCapture.continuousRecording.enabled` in the Helm chart).
+
+| Mode       | Default | Behavior                                                                                         |
+|------------|---------|--------------------------------------------------------------------------------------------------|
+| Triggered  | Yes     | Buffers frames in memory and writes a clip around each MQTT alert or manual command              |
+| Continuous | No      | Records back-to-back segments with `ffmpeg` and writes a JSON metadata file next to each segment |
+
+### Output Layout
+
+Both modes write under `{MEDIA_CLOUD_SYNC_DIR}/{CAMERA_ID}/{YYYY}/{MM}/{DD}/{HH}/` (UTC), and ACSA uploads the files to Blob Storage with the same relative paths:
+
+```text
+{MEDIA_CLOUD_SYNC_DIR}/
+└── camera-01/
+    └── 2026/01/30/19/
+        ├── segment_2026-01-30T19:05:44Z_camera-01.mp4   # continuous segment
+        ├── segment_2026-01-30T19:05:44Z_camera-01.json  # segment metadata
+        └── 2026-01-30_190612_segment_alert_event_id_42.mkv  # triggered clip (FILENAME_FORMAT)
+```
+
+`CAMERA_ID` accepts 1-128 letters, digits, `_`, or `-`. The service exits at startup when it's set to any other value. Triggered clips go under `unknown-camera/` when `CAMERA_ID` isn't set.
+
+> **Note**: Earlier versions wrote triggered clips to a `{YYYY-MM-DD}/` directory. Update anything that reads triggered clips by path, such as storage lifecycle rules or download scripts.
+
+### Continuous Recording
+
+Continuous mode records `CONTINUOUS_SEGMENT_DURATION_SECONDS` of the `RTSP_URL` stream per segment. It re-encodes video to 360p H.264 and audio to AAC to bound CPU, memory, and upload size.
+
+- **Complete segments only**: `ffmpeg` writes to `<segment>.partial`, and the file is renamed only after `ffmpeg` succeeds. The metadata file is written after the rename. Partial files left by an interrupted run are deleted at startup.
+- **Failures**: A failed segment is logged and retried after 5 seconds. Credentials in the RTSP URL are removed from logged `ffmpeg` errors.
+- **Metadata**: Each `.json` file holds `camera_id`, `location` (`CAMERA_LOCATION`), `segment_start`, `segment_end`, `duration_seconds`, and `file_name`. The `520-video-query-api` component lists segments by this path layout and reads these fields.
+- **Local retention**: Every `CLEANUP_INTERVAL_MINUTES`, segment and metadata files older than `LOCAL_RETENTION_HOURS` are deleted from the volume, whether or not ACSA uploaded them. Set the retention longer than the longest connectivity outage you expect, or set it to `0` to disable cleanup and rely on the ACSA volume's own policy. Triggered clips are never deleted by this cleanup.
+
+Deploy one Helm release per camera. Replicas of one release record the same camera into the same paths.
+
+```bash
+helm install media-capture-camera-01 ./charts/media-capture-service \
+  --namespace azure-iot-operations \
+  --set mediaCapture.continuousRecording.enabled=true \
+  --set mediaCapture.camera.id=camera-01 \
+  --set mediaCapture.camera.location=line-1 \
+  --set mediaCapture.video.rtspUrl=rtsp://<camera-host>:554/<stream-path>
+```
+
 ## Configuration
 
 ### Environment Variables
 
 The Media Capture Service uses environment variables for configuration. These can be set in the `.env` file for Docker Compose deployment or configured in the Helm chart values:
 
-| **Environment Variable**       | **Description**                                                                          | **Default Value**                                                 |
-|--------------------------------|------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| `AIO_BROKER_HOSTNAME`          | Hostname of the MQTT broker.                                                             | `aio-broker.azure-iot-operations`                                 |
-| `AIO_BROKER_TCP_PORT`          | TCP port for the MQTT broker.                                                            | `18883`                                                           |
-| `AIO_TLS_CA_FILE`              | Path to the CA certificate file for TLS communication with the MQTT broker.              | `/var/run/certs/ca.crt`                                           |
-| `AIO_SAT_FILE`                 | Path to the service account token file for MQTT authentication.                          | `/var/run/secrets/tokens/mq-sat`                                  |
-| `RUST_LOG`                     | Logging level for the application.                                                       | `info`                                                            |
-| `TRIGGER_TOPICS`               | JSON array of MQTT topics to subscribe to for triggering video capture.                  | `["xyz/+/+/+/+/alert/trigger", "xyz/+/+/+/+/analytics_disabled"]` |
-| `MEDIA_CLOUD_SYNC_DIR`         | Directory inside the pod where media files or video segments are synced to the cloud.    | `/cloud-sync/media`                                               |
-| `RTSP_URL`                     | RTSP URL for the live video stream to buffer.                                            | `rtsp://mock-camera-fof.eastus2.azurecontainer.io:8554/live`      |
-| `VIDEO_FPS`                    | Frames per second for the video buffer.                                                  | `20`                                                              |
-| `FRAME_WIDTH`                  | Frame width for buffered video.                                                          | `896`                                                             |
-| `FRAME_HEIGHT`                 | Frame height for buffered video.                                                         | `512`                                                             |
-| `BUFFER_SECONDS`               | Number of seconds of video to keep in the buffer (for segment extraction).               | `120`                                                             |
-| `AIO_MQTT_CLIENT_ID`           | MQTT client ID for the service.                                                          | `media-capture-service`                                           |
-| `CAPTURE_DURATION_SECONDS`     | Duration (in seconds) of video segment to extract on alert/manual trigger.               | `10`                                                              |
-| `VIDEO_FEED_DELAY_SECONDS`     | Seconds to offset alert timestamp for video delay compensation.                          | `5`                                                               |
-| `BUFFER_CLEANUP_INTERVAL_SECS` | Interval in seconds between cleanup operations for old frames in the buffer.             | `60`                                                              |
-| `MAX_OLD_FRAMES_AGE_SECS`      | Maximum age (in seconds) for frames in the buffer before they're removed during cleanup. | `300`                                                             |
+| **Environment Variable**              | **Description**                                                                          | **Default Value**                                                 |
+|---------------------------------------|------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| `AIO_BROKER_HOSTNAME`                 | Hostname of the MQTT broker.                                                             | `aio-broker.azure-iot-operations`                                 |
+| `AIO_BROKER_TCP_PORT`                 | TCP port for the MQTT broker.                                                            | `18883`                                                           |
+| `AIO_TLS_CA_FILE`                     | Path to the CA certificate file for TLS communication with the MQTT broker.              | `/var/run/certs/ca.crt`                                           |
+| `AIO_SAT_FILE`                        | Path to the service account token file for MQTT authentication.                          | `/var/run/secrets/tokens/mq-sat`                                  |
+| `RUST_LOG`                            | Logging level for the application.                                                       | `info`                                                            |
+| `TRIGGER_TOPICS`                      | JSON array of MQTT topics to subscribe to for triggering video capture.                  | `["xyz/+/+/+/+/alert/trigger", "xyz/+/+/+/+/analytics_disabled"]` |
+| `MEDIA_CLOUD_SYNC_DIR`                | Directory inside the pod where media files or video segments are synced to the cloud.    | `/cloud-sync/media`                                               |
+| `RTSP_URL`                            | RTSP URL for the live video stream to buffer.                                            | `rtsp://mock-camera-fof.eastus2.azurecontainer.io:8554/live`      |
+| `VIDEO_FPS`                           | Frames per second for the video buffer.                                                  | `20`                                                              |
+| `FRAME_WIDTH`                         | Frame width for buffered video.                                                          | `896`                                                             |
+| `FRAME_HEIGHT`                        | Frame height for buffered video.                                                         | `512`                                                             |
+| `BUFFER_SECONDS`                      | Number of seconds of video to keep in the buffer (for segment extraction).               | `120`                                                             |
+| `AIO_MQTT_CLIENT_ID`                  | MQTT client ID for the service.                                                          | `media-capture-service`                                           |
+| `CAPTURE_DURATION_SECONDS`            | Duration (in seconds) of video segment to extract on alert/manual trigger.               | `10`                                                              |
+| `VIDEO_FEED_DELAY_SECONDS`            | Seconds to offset alert timestamp for video delay compensation.                          | `5`                                                               |
+| `BUFFER_CLEANUP_INTERVAL_SECS`        | Interval in seconds between cleanup operations for old frames in the buffer.             | `60`                                                              |
+| `MAX_OLD_FRAMES_AGE_SECS`             | Maximum age (in seconds) for frames in the buffer before they're removed during cleanup. | `300`                                                             |
+| `CAMERA_ID`                           | Camera identifier used in output paths and file names. Required in continuous mode.      | (unset)                                                           |
+| `CAMERA_LOCATION`                     | Location label written to continuous segment metadata.                                   | `unknown`                                                         |
+| `CONTINUOUS_RECORDING_ENABLED`        | `true` records continuous segments instead of triggered clips.                           | `false`                                                           |
+| `CONTINUOUS_SEGMENT_DURATION_SECONDS` | Length of each continuous segment, 10-3600 seconds.                                      | `300`                                                             |
+| `OUTPUT_FORMAT`                       | Continuous segment container: `mp4` or `mkv`.                                            | `mp4`                                                             |
+| `LOCAL_RETENTION_HOURS`               | Hours to keep continuous segments locally; `0` disables cleanup.                         | `24`                                                              |
+| `CLEANUP_INTERVAL_MINUTES`            | Minutes between local cleanup runs, 1-1440.                                              | `60`                                                              |
 
 ### Key Configuration Notes
 
@@ -759,6 +813,18 @@ mediaCapture:
 |-------------------------------------|----------------------------------|------------------------|
 | `mediaCapture.storage.cloudSyncDir` | Cloud sync directory             | `/cloud-sync/media`    |
 | `mediaCapture.triggerTopics`        | MQTT topics that trigger capture | `["topic1", "topic2"]` |
+
+#### Camera and Continuous Recording Configuration
+
+| Parameter                                                 | Description                                           | Default     |
+|-----------------------------------------------------------|-------------------------------------------------------|-------------|
+| `mediaCapture.camera.id`                                  | Camera identifier for output paths (`CAMERA_ID`)      | `camera-01` |
+| `mediaCapture.camera.location`                            | Location label in segment metadata                    | `unknown`   |
+| `mediaCapture.continuousRecording.enabled`                | Record continuous segments instead of triggered clips | `false`     |
+| `mediaCapture.continuousRecording.segmentDurationSeconds` | Segment length in seconds                             | `300`       |
+| `mediaCapture.continuousRecording.outputFormat`           | `mp4` or `mkv`                                        | `mp4`       |
+| `mediaCapture.continuousRecording.localRetentionHours`    | Local retention in hours; `0` disables cleanup        | `24`        |
+| `mediaCapture.continuousRecording.cleanupIntervalMinutes` | Minutes between cleanup runs                          | `60`        |
 
 #### Integration with Azure IoT Operations
 
