@@ -18,7 +18,7 @@ variable "operations_config" {
   default = {
     namespace                      = "azure-iot-operations"
     kubernetesDistro               = "K3s"
-    version                        = "1.4.73"
+    version                        = "1.4.112"
     train                          = "stable"
     agentOperationTimeoutInMinutes = 120
   }
@@ -30,7 +30,7 @@ variable "connectors_config" {
     version = string
   })
   default = {
-    version = "1.4.11"
+    version = "1.4.14"
   }
 }
 
