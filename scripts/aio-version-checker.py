@@ -436,6 +436,38 @@ def _unwrap_hcl(value: Any) -> Any:
     return value
 
 
+def _strip_hcl_quotes(value: Any) -> Any:
+    """
+    Remove the literal double quotes that python-hcl2 8.x keeps on names and strings.
+
+    python-hcl2 8.x returns quoted block labels (``'"operations_config"'``) and
+    quoted string literals (``'"1.4.73"'``). Name and version comparisons expect
+    the unquoted text, so this helper normalizes keys and string values
+    recursively and leaves other values unchanged.
+
+    Args:
+        value (Any): A value produced by ``hcl2.load``.
+
+    Returns:
+        Any: The value with surrounding double quotes removed from every string
+            key and string value.
+    """
+    if isinstance(value, str):
+        if len(value) >= 2 and value.startswith('"') and value.endswith('"'):
+            return value[1:-1]
+        return value
+    if isinstance(value, dict):
+        return {_strip_hcl_quotes(k): _strip_hcl_quotes(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_strip_hcl_quotes(item) for item in value]
+    return value
+
+
+def _load_hcl(file_handle: Any) -> Any:
+    """Parse HCL and normalize python-hcl2 quoting differences across releases."""
+    return _strip_hcl_quotes(hcl2.load(file_handle))
+
+
 def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
     """
     Extract component information from the Terraform variables file using HCL2 parser.
@@ -466,7 +498,7 @@ def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
 
     try:
         with open(tf_file) as f:
-            parsed = hcl2.load(f)
+            parsed = _load_hcl(f)
     except Exception as e:
         logger.error(f"Failed to parse Terraform file: {e}")
         sys.exit(1)
@@ -530,7 +562,7 @@ def extract_tf_instance_variables(tf_instance_file: str) -> list[dict[str, str]]
 
     try:
         with open(tf_instance_file) as f:
-            parsed = hcl2.load(f)
+            parsed = _load_hcl(f)
     except Exception as e:
         logger.error(f"Failed to parse Terraform instance file: {e}")
         sys.exit(1)
@@ -628,7 +660,7 @@ def extract_tf_arc_extension_variables(
 
     try:
         with open(tf_arc_file) as f:
-            parsed = hcl2.load(f)
+            parsed = _load_hcl(f)
     except Exception as e:
         logger.error(f"Failed to parse Terraform arc-extensions file: {e}")
         sys.exit(1)
