@@ -17,33 +17,33 @@ on hardware that has no transport, cluster, or accelerator attached.
 
 ## Public surface
 
-| Item | Purpose |
-|------|---------|
-| `JPEG_SOI`, `is_jpeg` | Classify a byte slice as JPEG by its start-of-image marker prefix |
-| `RejectReason` | Fixed, bounded rejection set: `Empty`, `NotJpeg`, `Oversize` |
-| `SizeLimits`, `check_jpeg`, `check_envelope` | Caller-configured maxima for the raw payload and the serialized envelope |
-| `encode_jpeg` | Standard-alphabet Base64 encoding |
-| `EnvelopeInput`, `SnapshotEnvelope`, `build_envelope`, `serialize_envelope` | Deterministic envelope construction and compact JSON serialization |
-| `MESSAGE_TYPE`, `SCHEMA_VERSION` | Envelope constants |
-| `BoundedDedup` | Fixed-capacity recent-hash set with oldest-first eviction |
-| `payload_hash` | Byte-free FNV-1a 64-bit digest over a scope key and a payload |
-| `Counters`, `CountersSnapshot` | Fixed-cardinality monotonic counters with a serializable point-in-time view |
+| Item                                                                        | Purpose                                                                     |
+|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `JPEG_SOI`, `is_jpeg`                                                       | Classify a byte slice as JPEG by its start-of-image marker prefix           |
+| `RejectReason`                                                              | Fixed, bounded rejection set: `Empty`, `NotJpeg`, `Oversize`                |
+| `SizeLimits`, `check_jpeg`, `check_envelope`                                | Caller-configured maxima for the raw payload and the serialized envelope    |
+| `encode_jpeg`                                                               | Standard-alphabet Base64 encoding                                           |
+| `EnvelopeInput`, `SnapshotEnvelope`, `build_envelope`, `serialize_envelope` | Deterministic envelope construction and compact JSON serialization          |
+| `MESSAGE_TYPE`, `SCHEMA_VERSION`                                            | Envelope constants                                                          |
+| `BoundedDedup`                                                              | Fixed-capacity recent-hash set with oldest-first eviction                   |
+| `payload_hash`                                                              | Byte-free FNV-1a 64-bit digest over a scope key and a payload               |
+| `Counters`, `CountersSnapshot`                                              | Fixed-cardinality monotonic counters with a serializable point-in-time view |
 
 ## Envelope contract
 
 Six fields are required and two optional fields are emitted when the caller
 supplies them:
 
-| Field | Requirement | JSON type |
-|-------|-------------|-----------|
-| `message_type` | Required | string, constant `image_snapshot` |
-| `schema_version` | Required | string |
-| `camera_id` | Required | string |
-| `timestamp` | Required | integer, epoch seconds |
-| `image_data` | Required | string, standard-alphabet Base64 |
-| `device_name` | Required | string |
-| `metadata` | Optional | object, free-form, defaults to empty |
-| `correlation_id` | Optional | string |
+| Field            | Requirement | JSON type                            |
+|------------------|-------------|--------------------------------------|
+| `message_type`   | Required    | string, constant `image_snapshot`    |
+| `schema_version` | Required    | string                               |
+| `camera_id`      | Required    | string                               |
+| `timestamp`      | Required    | integer, epoch seconds               |
+| `image_data`     | Required    | string, standard-alphabet Base64     |
+| `device_name`    | Required    | string                               |
+| `metadata`       | Optional    | object, free-form, defaults to empty |
+| `correlation_id` | Optional    | string                               |
 
 Serialized key order follows the table. Optional fields are omitted when absent
 rather than emitted as `null`.
@@ -119,11 +119,11 @@ fn normalize(jpeg: &[u8], timestamp: i64, limits: SizeLimits) -> Result<String, 
 
 ## Dependencies
 
-| Crate | Version | Features |
-|-------|---------|----------|
-| `base64` | 0.22 | default |
-| `serde` | 1.0 | `derive` |
-| `serde_json` | 1.0 | default |
+| Crate        | Version | Features |
+|--------------|---------|----------|
+| `base64`     | 0.22    | default  |
+| `serde`      | 1.0     | `derive` |
+| `serde_json` | 1.0     | default  |
 
 All three resolve from crates.io. The crate declares no path dependency, no git
 dependency, no optional dependency, and no feature flag.
