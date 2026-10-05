@@ -605,9 +605,9 @@ gitdb==4.0.12 \
     --hash=sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571 \
     --hash=sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf
     # via gitpython
-gitpython==3.1.59 \
-    --hash=sha256:0a1475cfdc38a5bfba1a3e9a4a9da52a39749ecec322b772915c019f94e5b7e4 \
-    --hash=sha256:67a82f537384578643624c8b2c531938a9b82be431663e575dcf638526631d4c
+gitpython==3.1.60 \
+    --hash=sha256:39548bffb8fa0f3a548133348868bb4838e79d73283052207dc97781a569b6b4 \
+    --hash=sha256:e936431879fa85581b4311fa63492ea52251909e2d655b6529c704c904ddcc24
     # via
     #   -r checkov.in
     #   checkov
@@ -1852,9 +1852,9 @@ uritools==6.1.3 \
     --hash=sha256:136f113e76e53f85bf2d9cce0c3d40ceec775d0409e7d6de9b28f046a7d42838 \
     --hash=sha256:3a498e7e85ef3249343d5710618d641a414da0fbae6d23053ada7976ee83ea5f
     # via spdx-tools
-urllib3==2.7.0 \
-    --hash=sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c \
-    --hash=sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897
+urllib3==2.8.0 \
+    --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3 \
+    --hash=sha256:63bf2ead4c879426ebf22ef2a781eeb4aa3b4ae798a0435506f8687fd5bb9b63
     # via
     #   botocore
     #   checkov

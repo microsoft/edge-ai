@@ -44,7 +44,7 @@ resource "azurerm_storage_account" "storage_account" {
   is_hns_enabled                  = var.is_hns_enabled
   shared_access_key_enabled       = false
   allow_nested_items_to_be_public = false
-  public_network_access_enabled   = var.should_enable_public_network_access
+  public_network_access           = var.should_enable_public_network_access ? "Enabled" : "Disabled"
 
   dynamic "blob_properties" {
     for_each = var.is_hns_enabled ? [] : [1]
