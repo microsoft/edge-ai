@@ -172,6 +172,13 @@ impl std::fmt::Debug for SnapshotEnvelope {
 ///
 /// Memory is capped at `capacity` entries with oldest-first eviction. A repeat
 /// observation does not refresh recency. No payload byte is retained.
+///
+/// Duplication here means content equality within the retained window. It is
+/// not a retransmission check: two fresh captures with identical bytes hash
+/// equally, and a repeated hash stays retained until enough distinct hashes
+/// evict it. Callers whose producers can legitimately repeat identical payloads,
+/// such as periodic snapshots of a static scene, should key the hash on a
+/// producer-supplied capture or message identifier rather than on content alone.
 #[derive(Debug)]
 pub struct BoundedDedup {
     capacity: usize,

@@ -87,6 +87,19 @@ hasher, whose output is not stable across releases. Digests are not a
 cryptographic commitment. Payload bytes are never stored, logged, or rendered;
 `Debug` on the payload-bearing types reports lengths rather than content.
 
+## Duplicate detection
+
+`BoundedDedup` treats content equality within its retained window as
+duplication. It is not a retransmission check. Two fresh captures carrying
+identical JPEG bytes produce the same hash, and a repeated hash stays retained
+until enough distinct hashes evict it. A periodic snapshot of a static scene
+would therefore be suppressed indefinitely if a caller keyed deduplication on
+content alone.
+
+Callers whose producers can legitimately repeat identical payloads should pass
+a producer-supplied capture or message identifier as the `payload_hash` scope,
+or skip deduplication. A requested capacity below one is clamped to one.
+
 ## Usage
 
 ```rust
