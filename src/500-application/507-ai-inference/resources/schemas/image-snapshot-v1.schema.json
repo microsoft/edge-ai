@@ -29,7 +29,7 @@
       "type": "string",
       "contentEncoding": "base64",
       "contentMediaType": "image/jpeg",
-      "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?(?![\\s\\S])"
     },
     "device_name": {
       "description": "Opaque caller-supplied device identifier. No character set or length bound is applied.",
