@@ -361,6 +361,8 @@ impl BackendFactory {
     }
 
     /// Check which backends are available at compile time
+    // Entries depend on enabled features, so the list is built incrementally
+    #[allow(clippy::vec_init_then_push)]
     pub fn available_backends() -> Vec<BackendType> {
         #[allow(unused_mut)]
         let mut backends = Vec::new();

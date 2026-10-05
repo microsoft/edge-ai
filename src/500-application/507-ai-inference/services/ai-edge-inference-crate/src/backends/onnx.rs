@@ -5,7 +5,7 @@ use async_trait::async_trait;
 
 use crate::backend::{
     InferenceBackend, BackendConfig, BackendError, BackendStatus, BackendType,
-    DeviceType
+    DeviceType, OptimizationLevel
 };
 use crate::{InferenceInput, InferenceResult, ModelConfig};
 
@@ -68,6 +68,86 @@ struct BackendStats {
     total_inferences: u64,
     total_errors: u64,
     average_inference_time_ms: f64,
+}
+
+#[cfg(feature = "onnx-runtime")]
+impl Default for OnnxRuntimeBackend {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// ONNX Runtime session options derived from [`BackendConfig`].
+///
+/// `None` leaves the ONNX Runtime default in place.
+#[cfg(feature = "onnx-runtime")]
+#[derive(Debug, Default, Clone, Copy)]
+struct SessionOptions {
+    optimization_level: Option<ort::session::builder::GraphOptimizationLevel>,
+    parallel_execution: Option<bool>,
+    intra_threads: Option<usize>,
+    inter_threads: Option<usize>,
+}
+
+#[cfg(feature = "onnx-runtime")]
+impl SessionOptions {
+    fn from_config(config: Option<&BackendConfig>) -> Self {
+        let Some(config) = config else {
+            return Self::default();
+        };
+        let onnx_config = config.onnx_config.as_ref();
+        Self {
+            optimization_level: Some(graph_optimization_level(&config.optimization_level)),
+            parallel_execution: Some(config.parallel_execution),
+            intra_threads: onnx_config.and_then(|onnx| onnx.intra_op_num_threads),
+            inter_threads: onnx_config.and_then(|onnx| onnx.inter_op_num_threads),
+        }
+    }
+
+    fn builder(&self) -> Result<ort::session::builder::SessionBuilder, BackendError> {
+        let mut builder = ort::session::Session::builder().map_err(|e| {
+            BackendError::ModelLoadFailed(format!("Failed to create session builder: {}", e))
+        })?;
+        if let Some(level) = self.optimization_level {
+            builder = builder
+                .with_optimization_level(level)
+                .map_err(|e| session_option_error("optimization level", e))?;
+        }
+        if let Some(parallel) = self.parallel_execution {
+            builder = builder
+                .with_parallel_execution(parallel)
+                .map_err(|e| session_option_error("parallel execution", e))?;
+        }
+        if let Some(threads) = self.intra_threads {
+            builder = builder
+                .with_intra_threads(threads)
+                .map_err(|e| session_option_error("intra-op thread count", e))?;
+        }
+        if let Some(threads) = self.inter_threads {
+            builder = builder
+                .with_inter_threads(threads)
+                .map_err(|e| session_option_error("inter-op thread count", e))?;
+        }
+        Ok(builder)
+    }
+}
+
+#[cfg(feature = "onnx-runtime")]
+fn graph_optimization_level(
+    level: &OptimizationLevel,
+) -> ort::session::builder::GraphOptimizationLevel {
+    use ort::session::builder::GraphOptimizationLevel;
+    match level {
+        OptimizationLevel::None => GraphOptimizationLevel::Disable,
+        OptimizationLevel::Basic => GraphOptimizationLevel::Level1,
+        OptimizationLevel::Extended => GraphOptimizationLevel::Level2,
+        OptimizationLevel::All => GraphOptimizationLevel::Level3,
+    }
+}
+
+#[cfg(feature = "onnx-runtime")]
+fn session_option_error(option: &str, error: impl std::fmt::Display) -> BackendError {
+    BackendError::ModelLoadFailed(format!("Failed to set ONNX Runtime {}: {}", option, error))
 }
 
 /// Raw detection before NMS
@@ -447,9 +527,11 @@ impl InferenceBackend for OnnxRuntimeBackend {
             return Err(BackendError::BackendNotInitialized("Environment not initialized".to_string()));
         }
 
-        // Build ort session from ONNX file
-        let session = ort::session::Session::builder()
-            .map_err(|e| BackendError::ModelLoadFailed(format!("Failed to create session builder: {}", e)))?
+        // Build ort session from ONNX file with the configured session options
+        let session_options = SessionOptions::from_config(self.config.as_ref());
+        debug!("ONNX session options for model '{}': {:?}", model_name, session_options);
+        let session = session_options
+            .builder()?
             .commit_from_file(&model_config.model_path)
             .map_err(|e| BackendError::ModelLoadFailed(format!("Failed to load ONNX model '{}': {}", model_config.model_path, e)))?;
 
@@ -622,5 +704,141 @@ impl InferenceBackend for OnnxRuntimeBackend {
 
     fn backend_type(&self) -> BackendType {
         BackendType::OnnxRuntime
+    }
+}
+
+#[cfg(all(test, feature = "onnx-runtime"))]
+mod tests {
+    use super::*;
+    use crate::backend::OnnxConfig;
+    use ort::session::builder::GraphOptimizationLevel;
+
+    const IDENTITY_MODEL: &str =
+        concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/identity.onnx");
+
+    fn backend_config(
+        level: OptimizationLevel,
+        intra: Option<usize>,
+        inter: Option<usize>,
+    ) -> BackendConfig {
+        BackendConfig {
+            backend_type: BackendType::OnnxRuntime,
+            device_type: DeviceType::Cpu,
+            optimization_level: level,
+            parallel_execution: false,
+            onnx_config: Some(OnnxConfig {
+                execution_providers: vec!["CPUExecutionProvider".to_string()],
+                inter_op_num_threads: inter,
+                intra_op_num_threads: intra,
+                ..OnnxConfig::default()
+            }),
+            ..BackendConfig::default()
+        }
+    }
+
+    fn identity_model_config() -> ModelConfig {
+        ModelConfig {
+            model_path: IDENTITY_MODEL.to_string(),
+            model_type: "identity".to_string(),
+            confidence_threshold: None,
+            preprocessing: Some(serde_json::json!({ "shape": [1, 3, 4, 4] })),
+            postprocessing: None,
+        }
+    }
+
+    #[test]
+    fn maps_every_optimization_level() {
+        assert!(matches!(
+            graph_optimization_level(&OptimizationLevel::None),
+            GraphOptimizationLevel::Disable
+        ));
+        assert!(matches!(
+            graph_optimization_level(&OptimizationLevel::Basic),
+            GraphOptimizationLevel::Level1
+        ));
+        assert!(matches!(
+            graph_optimization_level(&OptimizationLevel::Extended),
+            GraphOptimizationLevel::Level2
+        ));
+        assert!(matches!(
+            graph_optimization_level(&OptimizationLevel::All),
+            GraphOptimizationLevel::Level3
+        ));
+    }
+
+    #[test]
+    fn derives_options_from_backend_config() {
+        let config = backend_config(OptimizationLevel::Extended, Some(2), Some(1));
+        let options = SessionOptions::from_config(Some(&config));
+
+        assert!(matches!(
+            options.optimization_level,
+            Some(GraphOptimizationLevel::Level2)
+        ));
+        assert_eq!(options.parallel_execution, Some(false));
+        assert_eq!(options.intra_threads, Some(2));
+        assert_eq!(options.inter_threads, Some(1));
+    }
+
+    #[test]
+    fn leaves_unset_thread_counts_to_onnx_runtime() {
+        let config = backend_config(OptimizationLevel::Basic, None, None);
+        let options = SessionOptions::from_config(Some(&config));
+        assert_eq!(options.intra_threads, None);
+        assert_eq!(options.inter_threads, None);
+
+        let mut without_onnx_config = config;
+        without_onnx_config.onnx_config = None;
+        let options = SessionOptions::from_config(Some(&without_onnx_config));
+        assert_eq!(options.intra_threads, None);
+        assert_eq!(options.inter_threads, None);
+    }
+
+    #[test]
+    fn no_config_applies_no_options() {
+        let options = SessionOptions::from_config(None);
+        assert!(options.optimization_level.is_none());
+        assert!(options.parallel_execution.is_none());
+        assert!(options.intra_threads.is_none());
+        assert!(options.inter_threads.is_none());
+    }
+
+    #[tokio::test]
+    async fn loads_model_with_each_optimization_level_and_thread_counts() {
+        let levels = [
+            OptimizationLevel::None,
+            OptimizationLevel::Basic,
+            OptimizationLevel::Extended,
+            OptimizationLevel::All,
+        ];
+        for level in levels {
+            let label = format!("{:?}", level);
+            let mut backend = OnnxRuntimeBackend::new();
+            backend
+                .initialize(&backend_config(level, Some(1), Some(1)))
+                .await
+                .unwrap();
+            backend
+                .load_model("identity", &identity_model_config())
+                .await
+                .unwrap_or_else(|e| panic!("load with {} failed: {}", label, e));
+            assert_eq!(
+                backend.get_loaded_models().await,
+                vec!["identity".to_string()]
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn loads_model_with_default_thread_counts() {
+        let mut backend = OnnxRuntimeBackend::new();
+        backend
+            .initialize(&backend_config(OptimizationLevel::All, None, None))
+            .await
+            .unwrap();
+        backend
+            .load_model("identity", &identity_model_config())
+            .await
+            .unwrap();
     }
 }
