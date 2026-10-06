@@ -6,3 +6,4 @@ onvif-zeep-async==4.0.4
 lxml>=6.1.1
 lxml-html-clean>=0.4.5
 aiohttp>=3.14.3
+multidict>=6.9.1
