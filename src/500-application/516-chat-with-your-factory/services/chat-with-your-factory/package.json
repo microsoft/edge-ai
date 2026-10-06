@@ -70,6 +70,9 @@
     "vitest": "^4.1.11"
   },
   "overrides": {
-    "uuid@^11": "^11.1.1"
+    "uuid@^11": "^11.1.1",
+    "ip-address": "^10.7.3",
+    "proxy-addr": "^2.0.8",
+    "source-map-js": "^1.2.2"
   }
 }

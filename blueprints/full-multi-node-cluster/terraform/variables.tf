@@ -82,6 +82,30 @@ variable "arc_machine_resource_group_name" {
   default     = null
 }
 
+variable "should_use_ssh_delivery" {
+  type        = bool
+  description = "Whether to deliver the cluster setup script over 'az ssh arc' instead of a CustomScript extension; requires Azure CLI with the 'ssh' extension where Terraform runs"
+  default     = false
+}
+
+variable "ssh_local_user" {
+  type        = string
+  description = "Local account on the Arc-enabled machines used for SSH delivery; must have passwordless sudo"
+  default     = null
+}
+
+variable "ssh_private_key_path" {
+  type        = string
+  description = "Path on the machine running Terraform to the private key authorized for ssh_local_user"
+  default     = null
+}
+
+variable "should_create_ssh_endpoint" {
+  type        = bool
+  description = "Whether SSH delivery creates the Hybrid Connectivity default endpoint and SSH service configuration; needed for the Azure Local non-AKS flow"
+  default     = false
+}
+
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOT
@@ -873,6 +897,12 @@ variable "should_enable_storage_public_network_access" {
 variable "storage_account_is_hns_enabled" {
   type        = bool
   description = "Whether to enable hierarchical namespace on the storage account when Azure Machine Learning is not deployed; automatically forced to false when should_deploy_azureml is true"
+  default     = true
+}
+
+variable "should_create_data_lake" {
+  type        = bool
+  description = "Whether to create the data lake Blob container and Data Lake Gen2 filesystem"
   default     = true
 }
 

@@ -39,7 +39,7 @@ type CertManagerExtension = {
 var certManagerExtensionDefaults = {
   enabled: true
   release: {
-    version: '1.0.0'
+    version: '1.1.2'
     train: 'stable'
     autoUpgradeMinorVersion: false
   }
@@ -74,7 +74,7 @@ type ContainerStorageExtension = {
 var containerStorageExtensionDefaults = {
   enabled: true
   release: {
-    version: '2.6.0'
+    version: '2.12.0'
     train: 'stable'
   }
   settings: {

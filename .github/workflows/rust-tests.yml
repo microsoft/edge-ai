@@ -35,6 +35,8 @@ jobs:
             crate: src/500-application/507-ai-inference/services/ai-edge-inference
           - name: 507-ai-edge-inference-crate
             crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - name: 507-snapshot-normalizer-core
+            crate: src/500-application/507-ai-inference/services/snapshot-normalizer-core
           - name: 901-video-to-gif
             crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
     steps:
@@ -172,7 +174,7 @@ jobs:
 
       - name: Upload to Codecov
         if: success()
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ${{ matrix.crate }}/coverage.xml
           use_oidc: true
@@ -198,6 +200,7 @@ jobs:
           - name: 504-mqtt-otel-trace-exporter
           - name: 507-ai-edge-inference
           - name: 507-ai-edge-inference-crate
+          - name: 507-snapshot-normalizer-core
           - name: 901-video-to-gif
     steps:
       - name: Checkout (sparse, for .grype.yaml)

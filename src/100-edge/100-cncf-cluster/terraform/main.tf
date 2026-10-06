@@ -139,6 +139,8 @@ module "ubuntu_k3s" {
   should_output_cluster_server_script       = var.should_output_cluster_server_script
   should_skip_az_cli_login                  = var.should_skip_az_cli_login
   should_skip_installing_az_cli             = var.should_skip_installing_az_cli
+  az_mode                                   = var.az_mode
+  az_cli_image                              = var.az_cli_image
   cluster_server_host_machine_username      = try(coalesce(var.cluster_server_host_machine_username, var.resource_prefix), var.resource_prefix)
   key_vault                                 = var.key_vault
   should_upload_to_key_vault                = var.should_upload_to_key_vault
@@ -167,7 +169,7 @@ data "azapi_resource" "arc_connected_cluster" {
   parent_id = var.resource_group.id
   name      = local.arc_resource_name
 
-  depends_on = [module.cluster_server_script_deployment, module.cluster_server_arc_script_deployment]
+  depends_on = [module.cluster_server_script_deployment, module.cluster_server_arc_script_deployment, module.cluster_server_ssh_script_deployment]
 
   response_export_values = ["name", "id", "location", "properties.oidcIssuerProfile.issuerUrl"]
 }
@@ -220,7 +222,7 @@ module "cluster_node_script_deployment" {
 
 module "cluster_server_arc_script_deployment" {
   source = "./modules/arc-server-script-deployment"
-  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? 1 : 0
+  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents && !var.should_deploy_over_ssh ? 1 : 0
 
   depends_on = [module.ubuntu_k3s]
 
@@ -240,7 +242,7 @@ module "cluster_server_arc_script_deployment" {
 
 module "cluster_node_arc_script_deployment" {
   source = "./modules/arc-server-script-deployment"
-  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents ? local.cluster_node_deployment_count : 0
+  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents && !var.should_deploy_over_ssh ? local.cluster_node_deployment_count : 0
 
   depends_on = [module.cluster_server_arc_script_deployment, module.ubuntu_k3s]
 
@@ -248,6 +250,56 @@ module "cluster_node_arc_script_deployment" {
   arc_machine_id = var.cluster_node_machine[count.index].id
   location       = var.cluster_node_machine[count.index].location
   script_content = module.ubuntu_k3s[0].node_script_content
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "node"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
+  arc_onboarding_identity                   = var.arc_onboarding_identity
+}
+
+/*
+ * Arc-Connected Server SSH Delivery
+ */
+
+module "cluster_server_ssh_script_deployment" {
+  source = "./modules/arc-ssh-script-deployment"
+  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents && var.should_deploy_over_ssh ? 1 : 0
+
+  depends_on = [module.ubuntu_k3s, module.role_assignments]
+
+  arc_machine_id = var.cluster_server_machine.id
+  script_content = module.ubuntu_k3s[0].server_script_content
+
+  // SSH connection parameters
+  ssh_local_user             = var.ssh_local_user
+  ssh_private_key_path       = var.ssh_private_key_path
+  should_create_ssh_endpoint = var.should_create_ssh_endpoint
+
+  // Key Vault script deployment parameters
+  should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
+  kubernetes_distro                         = "k3s"
+  node_type                                 = "server"
+  secret_name_prefix                        = var.key_vault_script_secret_prefix
+  key_vault                                 = var.key_vault
+  arc_onboarding_identity                   = var.arc_onboarding_identity
+}
+
+module "cluster_node_ssh_script_deployment" {
+  source = "./modules/arc-ssh-script-deployment"
+  count  = var.should_deploy_arc_machines && !var.should_deploy_arc_agents && var.should_deploy_over_ssh ? local.cluster_node_deployment_count : 0
+
+  depends_on = [module.cluster_server_ssh_script_deployment, module.ubuntu_k3s, module.role_assignments]
+
+  arc_machine_id = var.cluster_node_machine[count.index].id
+  script_content = module.ubuntu_k3s[0].node_script_content
+
+  // SSH connection parameters
+  ssh_local_user             = var.ssh_local_user
+  ssh_private_key_path       = var.ssh_private_key_path
+  should_create_ssh_endpoint = var.should_create_ssh_endpoint
 
   // Key Vault script deployment parameters
   should_use_script_from_secrets_for_deploy = var.should_use_script_from_secrets_for_deploy
