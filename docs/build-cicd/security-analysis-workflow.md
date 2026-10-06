@@ -20,7 +20,7 @@ This document describes the automated security analysis workflow that leverages 
 
 The security analysis workflow provides:
 
-- **Automated Security Scanning**: Uses Checkov with existing [`.checkov.yml`](../.checkov.yml) configuration
+- **Automated Security Scanning**: Uses Checkov with existing [`.checkov.yml`](https://github.com/microsoft/edge-ai/blob/main/.checkov.yml) configuration
 - **Focused Component Analysis**: Targets K8s clusters and Arc components specifically
 - **Severity-Based Filtering**: Prioritizes findings by security impact
 - **Work Item Planning**: Creates structured planning files for Azure DevOps work item creation
@@ -196,7 +196,7 @@ cat .copilot-tracking/workitems/security-analysis/checkov-k8s-arc-findings/work-
 
 - [Invoke-SecurityAnalysisWithWorkItems.ps1 Script](https://github.com/microsoft/edge-ai/blob/main/scripts/Invoke-SecurityAnalysisWithWorkItems.ps1)
 - [Run-Checkov.ps1 Documentation](https://github.com/microsoft/edge-ai/blob/main/scripts/README.md)
-- [Checkov Configuration Reference](../.checkov.yml)
+- [Checkov Configuration Reference](https://github.com/microsoft/edge-ai/blob/main/.checkov.yml)
 
 ---
 
