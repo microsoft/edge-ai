@@ -40,10 +40,10 @@
     "@types/js-yaml": "^4.0.9",
     "@types/react": "^19.3.0",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^30.5.1",
-    "jest-environment-jsdom": "^30.5.1",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
     "js-yaml": "^5.4.2",
-    "ts-jest": "^29.4.12",
+    "ts-jest": "^29.4.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   },
