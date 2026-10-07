@@ -104,31 +104,100 @@ impl SessionOptions {
         }
     }
 
-    fn builder(&self) -> Result<ort::session::builder::SessionBuilder, BackendError> {
-        let mut builder = ort::session::Session::builder().map_err(|e| {
-            BackendError::ModelLoadFailed(format!("Failed to create session builder: {}", e))
-        })?;
+    /// Applies each configured option to `target`, naming the option in any error.
+    fn apply<T: SessionOptionTarget>(&self, target: T) -> Result<T, BackendError> {
+        let mut target = target;
         if let Some(level) = self.optimization_level {
-            builder = builder
-                .with_optimization_level(level)
-                .map_err(|e| session_option_error("optimization level", e))?;
+            target = target
+                .set_optimization_level(level)
+                .map_err(|e| session_option_error(OPTION_OPTIMIZATION_LEVEL, e))?;
         }
         if let Some(parallel) = self.parallel_execution {
-            builder = builder
-                .with_parallel_execution(parallel)
-                .map_err(|e| session_option_error("parallel execution", e))?;
+            target = target
+                .set_parallel_execution(parallel)
+                .map_err(|e| session_option_error(OPTION_PARALLEL_EXECUTION, e))?;
         }
         if let Some(threads) = self.intra_threads {
-            builder = builder
-                .with_intra_threads(threads)
-                .map_err(|e| session_option_error("intra-op thread count", e))?;
+            target = target
+                .set_intra_threads(threads)
+                .map_err(|e| session_option_error(OPTION_INTRA_THREADS, e))?;
         }
         if let Some(threads) = self.inter_threads {
-            builder = builder
-                .with_inter_threads(threads)
-                .map_err(|e| session_option_error("inter-op thread count", e))?;
+            target = target
+                .set_inter_threads(threads)
+                .map_err(|e| session_option_error(OPTION_INTER_THREADS, e))?;
         }
-        Ok(builder)
+        Ok(target)
+    }
+
+    fn builder(&self) -> Result<ort::session::builder::SessionBuilder, BackendError> {
+        let builder = ort::session::Session::builder().map_err(|e| {
+            BackendError::ModelLoadFailed(format!("Failed to create session builder: {}", e))
+        })?;
+        self.apply(builder)
+    }
+
+    /// Describes the effective settings; `default` means ONNX Runtime chooses.
+    fn describe(&self) -> std::collections::BTreeMap<String, String> {
+        fn value<T: std::fmt::Debug>(option: Option<T>) -> String {
+            option
+                .map(|v| format!("{:?}", v).to_lowercase())
+                .unwrap_or_else(|| "default".to_string())
+        }
+        [
+            (OPTION_OPTIMIZATION_LEVEL, value(self.optimization_level)),
+            (OPTION_PARALLEL_EXECUTION, value(self.parallel_execution)),
+            (OPTION_INTRA_THREADS, value(self.intra_threads)),
+            (OPTION_INTER_THREADS, value(self.inter_threads)),
+        ]
+        .into_iter()
+        .map(|(name, value)| (name.to_string(), value))
+        .collect()
+    }
+}
+
+#[cfg(feature = "onnx-runtime")]
+const OPTION_OPTIMIZATION_LEVEL: &str = "optimization level";
+#[cfg(feature = "onnx-runtime")]
+const OPTION_PARALLEL_EXECUTION: &str = "parallel execution";
+#[cfg(feature = "onnx-runtime")]
+const OPTION_INTRA_THREADS: &str = "intra-op thread count";
+#[cfg(feature = "onnx-runtime")]
+const OPTION_INTER_THREADS: &str = "inter-op thread count";
+
+/// Session option setters, implemented by the ONNX Runtime session builder.
+#[cfg(feature = "onnx-runtime")]
+trait SessionOptionTarget: Sized {
+    fn set_optimization_level(
+        self,
+        level: ort::session::builder::GraphOptimizationLevel,
+    ) -> Result<Self, String>;
+    fn set_parallel_execution(self, parallel: bool) -> Result<Self, String>;
+    fn set_intra_threads(self, threads: usize) -> Result<Self, String>;
+    fn set_inter_threads(self, threads: usize) -> Result<Self, String>;
+}
+
+#[cfg(feature = "onnx-runtime")]
+impl SessionOptionTarget for ort::session::builder::SessionBuilder {
+    fn set_optimization_level(
+        self,
+        level: ort::session::builder::GraphOptimizationLevel,
+    ) -> Result<Self, String> {
+        self.with_optimization_level(level)
+            .map_err(|e| e.to_string())
+    }
+
+    fn set_parallel_execution(self, parallel: bool) -> Result<Self, String> {
+        self.with_parallel_execution(parallel)
+            .map_err(|e| e.to_string())
+    }
+
+    fn set_intra_threads(self, threads: usize) -> Result<Self, String> {
+        self.with_intra_threads(threads).map_err(|e| e.to_string())
+    }
+
+    fn set_inter_threads(self, threads: usize) -> Result<Self, String> {
+        self.with_inter_threads(threads).map_err(|e| e.to_string())
     }
 }
 
@@ -699,6 +768,7 @@ impl InferenceBackend for OnnxRuntimeBackend {
             last_inference_time_ms: None,
             total_inferences,
             errors: vec![],
+            session_settings: SessionOptions::from_config(self.config.as_ref()).describe(),
         }
     }
 
@@ -721,11 +791,20 @@ mod tests {
         intra: Option<usize>,
         inter: Option<usize>,
     ) -> BackendConfig {
+        backend_config_with_parallel(level, false, intra, inter)
+    }
+
+    fn backend_config_with_parallel(
+        level: OptimizationLevel,
+        parallel: bool,
+        intra: Option<usize>,
+        inter: Option<usize>,
+    ) -> BackendConfig {
         BackendConfig {
             backend_type: BackendType::OnnxRuntime,
             device_type: DeviceType::Cpu,
             optimization_level: level,
-            parallel_execution: false,
+            parallel_execution: parallel,
             onnx_config: Some(OnnxConfig {
                 execution_providers: vec!["CPUExecutionProvider".to_string()],
                 inter_op_num_threads: inter,
@@ -840,5 +919,146 @@ mod tests {
             .load_model("identity", &identity_model_config())
             .await
             .unwrap();
+    }
+
+    /// Records applied options and can reject one by name.
+    #[derive(Default)]
+    struct RecordingTarget {
+        applied: Vec<String>,
+        reject: Option<&'static str>,
+    }
+
+    impl RecordingTarget {
+        fn record(mut self, option: &str, value: String) -> Result<Self, String> {
+            if self.reject == Some(option) {
+                return Err("rejected by test target".to_string());
+            }
+            self.applied.push(format!("{}={}", option, value));
+            Ok(self)
+        }
+    }
+
+    impl SessionOptionTarget for RecordingTarget {
+        fn set_optimization_level(self, level: GraphOptimizationLevel) -> Result<Self, String> {
+            self.record(OPTION_OPTIMIZATION_LEVEL, format!("{:?}", level))
+        }
+
+        fn set_parallel_execution(self, parallel: bool) -> Result<Self, String> {
+            self.record(OPTION_PARALLEL_EXECUTION, parallel.to_string())
+        }
+
+        fn set_intra_threads(self, threads: usize) -> Result<Self, String> {
+            self.record(OPTION_INTRA_THREADS, threads.to_string())
+        }
+
+        fn set_inter_threads(self, threads: usize) -> Result<Self, String> {
+            self.record(OPTION_INTER_THREADS, threads.to_string())
+        }
+    }
+
+    #[test]
+    fn applies_every_configured_option() {
+        let config =
+            backend_config_with_parallel(OptimizationLevel::Extended, true, Some(2), Some(3));
+        let applied = SessionOptions::from_config(Some(&config))
+            .apply(RecordingTarget::default())
+            .unwrap()
+            .applied;
+
+        assert_eq!(
+            applied,
+            vec![
+                "optimization level=Level2",
+                "parallel execution=true",
+                "intra-op thread count=2",
+                "inter-op thread count=3",
+            ]
+        );
+    }
+
+    #[test]
+    fn does_not_apply_unset_options() {
+        let applied = SessionOptions::from_config(None)
+            .apply(RecordingTarget::default())
+            .unwrap()
+            .applied;
+        assert!(applied.is_empty());
+
+        let config = backend_config(OptimizationLevel::All, None, None);
+        let applied = SessionOptions::from_config(Some(&config))
+            .apply(RecordingTarget::default())
+            .unwrap()
+            .applied;
+        assert_eq!(
+            applied,
+            vec!["optimization level=Level3", "parallel execution=false"]
+        );
+    }
+
+    #[test]
+    fn rejected_option_fails_load_with_option_named() {
+        let config = backend_config_with_parallel(OptimizationLevel::Basic, true, Some(1), Some(1));
+        let options = SessionOptions::from_config(Some(&config));
+        for option in [
+            OPTION_OPTIMIZATION_LEVEL,
+            OPTION_PARALLEL_EXECUTION,
+            OPTION_INTRA_THREADS,
+            OPTION_INTER_THREADS,
+        ] {
+            let target = RecordingTarget {
+                reject: Some(option),
+                ..RecordingTarget::default()
+            };
+            match options.apply(target) {
+                Err(BackendError::ModelLoadFailed(message)) => {
+                    assert!(
+                        message.contains(option),
+                        "{} missing from {}",
+                        option,
+                        message
+                    )
+                }
+                Err(other) => panic!("unexpected error for {}: {}", option, other),
+                Ok(_) => panic!("{} rejection was ignored", option),
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn loads_model_with_parallel_execution() {
+        let mut backend = OnnxRuntimeBackend::new();
+        backend
+            .initialize(&backend_config_with_parallel(
+                OptimizationLevel::All,
+                true,
+                Some(1),
+                Some(2),
+            ))
+            .await
+            .unwrap();
+        backend
+            .load_model("identity", &identity_model_config())
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn status_reports_effective_session_settings() {
+        let mut backend = OnnxRuntimeBackend::new();
+        backend
+            .initialize(&backend_config_with_parallel(
+                OptimizationLevel::Extended,
+                true,
+                Some(2),
+                None,
+            ))
+            .await
+            .unwrap();
+
+        let settings = backend.get_status().await.session_settings;
+        assert_eq!(settings[OPTION_OPTIMIZATION_LEVEL], "level2");
+        assert_eq!(settings[OPTION_PARALLEL_EXECUTION], "true");
+        assert_eq!(settings[OPTION_INTRA_THREADS], "2");
+        assert_eq!(settings[OPTION_INTER_THREADS], "default");
     }
 }

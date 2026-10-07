@@ -17,6 +17,7 @@ use crate::model_config::{ModelConfigManager, ModelConfiguration, ModelSummary};
 /// Core AI inference engine that processes requests using pluggable ML backends
 pub struct InferenceEngine {
     backend: Backend,
+    backend_config: BackendConfig,
     config: InferenceConfig,
     metrics: Arc<RwLock<InferenceMetrics>>,
     model_config_manager: Option<ModelConfigManager>,
@@ -36,6 +37,32 @@ pub struct InferenceMetrics {
 }
 
 impl InferenceEngine {
+    /// Backend configuration used to create and initialize the backend.
+    ///
+    /// The ONNX Runtime session settings match ONNX Runtime defaults: all graph
+    /// optimizations, sequential execution, and runtime-chosen thread counts.
+    fn startup_backend_config(
+        config: &InferenceConfig,
+        backend_type: BackendType,
+    ) -> BackendConfig {
+        BackendConfig {
+            backend_type,
+            device_type: DeviceType::Auto,
+            model_directory: config.models.models_directory.to_string_lossy().to_string(),
+            cache_size_mb: 1024,
+            enable_optimization: true,
+            optimization_level: OptimizationLevel::All,
+            parallel_execution: false,
+            onnx_config: Some(Default::default()),
+            candle_config: Some(Default::default()),
+        }
+    }
+
+    /// Backend configuration applied when the engine initializes its backend
+    pub fn backend_config(&self) -> &BackendConfig {
+        &self.backend_config
+    }
+
     /// Create a new inference engine with automatic backend selection
     pub async fn new(config: InferenceConfig) -> Result<Self, InferenceError> {
         info!("Creating AI inference engine with automatic backend selection");
@@ -50,25 +77,7 @@ impl InferenceEngine {
             ));
         }
 
-        // Create backend configuration with CPU-only settings
-        let backend_config = BackendConfig {
-            backend_type: BackendType::Auto, // Auto-select
-            device_type: DeviceType::Cpu, // Force CPU
-            model_directory: config.models.models_directory.to_string_lossy().to_string(),
-            cache_size_mb: 512, // Reduced cache
-            enable_optimization: false, // Disable optimization for debugging
-            optimization_level: OptimizationLevel::None,
-            parallel_execution: false, // Disable parallel execution
-            onnx_config: Some(crate::backend::OnnxConfig {
-                execution_providers: vec!["CPUExecutionProvider".to_string()], // CPU only
-                inter_op_num_threads: Some(1),
-                intra_op_num_threads: Some(1),
-                enable_cpu_mem_arena: true,
-                enable_mem_pattern: false, // Disable for debugging
-                optimization_level: "basic".to_string(),
-            }),
-            candle_config: Some(Default::default()),
-        };
+        let backend_config = Self::startup_backend_config(&config, BackendType::Auto);
 
         // Create backend using factory
         let backend = BackendFactory::create_backend(&backend_config).await
@@ -76,6 +85,7 @@ impl InferenceEngine {
 
         Ok(Self {
             backend,
+            backend_config,
             config,
             metrics: Arc::new(RwLock::new(InferenceMetrics::default())),
             model_config_manager: None,
@@ -86,18 +96,7 @@ impl InferenceEngine {
     pub async fn new_with_backend(config: InferenceConfig, backend_type: BackendType) -> Result<Self, InferenceError> {
         info!("Creating AI inference engine with {} backend", backend_type);
 
-        // Create backend configuration
-        let backend_config = BackendConfig {
-            backend_type: backend_type.clone(),
-            device_type: DeviceType::Auto,
-            model_directory: config.models.models_directory.to_string_lossy().to_string(),
-            cache_size_mb: 1024,
-            enable_optimization: true,
-            optimization_level: OptimizationLevel::Basic,
-            parallel_execution: true,
-            onnx_config: Some(Default::default()),
-            candle_config: Some(Default::default()),
-        };
+        let backend_config = Self::startup_backend_config(&config, backend_type.clone());
 
         // Create specific backend
         let backend = BackendFactory::create_backend(&backend_config).await
@@ -105,6 +104,7 @@ impl InferenceEngine {
 
         Ok(Self {
             backend,
+            backend_config,
             config,
             metrics: Arc::new(RwLock::new(InferenceMetrics::default())),
             model_config_manager: None,
@@ -119,20 +119,8 @@ impl InferenceEngine {
         self.config.validate()
             .map_err(InferenceError::configuration)?;
 
-        // Initialize backend
-        let backend_config = BackendConfig {
-            backend_type: BackendType::Auto, // Use detected backend
-            device_type: DeviceType::Auto,
-            model_directory: self.config.models.models_directory.to_string_lossy().to_string(),
-            cache_size_mb: 1024,
-            enable_optimization: true,
-            optimization_level: OptimizationLevel::Basic,
-            parallel_execution: true,
-            onnx_config: Some(Default::default()),
-            candle_config: Some(Default::default()),
-        };
-
-        self.backend.initialize(&backend_config).await
+        // Initialize the backend with the configuration chosen at construction
+        self.backend.initialize(&self.backend_config).await
             .map_err(|e| InferenceError::configuration(format!("Backend initialization failed: {}", e)))?;
 
         // Load default models if specified
@@ -595,5 +583,39 @@ impl InferenceEngine {
             preprocessing,
             postprocessing,
         })
+    }
+}
+
+#[cfg(all(test, feature = "onnx-runtime"))]
+mod tests {
+    use super::*;
+
+    const FIXTURES: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures");
+
+    #[tokio::test]
+    async fn startup_path_applies_onnx_runtime_default_session_settings() {
+        let mut config = InferenceConfig::default();
+        config.models.models_directory = PathBuf::from(FIXTURES);
+        config.models.default_models = Some(HashMap::from([(
+            "identity".to_string(),
+            format!("{}/identity.onnx", FIXTURES),
+        )]));
+
+        let mut engine = InferenceEngine::new(config).await.unwrap();
+        engine.initialize().await.unwrap();
+
+        assert!(matches!(
+            engine.backend_config().optimization_level,
+            OptimizationLevel::All
+        ));
+        assert!(!engine.backend_config().parallel_execution);
+
+        let status = engine.get_backend_status().await;
+        assert_eq!(status.backend_type, BackendType::OnnxRuntime);
+        assert!(status.loaded_models.contains(&"identity".to_string()));
+        assert_eq!(status.session_settings["optimization level"], "level3");
+        assert_eq!(status.session_settings["parallel execution"], "false");
+        assert_eq!(status.session_settings["intra-op thread count"], "default");
+        assert_eq!(status.session_settings["inter-op thread count"], "default");
     }
 }

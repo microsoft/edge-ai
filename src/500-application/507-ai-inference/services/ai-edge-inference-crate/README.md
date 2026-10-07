@@ -287,6 +287,8 @@ The ONNX Runtime backend is compiled with the `onnx-runtime` feature, which the 
 
 A setting that ONNX Runtime rejects fails `load_model` with `BackendError::ModelLoadFailed`. Execution providers, memory arena, and memory pattern settings aren't applied by the ONNX Runtime backend.
 
+`InferenceEngine::new()` creates and initializes the backend with one configuration. Its ONNX Runtime session settings match ONNX Runtime defaults: all graph optimizations (`All`), sequential execution, and runtime-chosen thread counts. `get_backend_status()` reports the effective settings in `session_settings`, where `default` means ONNX Runtime chooses the value.
+
 ## Data Types
 
 ### InferenceResult Structure

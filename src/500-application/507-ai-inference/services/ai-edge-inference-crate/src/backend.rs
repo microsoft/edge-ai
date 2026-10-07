@@ -111,6 +111,7 @@ impl Backend {
                 last_inference_time_ms: None,
                 total_inferences: 0,
                 errors: vec!["No backend features enabled".to_string()],
+                session_settings: Default::default(),
             },
         }
     }
@@ -248,6 +249,9 @@ pub struct BackendStatus {
     pub last_inference_time_ms: Option<f64>,
     pub total_inferences: u64,
     pub errors: Vec<String>,
+    /// Effective runtime session settings reported by the backend, keyed by setting name
+    #[serde(default)]
+    pub session_settings: std::collections::BTreeMap<String, String>,
 }
 
 /// Backend-specific errors
