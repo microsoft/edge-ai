@@ -33,6 +33,7 @@ install extensions for cluster connect and custom locations.
 | [azurerm_role_assignment.arc_kubernetes_viewer_user](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment)  | resource    |
 | [terraform_data.defer_azuread_user](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                            | resource    |
 | [terraform_data.defer_custom_locations](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                        | resource    |
+| [terraform_data.validate_inputs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                               | resource    |
 | [azapi_resource.arc_connected_cluster](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource)                          | data source |
 | [azuread_service_principal.custom_locations](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/service_principal)     | data source |
 | [azuread_user.current](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/data-sources/user)                                        | data source |

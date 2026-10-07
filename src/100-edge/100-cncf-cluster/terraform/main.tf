@@ -17,6 +17,33 @@ locals {
 }
 
 /*
+ * Input Validation
+ */
+
+// Cross-variable checks run as preconditions instead of variable validation blocks,
+// so every referenced variable is fully resolved when they are evaluated.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = !var.should_assign_roles || anytrue([var.arc_onboarding_identity != null, var.arc_onboarding_sp != null, var.arc_onboarding_principal_ids != null])
+      error_message = "Either 'arc_onboarding_identity', 'arc_onboarding_sp', or 'arc_onboarding_principal_ids' required when should_assign_roles is 'true'"
+    }
+    precondition {
+      condition     = !var.should_assign_roles || (sum([var.arc_onboarding_identity != null ? 1 : 0, var.arc_onboarding_sp != null ? 1 : 0, var.arc_onboarding_principal_ids != null ? 1 : 0]) <= 1)
+      error_message = "Only one of 'arc_onboarding_identity', 'arc_onboarding_sp', or 'arc_onboarding_principal_ids' can be provided"
+    }
+    precondition {
+      condition     = !var.should_upload_to_key_vault || var.key_vault != null
+      error_message = "'key_vault' is required when 'should_upload_to_key_vault' is true"
+    }
+    precondition {
+      condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
+      error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
+    }
+  }
+}
+
+/*
  * Data Sources
  */
 

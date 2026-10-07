@@ -10,12 +10,29 @@ locals {
 }
 
 /*
+ * Input Validation
+ */
+
+// Cross-variable checks run as preconditions instead of variable validation blocks,
+// so every referenced variable is fully resolved when they are evaluated.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = var.should_enable_private_endpoint ? var.private_endpoint_subnet != null : true
+      error_message = "private_endpoint_subnet is required when should_enable_private_endpoint is true."
+    }
+  }
+}
+
+/*
  * Azure Managed Redis Cache
  */
 
 module "managed_redis" {
   count  = var.should_deploy_redis ? 1 : 0
   source = "./modules/managed-redis"
+
+  depends_on = [terraform_data.validate_inputs]
 
   // Core Configuration
   location            = var.location

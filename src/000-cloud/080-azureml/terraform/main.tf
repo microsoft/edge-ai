@@ -9,6 +9,29 @@
 data "azurerm_client_config" "current" {}
 
 /*
+ * Input Validation
+ */
+
+// Cross-variable checks run as preconditions instead of variable validation blocks,
+// so every referenced variable is fully resolved when they are evaluated.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = !var.should_assign_ml_workload_identity_roles || var.ml_workload_identity != null
+      error_message = "ml_workload_identity must be provided when should_assign_ml_workload_identity_roles is true."
+    }
+    precondition {
+      condition     = !var.should_associate_network_security_group || var.network_security_group != null
+      error_message = "network_security_group must be provided when should_associate_network_security_group is true."
+    }
+    precondition {
+      condition     = !var.should_enable_nat_gateway || var.nat_gateway != null
+      error_message = "nat_gateway must be provided when should_enable_nat_gateway is true."
+    }
+  }
+}
+
+/*
  * Network Module for Azure ML Compute Cluster
  */
 

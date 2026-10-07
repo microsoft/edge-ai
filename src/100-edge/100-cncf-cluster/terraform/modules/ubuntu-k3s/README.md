@@ -15,11 +15,12 @@ along with installing extensions for cluster connect and custom locations.
 
 ## Providers
 
-| Name    | Version           |
-|---------|-------------------|
-| azurerm | >= 5.3.0, < 6.0.0 |
-| local   | n/a               |
-| random  | n/a               |
+| Name      | Version           |
+|-----------|-------------------|
+| azurerm   | >= 5.3.0, < 6.0.0 |
+| local     | n/a               |
+| random    | n/a               |
+| terraform | n/a               |
 
 ## Resources
 
@@ -30,6 +31,7 @@ along with installing extensions for cluster connect and custom locations.
 | [local_sensitive_file.cluster_node_setup_script](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file)   | resource |
 | [local_sensitive_file.cluster_server_setup_script](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/sensitive_file) | resource |
 | [random_string.cluster_server_token](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/string)                      | resource |
+| [terraform_data.validate_inputs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                         | resource |
 
 ## Inputs
 

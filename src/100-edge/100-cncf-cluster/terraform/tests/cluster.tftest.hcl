@@ -207,7 +207,7 @@ run "create_default_cluster_with_principal_id" {
 run "test_invalid_multiple_identities" {
   command = plan
   expect_failures = [
-    var.arc_onboarding_identity
+    terraform_data.validate_inputs
   ]
 
   variables {

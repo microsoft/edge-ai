@@ -84,6 +84,17 @@ locals {
   ], slice(local.script_file, 1, length(local.script_file))))
 }
 
+// Cross-variable checks run as preconditions instead of variable validation blocks,
+// so every referenced variable is fully resolved when they are evaluated.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
+      error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
+    }
+  }
+}
+
 resource "random_string" "cluster_server_token" {
   count = var.should_generate_cluster_server_token ? 1 : 0
 

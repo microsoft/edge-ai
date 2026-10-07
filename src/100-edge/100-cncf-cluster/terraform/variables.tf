@@ -195,10 +195,6 @@ variable "should_generate_cluster_server_token" {
   type        = bool
   description = "Should generate token used by the server. ('cluster_server_token' must be null if this is 'true')"
   default     = false
-  validation {
-    condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
-    error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
-  }
 }
 
 variable "cluster_server_host_machine_username" {

@@ -19,9 +19,10 @@ Supports Microsoft Entra ID authentication and customer-managed key encryption.
 
 ## Resources
 
-| Name                                                                                                           | Type     |
-|----------------------------------------------------------------------------------------------------------------|----------|
-| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
+| Name                                                                                                                     | Type     |
+|--------------------------------------------------------------------------------------------------------------------------|----------|
+| [terraform_data.defer](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)           | resource |
+| [terraform_data.validate_inputs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
 
 ## Modules
 
