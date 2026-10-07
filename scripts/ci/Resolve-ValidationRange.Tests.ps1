@@ -18,6 +18,20 @@ BeforeAll {
     $script:AggregateWorkflowPath = Join-Path $script:RepoRoot '.github/workflows/pr-validation.yml'
     $script:AggregateWorkflow = Get-Content -Path $script:AggregateWorkflowPath -Raw
 
+    $FrontmatterPath = Join-Path $script:RepoRoot 'scripts/Validate-MarkdownFrontmatter.ps1'
+    $FrontmatterTokens = $null
+    $FrontmatterErrors = $null
+    $FrontmatterAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $FrontmatterPath, [ref]$FrontmatterTokens, [ref]$FrontmatterErrors)
+    $FrontmatterFunction = $FrontmatterAst.FindAll(
+        {
+            param($Node)
+            $Node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $Node.Name -eq 'Resolve-FrontmatterValidationSelection'
+        },
+        $true)
+    . ([scriptblock]::Create($FrontmatterFunction.Extent.Text))
+
     function Get-WorkflowJobBlock {
         <#
         .SYNOPSIS
@@ -75,6 +89,22 @@ Describe 'Resolve-ValidationRange' -Tag 'Unit' {
         $Result.Mode | Should -Be 'range'
         $Result.BaseSha | Should -Be 'base-sha'
         $Result.HeadSha | Should -Be 'group-sha'
+    }
+
+    It 'returns full validation when the pull-request source head is <Scenario>' -ForEach @(
+        @{ Scenario = 'missing'; PullRequestHeadSha = '' }
+        @{ Scenario = 'whitespace'; PullRequestHeadSha = '   ' }
+    ) {
+        $Result = Resolve-ValidationRange `
+            -EventName 'pull_request' `
+            -ExpectedHeadSha 'merge-sha' `
+            -CheckedOutHeadSha 'merge-sha' `
+            -PullRequestBaseSha 'base-sha' `
+            -PullRequestHeadSha $PullRequestHeadSha
+
+        $Result.Mode | Should -Be 'full'
+        $Result.BaseSha | Should -BeNullOrEmpty
+        $Result.HeadSha | Should -Be 'merge-sha'
     }
 
     It 'returns full validation for <Scenario>' -ForEach @(
@@ -174,6 +204,39 @@ Describe 'Resolve-ValidationRange' -Tag 'Unit' {
     }
 }
 
+Describe 'Resolve-ValidationRange entry point' -Tag 'Unit' {
+    It 'exits successfully after emitting a changed range contract' {
+        $OutputFile = Join-Path $TestDrive 'range-output.txt'
+        $HeadSha = (& git -C $script:RepoRoot rev-parse HEAD).Trim()
+        $BaseSha = (& git -C $script:RepoRoot rev-parse HEAD^).Trim()
+
+        & pwsh -NoProfile -File $ResolverPath `
+            -EventName merge_group `
+            -ExpectedHeadSha $HeadSha `
+            -MergeGroupBaseSha $BaseSha `
+            -MergeGroupHeadSha $HeadSha `
+            -OutputFile $OutputFile
+
+        $LASTEXITCODE | Should -Be 0
+        Get-Content -Path $OutputFile -Raw | Should -Match '(?m)^mode=range\r?$'
+    }
+
+    It 'exits successfully after emitting a full fallback contract' {
+        $OutputFile = Join-Path $TestDrive 'full-output.txt'
+        $HeadSha = (& git -C $script:RepoRoot rev-parse HEAD).Trim()
+
+        & pwsh -NoProfile -File $ResolverPath `
+            -EventName merge_group `
+            -ExpectedHeadSha $HeadSha `
+            -MergeGroupBaseSha ('0' * 40) `
+            -MergeGroupHeadSha $HeadSha `
+            -OutputFile $OutputFile
+
+        $LASTEXITCODE | Should -Be 0
+        Get-Content -Path $OutputFile -Raw | Should -Match '(?m)^mode=full\r?$'
+    }
+}
+
 Describe 'PR validation merge-group contract' -Tag 'Unit' {
     It 'retains the merge-group trigger for main' {
         $script:AggregateWorkflow | Should -Match '(?ms)^  merge_group:\r?\n    branches:\r?\n      - main\r?\n    types: \[checks_requested\]'
@@ -194,6 +257,37 @@ Describe 'PR validation merge-group contract' -Tag 'Unit' {
         $MatrixJob | Should -Match 'changeMode: \$\{\{ needs\.resolve-validation-range\.outputs\.mode \}\}'
         $MatrixJob | Should -Match 'baseSha: \$\{\{ needs\.resolve-validation-range\.outputs\.base-sha \}\}'
         $MatrixJob | Should -Match 'headSha: \$\{\{ needs\.resolve-validation-range\.outputs\.head-sha \}\}'
+    }
+
+    It 'passes the resolver contract to documentation validation' {
+        $DocsJob = Get-WorkflowJobBlock -Workflow $script:AggregateWorkflow -JobName 'docs-automation'
+        $DocsWorkflow = Get-Content -Path (
+            Join-Path $script:RepoRoot '.github/workflows/docs-automation.yml') -Raw
+
+        $DocsJob | Should -Match 'needs: \[resolve-validation-range\]'
+        $DocsJob | Should -Match 'changeMode: \$\{\{ needs\.resolve-validation-range\.outputs\.mode \}\}'
+        $DocsJob | Should -Match 'baseSha: \$\{\{ needs\.resolve-validation-range\.outputs\.base-sha \}\}'
+        $DocsJob | Should -Match 'headSha: \$\{\{ needs\.resolve-validation-range\.outputs\.head-sha \}\}'
+        $DocsWorkflow | Should -Match "CHANGE_MODE: \$\{\{ inputs\.changeMode \|\| 'branch' \}\}"
+        $DocsWorkflow | Should -Match "\$env:CHANGE_MODE -eq 'full'"
+        $DocsWorkflow | Should -Match "\$env:CHANGE_MODE -eq 'range'"
+        $DocsWorkflow | Should -Match '\$frontmatterArgs\[''ChangeMode''\]'
+        $DocsWorkflow | Should -Match '\$frontmatterArgs\[''BaseSha''\]'
+        $DocsWorkflow | Should -Match '\$frontmatterArgs\[''HeadSha''\]'
+    }
+
+    It 'selects all configured paths for documentation full fallback' {
+        $Selection = Resolve-FrontmatterValidationSelection `
+            -ChangeMode full `
+            -Paths @('docs', 'src', 'blueprints') `
+            -BaseBranch 'origin/moving-base' `
+            -BaseSha 'unused-base' `
+            -HeadSha 'unused-head'
+
+        $Selection.Skip | Should -BeFalse
+        $Selection.Parameters.Paths | Should -Be @('docs', 'src', 'blueprints')
+        $Selection.Parameters.ContainsKey('ChangedFilesOnly') | Should -BeFalse
+        $Selection.Parameters.ContainsKey('BaseBranch') | Should -BeFalse
     }
 
     It 'keeps credentialed jobs outside merge-group execution' -ForEach @(
@@ -222,16 +316,46 @@ Describe 'PR validation merge-group contract' -Tag 'Unit' {
         $Job | Should -Not -Match 'packages:'
     }
 
+    It 'uses read-only reusable workflows for merge-group Rust and fuzz validation' {
+        $RustJob = Get-WorkflowJobBlock -Workflow $script:AggregateWorkflow -JobName 'rust-tests-merge-group'
+        $FuzzJob = Get-WorkflowJobBlock -Workflow $script:AggregateWorkflow -JobName 'fuzz-merge-group'
+        $RustWorkflow = Get-Content -Path (
+            Join-Path $script:RepoRoot '.github/workflows/rust-tests-read-only.yml') -Raw
+        $FuzzWorkflow = Get-Content -Path (
+            Join-Path $script:RepoRoot '.github/workflows/fuzz-pr-read-only.yml') -Raw
+
+        $RustJob | Should -Match 'uses: \./\.github/workflows/rust-tests-read-only\.yml'
+        $FuzzJob | Should -Match 'uses: \./\.github/workflows/fuzz-pr-read-only\.yml'
+        $FuzzJob | Should -Match '(?ms)permissions:\r?\n      contents: read\r?\n      actions: read'
+        $RustWorkflow | Should -Not -Match '(?m)^\s+(id-token|packages|security-events|attestations): write\r?$'
+        $FuzzWorkflow | Should -Not -Match '(?m)^\s+(id-token|packages|security-events|attestations): write\r?$'
+    }
+
+    It 'keeps application validation read only' {
+        $ApplicationJob = Get-WorkflowJobBlock `
+            -Workflow $script:AggregateWorkflow `
+            -JobName 'application-matrix-builds'
+        $ApplicationWorkflow = Get-Content -Path (
+            Join-Path $script:RepoRoot '.github/workflows/application-matrix-builds.yml') -Raw
+
+        $ApplicationJob | Should -Match '(?ms)permissions:\r?\n      contents: read'
+        $ApplicationJob | Should -Not -Match '(?m)^\s+(id-token|packages|security-events|attestations): write\r?$'
+        $ApplicationWorkflow | Should -Not -Match '(?m)^\s+(id-token|packages|security-events|attestations): write\r?$'
+        $ApplicationWorkflow | Should -Not -Match 'github/codeql-action/upload-sarif@'
+    }
+
     It 'includes permission enforcement in the required aggregate gate' {
         $GateJob = Get-WorkflowJobBlock -Workflow $script:AggregateWorkflow -JobName 'pr-validation-gate'
 
-        $GateJob | Should -Match '(?m)^      - permissions-scan$'
+        $GateJob | Should -Match '(?m)^      - permissions-scan\r?$'
     }
 
     It 'disables persisted checkout credentials in trust-boundary workflows' -ForEach @(
         '.github/workflows/pr-validation.yml'
         '.github/workflows/rust-tests.yml'
+        '.github/workflows/rust-tests-read-only.yml'
         '.github/workflows/fuzz-pr.yml'
+        '.github/workflows/fuzz-pr-read-only.yml'
         '.github/workflows/docs-automation.yml'
         '.github/workflows/docs-check-terraform.yml'
         '.github/workflows/docs-check-bicep.yml'

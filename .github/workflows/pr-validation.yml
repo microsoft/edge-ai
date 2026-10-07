@@ -228,12 +228,16 @@ jobs:
   # Documentation automation validation for PRs
   docs-automation:
     name: Documentation Automation
+    needs: [resolve-validation-range]
     uses: ./.github/workflows/docs-automation.yml
     permissions:
       contents: read
       actions: read
     with:
       force_regenerate: false
+      changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+      baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+      headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
 
   # Docusaurus build and test validation for PRs
   docusaurus-tests:
@@ -311,9 +315,7 @@ jobs:
     if: github.event_name == 'merge_group' && needs.matrix-changes.outputs.changesInRust == 'true'
     permissions:
       contents: read
-    uses: ./.github/workflows/rust-tests.yml
-    with:
-      upload-coverage: false
+    uses: ./.github/workflows/rust-tests-read-only.yml
 
   # Dependency advisory audit (cargo-audit + govulncheck) for PRs
   dep-audit:
@@ -346,12 +348,12 @@ jobs:
     if: github.event_name == 'merge_group'
     permissions:
       contents: read
-    uses: ./.github/workflows/fuzz-pr.yml
+      actions: read
+    uses: ./.github/workflows/fuzz-pr-read-only.yml
     with:
       changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
       baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
       headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
-      uploadCoverage: false
 
   # Use reusable workflow to detect detailed changes and create folder matrix
   matrix-changes:
@@ -414,8 +416,6 @@ jobs:
     uses: ./.github/workflows/application-matrix-builds.yml
     permissions:
       contents: read
-      actions: read
-      security-events: write
     with:
       applicationMatrix: ${{ needs.matrix-changes.outputs.changedApplicationFolders }}
       registryName: ${{ vars.REGISTRY_NAME || 'ghcr.io' }}

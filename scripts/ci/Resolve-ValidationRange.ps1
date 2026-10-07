@@ -219,6 +219,11 @@ function Resolve-ValidationRange {
         return $Result
     }
 
+    if ($EventName -eq 'pull_request' -and
+        [string]::IsNullOrWhiteSpace($RequiredAncestorSha)) {
+        return $Result
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($RequiredAncestorSha)) {
         if (-not (Test-GitCommit -Sha $RequiredAncestorSha) -or
             -not (Test-GitAncestor -AncestorSha $RequiredAncestorSha -DescendantSha $ResolvedHeadSha)) {
@@ -265,6 +270,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         "mode=$($Result.Mode)" | Add-Content -Path $OutputFile -Encoding utf8
         "base-sha=$($Result.BaseSha)" | Add-Content -Path $OutputFile -Encoding utf8
         "head-sha=$($Result.HeadSha)" | Add-Content -Path $OutputFile -Encoding utf8
+        exit 0
     }
     catch {
         Write-Error -ErrorAction Continue "Resolve-ValidationRange failed: $($_.Exception.Message)"
