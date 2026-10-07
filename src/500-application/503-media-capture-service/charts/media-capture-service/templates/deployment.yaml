@@ -8,6 +8,14 @@ metadata:
     {{- include "media-capture-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- if .Values.mediaCapture.continuousRecording.enabled }}
+  {{- if gt (int .Values.replicaCount) 1 }}
+  {{- fail "continuous recording supports one replica per camera; deploy one release per camera" }}
+  {{- end }}
+  # One continuous recorder per camera: stop the old pod before starting the new one
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "media-capture-service.selectorLabels" . | nindent 6 }}

@@ -57,6 +57,7 @@ mediaCapture:
     location: "unknown"
 
   # Continuous recording records back-to-back segments instead of MQTT-triggered clips
+  # Requires replicaCount: 1 and uses the Recreate rollout strategy so recorders never overlap
   continuousRecording:
     enabled: false
     segmentDurationSeconds: "300"

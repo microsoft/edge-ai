@@ -31,6 +31,18 @@ const PARTIAL_EXTENSION: &str = "partial";
 /// finalize the file before the process is killed.
 const FFMPEG_GRACE: Duration = Duration::from_secs(60);
 const RETRY_DELAY: Duration = Duration::from_secs(5);
+/// Video container extensions that continuous recording can produce, so
+/// retention applies after `OUTPUT_FORMAT` changes.
+const VIDEO_EXTENSIONS: [&str; 2] = ["mp4", "mkv"];
+/// An active recorder rewrites its partial file at least this often, so a
+/// partial file idle for longer belongs to a recorder that stopped. Covers the
+/// RTSP I/O timeout and the ffmpeg grace period.
+const PARTIAL_IDLE_LIMIT: Duration = Duration::from_secs(120);
+/// Recordings shorter than this are treated as failed.
+const MIN_SEGMENT_DURATION: Duration = Duration::from_secs(1);
+/// Recordings within this tolerance of the requested length aren't reported as short.
+const SHORT_SEGMENT_TOLERANCE: Duration = Duration::from_secs(1);
+const FFPROBE_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OutputFormat {
@@ -184,21 +196,19 @@ impl ContinuousRecorder {
             self.config.segment_duration.as_secs()
         );
 
-        // Segments left by an interrupted earlier run are incomplete
+        // Idle partial files belong to a recorder that stopped; files another
+        // recorder is still writing are recent and stay in place
         let camera_path = self.config.output_base_path.join(&self.config.camera_id);
-        match remove_partial_segments(&camera_path).await {
+        match remove_stale_partial_segments(&camera_path, PARTIAL_IDLE_LIMIT).await {
             Ok(0) => {}
-            Ok(count) => warn!("Removed {count} incomplete segments from an earlier run"),
-            Err(e) => warn!("Failed to remove incomplete segments: {e}"),
+            Ok(count) => warn!("Removed {count} abandoned incomplete segments"),
+            Err(e) => warn!("Failed to remove abandoned incomplete segments: {e}"),
         }
 
-        if let Some(retention) = self.config.retention {
-            self.start_cleanup_task(retention);
-        }
+        self.start_cleanup_task(self.config.retention);
 
         loop {
-            let segment_start = Utc::now();
-            match self.record_segment(segment_start).await {
+            match self.record_segment().await {
                 Ok(path) => debug!("Recorded segment {}", path.display()),
                 Err(e) => {
                     error!(
@@ -211,34 +221,52 @@ impl ContinuousRecorder {
         }
     }
 
-    async fn record_segment(
-        &self,
-        segment_start: DateTime<Utc>,
-    ) -> Result<PathBuf, Box<dyn Error>> {
+    async fn record_segment(&self) -> Result<PathBuf, Box<dyn Error>> {
+        let staging = segment_path(
+            &self.config.output_base_path,
+            &self.config.camera_id,
+            self.config.output_format,
+            &Utc::now(),
+        );
+        if let Some(parent) = staging.parent() {
+            fs::create_dir_all(parent).await?;
+        }
+
+        let partial = partial_path(&staging);
+        let window = match self.capture(&partial).await {
+            Ok(window) => window,
+            Err(e) => {
+                let _ = fs::remove_file(&partial).await;
+                return Err(e);
+            }
+        };
+        if window.short {
+            warn!(
+                "Segment for {} contains {:.1}s of the requested {}s",
+                self.config.camera_id,
+                (window.end - window.start).num_milliseconds() as f64 / 1000.0,
+                self.config.segment_duration.as_secs()
+            );
+        }
+
+        // Name the segment after the start of the footage it contains
         let output = segment_path(
             &self.config.output_base_path,
             &self.config.camera_id,
             self.config.output_format,
-            &segment_start,
+            &window.start,
         );
         if let Some(parent) = output.parent() {
             fs::create_dir_all(parent).await?;
         }
-
-        let partial = partial_path(&output);
-        if let Err(e) = self.run_ffmpeg(&partial).await {
-            let _ = fs::remove_file(&partial).await;
-            return Err(e);
-        }
         fs::rename(&partial, &output).await?;
 
-        let segment_end = segment_start + chrono::Duration::from_std(self.config.segment_duration)?;
         AcsaWriter::write_segment_with_metadata(
             &output,
             &self.config.camera_id,
             &self.config.location,
-            segment_start,
-            segment_end,
+            window.start,
+            window.end,
         )
         .await?;
 
@@ -248,6 +276,18 @@ impl ContinuousRecorder {
             fs::metadata(&output).await?.len() as f64 / 1_048_576.0
         );
         Ok(output)
+    }
+
+    /// Records into `partial` and returns the time window its footage covers.
+    async fn capture(&self, partial: &Path) -> Result<CaptureWindow, Box<dyn Error>> {
+        self.run_ffmpeg(partial).await?;
+        let finished_at = Utc::now();
+        let recorded = probe_duration(partial).await?;
+        Ok(capture_window(
+            finished_at,
+            recorded,
+            self.config.segment_duration,
+        )?)
     }
 
     async fn run_ffmpeg(&self, output: &Path) -> Result<(), Box<dyn Error>> {
@@ -297,19 +337,29 @@ impl ContinuousRecorder {
         Ok(())
     }
 
-    fn start_cleanup_task(&self, retention: Duration) {
+    /// Periodically removes abandoned partial files and, when retention is
+    /// set, expired segments.
+    fn start_cleanup_task(&self, retention: Option<Duration>) {
         let camera_path = self.config.output_base_path.join(&self.config.camera_id);
-        let extension = self.config.output_format.extension();
         let cleanup_interval = self.config.cleanup_interval;
         let camera_id = self.config.camera_id.clone();
-        let retention = chrono::Duration::from_std(retention).unwrap_or(chrono::Duration::MAX);
+        let retention =
+            retention.map(|r| chrono::Duration::from_std(r).unwrap_or(chrono::Duration::MAX));
 
         tokio::spawn(async move {
             let mut timer = interval(cleanup_interval);
             loop {
                 timer.tick().await;
+                if let Err(e) =
+                    remove_stale_partial_segments(&camera_path, PARTIAL_IDLE_LIMIT).await
+                {
+                    warn!("Partial segment cleanup failed for camera {camera_id}: {e}");
+                }
+                let Some(retention) = retention else {
+                    continue;
+                };
                 let cutoff = Utc::now() - retention;
-                match cleanup_segments(&camera_path, cutoff, extension).await {
+                match cleanup_segments(&camera_path, cutoff).await {
                     Ok(0) => debug!("No expired segments for camera {camera_id}"),
                     Ok(count) => {
                         info!("Deleted {count} expired segment files for camera {camera_id}")
@@ -341,6 +391,75 @@ pub fn segment_path(
         ))
 }
 
+/// Time range covered by a recorded segment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CaptureWindow {
+    pub start: DateTime<Utc>,
+    pub end: DateTime<Utc>,
+    /// The footage is shorter than the requested segment length.
+    pub short: bool,
+}
+
+/// Derives the footage window from when ffmpeg finished and the measured
+/// recording length, so connection time before the first frame isn't counted.
+pub fn capture_window(
+    finished_at: DateTime<Utc>,
+    recorded: Duration,
+    requested: Duration,
+) -> Result<CaptureWindow, String> {
+    if recorded < MIN_SEGMENT_DURATION {
+        return Err(format!(
+            "recording contains {:.1}s of video, below the {}s minimum",
+            recorded.as_secs_f64(),
+            MIN_SEGMENT_DURATION.as_secs()
+        ));
+    }
+    let length = chrono::Duration::from_std(recorded).map_err(|e| e.to_string())?;
+    Ok(CaptureWindow {
+        start: finished_at - length,
+        end: finished_at,
+        short: recorded + SHORT_SEGMENT_TOLERANCE < requested,
+    })
+}
+
+/// Parses the `format=duration` value printed by `ffprobe`.
+pub fn parse_probe_duration(output: &str) -> Result<Duration, String> {
+    let value = output.trim();
+    let seconds: f64 = value.parse().map_err(|_| {
+        format!("recording contains no measurable media (ffprobe duration {value:?})")
+    })?;
+    if !seconds.is_finite() || seconds < 0.0 {
+        return Err(format!("ffprobe reported an invalid duration ({value})"));
+    }
+    Ok(Duration::from_secs_f64(seconds))
+}
+
+/// Measures the media duration of `path` with `ffprobe`.
+async fn probe_duration(path: &Path) -> Result<Duration, Box<dyn Error>> {
+    let mut command = Command::new("ffprobe");
+    command
+        .args(["-v", "error", "-show_entries", "format=duration"])
+        .args(["-of", "default=noprint_wrappers=1:nokey=1"])
+        .arg(path)
+        .stdin(Stdio::null())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
+    let output = tokio::time::timeout(FFPROBE_TIMEOUT, command.output())
+        .await
+        .map_err(|_| "ffprobe timed out")??;
+    if !output.status.success() {
+        return Err(format!(
+            "ffprobe exited with {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr).trim()
+        )
+        .into());
+    }
+    Ok(parse_probe_duration(&String::from_utf8_lossy(
+        &output.stdout,
+    ))?)
+}
+
 /// Returns the path ffmpeg writes to before the segment is complete.
 pub fn partial_path(output: &Path) -> PathBuf {
     let mut name = output.as_os_str().to_owned();
@@ -349,25 +468,30 @@ pub fn partial_path(output: &Path) -> PathBuf {
     PathBuf::from(name)
 }
 
-/// Deletes continuous segment videos, metadata sidecars, and incomplete
-/// segments under `camera_path` that were last modified before `cutoff`, then
-/// removes empty directories. Triggered clips aren't touched because they
-/// don't use the `segment_` prefix.
+/// Deletes continuous segment videos in any supported format, metadata
+/// sidecars, and incomplete segments under `camera_path` that were last
+/// modified before `cutoff`, then removes empty directories. Triggered clips
+/// aren't touched because they don't use the `segment_` prefix.
 pub async fn cleanup_segments(
     camera_path: &Path,
     cutoff: DateTime<Utc>,
-    video_extension: &str,
 ) -> Result<usize, std::io::Error> {
     let matches = |path: &Path| {
-        is_segment_file(path, video_extension) || is_segment_file(path, PARTIAL_EXTENSION)
+        has_segment_extension(path, &VIDEO_EXTENSIONS)
+            || has_segment_extension(path, &[METADATA_EXTENSION, PARTIAL_EXTENSION])
     };
     cleanup_tree(camera_path, cutoff, &matches).await
 }
 
-/// Deletes every incomplete segment under `camera_path`.
-pub async fn remove_partial_segments(camera_path: &Path) -> Result<usize, std::io::Error> {
-    let matches = |path: &Path| is_segment_file(path, PARTIAL_EXTENSION);
-    cleanup_tree(camera_path, DateTime::<Utc>::MAX_UTC, &matches).await
+/// Deletes incomplete segments under `camera_path` that haven't been modified
+/// for `idle_limit`. A recorder writing a partial file keeps it recent.
+pub async fn remove_stale_partial_segments(
+    camera_path: &Path,
+    idle_limit: Duration,
+) -> Result<usize, std::io::Error> {
+    let idle_limit = chrono::Duration::from_std(idle_limit).unwrap_or(chrono::Duration::MAX);
+    let matches = |path: &Path| has_segment_extension(path, &[PARTIAL_EXTENSION]);
+    cleanup_tree(camera_path, Utc::now() - idle_limit, &matches).await
 }
 
 async fn cleanup_tree(
@@ -425,15 +549,13 @@ fn cleanup_directory<'a>(
     })
 }
 
-fn is_segment_file(path: &Path, extension: &str) -> bool {
+fn has_segment_extension(path: &Path, extensions: &[&str]) -> bool {
     let is_segment = path
         .file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| name.starts_with(SEGMENT_PREFIX));
-    let actual = path.extension().and_then(|ext| ext.to_str());
-    is_segment
-        && (actual == Some(extension)
-            || (extension != PARTIAL_EXTENSION && actual == Some(METADATA_EXTENSION)))
+    let extension = path.extension().and_then(|ext| ext.to_str());
+    is_segment && extension.is_some_and(|ext| extensions.contains(&ext))
 }
 
 #[cfg(test)]
@@ -516,7 +638,7 @@ mod tests {
         set_file_mtime(&old_hour, old_time).unwrap();
 
         let cutoff = Utc::now() - chrono::Duration::hours(1);
-        let deleted = cleanup_segments(&camera, cutoff, "mp4").await.unwrap();
+        let deleted = cleanup_segments(&camera, cutoff).await.unwrap();
 
         assert_eq!(deleted, 3);
         assert!(!old_partial.exists());
@@ -529,22 +651,181 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn removes_all_partial_segments_on_startup() {
+    async fn startup_keeps_active_partial_and_removes_abandoned_one() {
         let dir = tempfile::tempdir().unwrap();
         let hour = dir.path().join("camera-01/2026/01/30/19");
         std::fs::create_dir_all(&hour).unwrap();
         let complete = hour.join("segment_a_camera-01.mp4");
-        let partial = partial_path(&hour.join("segment_b_camera-01.mp4"));
-        std::fs::write(&complete, b"x").unwrap();
-        std::fs::write(&partial, b"x").unwrap();
+        let abandoned = partial_path(&hour.join("segment_b_camera-01.mp4"));
+        let active = partial_path(&hour.join("segment_c_camera-01.mp4"));
+        for file in [&complete, &abandoned, &active] {
+            std::fs::write(file, b"x").unwrap();
+        }
+        let idle_since = FileTime::from_unix_time(
+            Utc::now().timestamp() - PARTIAL_IDLE_LIMIT.as_secs() as i64 - 60,
+            0,
+        );
+        set_file_mtime(&abandoned, idle_since).unwrap();
 
-        let removed = remove_partial_segments(&dir.path().join("camera-01"))
-            .await
+        // Another recorder keeps writing its partial file while this one starts
+        let mut writer = std::fs::OpenOptions::new()
+            .append(true)
+            .open(&active)
             .unwrap();
+        std::io::Write::write_all(&mut writer, b"more frames").unwrap();
+
+        let removed =
+            remove_stale_partial_segments(&dir.path().join("camera-01"), PARTIAL_IDLE_LIMIT)
+                .await
+                .unwrap();
 
         assert_eq!(removed, 1);
+        assert!(!abandoned.exists());
+        assert!(active.exists(), "an active recorder's segment must survive");
         assert!(complete.exists());
-        assert!(!partial.exists());
+        std::io::Write::write_all(&mut writer, b"final frames").unwrap();
+        std::fs::rename(&active, hour.join("segment_c_camera-01.mp4")).unwrap();
+    }
+
+    #[tokio::test]
+    async fn retention_cleans_every_video_format_after_format_changes() {
+        let dir = tempfile::tempdir().unwrap();
+        let camera = dir.path().join("camera-01");
+        let hour = camera.join("2026/01/30/19");
+        std::fs::create_dir_all(&hour).unwrap();
+
+        let expired = [
+            hour.join("segment_a_camera-01.mp4"),
+            hour.join("segment_a_camera-01.json"),
+            hour.join("segment_b_camera-01.mkv"),
+            hour.join("segment_b_camera-01.json"),
+        ];
+        let triggered_mp4 = hour.join("2026-01-30_190612_segment_alert_event_id_1.mp4");
+        let triggered_mkv = hour.join("2026-01-30_190613_segment_alert_event_id_2.mkv");
+        let recent_mkv = hour.join("segment_c_camera-01.mkv");
+        let recent_mp4 = hour.join("segment_d_camera-01.mp4");
+        let old_time = FileTime::from_unix_time(Utc::now().timestamp() - 7200, 0);
+        for file in expired.iter().chain([&triggered_mp4, &triggered_mkv]) {
+            std::fs::write(file, b"x").unwrap();
+            set_file_mtime(file, old_time).unwrap();
+        }
+        std::fs::write(&recent_mkv, b"x").unwrap();
+        std::fs::write(&recent_mp4, b"x").unwrap();
+
+        let cutoff = Utc::now() - chrono::Duration::hours(1);
+        let deleted = cleanup_segments(&camera, cutoff).await.unwrap();
+
+        assert_eq!(deleted, expired.len());
+        for file in &expired {
+            assert!(!file.exists(), "{} should be removed", file.display());
+        }
+        for file in [&triggered_mp4, &triggered_mkv, &recent_mkv, &recent_mp4] {
+            assert!(file.exists(), "{} should be kept", file.display());
+        }
+    }
+
+    fn at(timestamp: &str) -> DateTime<Utc> {
+        DateTime::parse_from_rfc3339(timestamp)
+            .unwrap()
+            .with_timezone(&Utc)
+    }
+
+    #[test]
+    fn delayed_startup_starts_window_at_first_recorded_frame() {
+        // Recording was requested at 19:00:00, connecting took 8s, and 300s were captured
+        let finished_at = at("2026-01-30T19:05:08Z");
+        let window = capture_window(
+            finished_at,
+            Duration::from_secs(300),
+            Duration::from_secs(300),
+        )
+        .unwrap();
+
+        assert_eq!(window.start, at("2026-01-30T19:00:08Z"));
+        assert_eq!(window.end, finished_at);
+        assert!(!window.short);
+    }
+
+    #[test]
+    fn early_ending_stream_reports_only_recorded_footage() {
+        // ffmpeg exited successfully after the stream ended 42.5s into a 300s segment
+        let finished_at = at("2026-01-30T19:00:45Z");
+        let window = capture_window(
+            finished_at,
+            Duration::from_millis(42_500),
+            Duration::from_secs(300),
+        )
+        .unwrap();
+
+        assert_eq!(
+            window.end - window.start,
+            chrono::Duration::milliseconds(42_500)
+        );
+        assert!(window.short);
+    }
+
+    #[test]
+    fn empty_or_near_empty_recording_is_rejected() {
+        let finished_at = at("2026-01-30T19:00:00Z");
+        for recorded in [Duration::ZERO, Duration::from_millis(400)] {
+            assert!(capture_window(finished_at, recorded, Duration::from_secs(300)).is_err());
+        }
+    }
+
+    #[test]
+    fn recording_within_tolerance_is_not_short() {
+        let window = capture_window(
+            at("2026-01-30T19:05:00Z"),
+            Duration::from_millis(299_400),
+            Duration::from_secs(300),
+        )
+        .unwrap();
+        assert!(!window.short);
+    }
+
+    #[test]
+    fn parses_ffprobe_duration_output() {
+        assert_eq!(
+            parse_probe_duration("299.966000\n").unwrap(),
+            Duration::from_secs_f64(299.966)
+        );
+        for invalid in ["", "N/A\n", "-1.0", "inf"] {
+            assert!(
+                parse_probe_duration(invalid).is_err(),
+                "{invalid:?} should fail"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn probes_duration_of_a_short_recording() {
+        let Ok(status) = std::process::Command::new("ffmpeg")
+            .arg("-version")
+            .stdout(Stdio::null())
+            .status()
+        else {
+            eprintln!("skipping: ffmpeg isn't installed");
+            return;
+        };
+        assert!(status.success());
+
+        let dir = tempfile::tempdir().unwrap();
+        let clip = dir.path().join("segment_a_camera-01.mkv.partial");
+        let generated = std::process::Command::new("ffmpeg")
+            .args(["-hide_banner", "-loglevel", "error", "-f", "lavfi"])
+            .args(["-i", "testsrc=size=160x120:rate=10:duration=2"])
+            .args(["-c:v", "libx264", "-f", "matroska", "-y"])
+            .arg(&clip)
+            .status()
+            .unwrap();
+        assert!(generated.success());
+
+        let recorded = probe_duration(&clip).await.unwrap();
+        assert!(
+            (recorded.as_secs_f64() - 2.0).abs() < 0.25,
+            "measured {:?}",
+            recorded
+        );
     }
 
     #[test]
@@ -558,7 +839,7 @@ mod tests {
     #[tokio::test]
     async fn cleanup_of_missing_camera_directory_is_a_no_op() {
         let dir = tempfile::tempdir().unwrap();
-        let deleted = cleanup_segments(&dir.path().join("none"), Utc::now(), "mp4")
+        let deleted = cleanup_segments(&dir.path().join("none"), Utc::now())
             .await
             .unwrap();
         assert_eq!(deleted, 0);

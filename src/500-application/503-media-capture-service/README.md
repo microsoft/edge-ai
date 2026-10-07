@@ -684,12 +684,13 @@ Both modes write under `{MEDIA_CLOUD_SYNC_DIR}/{CAMERA_ID}/{YYYY}/{MM}/{DD}/{HH}
 
 Continuous mode records `CONTINUOUS_SEGMENT_DURATION_SECONDS` of the `RTSP_URL` stream per segment. It re-encodes video to 360p H.264 and audio to AAC to bound CPU, memory, and upload size.
 
-- **Complete segments only**: `ffmpeg` writes to `<segment>.partial`, and the file is renamed only after `ffmpeg` succeeds. The metadata file is written after the rename. Partial files left by an interrupted run are deleted at startup.
+- **Complete segments only**: `ffmpeg` writes to `<segment>.partial`, and the file is renamed only after `ffmpeg` succeeds and `ffprobe` measures at least 1 second of video. The metadata file is written after the rename. Partial files that haven't changed for 2 minutes belong to a recorder that stopped and are deleted at startup and on each cleanup run; a partial file another recorder is still writing stays in place.
 - **Failures**: A failed segment is logged and retried after 5 seconds. Credentials in the RTSP URL are removed from logged `ffmpeg` errors.
-- **Metadata**: Each `.json` file holds `camera_id`, `location` (`CAMERA_LOCATION`), `segment_start`, `segment_end`, `duration_seconds`, and `file_name`. The `520-video-query-api` component lists segments by this path layout and reads these fields.
-- **Local retention**: Every `CLEANUP_INTERVAL_MINUTES`, segment and metadata files older than `LOCAL_RETENTION_HOURS` are deleted from the volume, whether or not ACSA uploaded them. Set the retention longer than the longest connectivity outage you expect, or set it to `0` to disable cleanup and rely on the ACSA volume's own policy. Triggered clips are never deleted by this cleanup.
+- **Metadata**: Each `.json` file holds `camera_id`, `location` (`CAMERA_LOCATION`), `segment_start`, `segment_end`, `duration_seconds`, and `file_name`. The window covers the recorded footage: it ends when `ffmpeg` finishes and starts the measured duration earlier, so camera connection time isn't counted.
+  A stream that ends early produces a shorter segment with its actual duration and a warning in the log. The segment file name uses the same start time. The `520-video-query-api` component lists segments by this path layout and reads these fields.
+- **Local retention**: Every `CLEANUP_INTERVAL_MINUTES`, segment videos in either format (`mp4` or `mkv`, regardless of the current `OUTPUT_FORMAT`) and metadata files older than `LOCAL_RETENTION_HOURS` are deleted from the volume, whether or not ACSA uploaded them. Set the retention longer than the longest connectivity outage you expect, or set it to `0` to disable cleanup and rely on the ACSA volume's own policy. Triggered clips are never deleted by this cleanup.
 
-Deploy one Helm release per camera. Replicas of one release record the same camera into the same paths.
+Deploy one Helm release per camera. In continuous mode the chart requires `replicaCount: 1` and uses the `Recreate` rollout strategy, so two recorders never write the same camera's segments at once.
 
 ```bash
 helm install media-capture-camera-01 ./charts/media-capture-service \
