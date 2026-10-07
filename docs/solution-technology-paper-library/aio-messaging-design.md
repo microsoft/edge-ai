@@ -1,10 +1,10 @@
 ---
 title: Azure IoT Operations (AIO) Messaging
-description: Comprehensive technical guide to Azure IoT Operations messaging architecture covering MQTT broker, CloudEvents implementation, OPC UA connectors, schema registry, data transformation patterns, and integration with Azure Event Hub and Microsoft Fabric for industrial edge messaging solutions
+description: Comprehensive technical guide to Azure IoT Operations messaging architecture covering MQTT broker, CloudEvents implementation, OPC UA connectors, schema registry, data transformation patterns, integration with Azure Event Hub and Microsoft Fabric, and message contracts for custom workloads in industrial edge messaging solutions
 author: Suneet Nangia
 ms.date: 2026-10-05
 ms.topic: solution-article
-estimated_reading_time: 18
+estimated_reading_time: 22
 keywords:
   - azure-iot-operations
   - aio-messaging
@@ -26,6 +26,11 @@ keywords:
   - eventhouse
   - kql-database
   - message-routing
+  - mqtt-contracts
+  - topic-versioning
+  - message-envelope
+  - mqtt-authorization
+  - payload-safe-logging
 ---
 
 ## Overview
@@ -384,11 +389,13 @@ To flatten the structure in AIO, utilize the DataFlow [mapping feature](https://
 
 ## Custom Workload Messaging Contracts
 
-Custom workloads that publish to or consume from the AIO MQTT broker benefit from a documented message contract. A contract lets producers and consumers evolve independently, keeps authorization narrow, and keeps payloads out of logs. This section describes product-neutral contract principles. It doesn't replace the schema of any message type that a component already owns, such as the component 507 [`image_snapshot` v1 schema](../../src/500-application/507-ai-inference/resources/schemas/image-snapshot-v1.schema.json).
+Custom workloads that publish to or consume from the AIO MQTT broker benefit from a documented message contract. A contract lets producers and consumers evolve independently, keeps authorization narrow, and keeps payloads out of logs. The following principles are product-neutral and don't replace the schema of any message type that a component already owns, such as the component 507 [`image_snapshot` v1 schema](../../src/500-application/507-ai-inference/resources/schemas/image-snapshot-v1.schema.json).
+
+Version-specific behavior in this section refers to [AIO 2609 (1.4.112)](https://github.com/Azure/azure-iot-operations/releases/tag/v1.4.112).
 
 ### Versioned Topics
 
-Use a stable topic grammar with a version segment near the root. For example:
+Use a stable topic grammar with a major version segment near the root. For example:
 
 ```text
 {domain}/{contract-version}/{producer}/{resource-kind}/{resource-id}/{message-kind}
@@ -396,84 +403,104 @@ Use a stable topic grammar with a version segment near the root. For example:
 
 A synthetic topic following this grammar is `telemetry/v1/sensor-sim/pump/pump-a/vibration`.
 
-* Treat the version segment as the compatibility boundary. A breaking payload change gets a new version segment rather than reusing the existing topic.
+* The `{contract-version}` segment carries the major version, such as `v1`. A breaking payload change gets a new major version segment rather than reusing the existing topic.
+* `{producer}` and `{resource-id}` are logical, non-identifying names or opaque IDs. Don't use asset tags, site codes, or other values that identify a customer, site, person, or location.
 * Use lowercase, URL-safe segments. Keep semantic identity separate from deployment names such as clusters or namespaces.
 * Publish to concrete topics only. Reserve the `+` and `#` wildcards for subscriptions and authorization rules.
-* Don't place credentials, tokens, personal data, or customer or site identifiers in topic segments.
+* Don't place credentials, tokens, or personal data in topic segments.
 * Document QoS and retained-message behavior per message kind. Use QoS 0 or QoS 1; QoS 2 isn't supported by the AIO MQTT broker (see the [MQTT QoS ADR](../solution-adr-library/mqtt-qos.md)).
-* Never republish to the topic a workload consumes from. Starting with AIO 2609, MQTT connector configurations on the built-in broker reject an identical source and destination topic; apply the same rule to custom workloads.
+* Never publish to a topic that matches any of the workload's own subscription filters, including wildcard filters. Use a distinct `{message-kind}` or `{domain}` for derived output and check output topics against every subscribed filter. AIO 2609 MQTT connector configurations on the built-in broker reject an identical source and destination topic, but that check doesn't detect wildcard overlap, and MQTTv5 No Local doesn't prevent loops across replicas or shared subscriptions.
+
+This grammar applies to custom-workload topics. Asset topics configured through ADR or UNS hierarchies, such as `site01/data/thermostat01` in [Data Source](#data-source-acquisition), keep their own naming. When a workload consumes them, reference them as source topics rather than renaming them. Where topics must include site or area segments for UNS routing, use opaque, non-identifying codes and review them for disclosure.
 
 ### Message Envelopes
 
-Each message type owns a versioned schema. When a shared envelope is useful, keep it to cross-cutting fields that consumers need for validation and correlation:
+Each message type owns a versioned schema. Carry envelope metadata as CloudEvents attributes through the [CloudEvents MQTT binding](https://github.com/cloudevents/spec/blob/main/cloudevents/bindings/mqtt-protocol-binding.md) in binary mode, as MQTTv5 user properties, following the convention in [Data Source](#data-source-acquisition). Data flows, the Azure Event Hub connector, and Fabric OneLake mappings then see the same metadata as connector-published messages.
 
-| Field            | Purpose                                                    |
-|------------------|------------------------------------------------------------|
-| Contract type    | Stable message-type identifier                             |
-| Contract version | Compatibility boundary for the payload schema              |
-| Message ID       | Unique opaque identifier generated by the producer         |
-| Correlation ID   | Optional opaque identifier propagated across related work  |
-| Timestamp        | Event or capture time with documented units and time zone  |
-| Content type     | Media type of the encoded data                             |
-| Source identity  | Logical producer or resource reference, never a credential |
-| Data             | Payload owned by the message-type schema                   |
+| Field            | CloudEvents attribute or MQTTv5 property               | Purpose                                                    |
+|------------------|--------------------------------------------------------|------------------------------------------------------------|
+| Spec version     | `specversion` (`1.0`)                                  | CloudEvents version                                        |
+| Contract type    | `type`                                                 | Stable message-type identifier                             |
+| Contract version | `dataschema` (versioned schema URI)                    | Full schema version, such as `1.2`                         |
+| Message ID       | `id`                                                   | Unique identifier generated by the producer                |
+| Correlation ID   | `traceparent`, or a documented extension attribute     | Trace context propagated across related work               |
+| Timestamp        | `time` (RFC 3339, UTC)                                 | Event or capture time                                      |
+| Content type     | `datacontenttype` and the MQTTv5 Content Type property | Media type of the encoded data                             |
+| Source identity  | `source`, with `subject` for the resource when needed  | Logical producer or resource reference, never a credential |
+| Data             | MQTT payload                                           | Payload owned by the message-type schema                   |
 
-* Validate required fields and size bounds before business processing.
+* Use MQTTv5 Correlation Data only for request-response exchanges, not for trace correlation.
+* The topic segment carries the major version and `dataschema` carries the full version. Reject a message whose `dataschema` major version differs from the topic segment. Minor versions only add optional fields.
+* Validate required attributes and size bounds before business processing.
 * Document whether unknown fields are accepted. Accepting unknown optional fields within a major version keeps additions non-breaking.
-* Keep transport metadata separate from schema-owned data.
 * Don't redefine the payload of a message type another component already owns. Reference its schema instead.
 
 ### Workload Identity and Least-Privilege Authorization
 
-For in-cluster clients, authenticate with a [Kubernetes service account token](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-authentication) and grant access with [broker authorization policies](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-authorization), which are allow-only.
+Connect only over TLS-enabled listener ports. Service account tokens and other credentials are bearer secrets and must never cross an unencrypted listener.
 
-* Use a distinct service account and MQTT client ID for each workload trust boundary. Each concurrently running replica needs its own client ID.
-* Grant `Connect`, `Publish`, and `Subscribe` independently.
+Authentication and authorization are separate controls. A listener port enforces [broker authorization policies](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-authorization) only when its `authorizationRef` references a BrokerAuthorization resource and a BrokerAuthentication resource is also linked to the port.
+Without that binding, authorization is disabled and every authenticated client can publish and subscribe to every topic. With it, policies are allow-only: an action that no rule allows is denied.
+
+* Bind authorization to every listener port that custom workloads use, and confirm it with the negative authorization check in [Synthetic Contract Validation](#synthetic-contract-validation).
+* Authenticate in-cluster clients with a projected [Kubernetes service account token](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-authentication) whose audience matches the listener's SAT audience (`aio-internal` by default). Kubernetes refreshes the token before it expires; read the current token on each new connection and reconnect with it after an unauthorized error. Use X.509 client certificates for clients that can't use service account tokens.
+* Use a distinct service account for each workload trust boundary. Give each concurrently running replica a unique MQTT client ID, because reusing a client ID makes the broker take over the other replica's session. When a workload relies on persistent sessions for QoS 1 delivery, derive the client ID from a stable per-replica identity so the session survives restarts, and set a session expiry that bounds orphaned sessions.
+* Grant `Connect`, `Publish`, and `Subscribe` independently. Scope each `Connect` rule to the owning principal and to the client IDs or client-ID pattern that principal may use, so one workload can't connect with another workload's client ID and take over its persistent session.
 * Give producers publish access only to their contract-owned topic subtree, and consumers subscribe access only to the topics they require. Avoid broad `#` grants at shared roots.
-* Derive authorization from the authenticated principal. Never infer permissions from topic segments, payload fields, or correlation IDs.
-* When consumers scale out with MQTT v5 [shared subscriptions](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/overview-edge-apps#shared-subscriptions) (`$share/{group}/{filter}`), grant the specific shared group and filter. AIO 2609 fixed wildcard rules that could match shared-subscription topics outside their intended scope, so validate shared-subscription policies on 2609 or later.
-* Use authenticated access for connections to external brokers. Starting with AIO 2609, MQTT connector configurations reject anonymous authentication to external brokers.
+* Derive authorization from the authenticated principal. Never infer permissions from topic segments, payload fields, or correlation IDs. Where per-workload topic scoping is needed, use token substitution such as `{principal.attributes.<name>}` on the `{producer}` segment, based on attributes the broker binds to the authenticated identity. Use `{principal.clientId}` only when `Connect` rules restrict which client IDs each principal may use.
+* Require AIO 2609 or later for workloads that use MQTTv5 [shared subscriptions](https://learn.microsoft.com/azure/iot-operations/develop-edge-apps/overview-edge-apps#shared-subscriptions) (`$share/{group}/{filter}`). Earlier versions could apply a wildcard Subscribe rule to shared-subscription topics outside its intended scope; on those versions, avoid wildcard Subscribe rules for shared subscriptions and grant exact `$share/{group}/{filter}` values.
+* Use TLS and authenticated access for connections to external brokers, and validate the external broker's server certificate against a trusted CA. AIO 2609 MQTT connector configurations reject anonymous authentication to external brokers.
 
 ### Payload-Safe Diagnostics
 
-Diagnostics should support troubleshooting without exposing message bodies or credentials.
+Diagnostics should support troubleshooting without exposing message bodies, credentials, or identifiers.
 
-| Allowed                                      | Avoid                                                      |
-|----------------------------------------------|------------------------------------------------------------|
-| Contract type and version                    | Raw or Base64-encoded payloads                             |
-| Topic, after a disclosure review             | Tokens, certificates, or connection strings                |
-| Payload length and a bounded digest          | Authorization policy values that reveal environment layout |
-| Message and correlation IDs                  | Customer, site, person, or location identifiers            |
-| Result category and bounded rejection reason | Unbounded parser, broker, or SDK exception dumps           |
-| Processing duration and retry count          |                                                            |
+| Allowed                                                                                         | Avoid                                                      |
+|-------------------------------------------------------------------------------------------------|------------------------------------------------------------|
+| Contract type and version                                                                       | Raw or Base64-encoded payloads                             |
+| Topic, when its segments contain no customer, site, person, or location identifiers             | Payload hashes computed without a secret key               |
+| Payload length; optionally a keyed digest (HMAC with a per-deployment key that is never logged) | Tokens, certificates, or connection strings                |
+| Message and correlation IDs                                                                     | Authorization policy values that reveal environment layout |
+| Result category and bounded rejection reason                                                    | Customer, site, person, or location identifiers            |
+| Processing duration and retry count                                                             | Unbounded parser, broker, or SDK exception dumps           |
 
-Review `Debug`, `Display`, or equivalent formatting on any type that can hold payload bytes so that it reports lengths rather than content.
+* Generate message and correlation IDs randomly. Never derive them from business or personal identifiers.
+* Industrial payloads often have small value spaces, so a hash computed without a secret key can be reversed by enumeration and correlated across logs.
+* Review string and debug representations of any type that can hold payload bytes (for example, Rust `Debug` and `Display`, .NET `ToString()`, or Python `__repr__`) so that they report lengths rather than content.
 
 ### Synthetic Contract Validation
 
-Test each producer and consumer with generated identifiers and hand-built payloads, without depending on a live broker, device, model, or secret:
+Run the contract cases as unit tests that don't depend on a live broker, device, model, or secret. Use generated identifiers and hand-built payloads:
 
-| Case                                        | Expected result                                          |
-|---------------------------------------------|----------------------------------------------------------|
-| Valid topic and envelope                    | Accepted and correlated                                  |
-| Unsupported contract version                | Rejected with a bounded reason                           |
-| Missing required field                      | Rejected before business processing                      |
-| Oversize payload                            | Rejected before forwarding                               |
-| Malformed payload                           | Rejected without logging payload content                 |
-| Duplicate or retransmitted message          | Handled according to the documented idempotency behavior |
-| Publish or subscribe outside granted topics | Denied by broker authorization                           |
-| Unknown optional envelope field             | Handled according to the schema policy                   |
+| Case                               | Expected result                                          |
+|------------------------------------|----------------------------------------------------------|
+| Valid topic and envelope           | Accepted and correlated                                  |
+| Unsupported contract version       | Rejected with a bounded reason                           |
+| Missing required attribute         | Rejected before business processing                      |
+| Oversize payload                   | Rejected before forwarding                               |
+| Malformed payload                  | Rejected without logging payload content                 |
+| Duplicate or retransmitted message | Handled according to the documented idempotency behavior |
+| Unknown optional envelope field    | Handled according to the schema policy                   |
 
-Deduplicate on a producer-supplied message or capture identifier. Two fresh observations can carry identical bytes, so content alone doesn't identify a retransmission.
+Run the authorization case separately as an integration check against a non-production listener with the workload's authorization policy attached, using a synthetic service account. Publishing or subscribing outside the granted topics should return a not-authorized reason code on PUBACK or SUBACK, or the broker should otherwise reject the operation.
+
+Deduplicate on a producer-supplied identifier that is unique per logical event:
+
+* Generate the identifier once and reuse it on producer retries. Two fresh observations can carry identical bytes, so content alone doesn't identify a retransmission.
+* A capture identifier qualifies only if it's unique at the capture rate. An epoch-second timestamp isn't unique above one capture per second.
+* Document the deduplication window, and bound deduplication state by time and entry count.
+* Scope the deduplication key to the producer's topic subtree, so one producer's identifiers can't suppress another producer's messages.
+* Keep deduplication state shared across replicas when consumers use shared subscriptions, because QoS 1 redelivery can reach a different group member.
+* Treat retained-message delivery on subscribe as a replay.
 
 ### Contract Ownership
 
-| Role             | Responsibilities                                                                                   |
-|------------------|----------------------------------------------------------------------------------------------------|
-| Producer owner   | Topic and schema versions; size bounds; QoS, retention, ordering, and duplicate behavior; fixtures |
-| Consumer owner   | Version and required-field validation; unknown-field and duplicate behavior; bounded failures      |
-| Deployment owner | Workload identities, client IDs, authorization policies, and listener and authentication lifecycle |
-| Security review  | Trust boundaries, default-deny behavior, wildcard and shared-subscription grants, disclosure       |
+| Role             | Responsibilities                                                                                                                                         |
+|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Producer owner   | Topic and schema versions; size bounds; QoS, retention, ordering, and duplicate behavior; fixtures                                                       |
+| Consumer owner   | Version and required-attribute validation; unknown-field and duplicate behavior; bounded failures                                                        |
+| Deployment owner | Workload identities, client IDs, authorization policies and their listener binding, TLS and certificate trust, and listener and authentication lifecycle |
+| Security review  | Trust boundaries, default-deny binding, wildcard and shared-subscription grants, disclosure                                                              |
 
 ## Unified Namespace (UNS) Features
 
