@@ -269,8 +269,8 @@ Describe 'PR validation merge-group contract' -Tag 'Unit' {
         $DocsJob | Should -Match 'baseSha: \$\{\{ needs\.resolve-validation-range\.outputs\.base-sha \}\}'
         $DocsJob | Should -Match 'headSha: \$\{\{ needs\.resolve-validation-range\.outputs\.head-sha \}\}'
         $DocsWorkflow | Should -Match "CHANGE_MODE: \$\{\{ inputs\.changeMode \|\| 'branch' \}\}"
-        $DocsWorkflow | Should -Match "\$env:CHANGE_MODE -eq 'full'"
-        $DocsWorkflow | Should -Match "\$env:CHANGE_MODE -eq 'range'"
+        $DocsWorkflow | Should -Match '\$env:CHANGE_MODE -eq ''full'''
+        $DocsWorkflow | Should -Match '\$env:CHANGE_MODE -eq ''range'''
         $DocsWorkflow | Should -Match '\$frontmatterArgs\[''ChangeMode''\]'
         $DocsWorkflow | Should -Match '\$frontmatterArgs\[''BaseSha''\]'
         $DocsWorkflow | Should -Match '\$frontmatterArgs\[''HeadSha''\]'
