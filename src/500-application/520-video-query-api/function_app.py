@@ -10,7 +10,6 @@ Supports filtering by event_type:
 - <specific>: Filter by specific event type (alert, analytics_disabled, etc.)
 """
 
-import hashlib
 import json
 import logging
 import os
@@ -18,7 +17,9 @@ import re
 import ssl
 import subprocess
 import tempfile
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
@@ -26,7 +27,15 @@ from typing import Literal
 import azure.functions as func
 import paho.mqtt.client as mqtt
 from azure.identity import ManagedIdentityCredential
-from azure.storage.blob import BlobSasPermissions, BlobServiceClient, ContainerClient, generate_blob_sas
+from azure.storage.blob import (
+    BlobSasPermissions,
+    BlobServiceClient,
+    ContainerClient,
+    UserDelegationKey,
+    generate_blob_sas,
+)
+from paho.mqtt.packettypes import PacketTypes
+from paho.mqtt.properties import Properties
 
 app = func.FunctionApp()
 
@@ -34,10 +43,18 @@ app = func.FunctionApp()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-# Trigger endpoint configuration
+# Trigger endpoint configuration. The rate limit is kept in memory per
+# function instance, so it isn't shared across scaled-out instances or restarts.
 _trigger_rate_limits: dict[str, float] = {}
 TRIGGER_RATE_LIMIT_SECONDS = 30
+TRIGGER_TOPIC_PREFIX = "alerts/trigger"
 EVENT_GRID_MQTT_SCOPE = "https://eventgrid.azure.net/.default"
+MQTT_TIMEOUT_SECONDS = 10
+
+# Stitching runs inside the HTTP request, which the Azure load balancer ends
+# after 230 seconds, so the stitched window is capped.
+DEFAULT_STITCH_MAX_SECONDS = 3600
+METADATA_FETCH_WORKERS = 8
 
 # Allowed camera_id format: alphanumeric, underscore, hyphen. Prevents injection
 # into Azure Blob Storage index tag filter expressions (single-quote breakout).
@@ -59,28 +76,59 @@ def _allowed_trigger_cameras() -> set[str]:
     }
 
 
+def _managed_identity_credential() -> ManagedIdentityCredential:
+    """Return a managed identity credential.
+
+    Uses the user-assigned identity named by AZURE_CLIENT_ID when it's set,
+    otherwise the system-assigned identity.
+    """
+    return ManagedIdentityCredential(client_id=os.environ.get("AZURE_CLIENT_ID") or None)
+
+
 def _publish_mqtt_trigger(hostname: str, topic: str, payload: str) -> None:
-    """Publish a message to Event Grid namespace via MQTT with managed identity auth."""
-    client_id = os.environ.get("AZURE_CLIENT_ID", "video-query-trigger")
-    credential = ManagedIdentityCredential(client_id=client_id)
-    token = credential.get_token(EVENT_GRID_MQTT_SCOPE).token
+    """Publish a QoS 1 message to an Event Grid namespace over MQTT v5.
+
+    Authenticates with a Microsoft Entra token through the MQTT v5 enhanced
+    authentication fields (OAUTH2-JWT). Raises when the connection is refused
+    or the broker doesn't acknowledge the publish within the timeout.
+    """
+    token = _managed_identity_credential().get_token(EVENT_GRID_MQTT_SCOPE).token
 
     client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-        client_id=client_id,
+        client_id=os.environ.get("MQTT_CLIENT_ID", "video-query-trigger"),
         protocol=mqtt.MQTTv5,
     )
-    client.username_pw_set(username=client_id, password=token)
     client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
 
-    client.connect(hostname, port=8883)
+    connect_properties = Properties(PacketTypes.CONNECT)
+    connect_properties.AuthenticationMethod = "OAUTH2-JWT"
+    connect_properties.AuthenticationData = token.encode()
+
+    connected = threading.Event()
+    connect_failure: list[str] = []
+
+    def on_connect(_client, _userdata, _flags, reason_code, _properties):
+        if reason_code.is_failure:
+            connect_failure.append(str(reason_code))
+        connected.set()
+
+    client.on_connect = on_connect
+    client.connect(hostname, port=8883, properties=connect_properties)
     client.loop_start()
     try:
+        if not connected.wait(MQTT_TIMEOUT_SECONDS):
+            raise TimeoutError("MQTT connection timed out")
+        if connect_failure:
+            raise ConnectionError(f"MQTT connection refused: {connect_failure[0]}")
+
         result = client.publish(topic, payload, qos=1)
-        result.wait_for_publish(timeout=10)
+        result.wait_for_publish(timeout=MQTT_TIMEOUT_SECONDS)
+        if not result.is_published():
+            raise TimeoutError("MQTT publish wasn't acknowledged")
     finally:
-        client.loop_stop()
         client.disconnect()
+        client.loop_stop()
 
 
 @app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
@@ -106,10 +154,8 @@ def readiness_check(req: func.HttpRequest) -> func.HttpResponse:
         else:
             if not storage_account_name:
                 raise ValueError("STORAGE_ACCOUNT_NAME not configured")
-            client_id = os.environ.get("AZURE_CLIENT_ID", "video-query-trigger")
-            credential = ManagedIdentityCredential(client_id=client_id)
             account_url = f"https://{storage_account_name}.blob.core.windows.net"
-            blob_service_client = BlobServiceClient(account_url=account_url, credential=credential)
+            blob_service_client = BlobServiceClient(account_url=account_url, credential=_managed_identity_credential())
         container = blob_service_client.get_container_client(container_name)
         container.get_container_properties()
     except Exception:
@@ -117,21 +163,6 @@ def readiness_check(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(json.dumps({"status": "not_ready"}), status_code=503, mimetype="application/json")
 
     return func.HttpResponse(json.dumps({"status": "ready"}), status_code=200, mimetype="application/json")
-
-
-def calculate_hash_prefix(camera_id: str) -> str:
-    """
-    Calculate hash prefix for camera ID matching Phase 1 implementation.
-
-    Args:
-        camera_id: Camera identifier
-
-    Returns:
-        Three-digit hash prefix (000-999)
-    """
-    hash_digest = hashlib.md5(camera_id.encode()).digest()  # noqa: S324
-    prefix = hash_digest[0] % 1000
-    return f"{prefix:03d}"
 
 
 def parse_timestamp_from_blob_name(blob_name: str) -> datetime | None:
@@ -195,14 +226,6 @@ def parse_timestamp_from_blob_name(blob_name: str) -> datetime | None:
         return None
 
 
-# Event type detection patterns for triggered recordings
-TRIGGERED_PATTERNS = [
-    re.compile(r"_alert_event_id_\d+"),
-    re.compile(r"_analytics_disabled_\w*_timestamp_\d+"),
-    re.compile(r"_\w+_id_\d+"),
-]
-
-
 def fetch_segment_metadata(container: ContainerClient, video_blob_name: str) -> dict | None:
     """
     Fetch companion JSON metadata for a video segment.
@@ -226,6 +249,14 @@ def fetch_segment_metadata(container: ContainerClient, video_blob_name: str) -> 
     except Exception as e:
         logger.debug(f"No metadata found for {video_blob_name}: {e}")
         return None
+
+
+def fetch_metadata_for_segments(container: ContainerClient, segments: list[dict]) -> list[dict | None]:
+    """Fetch companion metadata for each segment concurrently, preserving order."""
+    if not segments:
+        return []
+    with ThreadPoolExecutor(max_workers=min(METADATA_FETCH_WORKERS, len(segments))) as executor:
+        return list(executor.map(lambda segment: fetch_segment_metadata(container, segment["name"]), segments))
 
 
 def detect_recording_type(blob_name: str) -> tuple[Literal["continuous", "triggered"], str | None]:
@@ -433,8 +464,7 @@ def enrich_segments_with_metadata(container: ContainerClient, segments: list[dic
         Segments enriched with metadata fields (segment_start, segment_end, duration_seconds, location)
     """
     enriched = []
-    for segment in segments:
-        metadata = fetch_segment_metadata(container, segment["name"])
+    for segment, metadata in zip(segments, fetch_metadata_for_segments(container, segments), strict=True):
         enriched_segment = segment.copy()
         if metadata:
             enriched_segment["metadata"] = metadata
@@ -590,8 +620,7 @@ def download_segments(container: ContainerClient, segments: list[dict], temp_dir
         try:
             blob_client = container.get_blob_client(blob_name)
             with open(local_path, "wb") as f:
-                blob_data = blob_client.download_blob()
-                f.write(blob_data.readall())
+                blob_client.download_blob().readinto(f)
 
             downloaded_files.append(local_path)
         except Exception as e:
@@ -651,12 +680,21 @@ def concat_segments(input_files: list[Path], output_file: Path) -> None:
         raise
 
 
+def get_user_delegation_key(blob_service_client: BlobServiceClient, expiry_hours: int) -> UserDelegationKey:
+    """Request one user delegation key that can sign SAS tokens for the whole request."""
+    return blob_service_client.get_user_delegation_key(
+        key_start_time=datetime.now(UTC) - timedelta(minutes=5),
+        key_expiry_time=datetime.now(UTC) + timedelta(hours=expiry_hours + 1),
+    )
+
+
 def generate_sas_url(
     blob_service_client: BlobServiceClient,
     container_name: str,
     blob_name: str,
     expiry_hours: int = 24,
-    account_key: str = None,
+    account_key: str | None = None,
+    user_delegation_key: UserDelegationKey | None = None,
 ) -> str:
     """
     Generate SAS URL for blob with read-only permissions.
@@ -667,6 +705,7 @@ def generate_sas_url(
         blob_name: Blob name
         expiry_hours: SAS token expiry in hours
         account_key: Storage account key (optional, uses user delegation if None)
+        user_delegation_key: Key reused across a request; requested here when omitted
 
     Returns:
         SAS URL for blob access
@@ -688,11 +727,8 @@ def generate_sas_url(
         )
     else:
         # Use user delegation key (requires managed identity)
-        key_start_time = datetime.now(UTC) - timedelta(minutes=5)
-        key_expiry_time = datetime.now(UTC) + timedelta(hours=expiry_hours + 1)
-        user_delegation_key = blob_service_client.get_user_delegation_key(
-            key_start_time=key_start_time, key_expiry_time=key_expiry_time
-        )
+        if user_delegation_key is None:
+            user_delegation_key = get_user_delegation_key(blob_service_client, expiry_hours)
         sas_token = generate_blob_sas(
             account_name=account_name,
             container_name=container_name,
@@ -705,6 +741,27 @@ def generate_sas_url(
 
     sas_url = f"{blob_client.url}?{sas_token}"
     return sas_url
+
+
+def parse_query_time(value: str) -> datetime:
+    """Parse an ISO 8601 timestamp to naive UTC.
+
+    Offset-aware input, including a trailing Z, is converted to UTC; input
+    without an offset is treated as UTC.
+    """
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(UTC).replace(tzinfo=None)
+    return parsed
+
+
+def stitch_max_seconds() -> int:
+    """Longest window that stitch=true accepts, from STITCH_MAX_DURATION_SECONDS."""
+    try:
+        value = int(os.getenv("STITCH_MAX_DURATION_SECONDS", str(DEFAULT_STITCH_MAX_SECONDS)))
+    except ValueError:
+        return DEFAULT_STITCH_MAX_SECONDS
+    return value if value > 0 else DEFAULT_STITCH_MAX_SECONDS
 
 
 @app.route(route="video", methods=["GET"], auth_level=func.AuthLevel.FUNCTION)
@@ -754,16 +811,8 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         try:
-            # Parse timestamps, handling Z suffix and ensuring timezone-naive UTC
-            start_str_clean = start_str.replace("Z", "")
-            end_str_clean = end_str.replace("Z", "")
-            start_time = datetime.fromisoformat(start_str_clean)
-            end_time = datetime.fromisoformat(end_str_clean)
-            # Strip timezone info if present (assume UTC)
-            if start_time.tzinfo is not None:
-                start_time = start_time.replace(tzinfo=None)
-            if end_time.tzinfo is not None:
-                end_time = end_time.replace(tzinfo=None)
+            start_time = parse_query_time(start_str)
+            end_time = parse_query_time(end_str)
         except ValueError:
             return func.HttpResponse(
                 json.dumps({"error": "Invalid timestamp format; use ISO 8601"}),
@@ -781,6 +830,18 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
         if duration_seconds > 86400:
             return func.HttpResponse(
                 json.dumps({"error": "Maximum query duration is 24 hours"}),
+                status_code=400,
+                mimetype="application/json",
+            )
+
+        if stitch and duration_seconds > stitch_max_seconds():
+            return func.HttpResponse(
+                json.dumps(
+                    {
+                        "error": "Stitched query window too long",
+                        "max_stitch_duration_seconds": stitch_max_seconds(),
+                    }
+                ),
                 status_code=400,
                 mimetype="application/json",
             )
@@ -807,10 +868,8 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
                     account_key = part.split("=", 1)[1]
                     break
         else:
-            client_id = os.environ.get("AZURE_CLIENT_ID", "video-query-trigger")
-            credential = ManagedIdentityCredential(client_id=client_id)
             account_url = f"https://{storage_account_name}.blob.core.windows.net"
-            blob_service_client = BlobServiceClient(account_url=account_url, credential=credential)
+            blob_service_client = BlobServiceClient(account_url=account_url, credential=_managed_identity_credential())
         video_container = blob_service_client.get_container_client(video_container_name)
 
         # Optional blob prefix for subvolume path (e.g., 'video-recordings')
@@ -851,6 +910,9 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         logger.info(f"Found {len(segments)} segments for camera {camera_id}")
+
+        # One user delegation key signs every SAS URL in this response
+        user_delegation_key = None if account_key else get_user_delegation_key(blob_service_client, sas_expiry_hours)
 
         if stitch:
             # Server-side stitching requested
@@ -913,7 +975,12 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
                     temp_container.upload_blob(name=merged_blob_name, data=data, overwrite=True)
 
                 sas_url = generate_sas_url(
-                    blob_service_client, temp_container_name, merged_blob_name, sas_expiry_hours, account_key
+                    blob_service_client,
+                    temp_container_name,
+                    merged_blob_name,
+                    sas_expiry_hours,
+                    account_key,
+                    user_delegation_key,
                 )
 
                 # Build enhanced response with metadata-derived metrics
@@ -961,14 +1028,17 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
         else:
             # Return individual segments (default)
             segment_urls = []
-            for segment in segments:
+            metadata_by_segment = fetch_metadata_for_segments(video_container, segments)
+            for segment, metadata in zip(segments, metadata_by_segment, strict=True):
                 sas_url = generate_sas_url(
-                    blob_service_client, video_container_name, segment["name"], sas_expiry_hours, account_key
+                    blob_service_client,
+                    video_container_name,
+                    segment["name"],
+                    sas_expiry_hours,
+                    account_key,
+                    user_delegation_key,
                 )
                 recording_type, specific_event = detect_recording_type(segment["name"])
-
-                # Fetch companion JSON metadata for enriched response
-                metadata = fetch_segment_metadata(video_container, segment["name"])
 
                 segment_data = {
                     "url": sas_url,
@@ -1051,6 +1121,7 @@ def trigger_capture(req: func.HttpRequest) -> func.HttpResponse:
                             "type": "ALERT_DLQC",
                             "timestamp": timestamp_ms,
                             "event_id": event_id,
+                            "camera_id": camera,
                         }
                     }
                 ]
@@ -1069,7 +1140,7 @@ def trigger_capture(req: func.HttpRequest) -> func.HttpResponse:
     try:
         _publish_mqtt_trigger(
             hostname=eg_hostname,
-            topic="alerts/trigger",
+            topic=f"{TRIGGER_TOPIC_PREFIX}/{camera}",
             payload=trigger_payload,
         )
     except Exception:

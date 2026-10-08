@@ -24,9 +24,9 @@ The Video Query API provides a REST endpoint for querying video recordings store
 ## Features
 
 * **Time-Based Video Queries**: Query videos by camera ID and timestamp range (start/end)
-* **Optimized Blob Filtering**: Automatic query optimization based on duration
-  * < 1 hour: Prefix-based list queries (fastest)
-  * 1-24 hours: Blob index tag queries (efficient)
+* **Optimized Blob Filtering**: Prefix-based list queries for windows up to 24 hours
+  * Falls back to blob index tag queries when a window over 1 hour returns no prefix matches
+  * See `query_blobs_by_prefix` and `query_blobs_by_tags` in `function_app.py`
 * **Individual Segment Access**: Returns array of video segments with metadata
 * **MQTT-Triggered Capture**: Trigger on-demand video capture via Event Grid MQTT
 * **Health Monitoring**: Anonymous liveness endpoint and key-protected storage readiness endpoint
@@ -48,7 +48,7 @@ The Video Query API provides a REST endpoint for querying video recordings store
        │                            └─────────────────────┘
        │ Array of                        │            │
        │ Segment URLs                    │ Query      │ MQTT Publish
-       │ (24h expiry)                    │            │ (alerts/trigger)
+       │ (24h expiry)                    │            │ (alerts/trigger/{camera})
        └─────────────────────────────────┘            │
                                              │        │
                                     ┌────────▼───┐  ┌─▼──────────────┐
@@ -255,7 +255,11 @@ Trigger an on-demand video capture event via Event Grid MQTT.
 
 The trigger endpoint is disabled until `TRIGGER_ALLOWED_CAMERAS` lists at least one camera ID.
 
-**Behavior:** Publishes an `ALERT_DLQC` event to the Event Grid Namespace MQTT broker (port 8883, MQTTv5, TLS) on topic `alerts/trigger`. Uses managed identity OAuth authentication. Enforces a 30-second per-camera rate limit.
+**Behavior:** Publishes an `ALERT_DLQC` event with the camera ID to the Event Grid Namespace MQTT broker (port 8883, MQTTv5, TLS) on topic `alerts/trigger/{camera}`. Authenticates with a managed identity token through MQTT v5 enhanced authentication (`OAUTH2-JWT`) and returns `502` when the connection is refused or the publish isn't acknowledged. Enforces a 30-second per-camera rate limit.
+
+Configure each `503-media-capture-service` instance to subscribe to its own camera's topic, for example `TRIGGER_TOPICS=["alerts/trigger/camera-01"]`. The function identity needs the **EventGrid TopicSpaces Publisher** role on a topic space that includes `alerts/trigger/#`.
+
+The rate limit is kept in memory per function instance, so it doesn't hold across scaled-out instances or restarts. Treat it as a guard against accidental repeats, not a strict limit.
 
 **Success Response (HTTP 202):**
 
@@ -340,10 +344,12 @@ Required environment variables:
 * `VIDEO_RECORDINGS_CONTAINER`: Container name for video segments (default: "video-recordings")
 * `TEMP_VIDEOS_CONTAINER`: Container name for merged videos (default: "temp-videos", required only for stitch=true)
 * `SAS_EXPIRY_HOURS`: SAS token expiry in hours (default: "24")
-* `FFMPEG_PATH`: Path to ffmpeg binary (default: "ffmpeg", required only for stitch=true)
+* `FFMPEG_PATH`: Path to an ffmpeg binary, used only when `bin/ffmpeg` isn't bundled with the app (default: "ffmpeg", required only for stitch=true)
+* `STITCH_MAX_DURATION_SECONDS`: Longest window that `stitch=true` accepts (default: "3600")
 * `EVENT_GRID_HOSTNAME`: Event Grid Namespace MQTT hostname (required for trigger endpoint)
 * `TRIGGER_ALLOWED_CAMERAS`: Comma-separated camera IDs the trigger endpoint accepts. Entries must contain only letters, digits, underscores, and hyphens. The trigger endpoint is disabled when this is empty
-* `AZURE_CLIENT_ID`: Managed identity client ID for OAuth (default: "video-query-trigger")
+* `AZURE_CLIENT_ID`: Client ID of a user-assigned managed identity. Omit it to use the system-assigned identity
+* `MQTT_CLIENT_ID`: MQTT client ID for trigger publishing (default: "video-query-trigger")
 
 ## Production Deployment
 
@@ -387,26 +393,22 @@ Required environment variables:
        STORAGE_ACCOUNT_NAME="<storage-account-name>" \
        VIDEO_RECORDINGS_CONTAINER="video-recordings" \
        TEMP_VIDEOS_CONTAINER="temp-videos" \
-       SAS_EXPIRY_HOURS="24" \
-       FFMPEG_PATH="$HOME/bin/ffmpeg"
+       SAS_EXPIRY_HOURS="24"
    ```
 
-4. Install ffmpeg in the Function App:
+4. Bundle ffmpeg with the app (required only for stitch=true):
 
    ```bash
-   # Option 1: Run install script during deployment
-   az functionapp deployment source config-zip \
-     --name video-query-func \
-     --resource-group rg-edge-ai \
-     --src <path-to-zip-with-install-script>
-
-   # The install-ffmpeg.sh script will run automatically. It downloads a pinned
-   # static ffmpeg build and verifies its SHA-256 before installing. Override
+   # Option 1: Download a pinned static build into bin/ffmpeg before publishing.
+   # The script verifies the archive's SHA-256 before installing. Override
    # FFMPEG_VERSION and FFMPEG_SHA256 together to change versions.
+   ./install-ffmpeg.sh
 
-   # Option 2: Use custom container with ffmpeg pre-installed
-   # See docs/custom-container-deployment.md for details
+   # Option 2: Use a custom container with ffmpeg pre-installed
+   # See https://learn.microsoft.com/azure/azure-functions/functions-how-to-custom-container
    ```
+
+   `stitch=true` uses `bin/ffmpeg` next to `function_app.py` when it exists, and the `.funcignore` file keeps it in the deployment package. Run the script on a Linux x86-64 machine or in your build pipeline before `func azure functionapp publish`.
 
 5. Deploy the function:
 
@@ -431,23 +433,13 @@ Required environment variables:
 * **Query Time**: < 1 second for queries up to 1 hour
 * **SAS Generation**: < 100ms per segment
 * **Response Time (stitch=false)**: < 2 seconds for typical queries (up to 100 segments)
-* **Response Time (stitch=true)**: 2-10 seconds depending on segment count and duration
+* **Response Time (stitch=true)**: 2-10 seconds depending on segment count and duration. HTTP-triggered functions [time out after 230 seconds](https://learn.microsoft.com/azure/azure-functions/functions-scale#timeout) at the load balancer, so `stitch=true` accepts windows up to `STITCH_MAX_DURATION_SECONDS` (default 1 hour)
 * **Stitching Time**: ~500ms for 30-minute video (no re-encoding)
 * **Storage Efficiency**: Hierarchical blob paths enable optimal distribution
 
 ## Query Optimization
 
-The API automatically selects the optimal query strategy based on duration:
-
-* **< 1 hour**: Prefix-based list queries
-  * Fastest method for short timeframes
-  * Uses hierarchical path structure
-  * Example: `{camera_id}/{YYYY}/{MM}/{DD}/{HH}/`
-
-* **1-24 hours**: Blob index tag queries
-  * Efficient for longer timeframes
-  * Filters by `camera_id`, `start_time`, `end_time` tags
-  * Avoids full container scans
+The handler lists blobs by the hourly path prefix `{camera_id}/{YYYY}/{MM}/{DD}/{HH}/` for every window up to 24 hours. When a window longer than 1 hour returns no prefix matches, it falls back to a blob index tag query on `camera_id`, `start_time`, and `end_time`, which needs recordings that carry those tags. See `query_blobs_by_prefix` and `query_blobs_by_tags` in `function_app.py`.
 
 ## Stitching vs Segments
 
@@ -494,9 +486,10 @@ ffmpeg -f concat -safe 0 -i segments.txt -c copy merged.mp4
 
 **Requirements:**
 
-* FFmpeg installed in Function App environment
-* `temp-videos` container for temporary storage
+* FFmpeg bundled with the Function App (see `install-ffmpeg.sh`)
+* `temp-videos` container for temporary storage, with a lifecycle management rule that deletes stitched videos
 * Slower response time (2-10 seconds)
+* A window no longer than `STITCH_MAX_DURATION_SECONDS` (default 1 hour)
 
 **Example:**
 
@@ -528,10 +521,10 @@ curl "https://func.azurewebsites.net/api/video?camera=camera-01&start=2026-01-20
 
 ## Cost Considerations
 
-* **Function Execution**: Consumption plan charges per execution (minimal, < 1 second)
+* **Function Execution**: Consumption plan charges per execution; segment queries are short, while `stitch=true` runs longer because it downloads and concatenates video
 * **Storage**: Cool tier recommended for segments older than 30 days
 * **Egress**: SAS URLs enable direct client downloads (no Function egress)
-* **No Temporary Storage**: API returns direct segment URLs
+* **Temporary Storage**: Segment queries store nothing extra; `stitch=true` writes a stitched blob to `TEMP_VIDEOS_CONTAINER`
 
 ## Security
 
@@ -541,7 +534,7 @@ curl "https://func.azurewebsites.net/api/video?camera=camera-01&start=2026-01-20
 * Error responses don't include exception details
 * Python dependencies are pinned with hashes, and the ffmpeg download is pinned and SHA-256 verified
 * SAS URLs use read-only permissions
-* Temporary videos expire after 24 hours
+* SAS links expire after `SAS_EXPIRY_HOURS`; stitched videos in `TEMP_VIDEOS_CONTAINER` persist until removed, so configure a [lifecycle management rule](https://learn.microsoft.com/azure/storage/blobs/lifecycle-management-overview) to delete them
 * Connection strings stored in Key Vault (recommended)
 
 ## Contributing

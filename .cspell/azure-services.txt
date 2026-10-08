@@ -92,3 +92,4 @@ storageaccounts
 youracr
 northeurope
 westcentralus
+funcignore

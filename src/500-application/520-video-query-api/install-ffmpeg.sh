@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Install a pinned, checksum-verified static ffmpeg build for the Azure Functions Linux host.
-# Runs during function app deployment. The archive is verified with SHA-256 before extraction.
+# Install a pinned, checksum-verified static ffmpeg build into bin/ next to
+# function_app.py, where stitch=true looks for it. Run before packaging or
+# publishing the function app; the archive is verified with SHA-256 before
+# extraction.
 
 set -euo pipefail
 
@@ -14,12 +16,8 @@ FFMPEG_URLS=(
   "https://johnvansickle.com/ffmpeg/old-releases/${FFMPEG_ARCHIVE}"
 )
 
-if [[ -z "${HOME:-}" || ! -d "${HOME}" ]]; then
-  echo "Not in Azure Functions environment, skipping installation"
-  exit 0
-fi
-
-INSTALL_DIR="${HOME}/bin"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INSTALL_DIR="${SCRIPT_DIR}/bin"
 mkdir -p "${INSTALL_DIR}"
 
 TEMP_DIR="$(mktemp -d)"
@@ -57,11 +55,5 @@ fi
 install -m 0755 "${FFMPEG_BIN}" "${INSTALL_DIR}/ffmpeg"
 echo "✓ ffmpeg installed to ${INSTALL_DIR}/ffmpeg"
 
-export PATH="${INSTALL_DIR}:${PATH}"
-if command -v ffmpeg &>/dev/null; then
-  ffmpeg -version | sed -n 1p
-  echo "✓ ffmpeg is ready"
-else
-  echo "✗ ffmpeg not found in PATH" >&2
-  exit 1
-fi
+"${INSTALL_DIR}/ffmpeg" -version | sed -n 1p
+echo "✓ ffmpeg is ready"
