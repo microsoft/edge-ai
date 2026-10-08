@@ -231,6 +231,23 @@ projects the `aio-internal` broker token, sets a unique per-pod
 `Recreate` strategy, because pending fan-out state is held in memory. Rendering
 fails when `orchestrator.models` is empty.
 
+## Local Development
+
+`docker-compose.yml` runs the orchestrator with a local Mosquitto broker, the
+[MQTT predict adapter](../518-mqtt-predict-adapter/README.md), and the
+adapter's mock `/v1/predict` model, which returns the mean of the input as
+`score`. The default ensemble has two models with thresholds 0.5 and 0.7. Copy
+`.env.example` to `.env` to change the ensemble:
+
+```bash
+cd src/500-application/519-model-orchestrator
+cp .env.example .env
+docker compose up --build -d
+docker compose exec mosquitto-broker mosquitto_sub -V 5 -t 'orchestrate/v1/local/ensemble/default/response' &
+docker compose exec mosquitto-broker mosquitto_pub -V 5 \
+  -t orchestrate/v1/local/ensemble/default/request -m '{"inputs": [0.6, 0.6]}'
+```
+
 ## Testing
 
 ```bash
