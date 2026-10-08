@@ -1,0 +1,46 @@
+# Local development: a plain MQTT broker and the simulator.
+# Subscribe with: docker compose exec mosquitto-broker mosquitto_sub -V 5 -t 'telemetry/#' -v
+services:
+  mosquitto-broker:
+    image: eclipse-mosquitto:2.0.22
+    ports:
+      - "11883:1883"
+    volumes:
+      - "./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+    networks:
+      - sensor-simulator
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/broker/uptime", "-C", "1", "-W", "3"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  sensor-simulator:
+    image: ${REGISTRY:-local}/sensor-simulator/sensor-simulator:${BUILD_ID:-latest}
+    build:
+      context: .
+      dockerfile: services/sensor-simulator/Dockerfile
+    depends_on:
+      mosquitto-broker:
+        condition: service_healthy
+    environment:
+      AIO_BROKER_HOSTNAME: mosquitto-broker
+      AIO_BROKER_TCP_PORT: "1883"
+      AIO_MQTT_USE_TLS: "false"
+      AIO_SAT_FILE: ""
+      AIO_MQTT_CLIENT_ID: sensor-simulator-local
+      ASSET_ID: ${ASSET_ID:-asset-01}
+      SENSOR_ID: ${SENSOR_ID:-sensor-01}
+      MODALITIES: ${MODALITIES:-vibration,acoustic,temperature}
+      PUBLISH_INTERVAL_SECONDS: ${PUBLISH_INTERVAL_SECONDS:-2}
+      SIMULATOR_SEED: ${SIMULATOR_SEED:-}
+      INJECT_ANOMALY: ${INJECT_ANOMALY:-false}
+      CONTROL_ENABLED: ${CONTROL_ENABLED:-true}
+      ACOUSTIC_SAMPLE_COUNT: ${ACOUSTIC_SAMPLE_COUNT:-256}
+    read_only: true
+    networks:
+      - sensor-simulator
+
+networks:
+  sensor-simulator:
+    name: sensor-simulator

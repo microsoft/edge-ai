@@ -215,13 +215,21 @@ The chart:
 
 ## Local Development
 
-Run against a local MQTTv5 broker without TLS or SAT:
+`docker-compose.yml` runs the simulator against a local Mosquitto broker
+without TLS or SAT. Copy `.env.example` to `.env` to change the simulated asset:
 
 ```bash
-cd src/500-application/517-sensor-simulator/services/sensor-simulator
-pip install --require-hashes -r requirements.txt
-AIO_BROKER_HOSTNAME=localhost AIO_BROKER_TCP_PORT=1883 AIO_MQTT_USE_TLS=false \
-  AIO_SAT_FILE= SIMULATOR_SEED=1 python3 app.py
+cd src/500-application/517-sensor-simulator
+cp .env.example .env
+docker compose up --build -d
+docker compose exec mosquitto-broker mosquitto_sub -V 5 -t 'telemetry/#' -v
+```
+
+Toggle the anomaly through the control topic, which `.env.example` enables:
+
+```bash
+docker compose exec mosquitto-broker mosquitto_pub -V 5 \
+  -t control/v1/sensor-simulator/asset/asset-01/anomaly -m '{"inject_anomaly": true}'
 ```
 
 ## Testing
