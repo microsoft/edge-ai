@@ -59,7 +59,7 @@ pub fn parse_config(properties: &[(String, String)]) -> Result<Config, String> {
         .ok()
         .filter(|value| value.is_finite())
         .ok_or_else(|| "threshold must be a finite number".to_string())?;
-    let field = get("score_field").unwrap_or("anomaly_score");
+    let field = get("score_field").unwrap_or("score");
     let score_field: Vec<String> = field.split('.').map(str::to_string).collect();
     if score_field.len() > MAX_FIELD_SEGMENTS
         || score_field.iter().any(|segment| {
@@ -205,9 +205,17 @@ pub fn build_verdict(payload: &[u8], config: &Config) -> Result<Verdict, String>
         _ => Err("INVALID_RESPONSE".to_string()),
     };
 
+    let outcome = outcome.and_then(|scores| {
+        let score = aggregate(&scores, config.aggregation);
+        if score.is_finite() {
+            Ok((scores.len(), score))
+        } else {
+            Err("INVALID_RESULT".to_string())
+        }
+    });
+
     let anomaly = match outcome {
-        Ok(scores) => {
-            let score = aggregate(&scores, config.aggregation);
+        Ok((windows, score)) => {
             let anomaly = score > config.threshold;
             verdict.insert("status".to_string(), Value::from("success"));
             verdict.insert("anomaly".to_string(), Value::from(anomaly));
@@ -217,7 +225,7 @@ pub fn build_verdict(payload: &[u8], config: &Config) -> Result<Verdict, String>
                 "aggregation".to_string(),
                 Value::from(config.aggregation.as_str()),
             );
-            verdict.insert("windows".to_string(), Value::from(scores.len()));
+            verdict.insert("windows".to_string(), Value::from(windows));
             Some(anomaly)
         }
         Err(code) => {
@@ -258,9 +266,14 @@ pub fn window_scores(value: &Value) -> Option<Vec<f64>> {
     }
 }
 
+/// Aggregates finite scores. The mean divides before summing so large finite
+/// scores can't overflow to infinity.
 pub fn aggregate(scores: &[f64], aggregation: Aggregation) -> f64 {
     match aggregation {
-        Aggregation::Mean => scores.iter().sum::<f64>() / scores.len() as f64,
+        Aggregation::Mean => {
+            let count = scores.len() as f64;
+            scores.iter().map(|score| score / count).sum()
+        }
         Aggregation::Max => scores.iter().copied().fold(f64::NEG_INFINITY, f64::max),
     }
 }
@@ -291,6 +304,7 @@ mod tests {
         serde_json::json!({
             "schema_version": "1.0",
             "model_id": "acoustic-autoencoder",
+            "request_id": "req-1",
             "status": "success",
             "latency_ms": 12,
             "outputs": outputs,
@@ -301,10 +315,7 @@ mod tests {
     #[test]
     fn mean_of_window_scores_against_threshold() {
         let cfg = config("10", &[]);
-        let (body, anomaly) = verdict(
-            success(serde_json::json!({"anomaly_score": [8.0, 14.0]})),
-            &cfg,
-        );
+        let (body, anomaly) = verdict(success(serde_json::json!({"score": [8.0, 14.0]})), &cfg);
         assert_eq!(anomaly, Some(true));
         assert_eq!(body["score"], 11.0);
         assert_eq!(body["windows"], 2);
@@ -312,7 +323,7 @@ mod tests {
         assert_eq!(body["context"], serde_json::json!({"asset_id": "asset-01"}));
         assert_eq!(body["model_id"], "acoustic-autoencoder");
 
-        let (body, anomaly) = verdict(success(serde_json::json!({"anomaly_score": 9.5})), &cfg);
+        let (body, anomaly) = verdict(success(serde_json::json!({"score": 9.5})), &cfg);
         assert_eq!(
             (anomaly, body["windows"].clone()),
             (Some(false), Value::from(1))
@@ -338,10 +349,10 @@ mod tests {
         let cfg = config("10", &[]);
         for outputs in [
             serde_json::json!({"other": 1.0}),
-            serde_json::json!({"anomaly_score": "high"}),
-            serde_json::json!({"anomaly_score": []}),
-            serde_json::json!({"anomaly_score": [1.0, [2.0, 3.0]]}),
-            serde_json::json!({"anomaly_score": {"value": 1.0}}),
+            serde_json::json!({"score": "high"}),
+            serde_json::json!({"score": []}),
+            serde_json::json!({"score": [1.0, [2.0, 3.0]]}),
+            serde_json::json!({"score": {"value": 1.0}}),
             serde_json::json!([1.0]),
         ] {
             let (body, anomaly) = verdict(success(outputs.clone()), &cfg);
@@ -370,6 +381,71 @@ mod tests {
 
         let (body, _) = verdict(serde_json::json!({"status": "pending"}), &cfg);
         assert_eq!(body["error_code"], "INVALID_RESPONSE");
+    }
+
+    /// Response shapes published by the 518 MQTT predict adapter
+    /// (`model_dump_json(exclude_none=True)`) for a model that returns
+    /// `{"score": ...}`, such as its local mock.
+    #[test]
+    fn reads_predict_adapter_responses_with_default_score_field() {
+        let cfg = config("0.5", &[]);
+        let (body, anomaly) = verdict(
+            serde_json::json!({
+                "schema_version": "1.0",
+                "model_id": "acoustic-autoencoder",
+                "request_id": "req-1",
+                "status": "success",
+                "latency_ms": 12,
+                "outputs": {"score": 0.93},
+                "context": {"asset_id": "asset-01", "sensor_id": "sensor-01"},
+            }),
+            &cfg,
+        );
+        assert_eq!(anomaly, Some(true));
+        assert_eq!(body["status"], "success");
+        assert_eq!(body["score"], 0.93);
+        assert_eq!(body["windows"], 1);
+        assert_eq!(body["model_id"], "acoustic-autoencoder");
+        assert_eq!(
+            body["context"],
+            serde_json::json!({"asset_id": "asset-01", "sensor_id": "sensor-01"})
+        );
+
+        let (body, anomaly) = verdict(
+            serde_json::json!({
+                "schema_version": "1.0",
+                "model_id": "acoustic-autoencoder",
+                "request_id": "req-2",
+                "status": "error",
+                "latency_ms": 30001,
+                "error": {
+                    "code": "BACKEND_TIMEOUT",
+                    "message": "model endpoint call failed",
+                    "retryable": true,
+                },
+                "context": {"asset_id": "asset-01"},
+            }),
+            &cfg,
+        );
+        assert_eq!(anomaly, None);
+        assert_eq!(body["status"], "error");
+        assert_eq!(body["error_code"], "BACKEND_TIMEOUT");
+        assert_eq!(body["context"], serde_json::json!({"asset_id": "asset-01"}));
+    }
+
+    #[test]
+    fn mean_of_extreme_finite_scores_stays_finite() {
+        assert_eq!(
+            aggregate(&[f64::MAX, f64::MAX], Aggregation::Mean),
+            f64::MAX
+        );
+        let cfg = config("10", &[]);
+        let (body, anomaly) = verdict(
+            success(serde_json::json!({"score": [1.7e308, 1.7e308]})),
+            &cfg,
+        );
+        assert_eq!(anomaly, Some(true));
+        assert_eq!(body["score"], 1.7e308);
     }
 
     #[test]
@@ -403,6 +479,6 @@ mod tests {
         assert!(bad(("score_field", "a..b")));
         assert!(bad(("score_field", "a.b.c.d.e")));
         assert!(bad(("score_field", "a b")));
-        assert_eq!(config("1.5", &[]).score_field, vec!["anomaly_score"]);
+        assert_eq!(config("1.5", &[]).score_field, vec!["score"]);
     }
 }

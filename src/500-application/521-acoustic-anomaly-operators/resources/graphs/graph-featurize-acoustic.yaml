@@ -15,11 +15,19 @@ moduleConfigurations:
       max_batch_size:
         name: max_batch_size
         default: "32"
-        description: "Most feature rows per request, 1 to 1024. Windows beyond this are dropped and counted. Match the model's batch limit."
+        description: "Most feature rows per request, 1 to 1024. Windows beyond this are dropped and counted. Match the model's batch limit and keep rows times 7 KB under max_request_bytes."
       max_samples:
         name: max_samples
         default: "960000"
         description: "Largest accepted samples array. Larger messages are rejected."
+      max_request_bytes:
+        name: max_request_bytes
+        default: "1048576"
+        description: "Largest serialized request, 1024 to 16777216 bytes. Larger requests are rejected. Keep it at or below the predict adapter MAX_REQUEST_BYTES; each row is about 7 KB."
+      expected_sample_rate:
+        name: expected_sample_rate
+        required: false
+        description: "Optional sample rate in Hz, 8000 to 192000. Messages at other rates are rejected so features match the rate the model was trained on."
       context_fields:
         name: context_fields
         default: "asset_id,sensor_id,timestamp"

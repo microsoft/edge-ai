@@ -18,7 +18,7 @@ moduleConfigurations:
         description: "REQUIRED. Scores greater than this value are anomalies. Calibrate it for the model and the equipment."
       score_field:
         name: score_field
-        default: "anomaly_score"
+        default: "score"
         description: "Up to four dot-separated keys locating the score in the model outputs. The value can be a number, a list of per-window numbers, or a list of single-value rows."
       aggregation:
         name: aggregation

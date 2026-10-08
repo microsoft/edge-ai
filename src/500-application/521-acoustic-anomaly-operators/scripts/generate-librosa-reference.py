@@ -1,6 +1,8 @@
 """Generates librosa reference features for the featurize-acoustic parity test.
 
-Mirrors the DCASE 2020 Task 2 baseline feature extraction. Run with
+Mirrors the DCASE 2020 Task 2 baseline feature extraction, which ran on
+librosa 0.6 where centered STFT frames used reflect padding. Newer librosa
+defaults to zero padding, so pad_mode="reflect" is set explicitly. Run with
 librosa 0.11.0 installed:
 
     python3 generate-librosa-reference.py \
@@ -30,7 +32,9 @@ def signal() -> np.ndarray:
 
 
 y = signal()
-mel = librosa.feature.melspectrogram(y=y, sr=SR, n_fft=1024, hop_length=512, n_mels=128, power=2.0)
+mel = librosa.feature.melspectrogram(
+    y=y, sr=SR, n_fft=1024, hop_length=512, n_mels=128, power=2.0, center=True, pad_mode="reflect"
+)
 log_mel = 20.0 / 2.0 * np.log10(mel + sys.float_info.epsilon)
 frames = 5
 windows = log_mel.shape[1] - frames + 1
@@ -44,6 +48,7 @@ fixture = {
     "sample_rate": SR,
     "num_samples": N,
     "signal": "0.3*sin(2*pi*440*t) + 0.2*sin(2*pi*3200*t) + 0.05*(lcg(12345)/2^31 - 0.5), float32",
+    "pad_mode": "reflect",
     "windows": windows,
     "indices": indices,
     "values": [[round(float(rows[w, i]), 4) for i in indices] for w in range(windows)],

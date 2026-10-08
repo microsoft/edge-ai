@@ -5,9 +5,10 @@
 //!
 //! Features follow the DCASE 2020 Task 2 autoencoder baseline: a power
 //! spectrogram (`n_fft = 1024`, `hop = 512`, periodic Hann window, centered
-//! zero padding), a Slaney-normalized 128-band mel filterbank, `10 * log10`
-//! scaling, and five consecutive frames concatenated frame-major into one
-//! 640-value row per window.
+//! reflect padding as in librosa 0.6 `center=True, pad_mode='reflect'`), a
+//! Slaney-normalized 128-band mel filterbank, `10 * log10` scaling, and five
+//! consecutive frames concatenated frame-major into one 640-value row per
+//! window. Models must be trained and calibrated with the same padding.
 //!
 //! Input: `{"sample_rate": 16000, "samples": [...], ...}` with samples in
 //! `[-1, 1]`. Output: `{"inputs": [[640 floats], ...], "context": {...}}`,
@@ -17,6 +18,7 @@ use std::sync::OnceLock;
 
 use rustfft::num_complex::Complex;
 use rustfft::FftPlanner;
+use serde::Serialize;
 use serde_json::{Map, Value};
 use wasm_graph_sdk::logger::{self, Level};
 use wasm_graph_sdk::macros::map_operator;
@@ -35,12 +37,20 @@ const EPS: f32 = f64::EPSILON as f32;
 
 const MIN_SAMPLE_RATE: u32 = 8_000;
 const MAX_SAMPLE_RATE: u32 = 192_000;
+/// Fewest samples that yield one window.
+pub const MIN_SAMPLES: usize = HOP_LENGTH * (FRAMES - 1);
 const MAX_CONTEXT_VALUE_LEN: usize = 128;
+/// Predict adapter limit on the serialized request `context`.
+pub const MAX_CONTEXT_BYTES: usize = 1024;
+/// Predict adapter default for `MAX_REQUEST_BYTES`.
+pub const DEFAULT_MAX_REQUEST_BYTES: usize = 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Config {
     pub max_batch_size: usize,
     pub max_samples: usize,
+    pub max_request_bytes: usize,
+    pub expected_sample_rate: Option<u32>,
     pub context_fields: Vec<String>,
 }
 
@@ -49,6 +59,8 @@ impl Default for Config {
         Self {
             max_batch_size: 32,
             max_samples: 960_000,
+            max_request_bytes: DEFAULT_MAX_REQUEST_BYTES,
+            expected_sample_rate: None,
             context_fields: vec![
                 "asset_id".to_string(),
                 "sensor_id".to_string(),
@@ -69,7 +81,19 @@ pub fn parse_config(properties: &[(String, String)]) -> Result<Config, String> {
                 config.max_batch_size = parse_bounded(key, value, 1, 1024)?;
             }
             "max_samples" => {
-                config.max_samples = parse_bounded(key, value, N_FFT, 10_000_000)?;
+                config.max_samples = parse_bounded(key, value, MIN_SAMPLES, 10_000_000)?;
+            }
+            "max_request_bytes" => {
+                config.max_request_bytes = parse_bounded(key, value, 1024, 16 * 1024 * 1024)?;
+            }
+            "expected_sample_rate" if !value.trim().is_empty() => {
+                let rate = parse_bounded(
+                    key,
+                    value,
+                    MIN_SAMPLE_RATE as usize,
+                    MAX_SAMPLE_RATE as usize,
+                )?;
+                config.expected_sample_rate = Some(rate as u32);
             }
             "context_fields" => {
                 config.context_fields = value
@@ -104,8 +128,13 @@ fn featurize_init(configuration: ModuleConfiguration) -> bool {
                 Level::Info,
                 MODULE,
                 &format!(
-                    "Initialized: max_batch_size={} max_samples={}",
-                    config.max_batch_size, config.max_samples
+                    "Initialized: max_batch_size={} max_samples={} max_request_bytes={} expected_sample_rate={}",
+                    config.max_batch_size,
+                    config.max_samples,
+                    config.max_request_bytes,
+                    config
+                        .expected_sample_rate
+                        .map_or_else(|| "any".to_string(), |rate| rate.to_string())
                 ),
             );
             let _ = CONFIG.set(config);
@@ -144,7 +173,7 @@ fn featurize(input: DataModel) -> Result<DataModel, Error> {
                 Some(&labels),
             );
             logger::log(
-                Level::Warn,
+                Level::Debug,
                 MODULE,
                 &format!(
                     "Forwarded the first {} windows; {} exceeded max_batch_size",
@@ -205,6 +234,13 @@ pub fn build_request(payload: &[u8], config: &Config) -> Result<Request, String>
         .ok_or_else(|| {
             format!("sample_rate must be an integer from {MIN_SAMPLE_RATE} to {MAX_SAMPLE_RATE}")
         })?;
+    if let Some(expected) = config.expected_sample_rate {
+        if sample_rate != expected {
+            return Err(format!(
+                "sample_rate {sample_rate} does not match expected_sample_rate={expected}"
+            ));
+        }
+    }
 
     let raw_samples = object
         .get("samples")
@@ -214,6 +250,11 @@ pub fn build_request(payload: &[u8], config: &Config) -> Result<Request, String>
         return Err(format!(
             "samples exceeds max_samples={}",
             config.max_samples
+        ));
+    }
+    if raw_samples.len() < MIN_SAMPLES {
+        return Err(format!(
+            "Audio too short: at least {MIN_SAMPLES} samples are needed for one window"
         ));
     }
     let samples = raw_samples
@@ -227,31 +268,93 @@ pub fn build_request(payload: &[u8], config: &Config) -> Result<Request, String>
         .collect::<Option<Vec<f32>>>()
         .ok_or_else(|| "samples must be finite numbers in [-1, 1]".to_string())?;
 
-    let features = wav_to_features(&samples, sample_rate);
-    if features.is_empty() {
+    let context = extract_context(object, &config.context_fields);
+    let context_bytes = adapter_json_len(&Value::Object(context.clone()));
+    if context_bytes > MAX_CONTEXT_BYTES {
         return Err(format!(
-            "Audio too short: at least {} samples are needed for one window",
-            HOP_LENGTH * (FRAMES - 1)
+            "context is {context_bytes} bytes, over the predict adapter limit of {MAX_CONTEXT_BYTES}; shorten context_fields"
         ));
     }
-    let dropped_windows = features.len().saturating_sub(config.max_batch_size);
-    let batch: Vec<Vec<f32>> = features.into_iter().take(config.max_batch_size).collect();
 
-    let mut request = Map::new();
-    request.insert(
-        "inputs".to_string(),
-        serde_json::to_value(&batch).map_err(|error| format!("Serialize error: {error}"))?,
-    );
-    let context = extract_context(object, &config.context_fields);
-    if !context.is_empty() {
-        request.insert("context".to_string(), Value::Object(context));
+    let dropped_windows = window_count(samples.len()).saturating_sub(config.max_batch_size);
+    let kept = samples
+        .len()
+        .min(samples_for_windows(config.max_batch_size));
+    let mut batch = wav_to_features(&samples[..kept], sample_rate);
+    batch.truncate(config.max_batch_size);
+
+    let payload = serde_json::to_vec(&PredictRequest {
+        inputs: &batch,
+        context,
+    })
+    .map_err(|error| format!("Serialize error: {error}"))?;
+    if payload.len() > config.max_request_bytes {
+        return Err(format!(
+            "Request is {} bytes, over max_request_bytes={}; lower max_batch_size",
+            payload.len(),
+            config.max_request_bytes
+        ));
     }
-    let payload = serde_json::to_vec(&Value::Object(request))
-        .map_err(|error| format!("Serialize error: {error}"))?;
     Ok(Request {
         payload,
         dropped_windows,
     })
+}
+
+#[derive(Serialize)]
+struct PredictRequest<'a> {
+    inputs: &'a [Vec<f32>],
+    #[serde(skip_serializing_if = "Map::is_empty")]
+    context: Map<String, Value>,
+}
+
+/// Windows produced from `len` samples: `floor(len / HOP_LENGTH) - 3`.
+pub fn window_count(len: usize) -> usize {
+    (len / HOP_LENGTH + 1).saturating_sub(FRAMES - 1)
+}
+
+/// Fewest samples whose first `windows` windows match those of any longer
+/// clip. The last frame those windows use ends exactly at this length, so
+/// end padding never reaches them.
+pub fn samples_for_windows(windows: usize) -> usize {
+    (windows + FRAMES - 1) * HOP_LENGTH
+}
+
+/// Length of `value` as the predict adapter measures it: Python
+/// `json.dumps(separators=(",", ":"))` with ASCII escaping. Python pads
+/// single-digit negative exponents (`1e-07`), so those count one extra byte.
+pub fn adapter_json_len(value: &Value) -> usize {
+    fn string_len(text: &str) -> usize {
+        2 + text
+            .chars()
+            .map(|c| match c {
+                '"' | '\\' | '\u{8}' | '\u{c}' | '\n' | '\r' | '\t' => 2,
+                ' '..='~' => 1,
+                c if c.len_utf16() == 2 => 12,
+                _ => 6,
+            })
+            .sum::<usize>()
+    }
+    match value {
+        Value::Null | Value::Bool(true) => 4,
+        Value::Bool(false) => 5,
+        Value::Number(number) => {
+            let text = number.to_string();
+            let exponent = text.split_once("e-").map_or("", |(_, digits)| digits);
+            text.len() + usize::from(exponent.len() == 1)
+        }
+        Value::String(text) => string_len(text),
+        Value::Array(items) => {
+            1 + items.len().max(1) + items.iter().map(adapter_json_len).sum::<usize>()
+        }
+        Value::Object(map) => {
+            1 + map.len().max(1)
+                + map
+                    .iter()
+                    .map(|(key, value)| string_len(key) + 1 + adapter_json_len(value))
+                    .sum::<usize>()
+        }
+    }
 }
 
 /// Copies short string and number identity fields into the request context.
@@ -308,15 +411,16 @@ pub fn log_mel_spectrogram(samples: &[f32], sample_rate: u32) -> Vec<Vec<f32>> {
 }
 
 /// Power spectrogram `[N_FFT / 2 + 1][frames]` with a periodic Hann window and
-/// centered zero padding.
+/// centered reflect padding (`numpy.pad(mode="reflect")`, edge sample not repeated).
 pub fn stft_power(samples: &[f32]) -> Vec<Vec<f32>> {
     let n_bins = N_FFT / 2 + 1;
     if samples.is_empty() {
         return vec![Vec::new(); n_bins];
     }
     let pad = N_FFT / 2;
-    let mut padded = vec![0.0f32; samples.len() + 2 * pad];
-    padded[pad..pad + samples.len()].copy_from_slice(samples);
+    let padded: Vec<f32> = (0..samples.len() + 2 * pad)
+        .map(|i| samples[reflect_index(i as isize - pad as isize, samples.len())])
+        .collect();
     let n_frames = 1 + (padded.len() - N_FFT) / HOP_LENGTH;
 
     let window: Vec<f32> = (0..N_FFT)
@@ -336,6 +440,21 @@ pub fn stft_power(samples: &[f32]) -> Vec<Vec<f32>> {
         }
     }
     spectrum
+}
+
+/// Maps an index outside `0..len` back into range by mirroring about the end
+/// samples without repeating them.
+fn reflect_index(index: isize, len: usize) -> usize {
+    if len == 1 {
+        return 0;
+    }
+    let period = 2 * (len as isize - 1);
+    let folded = index.rem_euclid(period);
+    (if folded >= len as isize {
+        period - folded
+    } else {
+        folded
+    }) as usize
 }
 
 /// Slaney-normalized mel filterbank `[N_MELS][N_FFT / 2 + 1]` from 0 Hz to Nyquist.
@@ -616,17 +735,30 @@ mod tests {
         let config = parse_config(&props(&[
             ("max_batch_size", "8"),
             ("max_samples", "16000"),
+            ("max_request_bytes", "65536"),
+            ("expected_sample_rate", "16000"),
             ("context_fields", "device, asset_id"),
         ]))
         .unwrap();
         assert_eq!(config.max_batch_size, 8);
         assert_eq!(config.max_samples, 16_000);
+        assert_eq!(config.max_request_bytes, 65_536);
+        assert_eq!(config.expected_sample_rate, Some(16_000));
         assert_eq!(config.context_fields, vec!["device", "asset_id"]);
         assert_eq!(parse_config(&[]).unwrap(), Config::default());
+        assert_eq!(
+            parse_config(&props(&[("expected_sample_rate", " ")]))
+                .unwrap()
+                .expected_sample_rate,
+            None
+        );
         for (key, value) in [
             ("max_batch_size", "0"),
             ("max_batch_size", "many"),
             ("max_samples", "10"),
+            ("max_request_bytes", "100"),
+            ("max_request_bytes", "999999999"),
+            ("expected_sample_rate", "4000"),
             ("context_fields", "a,b,c,d,e,f,g,h,i"),
         ] {
             assert!(
@@ -634,5 +766,132 @@ mod tests {
                 "{key}={value}"
             );
         }
+    }
+
+    fn request_for(samples: &[f32], config: &Config) -> Result<Request, String> {
+        let payload = serde_json::json!({"sample_rate": 16_000, "samples": samples});
+        build_request(&serde_json::to_vec(&payload).unwrap(), config)
+    }
+
+    #[test]
+    fn reflect_padding_mirrors_without_repeating_the_edge() {
+        let mirrored: Vec<usize> = (-3..8).map(|i| reflect_index(i, 5)).collect();
+        assert_eq!(mirrored, vec![3, 2, 1, 0, 1, 2, 3, 4, 3, 2, 1]);
+        assert_eq!(reflect_index(-4, 1), 0);
+    }
+
+    #[test]
+    fn window_count_matches_feature_rows() {
+        for len in [2047, 2048, 2559, 2560, 4096, 5000, 8192] {
+            let samples = tone(len, 16_000, 440.0, 0.2);
+            assert_eq!(
+                window_count(len),
+                wav_to_features(&samples, 16_000).len(),
+                "{len}"
+            );
+        }
+    }
+
+    #[test]
+    fn truncated_clip_yields_the_same_leading_windows() {
+        let samples = reference_signal(32_000, 16_000);
+        let full = wav_to_features(&samples, 16_000);
+        for batch in [1, 2, 5, 32] {
+            let truncated = wav_to_features(&samples[..samples_for_windows(batch)], 16_000);
+            assert_eq!(truncated[..batch], full[..batch], "batch {batch}");
+
+            let config = Config {
+                max_batch_size: batch,
+                ..Config::default()
+            };
+            let request = request_for(&samples, &config).unwrap();
+            assert_eq!(request.dropped_windows, full.len() - batch);
+            let output: Value = serde_json::from_slice(&request.payload).unwrap();
+            let inputs: Vec<Vec<f32>> = serde_json::from_value(output["inputs"].clone()).unwrap();
+            assert_eq!(inputs[..], full[..batch], "batch {batch}");
+        }
+    }
+
+    #[test]
+    fn serializes_rows_as_compact_f32() {
+        let samples = reference_signal(samples_for_windows(32), 16_000);
+        let request = request_for(&samples, &Config::default()).unwrap();
+        assert!(
+            request.payload.len() < 32 * 8 * 1024,
+            "{} bytes",
+            request.payload.len()
+        );
+        assert!(request.payload.len() <= DEFAULT_MAX_REQUEST_BYTES);
+        let output: Value = serde_json::from_slice(&request.payload).unwrap();
+        let rows = wav_to_features(&samples, 16_000);
+        for (row, values) in rows.iter().zip(output["inputs"].as_array().unwrap()) {
+            for (expected, value) in row.iter().zip(values.as_array().unwrap()) {
+                assert_eq!(value.as_f64().unwrap() as f32, *expected);
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_requests_over_max_request_bytes() {
+        let config = Config {
+            max_request_bytes: 4096,
+            ..Config::default()
+        };
+        let error = request_for(&tone(2048, 16_000, 440.0, 0.2), &config).unwrap_err();
+        assert!(error.contains("max_request_bytes"), "{error}");
+    }
+
+    #[test]
+    fn rejects_mismatched_sample_rate() {
+        let config = Config {
+            expected_sample_rate: Some(16_000),
+            ..Config::default()
+        };
+        let samples = tone(2048, 16_000, 440.0, 0.2);
+        assert!(request_for(&samples, &config).is_ok());
+        let payload = serde_json::json!({"sample_rate": 48_000, "samples": samples});
+        let error = build_request(&serde_json::to_vec(&payload).unwrap(), &config).unwrap_err();
+        assert!(error.contains("expected_sample_rate"), "{error}");
+    }
+
+    #[test]
+    fn adapter_json_len_matches_python_compact_ascii_dumps() {
+        for (value, python) in [
+            (serde_json::json!({}), "{}"),
+            (
+                serde_json::json!({"a": "b", "n": 3, "t": true}),
+                r#"{"a":"b","n":3,"t":true}"#,
+            ),
+            (serde_json::json!({"a": "é\"\n"}), r#"{"a":"\u00e9\"\n"}"#),
+            (serde_json::json!({"a": "😀"}), r#"{"a":"\ud83d\ude00"}"#),
+            (serde_json::json!({"x": 1e20}), r#"{"x":1e+20}"#),
+            (serde_json::json!({"x": 1e-7}), r#"{"x":1e-07}"#),
+            (serde_json::json!({"x": [1, 2]}), r#"{"x":[1,2]}"#),
+        ] {
+            assert_eq!(adapter_json_len(&value), python.len(), "{value}");
+        }
+    }
+
+    #[test]
+    fn rejects_context_over_the_adapter_limit() {
+        let fields = ["a", "b", "c", "d", "e", "f", "g", "h"];
+        let mut payload = serde_json::json!({
+            "sample_rate": 16_000,
+            "samples": tone(2048, 16_000, 440.0, 0.2),
+        });
+        for field in fields {
+            payload[field] = Value::from("é".repeat(MAX_CONTEXT_VALUE_LEN / 2));
+        }
+        let config = Config {
+            context_fields: fields.iter().map(|field| (*field).to_string()).collect(),
+            ..Config::default()
+        };
+        let error = build_request(&serde_json::to_vec(&payload).unwrap(), &config).unwrap_err();
+        assert!(error.contains("context"), "{error}");
+
+        for field in fields {
+            payload[field] = Value::from("x".repeat(64));
+        }
+        assert!(build_request(&serde_json::to_vec(&payload).unwrap(), &config).is_ok());
     }
 }
