@@ -19,8 +19,9 @@ serviceAccount:
   name: ""
   # Annotations prefixed with aio-broker-auth/ become broker authorization
   # attributes for clients that authenticate with this service account token.
-  annotations:
-    aio-broker-auth/workload: model-orchestrator
+  # The chart adds aio-broker-auth/workload set to the release's full name
+  # unless it's set here.
+  annotations: {}
 
 orchestrator:
   ensembleId: default
@@ -29,13 +30,21 @@ orchestrator:
   #   label: {kind: label, field: <path>, anomaly_labels: [...], score_field: <path>}
   # Paths are up to four dot-separated keys in the model outputs.
   models: []
+  # Keep the predict adapter's backendTimeoutSeconds x backendAttempts below this.
   timeoutSeconds: 10
   maxPending: 100
+  # Outstanding predict requests across all pending requests. Keep this at or
+  # below the predict adapter's maxConcurrency, minus calls from other clients.
+  maxInflightModelCalls: 4
   maxRequestBytes: 1048576
   topicDomain: orchestrate
   predictDomain: predict
-  # Client segment used on predict adapter topics.
-  predictClient: model-orchestrator
+  # Client segment used on predict adapter topics. Defaults to the release's
+  # full name, so each release receives only its own model responses.
+  predictClient: ""
+  # Must match the predict adapter's requestKind and responseKind.
+  predictRequestKind: request
+  predictResponseKind: response
   eventSource: model-orchestrator
 
 mqtt:

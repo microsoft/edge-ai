@@ -21,6 +21,8 @@ services:
   mock-model:
     image: mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2
     command: ["python3", "/app/mock_predict.py"]
+    environment:
+      MOCK_LATENCY_SECONDS: ${MOCK_LATENCY_SECONDS:-0}
     volumes:
       - "../518-mqtt-predict-adapter/resources/mock_predict.py:/app/mock_predict.py:ro"
     read_only: true
@@ -44,6 +46,9 @@ services:
       BACKEND_AUTH_FILE: ""
       ALLOWED_MODELS: ${ADAPTER_ALLOWED_MODELS:-model-a,model-b}
       MODEL_ENDPOINT_TEMPLATE: http://mock-model:8000/{model_id}/v1/predict
+      MAX_CONCURRENCY: ${ADAPTER_MAX_CONCURRENCY:-4}
+      BACKEND_TIMEOUT_SECONDS: ${ADAPTER_BACKEND_TIMEOUT_SECONDS:-4}
+      BACKEND_ATTEMPTS: ${ADAPTER_BACKEND_ATTEMPTS:-2}
     read_only: true
     networks:
       - model-orchestrator
@@ -65,6 +70,7 @@ services:
       ENSEMBLE_ID: ${ENSEMBLE_ID:-default}
       MODELS: ${MODELS:-[{"id":"model-a","result":{"kind":"score","field":"score","threshold":0.5}},{"id":"model-b","result":{"kind":"score","field":"score","threshold":0.7}}]}
       TIMEOUT_SECONDS: ${TIMEOUT_SECONDS:-10}
+      MAX_INFLIGHT_MODEL_CALLS: ${MAX_INFLIGHT_MODEL_CALLS:-4}
     read_only: true
     networks:
       - model-orchestrator

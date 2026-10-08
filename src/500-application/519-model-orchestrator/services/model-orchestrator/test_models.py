@@ -10,11 +10,13 @@ from models import (
     ModelSpec,
     ModelStatus,
     OrchestratorConfig,
+    RequestError,
     aggregate,
     interpret,
     parse_predict_response_topic,
+    parse_request_body,
     parse_request_topic,
-    validate_request_body,
+    tensor_shape,
 )
 from pydantic import ValidationError
 
@@ -67,6 +69,9 @@ class TestConfig:
             '[{"id": "a", "result": {"kind": "label", "field": "l", "anomaly_labels": []}}]',
             '[{"id": "a", "result": {"kind": "regex", "field": "s"}}]',
             '[{"id": "a", "result": {"kind": "score", "field": "s", "threshold": 1, "extra": 1}}]',
+            '[{"id": "a", "result": {"kind": "score", "field": "s", "threshold": NaN}}]',
+            '[{"id": "a", "result": {"kind": "score", "field": "s", "threshold": "inf"}}]',
+            '[{"id": "a", "result": {"kind": "score", "field": "s", "threshold": 1e999}}]',
         ],
     )
     def test_rejects_invalid_models(self, models):
@@ -81,6 +86,25 @@ class TestConfig:
     def test_predict_domain_must_differ(self):
         with pytest.raises(ValidationError, match="predict_domain"):
             config(PREDICT_DOMAIN="orchestrate")
+
+    def test_predict_kinds_are_configurable(self):
+        cfg = config(PREDICT_REQUEST_KIND="req", PREDICT_RESPONSE_KIND="resp")
+        assert cfg.predict_request_topic("m") == "predict/v1/model-orchestrator/model/m/req"
+        assert cfg.predict_response_filter == "predict/v1/model-orchestrator/model/+/resp"
+        assert parse_predict_response_topic(cfg, "predict/v1/model-orchestrator/model/m/resp") == "m"
+        assert parse_predict_response_topic(cfg, "predict/v1/model-orchestrator/model/m/response") is None
+        with pytest.raises(ValidationError, match="predict_response_kind"):
+            config(PREDICT_RESPONSE_KIND="request")
+
+    def test_rejects_broker_token_without_tls(self):
+        with pytest.raises(ValidationError, match="TLS"):
+            config(AIO_MQTT_USE_TLS="false")
+        assert config(AIO_MQTT_USE_TLS="false", AIO_SAT_FILE="").sat_file is None
+
+    def test_inflight_model_calls_default_and_bounds(self):
+        assert config().max_inflight_model_calls == 4
+        with pytest.raises(ValidationError):
+            config(MAX_INFLIGHT_MODEL_CALLS="0")
 
 
 class TestTopics:
@@ -113,7 +137,7 @@ class TestInterpret:
 
     @pytest.mark.parametrize(
         "outputs",
-        [{"score": "0.9"}, {"score": True}, {"value": 0.9}, {"score": float("inf")}, [0.9], {"score": [0.9]}],
+        [{"score": "0.9"}, {"score": True}, {"value": 0.9}, [0.9], {"score": [0.9]}],
     )
     def test_never_searches_for_numbers(self, outputs):
         outcome = interpret(self.score, response(outputs))
@@ -129,9 +153,26 @@ class TestInterpret:
         outcome = interpret(self.score, body)
         assert (outcome.status, outcome.error_code) == (ModelStatus.FAILED, "BACKEND_TIMEOUT")
 
-    @pytest.mark.parametrize("body", [b"not json", b"[]", b'{"status": "success"}', b'{"status": "pending"}'])
+    @pytest.mark.parametrize(
+        "body",
+        [
+            b"not json",
+            b"[]",
+            b'{"status": "success"}',
+            b'{"status": "pending"}',
+            b"[" * 100_000 + b"]" * 100_000,
+            b'{"status": "success", "outputs": {"score": NaN}}',
+        ],
+        ids=["text", "list", "no-outputs", "pending", "nested", "nan"],
+    )
     def test_rejects_malformed_responses(self, body):
         assert interpret(self.score, body).status is ModelStatus.REJECTED
+
+    def test_keeps_adapter_retryable_flag(self):
+        body = json.dumps({"status": "error", "error": {"code": "BUSY", "retryable": True}}).encode()
+        assert interpret(self.score, body).retryable is True
+        body = json.dumps({"status": "error", "error": {"code": "BACKEND_REJECTED", "retryable": False}}).encode()
+        assert interpret(self.score, body).retryable is False
 
 
 class TestAggregate:
@@ -155,6 +196,7 @@ class TestAggregate:
         assert result["max_score"] == 0.9
         assert result["duration_ms"] == 1500
         assert result["request_id"] == "req-1"
+        assert result["retryable"] is False
 
     def test_partial_keeps_successful_anomaly(self):
         result = aggregate(
@@ -169,6 +211,20 @@ class TestAggregate:
             "status": "timed_out",
             "error_code": "TIMEOUT",
         }
+        assert result["retryable"] is True
+
+    def test_retryable_only_for_retryable_failures(self):
+        fanout = self.fanout(
+            **{
+                "vibration-anomaly": ModelOutcome(ModelStatus.SUCCEEDED, ModelResult(False, 0.1)),
+                "acoustic-classifier": ModelOutcome(ModelStatus.REJECTED, error_code="INVALID_RESULT"),
+            }
+        )
+        assert aggregate(config(), fanout, 1.0)["retryable"] is False
+        fanout.outcomes["acoustic-classifier"] = ModelOutcome(ModelStatus.FAILED, error_code="BUSY", retryable=True)
+        fanout.context = {"asset_id": "a-1"}
+        result = aggregate(config(), fanout, 1.0)
+        assert (result["retryable"], result["context"]) == (True, {"asset_id": "a-1"})
 
     def test_partial_without_anomaly_is_unknown(self):
         result = aggregate(
@@ -190,12 +246,62 @@ class TestAggregate:
 
 
 @pytest.mark.parametrize(
-    ("payload", "code"),
-    [(b'{"inputs": [1]}', None), (b'{"data": "AA=="}', None), (b"{}", "INVALID_PAYLOAD"), (b"x", "INVALID_JSON")],
+    "payload",
+    [
+        b'{"inputs": [1]}',
+        b'{"inputs": [[1, 2], [3, 4]]}',
+        b'{"data": "AA==", "content_type": "image/jpeg"}',
+    ],
 )
-def test_validate_request_body(payload, code):
-    assert validate_request_body(payload, 1024) == code
-    assert validate_request_body(payload, 0) == "PAYLOAD_TOO_LARGE"
+def test_parse_request_body_accepts_adapter_forms(payload):
+    assert parse_request_body(payload, 1024) is None
+    with pytest.raises(RequestError, match="PAYLOAD_TOO_LARGE"):
+        parse_request_body(payload, 0)
+
+
+@pytest.mark.parametrize(
+    ("payload", "code"),
+    [
+        (b"x", "INVALID_JSON"),
+        (b"[" * 100_000 + b"]" * 100_000, "INVALID_JSON"),
+        (b'{"inputs": [NaN]}', "INVALID_JSON"),
+        (b'{"inputs": [1e999]}', "INVALID_JSON"),
+        (b"{}", "INVALID_PAYLOAD"),
+        (b"[1]", "INVALID_PAYLOAD"),
+        (b'{"inputs": 1}', "INVALID_PAYLOAD"),
+        (b'{"inputs": []}', "INVALID_PAYLOAD"),
+        (b'{"inputs": ["a"]}', "INVALID_PAYLOAD"),
+        (b'{"inputs": [true]}', "INVALID_PAYLOAD"),
+        (b'{"inputs": [[1, 2], [3]]}', "INVALID_PAYLOAD"),
+        (b'{"inputs": [[[[[[1]]]]]]}', "INVALID_PAYLOAD"),
+        (b'{"data": "AA=="}', "INVALID_PAYLOAD"),
+        (b'{"data": "%%", "content_type": "image/jpeg"}', "INVALID_PAYLOAD"),
+    ],
+    ids=lambda value: value[:24] if isinstance(value, bytes) else value,
+)
+def test_parse_request_body_rejects(payload, code):
+    with pytest.raises(RequestError) as raised:
+        parse_request_body(payload, 1024 * 1024)
+    assert raised.value.code == code
+
+
+def test_parse_request_body_validates_and_returns_context():
+    assert parse_request_body(b'{"inputs": [1], "context": {"asset_id": "a-1"}}', 1024) == {"asset_id": "a-1"}
+    for context in (b'"a-1"', b"[1]", json.dumps({"k": "x" * 1100}).encode()):
+        with pytest.raises(RequestError) as raised:
+            parse_request_body(b'{"inputs": [1], "context": ' + context + b"}", 4096)
+        assert (raised.value.code, raised.value.context) == ("INVALID_PAYLOAD", None)
+    with pytest.raises(RequestError) as raised:
+        parse_request_body(b'{"inputs": ["a"], "context": {"asset_id": "a-1"}}', 1024)
+    assert raised.value.context == {"asset_id": "a-1"}
+
+
+@pytest.mark.parametrize(
+    ("value", "shape"),
+    [([[1, 2], [3, 4]], (2, 2)), ([[[1.5]]], (1, 1, 1)), ([[1], [2, 3]], None), ([[[[[1]]]]], None), ([[]], None)],
+)
+def test_tensor_shape(value, shape):
+    assert tensor_shape(value) == shape
 
 
 def test_model_spec_rejects_unknown_kind():

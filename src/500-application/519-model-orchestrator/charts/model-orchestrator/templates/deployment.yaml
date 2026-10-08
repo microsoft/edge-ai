@@ -68,6 +68,8 @@ spec:
               value: {{ $o.timeoutSeconds | quote }}
             - name: MAX_PENDING
               value: {{ $o.maxPending | int64 | quote }}
+            - name: MAX_INFLIGHT_MODEL_CALLS
+              value: {{ $o.maxInflightModelCalls | int64 | quote }}
             - name: MAX_REQUEST_BYTES
               value: {{ $o.maxRequestBytes | int64 | quote }}
             - name: TOPIC_DOMAIN
@@ -75,7 +77,11 @@ spec:
             - name: PREDICT_DOMAIN
               value: {{ $o.predictDomain | quote }}
             - name: PREDICT_CLIENT
-              value: {{ $o.predictClient | quote }}
+              value: {{ include "model-orchestrator.predictClient" . | quote }}
+            - name: PREDICT_REQUEST_KIND
+              value: {{ $o.predictRequestKind | quote }}
+            - name: PREDICT_RESPONSE_KIND
+              value: {{ $o.predictResponseKind | quote }}
             - name: EVENT_SOURCE
               value: {{ $o.eventSource | quote }}
           volumeMounts:

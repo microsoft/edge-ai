@@ -8,12 +8,18 @@ result adapter, and publishes one aggregate decision per request.
 
 from __future__ import annotations
 
+import heapq
+import itertools
 import json
 import logging
+import math
+import random
 import re
 import signal
 import time
 import uuid
+from collections import deque
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from types import FrameType
@@ -21,13 +27,15 @@ from types import FrameType
 import paho.mqtt.client as mqtt
 from models import (
     Fanout,
+    ModelStatus,
     OrchestratorConfig,
+    RequestError,
     aggregate,
     interpret,
     parse_predict_response_topic,
+    parse_request_body,
     parse_request_topic,
     request_id,
-    validate_request_body,
 )
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
@@ -44,6 +52,8 @@ MAX_CORRELATION_DATA_LEN = 256
 INITIAL_RECONNECT_DELAY = 1.0
 MAX_RECONNECT_DELAY = 30.0
 COUNTERS_INTERVAL_SECONDS = 60.0
+BUSY_RETRY_BASE_SECONDS = 0.1
+BUSY_RETRY_MAX_SECONDS = 1.0
 
 
 @dataclass
@@ -57,6 +67,10 @@ class Counters:
     rejected: int = 0
     late: int = 0
     duplicate: int = 0
+    duplicate_request: int = 0
+    retained: int = 0
+    busy_retries: int = 0
+    unhandled: int = 0
     publish_failed: int = 0
     connects: int = 0
 
@@ -108,34 +122,54 @@ def request_context(properties: Properties | None) -> tuple[str | None, bytes | 
 
 
 class Orchestrator:
-    """Fan-out state machine. Every method runs on the MQTT thread."""
+    """Fan-out state machine. Every method runs on the MQTT thread.
 
-    def __init__(self, config: OrchestratorConfig, publish, clock=time.monotonic) -> None:
+    At most ``max_inflight_model_calls`` predict requests are outstanding at
+    once; the rest wait in arrival order until a slot frees or the request
+    deadline passes. ``BUSY`` answers are retried with jittered backoff while
+    the deadline allows.
+    """
+
+    def __init__(
+        self,
+        config: OrchestratorConfig,
+        publish: Callable[[str, bytes, Properties], bool],
+        clock: Callable[[], float] = time.monotonic,
+        rng: random.Random | None = None,
+    ) -> None:
         self.config = config
         self.publish = publish
         self.clock = clock
+        self.rng = rng or random.Random()
         self.counters = Counters()
         self.pending: dict[str, Fanout] = {}
         self.specs = {model.id: model for model in config.models}
+        self.in_flight = 0
+        self.waiting: deque[tuple[str, str]] = deque()
+        self.retries: list[tuple[float, int, str, str]] = []
+        self._sequence = itertools.count()
 
-    def handle_request(self, topic: str, payload: bytes, properties: Properties | None) -> None:
+    def handle_request(self, topic: str, payload: bytes, properties: Properties | None, retain: bool = False) -> None:
         client = parse_request_topic(self.config, topic)
         if client is None:
             return
+        if retain:
+            self.counters.retained += 1
+            return
         self.counters.received += 1
         req_id, correlation, traceparent = request_context(properties)
-
-        error = validate_request_body(payload, self.config.max_request_bytes)
-        if error is None and len(self.pending) >= self.config.max_pending:
-            error = "BUSY"
-        if (
-            error is None
-            and req_id
-            and any(fanout.client == client and fanout.request_id == req_id for fanout in self.pending.values())
-        ):
-            error = "DUPLICATE_REQUEST"
-        if error is not None:
-            self._reject(client, req_id, correlation, traceparent, error)
+        if req_id and any(fanout.client == client and fanout.request_id == req_id for fanout in self.pending.values()):
+            # The pending request answers with the same Correlation Data, so a second answer would be ambiguous.
+            self.counters.duplicate_request += 1
+            logger.warning("Dropped a repeat of a pending orchestration request")
+            return
+        try:
+            context = parse_request_body(payload, self.config.max_request_bytes)
+        except RequestError as error:
+            self._reject(client, req_id, correlation, traceparent, error.code, error.context)
+            return
+        if len(self.pending) >= self.config.max_pending:
+            self._reject(client, req_id, correlation, traceparent, "BUSY", context)
             return
 
         now = self.clock()
@@ -149,18 +183,21 @@ class Orchestrator:
             started=now,
             deadline=now + self.config.timeout_seconds,
             expected=tuple(self.specs),
+            context=context,
+            payload=payload,
         )
         self.pending[key] = fanout
-        for model_id in fanout.expected:
-            self._publish(
-                self.config.predict_request_topic(model_id),
-                payload,
-                publish_properties(self.config, PREDICT_REQUEST_TYPE, model_id, key.encode(), traceparent),
-            )
+        self.waiting.extend((key, model_id) for model_id in fanout.expected)
+        self._dispatch()
 
-    def handle_predict_response(self, topic: str, payload: bytes, properties: Properties | None) -> None:
+    def handle_predict_response(
+        self, topic: str, payload: bytes, properties: Properties | None, retain: bool = False
+    ) -> None:
         model_id = parse_predict_response_topic(self.config, topic)
         if model_id is None:
+            return
+        if retain:
+            self.counters.retained += 1
             return
         correlation = getattr(properties, "CorrelationData", None)
         key = correlation.decode("ascii", errors="replace") if correlation else ""
@@ -168,22 +205,72 @@ class Orchestrator:
         if fanout is None:
             self.counters.late += 1
             return
-        if model_id not in self.specs or model_id in fanout.outcomes:
+        if model_id not in fanout.in_flight:
             self.counters.duplicate += 1
             return
-        fanout.outcomes[model_id] = interpret(self.specs[model_id], payload)
+        fanout.in_flight.discard(model_id)
+        self.in_flight -= 1
+        outcome = interpret(self.specs[model_id], payload)
+        if outcome.status is ModelStatus.FAILED and outcome.error_code == "BUSY" and outcome.retryable:
+            retry_at = self.clock() + self._backoff(fanout.attempts.get(model_id, 1))
+            if retry_at < fanout.deadline:
+                self.counters.busy_retries += 1
+                heapq.heappush(self.retries, (retry_at, next(self._sequence), key, model_id))
+                self._dispatch()
+                return
+        fanout.outcomes[model_id] = outcome
         if fanout.complete:
             self._finish(fanout)
+        self._dispatch()
 
-    def expire(self) -> None:
-        """Finish every fan-out past its deadline."""
+    def tick(self) -> None:
+        """Release due retries, finish fan-outs past their deadline, and dispatch."""
         now = self.clock()
+        due = []
+        while self.retries and self.retries[0][0] <= now:
+            _, _, key, model_id = heapq.heappop(self.retries)
+            due.append((key, model_id))
+        self.waiting.extendleft(reversed(due))
         for fanout in [fanout for fanout in self.pending.values() if fanout.deadline <= now]:
             self._finish(fanout)
+        self._dispatch()
 
-    def _finish(self, fanout: Fanout) -> None:
+    def shutdown(self) -> None:
+        """Publish every pending fan-out, reporting unanswered models as timed out."""
+        for fanout in list(self.pending.values()):
+            self._finish(fanout, "SHUTDOWN")
+        self.waiting.clear()
+        self.retries.clear()
+
+    def _backoff(self, attempt: int) -> float:
+        ceiling = min(BUSY_RETRY_MAX_SECONDS, BUSY_RETRY_BASE_SECONDS * 2 ** (attempt - 1))
+        return self.rng.uniform(ceiling / 2, ceiling)
+
+    def _dispatch(self) -> None:
+        now = self.clock()
+        while self.in_flight < self.config.max_inflight_model_calls and self.waiting:
+            key, model_id = self.waiting.popleft()
+            fanout = self.pending.get(key)
+            if fanout is None or model_id in fanout.outcomes or model_id in fanout.in_flight:
+                continue
+            remaining = fanout.deadline - now
+            if remaining <= 0:
+                continue
+            properties = publish_properties(
+                self.config, PREDICT_REQUEST_TYPE, model_id, key.encode(), fanout.traceparent
+            )
+            # The broker decrements the interval, so the adapter sees the time the orchestrator still waits.
+            properties.MessageExpiryInterval = max(1, math.ceil(remaining))
+            fanout.in_flight.add(model_id)
+            fanout.attempts[model_id] = fanout.attempts.get(model_id, 0) + 1
+            self.in_flight += 1
+            self._publish(self.config.predict_request_topic(model_id), fanout.payload, properties)
+
+    def _finish(self, fanout: Fanout, missing_code: str = "TIMEOUT") -> None:
         self.pending.pop(fanout.correlation, None)
-        response = aggregate(self.config, fanout, self.clock())
+        self.in_flight -= len(fanout.in_flight)
+        fanout.in_flight.clear()
+        response = aggregate(self.config, fanout, self.clock(), missing_code)
         setattr(self.counters, response["status"], getattr(self.counters, response["status"]) + 1)
         logger.info(
             "Ensemble %s: %s, decision %s (%d/%d succeeded)",
@@ -202,7 +289,13 @@ class Orchestrator:
         )
 
     def _reject(
-        self, client: str, req_id: str | None, correlation: bytes | None, traceparent: str | None, code: str
+        self,
+        client: str,
+        req_id: str | None,
+        correlation: bytes | None,
+        traceparent: str | None,
+        code: str,
+        context: dict | None = None,
     ) -> None:
         self.counters.rejected += 1
         logger.warning("Rejected orchestration request: %s", code)
@@ -214,6 +307,8 @@ class Orchestrator:
         }
         if req_id:
             body["request_id"] = req_id
+        if context is not None:
+            body["context"] = context
         self._publish(
             self.config.response_topic(client),
             json.dumps(body, separators=(",", ":")).encode(),
@@ -275,10 +370,18 @@ class Runtime:
         logger.warning("Disconnected from broker: %s", reason_code)
 
     def _on_request(self, client, userdata, message: mqtt.MQTTMessage) -> None:
-        self.orchestrator.handle_request(message.topic, message.payload, getattr(message, "properties", None))
+        self._guard(self.orchestrator.handle_request, message)
 
     def _on_predict_response(self, client, userdata, message: mqtt.MQTTMessage) -> None:
-        self.orchestrator.handle_predict_response(message.topic, message.payload, getattr(message, "properties", None))
+        self._guard(self.orchestrator.handle_predict_response, message)
+
+    def _guard(self, handler: Callable[..., None], message: mqtt.MQTTMessage) -> None:
+        # paho re-raises callback exceptions from loop(), which would stop the orchestrator.
+        try:
+            handler(message.topic, message.payload, getattr(message, "properties", None), message.retain)
+        except Exception as error:  # noqa: BLE001
+            self.orchestrator.counters.unhandled += 1
+            logger.error("Unhandled error processing a message: %s", type(error).__name__)
 
     def log_counters(self, message: str) -> None:
         logger.info("%s: %s", message, json.dumps(asdict(self.orchestrator.counters)))
@@ -324,7 +427,7 @@ def run(config: OrchestratorConfig) -> None:
                 reconnect_delay = min(reconnect_delay * 2, MAX_RECONNECT_DELAY)
             elif runtime.connected:
                 reconnect_delay = INITIAL_RECONNECT_DELAY
-                runtime.orchestrator.expire()
+                runtime.orchestrator.tick()
         else:
             time.sleep(0.05)
 
@@ -333,6 +436,10 @@ def run(config: OrchestratorConfig) -> None:
             next_counters = time.monotonic() + COUNTERS_INTERVAL_SECONDS
 
     if socket_open and runtime.connected:
+        runtime.client.unsubscribe(config.request_filter)
+        runtime.orchestrator.shutdown()
+        for _ in range(5):
+            runtime.client.loop(timeout=0.1)
         runtime.client.disconnect()
         runtime.client.loop(timeout=0.5)
     runtime.log_counters("Stopped")

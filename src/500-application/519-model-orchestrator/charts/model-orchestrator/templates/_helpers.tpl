@@ -45,6 +45,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
 
+{{- define "model-orchestrator.predictClient" -}}
+{{- default (include "model-orchestrator.fullname" .) .Values.orchestrator.predictClient }}
+{{- end }}
+
 {{- define "model-orchestrator.image" -}}
 {{- $repository := required "image.repository is required" .Values.image.repository }}
 {{- printf "%s:%s" $repository (.Values.image.tag | default .Chart.AppVersion) }}
