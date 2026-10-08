@@ -32,7 +32,8 @@ normalizer:
   # Topic the media connector snapshot-to-mqtt stream publishes to.
   inputTopic: media/v1/media-connector/camera-01/snapshots
   # Leave empty for edge-ai/v1/snapshot-normalizer/<cameraId>/camera/snapshots,
-  # which the component 507 inference service subscribes to by default.
+  # which the component 507 inference service receives through its
+  # edge-ai/+/+/+/camera/snapshots input filter.
   outputTopic: ""
   eventSource: snapshot-normalizer
   # Optional dataschema reference. Keep it consistent with any data flow source

@@ -23,12 +23,16 @@ INPUT_TOPIC (binary JPEG)
 
 ### Topics
 
-The default output topic is versioned and stays inside the inference service's
-default `edge-ai/+/+/+/camera/snapshots` subscription:
+The default output topic is versioned:
 
 ```text
 edge-ai/v1/snapshot-normalizer/{camera-id}/camera/snapshots
 ```
+
+The inference service receives it when its `MQTT_INPUT_TOPICS` includes
+`edge-ai/+/+/+/camera/snapshots`. That filter is the service's built-in
+default, and the component manifests and docker-compose file subscribe to it
+alongside the 5-level `edge-ai/+/+/camera/snapshots` filter.
 
 * `CAMERA_ID` must be 1-64 lowercase letters, digits, `.`, `_`, or `-`, because
   it becomes a topic segment. Use an opaque identifier rather than a site,

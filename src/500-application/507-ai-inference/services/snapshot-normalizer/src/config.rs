@@ -133,8 +133,8 @@ impl Config {
 
 /// Default versioned output topic for a camera.
 ///
-/// The `camera/snapshots` suffix keeps the topic inside the component 507
-/// inference service's default `edge-ai/+/+/+/camera/snapshots` subscription.
+/// The topic matches the component 507 inference service's
+/// `edge-ai/+/+/+/camera/snapshots` input filter.
 pub fn default_output_topic(camera_id: &str) -> String {
     format!("edge-ai/v1/{DEFAULT_EVENT_SOURCE}/{camera_id}/camera/snapshots")
 }

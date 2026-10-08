@@ -139,7 +139,8 @@ It subscribes to a binary JPEG snapshot topic, such as a media connector
 `snapshot-to-mqtt` stream, and publishes each accepted snapshot as an
 `image_snapshot` v1 request to
 `edge-ai/v1/snapshot-normalizer/{camera-id}/camera/snapshots`, which the
-inference service's default input subscription already matches.
+inference service receives through its `edge-ai/+/+/+/camera/snapshots` input
+filter.
 
 - Carries CloudEvents attributes as MQTTv5 user properties
 - Deduplicates on the producer-supplied CloudEvents `id`, never on content
