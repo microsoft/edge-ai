@@ -164,8 +164,20 @@ The chart:
 
 ### Authorization
 
-Bind a BrokerAuthorization resource to the listener port the adapter uses, as
-described in [Configure MQTT broker authorization](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-authorization).
+The chart doesn't create a BrokerAuthorization resource. Each listener port
+links a single allow-only policy through its `authorizationRef`, so a separate
+per-workload policy would either take no effect or, once linked, deny every
+other client on that port. Creating broker resources from Kubernetes manifests
+is also supported only for debugging and testing.
+
+Instead, add a rule for the adapter to the BrokerAuthorization policy already
+linked to the listener port it uses, and manage that policy through the Azure
+portal, Bicep, or `az iot ops broker authz apply`, as described in
+[Configure MQTT broker authorization](https://learn.microsoft.com/azure/iot-operations/manage-mqtt-broker/howto-configure-authorization).
+`az iot ops broker authz apply` replaces the policy with the configuration file
+it's given, so include the policy's existing rules in that file. The policy
+applies only when the port also links a BrokerAuthentication resource.
+
 A least-privilege rule for the default chart values looks like this:
 
 ```yaml
@@ -184,6 +196,10 @@ rules:
         topics:
           - "edge-ai/v1/snapshot-normalizer/+/camera/snapshots"
 ```
+
+The `workload` attribute comes from the chart's `aio-broker-auth/workload`
+service account annotation. Verify the rule with a negative check: publishing
+to a topic outside the rule should fail with a not-authorized reason.
 
 ## Testing
 
