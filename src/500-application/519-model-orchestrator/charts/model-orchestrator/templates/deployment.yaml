@@ -1,0 +1,112 @@
+{{- $o := .Values.orchestrator }}
+{{- if not $o.models }}
+{{- fail "orchestrator.models must define at least one model" }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "model-orchestrator.fullname" . }}
+  namespace: {{ include "model-orchestrator.namespace" . }}
+  labels:
+    {{- include "model-orchestrator.labels" . | nindent 4 }}
+spec:
+  # Pending fan-out state is in memory and requests use a non-shared subscription.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "model-orchestrator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "model-orchestrator.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "model-orchestrator.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "model-orchestrator.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AIO_MQTT_CLIENT_ID
+              value: {{ printf "%s-$(POD_NAME)" (required "mqtt.clientIdPrefix is required" .Values.mqtt.clientIdPrefix) | quote }}
+            - name: AIO_BROKER_HOSTNAME
+              value: {{ .Values.mqtt.brokerHostname | quote }}
+            - name: AIO_BROKER_TCP_PORT
+              value: {{ .Values.mqtt.brokerTcpPort | quote }}
+            - name: AIO_MQTT_USE_TLS
+              value: "true"
+            - name: AIO_TLS_CA_FILE
+              value: {{ .Values.mqtt.tlsCaFile | quote }}
+            - name: AIO_SAT_FILE
+              value: {{ .Values.mqtt.satFile | quote }}
+            - name: ENSEMBLE_ID
+              value: {{ $o.ensembleId | quote }}
+            - name: MODELS
+              value: {{ $o.models | toJson | quote }}
+            - name: TIMEOUT_SECONDS
+              value: {{ $o.timeoutSeconds | quote }}
+            - name: MAX_PENDING
+              value: {{ $o.maxPending | int64 | quote }}
+            - name: MAX_REQUEST_BYTES
+              value: {{ $o.maxRequestBytes | int64 | quote }}
+            - name: TOPIC_DOMAIN
+              value: {{ $o.topicDomain | quote }}
+            - name: PREDICT_DOMAIN
+              value: {{ $o.predictDomain | quote }}
+            - name: PREDICT_CLIENT
+              value: {{ $o.predictClient | quote }}
+            - name: EVENT_SOURCE
+              value: {{ $o.eventSource | quote }}
+          volumeMounts:
+            - name: mq-sat
+              mountPath: {{ dir .Values.mqtt.satFile }}
+              readOnly: true
+            - name: trust-bundle
+              mountPath: {{ dir .Values.mqtt.tlsCaFile }}
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: {{ base .Values.mqtt.satFile }}
+                  audience: {{ .Values.volumes.mqSat.audience | quote }}
+                  expirationSeconds: {{ .Values.volumes.mqSat.expirationSeconds | int64 }}
+        - name: trust-bundle
+          configMap:
+            name: {{ .Values.volumes.trustBundle.configMapName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
