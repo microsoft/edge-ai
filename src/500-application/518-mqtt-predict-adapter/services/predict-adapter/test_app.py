@@ -188,6 +188,14 @@ class TestAdapter:
         published = run(make_adapter(FakeBackend(result=[1])), TOPIC, b"{}")
         assert published[0][1]["error"]["code"] == "INVALID_PAYLOAD"
 
+    def test_echoes_context_on_success_and_error(self):
+        payload = b'{"inputs": [1], "context": {"asset_id": "asset-01"}}'
+        body = run(make_adapter(FakeBackend(result=[1])), TOPIC, payload)[0][1]
+        assert body["context"] == {"asset_id": "asset-01"}
+        error = BackendError("BACKEND_TIMEOUT", retryable=True)
+        body = run(make_adapter(FakeBackend(error=error)), TOPIC, payload)[0][1]
+        assert (body["status"], body["context"]) == ("error", {"asset_id": "asset-01"})
+
     def test_reports_backend_error_without_upstream_detail(self):
         adapter = make_adapter(FakeBackend(error=BackendError("MODEL_UNAVAILABLE", retryable=False, status=404)))
         body = run(adapter, TOPIC, b'{"inputs": [1]}')[0][1]

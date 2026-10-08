@@ -27,6 +27,7 @@ from models import (
     MAX_CORRELATION_DATA_LEN,
     AdapterConfig,
     PredictItem,
+    PredictRequest,
     PredictResponse,
     RequestError,
     build_predict_body,
@@ -200,6 +201,7 @@ def build_response(
     started: float,
     outputs: object = None,
     error: dict | None = None,
+    context: dict | None = None,
 ) -> bytes:
     """Return the serialized response payload."""
     response = PredictResponse(
@@ -209,6 +211,7 @@ def build_response(
         latency_ms=round((time.monotonic() - started) * 1000),
         outputs=None if error else outputs,
         error=error,
+        context=context,
     )
     return response.model_dump_json(exclude_none=True).encode()
 
@@ -283,12 +286,17 @@ class Adapter:
         reply_topic = self.config.response_topic(parsed.client, parsed.model_id)
         reply_properties = response_properties(self.config, parsed.model_id, correlation, traceparent)
 
-        def reject(code: str, message: str, retryable: bool) -> None:
+        def reject(code: str, message: str, retryable: bool, context: dict | None = None) -> None:
             self.counters.rejected += 1
             self.counters.record_error(code)
             logger.warning("Rejected request for model %s: %s", parsed.model_id, code)
             body = build_response(
-                self.config, parsed.model_id, req_id, started, error=error_body(code, message, retryable)
+                self.config,
+                parsed.model_id,
+                req_id,
+                started,
+                error=error_body(code, message, retryable),
+                context=context,
             )
             self.outgoing.put(Outgoing(reply_topic, body, reply_properties))
 
@@ -296,31 +304,32 @@ class Adapter:
             reject("UNKNOWN_MODEL", "model is not served by this adapter", False)
             return
         try:
-            item = parse_request_payload(payload, self.config.max_request_bytes)
+            request = parse_request_payload(payload, self.config.max_request_bytes)
         except RequestError as error:
             reject(error.code, error.message, False)
             return
         if self.in_flight >= self.config.max_concurrency:
             self.counters.busy += 1
-            reject("BUSY", "adapter is at its concurrency limit", True)
+            reject("BUSY", "adapter is at its concurrency limit", True, request.context)
             return
 
         self.in_flight += 1
-        self.executor.submit(self._predict, parsed.model_id, item, req_id, started, reply_topic, reply_properties)
+        self.executor.submit(self._predict, parsed.model_id, request, req_id, started, reply_topic, reply_properties)
 
     def _predict(
         self,
         model_id: str,
-        item: PredictItem,
+        request: PredictRequest,
         req_id: str | None,
         started: float,
         reply_topic: str,
         reply_properties: Properties,
     ) -> None:
         error_code: str | None = None
+        context = request.context
         try:
-            outputs = self.backend.predict(model_id, item)
-            body = build_response(self.config, model_id, req_id, started, outputs=outputs)
+            outputs = self.backend.predict(model_id, request.item)
+            body = build_response(self.config, model_id, req_id, started, outputs=outputs, context=context)
         except BackendError as error:
             error_code = error.code
             body = build_response(
@@ -329,6 +338,7 @@ class Adapter:
                 req_id,
                 started,
                 error=error_body(error.code, "model endpoint call failed", error.retryable),
+                context=context,
             )
         except Exception:  # noqa: BLE001
             error_code = "INTERNAL_ERROR"
@@ -339,6 +349,7 @@ class Adapter:
                 req_id,
                 started,
                 error=error_body("INTERNAL_ERROR", "adapter failed to process the request", True),
+                context=context,
             )
         self.outgoing.put(Outgoing(reply_topic, body, reply_properties, error_code, from_worker=True))
 

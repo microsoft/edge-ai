@@ -67,8 +67,12 @@ Send a JSON object with exactly one of these forms:
 | Binary | `data` (standard Base64), `content_type` | Item with the given content type, such as `image/jpeg`       |
 
 ```json
-{ "inputs": [[0.12, 0.34, 0.56]] }
+{ "inputs": [[0.12, 0.34, 0.56]], "context": { "asset_id": "asset-01" } }
 ```
+
+The optional `context` object, up to 1 KiB, is returned unchanged on the
+response and never sent to the model. Use it to carry identifiers that a
+downstream consumer needs, such as the asset a reading came from.
 
 Optional MQTTv5 properties on the request:
 
@@ -87,7 +91,8 @@ Optional MQTTv5 properties on the request:
   "request_id": "req-1",
   "status": "success",
   "latency_ms": 12,
-  "outputs": { "score": 0.93 }
+  "outputs": { "score": 0.93 },
+  "context": { "asset_id": "asset-01" }
 }
 ```
 

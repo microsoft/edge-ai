@@ -20,6 +20,7 @@ MODEL_ID = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
 CONTENT_TYPE = re.compile(r"^[a-z]+/[a-z0-9.+-]+$")
 MAX_REQUEST_ID_LEN = 256
 MAX_CORRELATION_DATA_LEN = 256
+MAX_CONTEXT_BYTES = 1024
 
 
 class AdapterConfig(BaseModel):
@@ -166,6 +167,14 @@ class PredictItem:
     data: bytes
 
 
+@dataclass(frozen=True)
+class PredictRequest:
+    """Validated request: the backend item and the caller context to echo."""
+
+    item: PredictItem
+    context: dict[str, Any] | None = None
+
+
 def parse_request_topic(config: AdapterConfig, topic: str) -> RequestTopic | None:
     """Return the client and model from a request topic, or None if it doesn't match."""
     parts = topic.split("/")
@@ -183,11 +192,12 @@ def parse_request_topic(config: AdapterConfig, topic: str) -> RequestTopic | Non
     return RequestTopic(client=client, model_id=model_id)
 
 
-def parse_request_payload(payload: bytes, max_bytes: int) -> PredictItem:
-    """Validate a request payload and return the backend input item.
+def parse_request_payload(payload: bytes, max_bytes: int) -> PredictRequest:
+    """Validate a request payload and return the backend item and caller context.
 
     Accepts either a numeric tensor in ``inputs`` (a flat list is wrapped into
-    one row) or Base64 ``data`` with an explicit ``content_type``.
+    one row) or Base64 ``data`` with an explicit ``content_type``. An optional
+    ``context`` object is echoed on the response and never sent to the model.
     """
     if len(payload) > max_bytes:
         raise RequestError("PAYLOAD_TOO_LARGE", f"request exceeds {max_bytes} bytes")
@@ -197,6 +207,12 @@ def parse_request_payload(payload: bytes, max_bytes: int) -> PredictItem:
         raise RequestError("INVALID_JSON", "request is not valid JSON") from error
     if not isinstance(body, dict):
         raise RequestError("INVALID_PAYLOAD", "request must be a JSON object")
+
+    context = body.get("context")
+    if context is not None and (
+        not isinstance(context, dict) or len(json.dumps(context, separators=(",", ":")).encode()) > MAX_CONTEXT_BYTES
+    ):
+        raise RequestError("INVALID_PAYLOAD", f"context must be an object of at most {MAX_CONTEXT_BYTES} bytes")
 
     has_inputs = "inputs" in body
     has_data = "data" in body
@@ -210,7 +226,8 @@ def parse_request_payload(payload: bytes, max_bytes: int) -> PredictItem:
         tensor = inputs if isinstance(inputs[0], list) else [inputs]
         if not _is_numeric_tensor(tensor):
             raise RequestError("INVALID_PAYLOAD", "inputs must contain only numbers")
-        return PredictItem("application/json", json.dumps(tensor, separators=(",", ":")).encode())
+        item = PredictItem("application/json", json.dumps(tensor, separators=(",", ":")).encode())
+        return PredictRequest(item, context)
 
     content_type = body.get("content_type")
     if not isinstance(content_type, str) or not CONTENT_TYPE.match(content_type):
@@ -222,7 +239,7 @@ def parse_request_payload(payload: bytes, max_bytes: int) -> PredictItem:
         decoded = base64.b64decode(data, validate=True)
     except (binascii.Error, ValueError) as error:
         raise RequestError("INVALID_PAYLOAD", "data must be standard Base64") from error
-    return PredictItem(content_type, decoded)
+    return PredictRequest(PredictItem(content_type, decoded), context)
 
 
 def _is_numeric_tensor(value: Any, depth: int = 0) -> bool:
@@ -273,6 +290,7 @@ class PredictResponse(BaseModel):
     latency_ms: int
     outputs: Any = None
     error: dict[str, Any] | None = None
+    context: dict[str, Any] | None = None
 
 
 def request_id(user_properties: list[tuple[str, str]]) -> str | None:

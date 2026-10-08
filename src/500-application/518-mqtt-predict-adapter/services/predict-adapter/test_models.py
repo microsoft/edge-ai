@@ -87,17 +87,29 @@ class TestTopics:
 
 class TestPayload:
     def test_wraps_flat_inputs_in_a_row(self):
-        item = parse_request_payload(b'{"inputs": [1, 2.5, 3]}', 1024)
-        assert item == PredictItem("application/json", b"[[1,2.5,3]]")
+        request = parse_request_payload(b'{"inputs": [1, 2.5, 3]}', 1024)
+        assert request.item == PredictItem("application/json", b"[[1,2.5,3]]")
+        assert request.context is None
 
     def test_keeps_two_dimensional_inputs(self):
-        item = parse_request_payload(b'{"inputs": [[1, 2], [3, 4]]}', 1024)
-        assert json.loads(item.data) == [[1, 2], [3, 4]]
+        request = parse_request_payload(b'{"inputs": [[1, 2], [3, 4]]}', 1024)
+        assert json.loads(request.item.data) == [[1, 2], [3, 4]]
 
     def test_accepts_base64_data_with_content_type(self):
         encoded = base64.b64encode(b"\xff\xd8\xff").decode()
-        item = parse_request_payload(json.dumps({"data": encoded, "content_type": "image/jpeg"}).encode(), 1024)
-        assert item == PredictItem("image/jpeg", b"\xff\xd8\xff")
+        request = parse_request_payload(json.dumps({"data": encoded, "content_type": "image/jpeg"}).encode(), 1024)
+        assert request.item == PredictItem("image/jpeg", b"\xff\xd8\xff")
+
+    def test_keeps_context_out_of_the_model_item(self):
+        request = parse_request_payload(b'{"inputs": [1], "context": {"asset_id": "asset-01"}}', 1024)
+        assert request.context == {"asset_id": "asset-01"}
+        assert request.item.data == b"[[1]]"
+
+    @pytest.mark.parametrize("context", ['"asset-01"', "[1]", json.dumps({"k": "x" * 1100})])
+    def test_rejects_invalid_context(self, context):
+        with pytest.raises(RequestError) as raised:
+            parse_request_payload(f'{{"inputs": [1], "context": {context}}}'.encode(), 4096)
+        assert raised.value.code == "INVALID_PAYLOAD"
 
     @pytest.mark.parametrize(
         ("payload", "code"),
