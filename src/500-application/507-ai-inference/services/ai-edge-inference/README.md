@@ -238,35 +238,35 @@ The service now processes industrial images through actual ONNX models, providin
 
 ### Environment Variables
 
+The values below are the binary defaults used when a variable is unset. See the
+[application README](../../README.md#environment-variables) for the full table
+and the values the manifests set.
+
 ```bash
 # MQTT Configuration
-MQTT_BROKER_HOST=aio-broker.azure-iot-operations
-MQTT_BROKER_PORT=18883
-MQTT_INPUT_TOPICS=edge-ai/+/+/camera/snapshots,edge-ai/+/+/+/camera/snapshots
-MQTT_SENSOR_TOPIC=edge-ai/+/+/+/+/sensors/+
-MQTT_OUTPUT_TOPIC=edge-ai/business_unit/facility/gateway_id/device_id/ai/inference
+AIO_BROKER_HOSTNAME=aio-broker.azure-iot-operations
+AIO_BROKER_TCP_PORT=18883
+MQTT_INPUT_TOPICS=edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots
+TOPIC_PREFIX=edge-ai/business_unit/facility/gateway_id
 
 # Model Configuration
-MODEL_PATH=/data/models
-DEFAULT_VISION_MODEL=object-detection/vision-v2.1.onnx
-DEFAULT_SENSOR_MODEL=object-detection/sensor-anomaly-v1.3.onnx
-MODEL_WARM_UP=true
+MODELS_DIRECTORY=/models
+DEFAULT_MODELS=            # unset loads default.onnx
+MODEL_CONFIG_PATH=         # unset skips YAML model loading
 
 # Inference Configuration
-BATCH_SIZE=4
-INFERENCE_TIMEOUT=5000
-CONFIDENCE_THRESHOLD=0.75
+BATCH_SIZE=1
+INFERENCE_TIMEOUT_MS=5000
+GLOBAL_CONFIDENCE_THRESHOLD=0.5
 MAX_CONCURRENT_INFERENCES=2
 
-# Performance Configuration
-THREAD_POOL_SIZE=4
-MEMORY_LIMIT=2048MB
-ENABLE_GPU_ACCELERATION=false
-ONNX_PROVIDER=CPU
+# Hardware Configuration
+ENABLE_GPU=true
+ENABLE_CUDA=true
+ENABLE_TENSORRT=true
 
 # Monitoring
-RUST_LOG=info
-HEALTH_PORT=8081
+HEALTH_PORT=8080           # the image sets 8081
 ENABLE_TEST_ENDPOINTS=false
 ```
 
@@ -371,19 +371,19 @@ monitoring:
 
 ### Topic Structure
 
-```bash
-# Input Topics
-edge-ai/business_unit/facility/gateway_id/device_id/camera/snapshots
-edge-ai/business_unit/facility/gateway_id/device_id/sensors/temperature
-edge-ai/business_unit/facility/gateway_id/device_id/sensors/pressure
-edge-ai/business_unit/facility/gateway_id/device_id/sensors/flow
+```text
+# Input filters (defaults)
+edge-ai/+/+/camera/snapshots              # legacy edge-ai/{site}/{gateway}/camera/snapshots
+edge-ai/v1/+/camera/+/snapshots           # pinned v1 edge-ai/v1/{producer}/camera/{camera-id}/snapshots
 
-# Output Topics
-edge-ai/business_unit/facility/gateway_id/device_id/ai/inference/vision
-edge-ai/business_unit/facility/gateway_id/device_id/ai/inference/sensor
-edge-ai/business_unit/facility/gateway_id/device_id/ai/inference/fusion
-edge-ai/business_unit/facility/gateway_id/device_id/ai/status
+# Output topic
+{TOPIC_PREFIX}/inference/{model_type}/{model_name}[/{priority}]
 ```
+
+Envelopes whose `schema_version` major is not `1`, payloads that are not valid
+UTF-8, and payloads that are not JSON are dropped with a bounded reason; payload
+content is never logged. See the
+[application README](../../README.md#topic-structure) for details.
 
 ## Performance Optimization
 
@@ -440,7 +440,7 @@ kubectl get pods -l app=ai-edge-inference -n azure-iot-operations
 # Monitor inference results
 kubectl exec mqtt-client -n azure-iot-operations -- \
   mosquitto_sub --host aio-broker --port 18883 \
-  --topic "edge-ai/+/+/+/+/ai/inference/+" \
+  --topic "edge-ai/business_unit/facility/gateway_id/inference/#" \
   --cafile /var/run/certs/ca.crt
 ```
 

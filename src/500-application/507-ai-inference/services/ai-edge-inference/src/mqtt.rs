@@ -3,7 +3,8 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use azure_iot_operations_mqtt::aio::connection_settings::MqttConnectionSettingsBuilder;
 use azure_iot_operations_mqtt::control_packet::{
-    PublishProperties, QoS, RetainOptions, SubscribeProperties, TopicFilter, TopicName,
+    PublishProperties, QoS, RetainOptions, SubAckReason, SubscribeProperties, TopicFilter,
+    TopicName,
 };
 use azure_iot_operations_mqtt::session::{
     Session, SessionManagedClient, SessionMonitor, SessionOptionsBuilder, SessionPubReceiver,
@@ -223,7 +224,7 @@ impl MqttPublisher {
                     }
                 };
                 loop {
-                    match client_clone
+                    let outcome = match client_clone
                         .subscribe(
                             topic_filter.clone(),
                             QoS::AtLeastOnce,
@@ -233,12 +234,27 @@ impl MqttPublisher {
                         )
                         .await
                     {
-                        Ok(_) => {
-                            info!("✅ Successfully subscribed to pattern: {}", pattern_for_sub);
+                        Ok(token) => match token.await {
+                            Ok(suback) => match rejected_suback_reasons(&suback.reasons) {
+                                None => Ok(()),
+                                Some(reasons) => {
+                                    Err(format!("broker rejected subscription: {reasons}"))
+                                }
+                            },
+                            Err(e) => Err(format!("SUBACK not received: {e}")),
+                        },
+                        Err(e) => Err(format!("SUBSCRIBE not issued: {e}")),
+                    };
+                    match outcome {
+                        Ok(()) => {
+                            info!("✅ Subscribed to pattern: {}", pattern_for_sub);
                             break;
                         }
-                        Err(e) => {
-                            warn!("Failed to subscribe to {} (retrying in 10s): {}", pattern_for_sub, e);
+                        Err(reason) => {
+                            error!(
+                                "Subscription to {} failed (retrying in 10s): {}",
+                                pattern_for_sub, reason
+                            );
                             tokio::time::sleep(Duration::from_secs(10)).await;
                         }
                     }
@@ -635,25 +651,7 @@ impl MqttProcessingContext {
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = message.topic_name.to_string();
-                    info!("✅ Message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
-
-                    // Convert bytes to strings
-                    let payload_str = String::from_utf8_lossy(&message.payload);
-
-                    info!("Processing message from topic: {} (payload: {})", topic_str, &payload_str[..std::cmp::min(100, payload_str.len())]);
-
-                    match self.handle_incoming_message(&payload_str, &topic_str).await {
-                        Ok(_) => {
-                            info!("Successfully processed message from topic: {}", topic_str);
-                            let mut stats = self.stats.write().await;
-                            stats.total_messages += 1;
-                        }
-                        Err(e) => {
-                            error!("Failed to process message from topic {}: {}", topic_str, e);
-                            let mut stats = self.stats.write().await;
-                            stats.failed_publishes += 1;
-                        }
-                    }
+                    self.process_payload(&topic_str, &message.payload).await;
                 }
                 Ok(None) => {
                     error!("Receiver returned None for topic: {}", topic);
@@ -678,6 +676,7 @@ impl MqttProcessingContext {
 
         // Create unfiltered receiver (we'll filter manually)
         let mut receiver = self.client.create_unfiltered_pub_receiver();
+        let filters = topic_filters(patterns);
 
         let mut heartbeat_counter = 0;
 
@@ -704,27 +703,14 @@ impl MqttProcessingContext {
             match timeout(Duration::from_secs(1), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = message.topic_name.to_string();
-                    info!("🚀 AIO MESSAGE RECEIVED on topic: {} (payload: {} bytes)", topic_str, message.payload.len());
+                    debug!(
+                        "AIO message received on topic: {} (payload: {} bytes)",
+                        topic_str,
+                        message.payload.len()
+                    );
 
-                    // Check if topic matches any configured pattern
-                    if patterns.iter().any(|pattern| topic_matches_pattern(&topic_str, pattern)) {
-                        let payload_str = String::from_utf8_lossy(&message.payload);
-                        info!("Processing AIO message from topic: {} (payload preview: {})",
-                              topic_str,
-                              &payload_str[..std::cmp::min(100, payload_str.len())]);
-
-                        match self.handle_incoming_message(&payload_str, &topic_str).await {
-                            Ok(_) => {
-                                info!("✅ Successfully processed AIO message from topic: {}", topic_str);
-                                let mut stats = self.stats.write().await;
-                                stats.total_messages += 1;
-                            }
-                            Err(e) => {
-                                error!("❌ Failed to process AIO message from topic {}: {}", topic_str, e);
-                                let mut stats = self.stats.write().await;
-                                stats.failed_publishes += 1;
-                            }
-                        }
+                    if matches_any_filter(&message.topic_name, &filters) {
+                        self.process_payload(&topic_str, &message.payload).await;
                     } else {
                         debug!("Ignoring message from non-matching topic: {}", topic_str);
                     }
@@ -756,25 +742,7 @@ impl MqttProcessingContext {
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
                     let topic_str = message.topic_name.to_string();
-                    info!("✅ Filtered message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
-
-                    // Convert bytes to strings
-                    let payload_str = String::from_utf8_lossy(&message.payload);
-
-                    info!("Processing filtered message from topic: {} (payload: {})", topic_str, &payload_str[..std::cmp::min(100, payload_str.len())]);
-
-                    match self.handle_incoming_message(&payload_str, &topic_str).await {
-                        Ok(_) => {
-                            info!("Successfully processed filtered message from topic: {}", topic_str);
-                            let mut stats = self.stats.write().await;
-                            stats.total_messages += 1;
-                        }
-                        Err(e) => {
-                            error!("Failed to process filtered message from topic {}: {}", topic_str, e);
-                            let mut stats = self.stats.write().await;
-                            stats.failed_publishes += 1;
-                        }
-                    }
+                    self.process_payload(&topic_str, &message.payload).await;
                 }
                 Ok(None) => {
                     error!("Filtered receiver returned None for pattern: {}", pattern);
@@ -795,6 +763,7 @@ impl MqttProcessingContext {
     #[instrument(skip(self, receiver))]
     pub async fn process_unfiltered_messages(&self, pattern: &str, mut receiver: SessionPubReceiver) -> anyhow::Result<()> {
         info!("Starting unfiltered message processing for pattern: {}", pattern);
+        let filters = topic_filters(&[pattern.to_string()]);
 
         loop {
             info!("Calling unfiltered receiver.recv().await for pattern: {}", pattern);
@@ -804,29 +773,10 @@ impl MqttProcessingContext {
                 Ok(Some(message)) => {
                     let topic_str = message.topic_name.to_string();
 
-                    // Filter for camera snapshot topics
-                    if topic_str.ends_with("/camera/snapshots") {
-                        info!("✅ Camera snapshot message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
-
-                        // Convert bytes to strings
-                        let payload_str = String::from_utf8_lossy(&message.payload);
-
-                        info!("Processing camera message from topic: {} (payload: {})", topic_str, &payload_str[..std::cmp::min(100, payload_str.len())]);
-
-                        match self.handle_incoming_message(&payload_str, &topic_str).await {
-                            Ok(_) => {
-                                info!("Successfully processed camera message from topic: {}", topic_str);
-                                let mut stats = self.stats.write().await;
-                                stats.total_messages += 1;
-                            }
-                            Err(e) => {
-                                error!("Failed to process camera message from topic {}: {}", topic_str, e);
-                                let mut stats = self.stats.write().await;
-                                stats.failed_publishes += 1;
-                            }
-                        }
+                    if matches_any_filter(&message.topic_name, &filters) {
+                        self.process_payload(&topic_str, &message.payload).await;
                     } else {
-                        debug!("Ignoring non-camera message from topic: {}", topic_str);
+                        debug!("Ignoring message from non-matching topic: {}", topic_str);
                     }
                 }
                 Ok(None) => {
@@ -848,10 +798,21 @@ impl MqttProcessingContext {
     async fn handle_incoming_message(&self, payload: &str, topic: &str) -> anyhow::Result<()> {
         debug!("Processing message from topic: {} (payload size: {} bytes)", topic, payload.len());
 
-        // Try to parse as JSON first
-        let parsed_message: Result<IncomingMessage, _> = serde_json::from_str(payload);
+        let json_value: serde_json::Value = match serde_json::from_str(payload) {
+            Ok(value) => value,
+            Err(_) => {
+                warn!(
+                    "Dropping payload from topic {} ({} bytes): not valid JSON",
+                    topic,
+                    payload.len()
+                );
+                return Ok(());
+            }
+        };
+        check_schema_version(&json_value)
+            .map_err(|rejection| anyhow::anyhow!(rejection.as_str()))?;
 
-        match parsed_message {
+        match IncomingMessage::deserialize(&json_value) {
             Ok(message) => {
                 match message {
                     IncomingMessage::ImageSnapshot { camera_id, timestamp, image_data, device_name, location, .. } => {
@@ -868,43 +829,93 @@ impl MqttProcessingContext {
                     }
                 }
             }
-            Err(json_err) => {
-                // If JSON parsing fails, try to handle as a simplified message format
-                info!("Failed to parse as structured message, trying simplified format: {}", json_err);
-                self.handle_simplified_message(payload, topic).await?;
+            Err(_) => {
+                debug!(
+                    "Payload from topic {} is not a structured message, trying simplified format",
+                    topic
+                );
+                self.handle_simplified_message(&json_value, topic).await?;
             }
         }
 
         Ok(())
     }
 
+    /// Validates, dispatches, and counts one received payload. Logs only the topic,
+    /// the payload length, and bounded reasons, never payload content.
+    async fn process_payload(&self, topic: &str, payload: &[u8]) {
+        let payload_str = match decode_payload(payload) {
+            Ok(payload_str) => payload_str,
+            Err(rejection) => {
+                warn!(
+                    "Dropping payload from topic {} ({} bytes): {}",
+                    topic,
+                    payload.len(),
+                    rejection.as_str()
+                );
+                let mut stats = self.stats.write().await;
+                stats.failed_publishes += 1;
+                return;
+            }
+        };
+
+        info!(
+            "Processing message from topic: {} ({} bytes)",
+            topic,
+            payload.len()
+        );
+        match self.handle_incoming_message(payload_str, topic).await {
+            Ok(_) => {
+                debug!("Processed message from topic: {}", topic);
+                let mut stats = self.stats.write().await;
+                stats.total_messages += 1;
+            }
+            Err(e) => {
+                error!("Failed to process message from topic {}: {}", topic, e);
+                let mut stats = self.stats.write().await;
+                stats.failed_publishes += 1;
+            }
+        }
+    }
+
     /// Handle simplified message format (for direct image data or simple payloads)
-    async fn handle_simplified_message(&self, payload: &str, topic: &str) -> anyhow::Result<()> {
+    async fn handle_simplified_message(
+        &self,
+        json_value: &serde_json::Value,
+        topic: &str,
+    ) -> anyhow::Result<()> {
         info!("Processing simplified message from topic: {}", topic);
 
-        // Try to parse as a simple JSON object that might contain image_data
-        if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(payload) {
-            if let Some(image_data_str) = json_value.get("image_data").and_then(|v| v.as_str()) {
-                info!("Found image_data in simplified message, processing as image inference");
+        if let Some(image_data_str) = json_value.get("image_data").and_then(|v| v.as_str()) {
+            info!("Found image_data in simplified message, processing as image inference");
 
-                // Extract basic fields with defaults
-                let camera_id = json_value.get("camera_id")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("unknown_camera")
-                    .to_string();
+            // Extract basic fields with defaults
+            let camera_id = json_value
+                .get("camera_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown_camera")
+                .to_string();
 
-                let device_name = json_value.get("device_name")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("unknown_device")
-                    .to_string();
+            let device_name = json_value
+                .get("device_name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown_device")
+                .to_string();
 
-                let timestamp = json_value.get("timestamp")
-                    .and_then(|v| v.as_i64())
-                    .unwrap_or_else(|| chrono::Utc::now().timestamp());
+            let timestamp = json_value
+                .get("timestamp")
+                .and_then(|v| v.as_i64())
+                .unwrap_or_else(|| chrono::Utc::now().timestamp());
 
-                self.handle_image_inference(camera_id, timestamp, image_data_str.to_string(), device_name, None).await?;
-                return Ok(());
-            }
+            self.handle_image_inference(
+                camera_id,
+                timestamp,
+                image_data_str.to_string(),
+                device_name,
+                None,
+            )
+            .await?;
+            return Ok(());
         }
 
         warn!("Unable to process simplified message format for topic: {}", topic);
@@ -1092,40 +1103,101 @@ impl MqttProcessingContext {
     }
 }
 
-/// Default input filters used when `MQTT_INPUT_TOPICS` lists none.
-const DEFAULT_INPUT_PATTERN: &str = "edge-ai/+/+/camera/snapshots";
+/// Envelope `schema_version` major this consumer accepts.
+const SUPPORTED_SCHEMA_MAJOR: &str = "1";
 
-/// Returns the non-empty configured input filters, or the default filter.
+/// Returns the non-empty configured input filters, or the default filters.
 fn input_patterns(input_topics: &[String]) -> Vec<String> {
-    let patterns: Vec<String> = input_topics
-        .iter()
-        .map(|topic| topic.trim())
-        .filter(|topic| !topic.is_empty())
-        .map(str::to_string)
-        .collect();
+    let patterns = non_empty_topics(input_topics.iter().map(String::as_str));
     if patterns.is_empty() {
-        vec![DEFAULT_INPUT_PATTERN.to_string()]
+        non_empty_topics(crate::config::DEFAULT_INPUT_TOPICS.split(','))
     } else {
         patterns
     }
 }
 
-/// Returns true when a topic matches a filter using `+` and trailing `#` wildcards.
-fn topic_matches_pattern(topic: &str, pattern: &str) -> bool {
-    let topic_parts: Vec<&str> = topic.split('/').collect();
-    let pattern_parts: Vec<&str> = pattern.split('/').collect();
+fn non_empty_topics<'a>(topics: impl Iterator<Item = &'a str>) -> Vec<String> {
+    topics
+        .map(str::trim)
+        .filter(|topic| !topic.is_empty())
+        .map(str::to_string)
+        .collect()
+}
 
-    for (index, pattern_part) in pattern_parts.iter().enumerate() {
-        if *pattern_part == "#" {
-            return index == pattern_parts.len() - 1;
-        }
-        match topic_parts.get(index) {
-            Some(topic_part) if *pattern_part == "+" || pattern_part == topic_part => {}
-            _ => return false,
+/// Parses filters with the SDK, skipping (and logging) invalid ones.
+fn topic_filters(patterns: &[String]) -> Vec<TopicFilter> {
+    patterns
+        .iter()
+        .filter_map(|pattern| match TopicFilter::new(pattern) {
+            Ok(filter) => Some(filter),
+            Err(e) => {
+                error!("Invalid topic filter {}: {}", pattern, e);
+                None
+            }
+        })
+        .collect()
+}
+
+fn matches_any_filter(topic: &TopicName, filters: &[TopicFilter]) -> bool {
+    filters
+        .iter()
+        .any(|filter| topic.matches_topic_filter(filter))
+}
+
+/// Returns the non-granted SUBACK reason codes, or `None` when every filter was granted.
+fn rejected_suback_reasons(reasons: &[SubAckReason]) -> Option<String> {
+    if reasons.is_empty() {
+        return Some("no reason codes".to_string());
+    }
+    let rejected: Vec<String> = reasons
+        .iter()
+        .filter(|reason| {
+            !matches!(
+                reason,
+                SubAckReason::GrantedQoS0 | SubAckReason::GrantedQoS1 | SubAckReason::GrantedQoS2
+            )
+        })
+        .map(|reason| format!("{reason:?}"))
+        .collect();
+    if rejected.is_empty() {
+        None
+    } else {
+        Some(rejected.join(", "))
+    }
+}
+
+/// Bounded reasons a received payload is dropped before inference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PayloadRejection {
+    NotUtf8,
+    UnsupportedSchemaVersion,
+}
+
+impl PayloadRejection {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::NotUtf8 => "payload is not valid UTF-8",
+            Self::UnsupportedSchemaVersion => "unsupported schema_version major",
         }
     }
+}
 
-    topic_parts.len() == pattern_parts.len()
+fn decode_payload(payload: &[u8]) -> Result<&str, PayloadRejection> {
+    std::str::from_utf8(payload).map_err(|_| PayloadRejection::NotUtf8)
+}
+
+/// Accepts envelopes without `schema_version` (legacy producers) or with a
+/// string whose major component is 1; rejects any other value.
+fn check_schema_version(message: &serde_json::Value) -> Result<(), PayloadRejection> {
+    match message.get("schema_version") {
+        None => Ok(()),
+        Some(serde_json::Value::String(version))
+            if version.split('.').next() == Some(SUPPORTED_SCHEMA_MAJOR) =>
+        {
+            Ok(())
+        }
+        Some(_) => Err(PayloadRejection::UnsupportedSchemaVersion),
+    }
 }
 
 #[cfg(test)]
@@ -1158,34 +1230,112 @@ mod tests {
     fn input_patterns_keep_every_filter_and_default_when_empty() {
         let configured = vec![
             "edge-ai/+/+/camera/snapshots".to_string(),
-            " edge-ai/+/+/+/camera/snapshots ".to_string(),
+            " edge-ai/v1/+/camera/+/snapshots ".to_string(),
             String::new(),
         ];
         assert_eq!(
             input_patterns(&configured),
-            vec!["edge-ai/+/+/camera/snapshots", "edge-ai/+/+/+/camera/snapshots"]
+            vec![
+                "edge-ai/+/+/camera/snapshots",
+                "edge-ai/v1/+/camera/+/snapshots"
+            ]
         );
-        assert_eq!(input_patterns(&[String::new()]), vec![DEFAULT_INPUT_PATTERN]);
+        assert_eq!(
+            input_patterns(&[String::new()]),
+            vec![
+                "edge-ai/+/+/camera/snapshots",
+                "edge-ai/v1/+/camera/+/snapshots"
+            ]
+        );
+    }
+
+    fn matches_defaults(topic: &str) -> bool {
+        let filters = topic_filters(&input_patterns(&[]));
+        matches_any_filter(&TopicName::new(topic).unwrap(), &filters)
     }
 
     #[test]
-    fn topic_matching_supports_both_snapshot_depths() {
-        let patterns = input_patterns(&[
-            "edge-ai/+/+/camera/snapshots".to_string(),
-            "edge-ai/+/+/+/camera/snapshots".to_string(),
-        ]);
-        let matches = |topic: &str| patterns.iter().any(|pattern| topic_matches_pattern(topic, pattern));
-        assert!(matches("edge-ai/site/gateway/camera/snapshots"));
-        assert!(matches("edge-ai/v1/snapshot-normalizer/camera-01/camera/snapshots"));
-        assert!(!matches("edge-ai/a/b/c/d/camera/snapshots"));
-        assert!(!matches("edge-ai/site/gateway/camera/results"));
+    fn default_filters_match_legacy_and_pinned_v1_snapshot_topics() {
+        assert!(matches_defaults("edge-ai/site/gateway/camera/snapshots"));
+        assert!(matches_defaults(
+            "edge-ai/v1/snapshot-normalizer/camera/camera-01/snapshots"
+        ));
+        assert!(!matches_defaults(
+            "edge-ai/v2/snapshot-normalizer/camera/camera-01/snapshots"
+        ));
+        assert!(!matches_defaults(
+            "edge-ai/v1/snapshot-normalizer/camera-01/camera/snapshots"
+        ));
+        assert!(!matches_defaults("edge-ai/a/b/c/d/camera/snapshots"));
+        assert!(!matches_defaults("edge-ai/site/gateway/camera/results"));
     }
 
     #[test]
-    fn topic_matching_supports_trailing_multi_level_wildcard() {
-        assert!(topic_matches_pattern("edge-ai/a/b", "edge-ai/#"));
-        assert!(topic_matches_pattern("edge-ai", "edge-ai/#"));
-        assert!(!topic_matches_pattern("other/a", "edge-ai/#"));
-        assert!(!topic_matches_pattern("edge-ai/a", "edge-ai/#/a"));
+    fn topic_filters_support_trailing_multi_level_wildcard_and_skip_invalid() {
+        let filters = topic_filters(&["edge-ai/#".to_string(), "edge-ai/#/a".to_string()]);
+        assert_eq!(filters.len(), 1);
+        assert!(matches_any_filter(
+            &TopicName::new("edge-ai/a/b").unwrap(),
+            &filters
+        ));
+        assert!(matches_any_filter(
+            &TopicName::new("edge-ai/a").unwrap(),
+            &filters
+        ));
+        assert!(!matches_any_filter(
+            &TopicName::new("other/a").unwrap(),
+            &filters
+        ));
+    }
+
+    #[test]
+    fn suback_with_any_failure_reason_is_rejected() {
+        assert_eq!(rejected_suback_reasons(&[SubAckReason::GrantedQoS1]), None);
+        assert_eq!(
+            rejected_suback_reasons(&[SubAckReason::GrantedQoS1, SubAckReason::NotAuthorized]),
+            Some("NotAuthorized".to_string())
+        );
+        assert!(rejected_suback_reasons(&[]).is_some());
+    }
+
+    #[test]
+    fn non_utf8_payload_straddling_byte_100_is_rejected_without_panicking() {
+        let mut payload = vec![b'a'; 99];
+        payload.extend_from_slice(&[0xE2, 0x82]);
+        payload.extend_from_slice(b"rest");
+        // from_utf8_lossy places a 3-byte replacement char across byte 100.
+        assert!(!String::from_utf8_lossy(&payload).is_char_boundary(100));
+        assert_eq!(decode_payload(&payload), Err(PayloadRejection::NotUtf8));
+    }
+
+    #[test]
+    fn utf8_payload_with_multibyte_char_at_byte_100_is_accepted() {
+        let mut payload = "a".repeat(99);
+        payload.push('€');
+        assert_eq!(decode_payload(payload.as_bytes()), Ok(payload.as_str()));
+    }
+
+    #[test]
+    fn schema_version_major_must_be_one_when_present() {
+        let check = |value: serde_json::Value| check_schema_version(&value);
+        assert_eq!(
+            check(serde_json::json!({"message_type": "image_snapshot"})),
+            Ok(())
+        );
+        assert_eq!(check(serde_json::json!({"schema_version": "1.0"})), Ok(()));
+        assert_eq!(check(serde_json::json!({"schema_version": "1.7"})), Ok(()));
+        assert_eq!(check(serde_json::json!({"schema_version": "1"})), Ok(()));
+        for rejected in [
+            serde_json::json!({"schema_version": "2.0"}),
+            serde_json::json!({"schema_version": "10.0"}),
+            serde_json::json!({"schema_version": ""}),
+            serde_json::json!({"schema_version": 1}),
+            serde_json::json!({"schema_version": null}),
+        ] {
+            assert_eq!(
+                check(rejected),
+                Err(PayloadRejection::UnsupportedSchemaVersion)
+            );
+        }
     }
 }

@@ -367,13 +367,9 @@ impl HealthService {
     }
 }
 
-/// Returns true once the backend is initialized, before any model loads.
-fn is_started(status: &BackendStatus) -> bool {
-    status.initialized
-}
-
-/// Returns true once the backend is initialized and at least one model loaded,
-/// so traffic isn't admitted to a pod that can't run inference.
+/// Returns true once the backend is initialized and at least one model loaded.
+/// Startup and readiness both use it, so a pod with no loaded model is never
+/// admitted and is restarted by the kubelet once the startup window elapses.
 fn is_ready(status: &BackendStatus) -> bool {
     status.initialized && !status.loaded_models.is_empty()
 }
@@ -516,7 +512,7 @@ async fn handle_startup_check_simple(
     start_timestamp: u64,
 ) -> Result<impl Reply, warp::Rejection> {
     let backend_status = inference_engine.get_backend_status().await;
-    let engine_ready = is_started(&backend_status);
+    let engine_ready = is_ready(&backend_status);
 
     let status = if engine_ready {
         "started"
@@ -764,9 +760,36 @@ mod tests {
         assert!(is_ready(&status(true, &["default"])));
     }
 
-    #[test]
-    fn startup_requires_only_initialization() {
-        assert!(!is_started(&status(false, &[])));
-        assert!(is_started(&status(true, &[])));
+    async fn startup_status(default_models: Option<&[(&str, &str)]>) -> warp::http::StatusCode {
+        let mut config = ai_edge_inference_crate::InferenceConfig::default();
+        config.models.models_directory = std::path::PathBuf::from(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../ai-edge-inference-crate/tests/fixtures"
+        ));
+        config.models.default_models = default_models.map(|models| {
+            models
+                .iter()
+                .map(|(name, path)| ((*name).to_string(), (*path).to_string()))
+                .collect()
+        });
+        let mut engine = InferenceEngine::new(config).await.unwrap();
+        engine.initialize().await.unwrap();
+
+        let reply = handle_startup_check_simple(Arc::new(engine), 0)
+            .await
+            .unwrap();
+        warp::Reply::into_response(reply).status()
+    }
+
+    #[tokio::test]
+    async fn startup_fails_until_a_model_loads() {
+        assert_eq!(
+            startup_status(None).await,
+            warp::http::StatusCode::SERVICE_UNAVAILABLE
+        );
+        assert_eq!(
+            startup_status(Some(&[("identity", "identity.onnx")])).await,
+            warp::http::StatusCode::OK
+        );
     }
 }

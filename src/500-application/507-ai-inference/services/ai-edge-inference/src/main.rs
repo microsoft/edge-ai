@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     info!("Starting AI Edge MQTT Publisher Service v{}", env!("CARGO_PKG_VERSION"));
 
     // Load configuration from environment
-    let config = ComponentConfig::from_env();
+    let config = ComponentConfig::from_env()?;
     info!("Configuration loaded successfully");
 
     // Validate configuration
