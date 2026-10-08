@@ -1,0 +1,89 @@
+# Each release simulates one asset. Run one release per asset to scale out.
+
+image:
+  # Placeholder. Build the image from services/sensor-simulator and push it to
+  # a registry you own.
+  repository: your-registry.azurecr.io/sensor-simulator
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+namespace: azure-iot-operations
+
+serviceAccount:
+  # Use a distinct service account per workload trust boundary so broker
+  # authorization rules can scope this workload alone.
+  create: true
+  name: ""
+  # Annotations prefixed with aio-broker-auth/ become broker authorization
+  # attributes for clients that authenticate with this service account token.
+  annotations:
+    aio-broker-auth/workload: sensor-simulator
+
+simulator:
+  # Opaque, lowercase identifiers. assetId becomes a topic segment and the
+  # CloudEvents subject.
+  assetId: asset-01
+  sensorId: sensor-01
+  # Comma-separated subset of vibration, acoustic, and temperature.
+  modalities: vibration,acoustic,temperature
+  publishIntervalSeconds: 2
+  # Set an integer for repeatable signals; leave empty for a random seed.
+  seed: ""
+  injectAnomaly: false
+  # Subscribes to control/v1/<producer>/<resourceKind>/<assetId>/anomaly when true.
+  controlEnabled: false
+  qos: 1
+  topicDomain: telemetry
+  controlDomain: control
+  producer: sensor-simulator
+  resourceKind: asset
+  eventSource: sensor-simulator
+  acousticSampleRate: 16000
+  acousticSampleCount: 2048
+
+mqtt:
+  brokerHostname: aio-broker.azure-iot-operations
+  brokerTcpPort: "18883"
+  # Each pod connects as <clientIdPrefix>-<pod name>, which is unique per pod.
+  clientIdPrefix: sensor-simulator
+  tlsCaFile: /var/run/certs/ca.crt
+  satFile: /var/run/secrets/tokens/mq-sat
+
+volumes:
+  mqSat:
+    audience: aio-internal
+    expirationSeconds: 86400
+  trustBundle:
+    configMapName: azure-iot-operations-aio-ca-trust-bundle
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 128Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}

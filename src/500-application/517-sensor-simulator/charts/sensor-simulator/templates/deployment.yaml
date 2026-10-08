@@ -1,0 +1,123 @@
+{{- $s := .Values.simulator }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sensor-simulator.fullname" . }}
+  namespace: {{ include "sensor-simulator.namespace" . }}
+  labels:
+    {{- include "sensor-simulator.labels" . | nindent 4 }}
+spec:
+  # One pod simulates one asset; more replicas would publish duplicate readings.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "sensor-simulator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "sensor-simulator.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sensor-simulator.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "sensor-simulator.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AIO_MQTT_CLIENT_ID
+              value: {{ printf "%s-$(POD_NAME)" (required "mqtt.clientIdPrefix is required" .Values.mqtt.clientIdPrefix) | quote }}
+            - name: AIO_BROKER_HOSTNAME
+              value: {{ .Values.mqtt.brokerHostname | quote }}
+            - name: AIO_BROKER_TCP_PORT
+              value: {{ .Values.mqtt.brokerTcpPort | quote }}
+            - name: AIO_MQTT_USE_TLS
+              value: "true"
+            - name: AIO_TLS_CA_FILE
+              value: {{ .Values.mqtt.tlsCaFile | quote }}
+            - name: AIO_SAT_FILE
+              value: {{ .Values.mqtt.satFile | quote }}
+            - name: ASSET_ID
+              value: {{ required "simulator.assetId is required" $s.assetId | quote }}
+            - name: SENSOR_ID
+              value: {{ required "simulator.sensorId is required" $s.sensorId | quote }}
+            - name: MODALITIES
+              value: {{ $s.modalities | quote }}
+            - name: PUBLISH_INTERVAL_SECONDS
+              value: {{ $s.publishIntervalSeconds | quote }}
+            {{- if ne (toString $s.seed) "" }}
+            - name: SIMULATOR_SEED
+              value: {{ $s.seed | int64 | quote }}
+            {{- end }}
+            - name: INJECT_ANOMALY
+              value: {{ $s.injectAnomaly | quote }}
+            - name: CONTROL_ENABLED
+              value: {{ $s.controlEnabled | quote }}
+            - name: MQTT_QOS
+              value: {{ $s.qos | int64 | quote }}
+            - name: TOPIC_DOMAIN
+              value: {{ $s.topicDomain | quote }}
+            - name: CONTROL_DOMAIN
+              value: {{ $s.controlDomain | quote }}
+            - name: PRODUCER
+              value: {{ $s.producer | quote }}
+            - name: RESOURCE_KIND
+              value: {{ $s.resourceKind | quote }}
+            - name: EVENT_SOURCE
+              value: {{ $s.eventSource | quote }}
+            - name: ACOUSTIC_SAMPLE_RATE
+              value: {{ $s.acousticSampleRate | int64 | quote }}
+            - name: ACOUSTIC_SAMPLE_COUNT
+              value: {{ $s.acousticSampleCount | int64 | quote }}
+          volumeMounts:
+            - name: mq-sat
+              mountPath: {{ dir .Values.mqtt.satFile }}
+              readOnly: true
+            - name: trust-bundle
+              mountPath: {{ dir .Values.mqtt.tlsCaFile }}
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: {{ base .Values.mqtt.satFile }}
+                  audience: {{ .Values.volumes.mqSat.audience | quote }}
+                  expirationSeconds: {{ .Values.volumes.mqSat.expirationSeconds | int64 }}
+        - name: trust-bundle
+          configMap:
+            name: {{ .Values.volumes.trustBundle.configMapName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
