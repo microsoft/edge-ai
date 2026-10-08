@@ -35,6 +35,8 @@ jobs:
             crate: src/500-application/507-ai-inference/services/ai-edge-inference
           - name: 507-ai-edge-inference-crate
             crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - name: 507-snapshot-normalizer
+            crate: src/500-application/507-ai-inference/services/snapshot-normalizer
           - name: 507-snapshot-normalizer-core
             crate: src/500-application/507-ai-inference/services/snapshot-normalizer-core
           - name: 901-video-to-gif
@@ -200,6 +202,7 @@ jobs:
           - name: 504-mqtt-otel-trace-exporter
           - name: 507-ai-edge-inference
           - name: 507-ai-edge-inference-crate
+          - name: 507-snapshot-normalizer
           - name: 507-snapshot-normalizer-core
           - name: 901-video-to-gif
     steps:

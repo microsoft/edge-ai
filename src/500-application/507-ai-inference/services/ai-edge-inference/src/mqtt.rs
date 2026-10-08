@@ -62,7 +62,9 @@ pub enum IncomingMessage {
         image_data: String, // Base64 encoded image
         device_name: String,
         location: Option<(f64, f64)>,
+        // Optional in the image_snapshot v1 schema; producers omit it when empty.
         #[allow(dead_code)]
+        #[serde(default)]
         metadata: serde_json::Value,
     },
     #[serde(rename = "sensor_data")]
