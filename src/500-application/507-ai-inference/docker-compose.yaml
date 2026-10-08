@@ -40,6 +40,26 @@ services:
     networks:
       - edge-ai-inference
 
+  # Snapshot normalizer: republishes binary JPEG snapshots as image_snapshot v1
+  # requests on the inference service's input topics
+  snapshot-normalizer:
+    build:
+      context: ./services
+      dockerfile: snapshot-normalizer/Dockerfile
+    image: ${REGISTRY:-local}/${APPLICATION:-ai-inference}/snapshot-normalizer:${BUILD_ID:-local}
+    environment:
+      AIO_MQTT_USE_TLS: "false"
+      AIO_MQTT_CLIENT_ID: "snapshot-normalizer"
+      AIO_BROKER_HOSTNAME: "host.docker.internal"  # Use existing MQTT broker
+      AIO_BROKER_TCP_PORT: "1883"
+      CAMERA_ID: "camera-01"
+      DEVICE_NAME: "camera-device-01"
+      INPUT_TOPIC: "media/v1/local/camera-01/snapshots"
+      RUST_LOG: "info"
+    read_only: true
+    networks:
+      - edge-ai-inference
+
   # Optional: MQTT client for testing
   mqtt-client:
     image: eclipse-mosquitto:latest
