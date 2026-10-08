@@ -14,8 +14,11 @@ locals {
   workspace_id = try(module.fabric_workspace[0].workspace.id, data.fabric_workspace.existing[0].id, null)
 }
 
-// Cross-variable checks run as preconditions instead of variable validation blocks,
-// so every referenced variable is fully resolved when they are evaluated.
+/*
+ * Input Validation
+ */
+
+// Validates rules that span multiple input variables.
 resource "terraform_data" "validate_inputs" {
   lifecycle {
     precondition {
@@ -68,8 +71,6 @@ module "fabric_capacity" {
   count = var.should_create_fabric_capacity ? 1 : 0
 
   source = "./modules/capacity"
-
-  depends_on = [terraform_data.validate_inputs]
 
   name                = local.fabric_capacity_name
   resource_group_name = var.resource_group.name

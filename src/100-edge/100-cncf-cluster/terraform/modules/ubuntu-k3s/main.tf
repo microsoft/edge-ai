@@ -84,8 +84,11 @@ locals {
   ], slice(local.script_file, 1, length(local.script_file))))
 }
 
-// Cross-variable checks run as preconditions instead of variable validation blocks,
-// so every referenced variable is fully resolved when they are evaluated.
+/*
+ * Input Validation
+ */
+
+// Validates rules that span multiple input variables.
 resource "terraform_data" "validate_inputs" {
   lifecycle {
     precondition {

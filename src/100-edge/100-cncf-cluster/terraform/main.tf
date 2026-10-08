@@ -20,8 +20,7 @@ locals {
  * Input Validation
  */
 
-// Cross-variable checks run as preconditions instead of variable validation blocks,
-// so every referenced variable is fully resolved when they are evaluated.
+// Validates rules that span multiple input variables.
 resource "terraform_data" "validate_inputs" {
   lifecycle {
     precondition {
@@ -39,6 +38,18 @@ resource "terraform_data" "validate_inputs" {
     precondition {
       condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
       error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
+    }
+    precondition {
+      condition     = var.should_upload_to_key_vault || !var.should_use_script_from_secrets_for_deploy
+      error_message = "'should_use_script_from_secrets_for_deploy' cannot be true when 'should_upload_to_key_vault' is false: no script would be present in Key Vault to fetch."
+    }
+    precondition {
+      condition     = !var.should_deploy_over_ssh || var.should_deploy_arc_machines
+      error_message = "'should_deploy_over_ssh' requires 'should_deploy_arc_machines' to be true"
+    }
+    precondition {
+      condition     = !var.should_deploy_over_ssh || (var.ssh_local_user != null && var.ssh_private_key_path != null)
+      error_message = "'ssh_local_user' and 'ssh_private_key_path' are required when 'should_deploy_over_ssh' is true"
     }
   }
 }

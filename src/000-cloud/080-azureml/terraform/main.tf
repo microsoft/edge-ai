@@ -12,8 +12,7 @@ data "azurerm_client_config" "current" {}
  * Input Validation
  */
 
-// Cross-variable checks run as preconditions instead of variable validation blocks,
-// so every referenced variable is fully resolved when they are evaluated.
+// Validates rules that span multiple input variables.
 resource "terraform_data" "validate_inputs" {
   lifecycle {
     precondition {
@@ -27,6 +26,10 @@ resource "terraform_data" "validate_inputs" {
     precondition {
       condition     = !var.should_enable_nat_gateway || var.nat_gateway != null
       error_message = "nat_gateway must be provided when should_enable_nat_gateway is true."
+    }
+    precondition {
+      condition     = var.compute_cluster_min_nodes <= var.compute_cluster_max_nodes
+      error_message = "Minimum node count must be less than or equal to compute_cluster_max_nodes."
     }
   }
 }
@@ -52,9 +55,9 @@ module "network" {
 
   // Optional parameters
   default_outbound_access_enabled         = var.default_outbound_access_enabled
-  should_associate_network_security_group = var.should_associate_network_security_group
-  should_enable_nat_gateway               = var.should_enable_nat_gateway
-  nat_gateway_id                          = var.should_enable_nat_gateway ? var.nat_gateway.id : null
+  should_associate_network_security_group = var.should_associate_network_security_group && var.network_security_group != null
+  should_enable_nat_gateway               = var.should_enable_nat_gateway && var.nat_gateway != null
+  nat_gateway_id                          = try(var.nat_gateway.id, null)
   subnet_address_prefixes_azureml         = var.subnet_address_prefixes_azureml
 }
 
@@ -80,7 +83,7 @@ module "workspace" {
   should_assign_current_user_workspace_roles = var.should_assign_current_user_workspace_roles
   current_user_object_id                     = var.should_assign_current_user_workspace_roles ? data.azurerm_client_config.current.object_id : null
   ml_workload_identity                       = var.ml_workload_identity
-  should_assign_ml_workload_identity_roles   = var.should_assign_ml_workload_identity_roles
+  should_assign_ml_workload_identity_roles   = var.should_assign_ml_workload_identity_roles && var.ml_workload_identity != null
 
   // Role assignment configuration
   should_assign_workspace_managed_identity_roles = var.should_assign_workspace_managed_identity_roles
@@ -194,7 +197,7 @@ module "inference_cluster_integration" {
 
   ml_workload_identity                  = var.ml_workload_identity
   ml_workload_subjects                  = var.ml_workload_subjects
-  should_configure_ml_workload_identity = var.should_assign_ml_workload_identity_roles
+  should_configure_ml_workload_identity = var.should_assign_ml_workload_identity_roles && var.ml_workload_identity != null
 
   // App Configuration integration for volcano scheduler
   volcano_scheduler_configmap_name = try(var.kubernetes.app_configuration_configmap_name, null)

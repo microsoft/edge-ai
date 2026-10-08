@@ -13,8 +13,7 @@ locals {
  * Input Validation
  */
 
-// Cross-variable checks run as preconditions instead of variable validation blocks,
-// so every referenced variable is fully resolved when they are evaluated.
+// Validates rules that span multiple input variables.
 resource "terraform_data" "validate_inputs" {
   lifecycle {
     precondition {
@@ -31,8 +30,6 @@ resource "terraform_data" "validate_inputs" {
 module "managed_redis" {
   count  = var.should_deploy_redis ? 1 : 0
   source = "./modules/managed-redis"
-
-  depends_on = [terraform_data.validate_inputs]
 
   // Core Configuration
   location            = var.location
