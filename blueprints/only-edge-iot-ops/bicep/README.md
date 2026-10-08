@@ -705,6 +705,15 @@ Stream configuration for assets.
 | typeRef             | `string` | Type reference for the stream.       |
 | destinations        | `array`  | Destinations for the stream set.     |
 
+### `_2.AssetStreamDestination`
+
+Stream destination configuration for assets.
+
+| Property      | Type     | Description                                  |
+|:--------------|:---------|:---------------------------------------------|
+| target        | `string` | Target for the destination: Mqtt or Storage. |
+| configuration | `object` | Configuration for the destination.           |
+
 ### `_2.DatasetDestination`
 
 Dataset destination configuration.
