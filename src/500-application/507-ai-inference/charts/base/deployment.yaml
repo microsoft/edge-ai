@@ -39,10 +39,8 @@ spec:
         - name: ai-edge-inference
           image: acrmodules01.azurecr.io/ai-edge-inference:latest
           imagePullPolicy: Always
+          # The service starts no metrics listener, so only the probe port is exposed.
           ports:
-            - containerPort: 8080
-              name: metrics
-              protocol: TCP
             - containerPort: 8081
               name: health
               protocol: TCP
@@ -60,15 +58,18 @@ spec:
             - name: AIO_MQTT_CLIENT_ID
               value: "ai-edge-inference-edge-device-01"
             - name: MQTT_INPUT_TOPICS
-              value: "edge-ai/+/+/camera/snapshots"
+              value: "edge-ai/+/+/camera/snapshots,edge-ai/+/+/+/camera/snapshots"
             - name: MQTT_QOS_LEVEL
               value: "1"
             - name: TOPIC_PREFIX
               value: "edge-ai/business_unit/facility/gateway_id/"
-            - name: METRICS_PORT
-              value: "8080"
             - name: HEALTH_PORT
               value: "8081"
+            # Keeps /test/inference and /process-files off the health listener.
+            - name: ENABLE_TEST_ENDPOINTS
+              value: "false"
+            - name: MODELS_DIRECTORY
+              value: "/models"
             - name: DEVICE_NAME
               value: "edge-device-01"
             - name: SITE
@@ -126,31 +127,29 @@ spec:
             limits:
               memory: "2Gi"
               cpu: "1000m"
-          # Temporarily disabled health checks for debugging
-          # livenessProbe:
-          #   httpGet:
-          #     path: /healthz
-          #     port: health
-          #   initialDelaySeconds: 30
-          #   periodSeconds: 30
-          #   timeoutSeconds: 10
-          #   failureThreshold: 3
-          # readinessProbe:
-          #   httpGet:
-          #     path: /readyz
-          #     port: health
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 10
-          #   timeoutSeconds: 5
-          #   failureThreshold: 3
-          # startupProbe:
-          #   httpGet:
-          #     path: /startup
-          #     port: health
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 5
-          #   timeoutSeconds: 5
-          #   failureThreshold: 10
+          # Startup passes once the backend initializes; readiness also needs a
+          # loaded model, so a missing or invalid model keeps the pod unready.
+          startupProbe:
+            httpGet:
+              path: /startup
+              port: health
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
           volumeMounts:
             - name: mq-sat
               mountPath: /var/run/secrets/tokens

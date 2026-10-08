@@ -1,5 +1,5 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
@@ -76,7 +76,8 @@ pub struct MonitoringConfig {
     pub enable_memory_metrics: bool,
     pub metrics_export_interval_sec: u64,
     pub health_port: u16,
-    pub metrics_port: u16,
+    /// Mounts `/test/inference` and `/process-files` on the health listener.
+    pub enable_test_endpoints: bool,
 }
 
 impl ComponentConfig {
@@ -239,7 +240,7 @@ impl MonitoringConfig {
             enable_memory_metrics: get_env_or_default("ENABLE_MEMORY_METRICS", "true").parse().unwrap_or(true),
             metrics_export_interval_sec: get_env_or_default("METRICS_EXPORT_INTERVAL_SEC", "30").parse().unwrap_or(30),
             health_port: get_env_or_default("HEALTH_PORT", "8080").parse().unwrap_or(8080),
-            metrics_port: get_env_or_default("METRICS_PORT", "8081").parse().unwrap_or(8081),
+            enable_test_endpoints: get_env_or_default("ENABLE_TEST_ENDPOINTS", "false").parse().unwrap_or(false),
         }
     }
 }
@@ -263,62 +264,45 @@ fn get_env_or_default(key: &str, default: &str) -> String {
     })
 }
 
-/// Parse default models from environment variable
+/// Parse default models from environment variable.
+///
+/// File paths are relative to `MODELS_DIRECTORY`. Known names map to the files
+/// written by `charts/model-downloader-job.yaml`; any other value is treated as
+/// a relative model file path, with `.onnx` appended when no extension is given.
 fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
-    if models_str.is_empty() {
-        return vec![
-            DefaultModel {
-                name: "default".to_string(),
-                file_path: "default.onnx".to_string(),
-                model_type: "Vision".to_string(),
-                version: "1.0.0".to_string(),
-                auto_load: true,
-                description: "Default ONNX model for inference testing".to_string(),
-            },
-        ];
+    if models_str.trim().is_empty() {
+        return vec![default_model("default", "default.onnx", "Default ONNX model for inference testing")];
     }
 
-    // Parse comma-separated model names and map to actual model files
-    let model_names: Vec<&str> = models_str.split(',').map(|s| s.trim()).collect();
-    let mut models = Vec::new();
-
-    for model_name in model_names {
-        match model_name {
-            "tiny-yolov2" => {
-                models.push(DefaultModel {
-                    name: "default".to_string(),
-                    file_path: "default.onnx".to_string(),
-                    model_type: "Vision".to_string(),
-                    version: "1.0.0".to_string(),
-                    auto_load: true,
-                    description: "Tiny YOLOv2 object detection model".to_string(),
-                });
-            },
-            "mobilenet" => {
-                models.push(DefaultModel {
-                    name: "mobilenet".to_string(),
-                    file_path: "mobilenet.onnx".to_string(),
-                    model_type: "Vision".to_string(),
-                    version: "1.0.0".to_string(),
-                    auto_load: true,
-                    description: "MobileNet image classification model".to_string(),
-                });
-            },
-            _ => {
-                // For any other model name, assume it's the filename
-                models.push(DefaultModel {
-                    name: "default".to_string(),
-                    file_path: "default.onnx".to_string(),
-                    model_type: "Vision".to_string(),
-                    version: "1.0.0".to_string(),
-                    auto_load: true,
-                    description: format!("Model: {}", model_name),
-                });
+    models_str
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(|model_name| match model_name {
+            "tiny-yolov2" => default_model("default", "tiny-yolov2/tinyyolov2-8.onnx", "Tiny YOLOv2 object detection model"),
+            "yolov4" => default_model("yolov4", "yolov4/yolov4.onnx", "YOLOv4 object detection model"),
+            "mobilenet" => default_model("mobilenet", "mobilenet.onnx", "MobileNet image classification model"),
+            other => {
+                let file_path = if Path::new(other).extension().is_some() {
+                    other.to_string()
+                } else {
+                    format!("{other}.onnx")
+                };
+                default_model("default", &file_path, &format!("Model: {other}"))
             }
-        }
-    }
+        })
+        .collect()
+}
 
-    models
+fn default_model(name: &str, file_path: &str, description: &str) -> DefaultModel {
+    DefaultModel {
+        name: name.to_string(),
+        file_path: file_path.to_string(),
+        model_type: "Vision".to_string(),
+        version: "1.0.0".to_string(),
+        auto_load: true,
+        description: description.to_string(),
+    }
 }
 
 /// Parse environmental data from JSON string
@@ -348,4 +332,38 @@ fn parse_shape(shape_str: &str) -> Result<Vec<i64>> {
         .map(|s| s.trim().parse::<i64>())
         .collect::<Result<Vec<i64>, _>>()
         .context("Failed to parse shape")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn paths(models: &str) -> Vec<(String, String)> {
+        parse_default_models(models)
+            .into_iter()
+            .map(|model| (model.name, model.file_path))
+            .collect()
+    }
+
+    #[test]
+    fn default_models_match_downloader_layout() {
+        assert_eq!(
+            paths("tiny-yolov2, yolov4"),
+            vec![
+                ("default".to_string(), "tiny-yolov2/tinyyolov2-8.onnx".to_string()),
+                ("yolov4".to_string(), "yolov4/yolov4.onnx".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn unknown_default_models_are_relative_file_paths() {
+        assert_eq!(paths("custom/detector.onnx")[0].1, "custom/detector.onnx");
+        assert_eq!(paths("detector")[0].1, "detector.onnx");
+    }
+
+    #[test]
+    fn empty_default_models_use_default_file() {
+        assert_eq!(paths(" "), vec![("default".to_string(), "default.onnx".to_string())]);
+    }
 }

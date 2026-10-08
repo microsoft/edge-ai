@@ -126,8 +126,10 @@ impl InferenceEngine {
         // Load default models if specified
         if let Some(default_models) = &self.config.models.default_models {
             for (model_name, model_path) in default_models {
+                // Relative paths resolve inside the models directory, matching validate().
+                let model_path = self.config.models.models_directory.join(model_path);
                 let model_config = ModelConfig {
-                    model_path: model_path.clone(),
+                    model_path: model_path.to_string_lossy().to_string(),
                     model_type: "auto".to_string(),
                     confidence_threshold: Some(0.5),
                     preprocessing: None,
@@ -617,5 +619,21 @@ mod tests {
         assert_eq!(status.session_settings["parallel execution"], "false");
         assert_eq!(status.session_settings["intra-op thread count"], "default");
         assert_eq!(status.session_settings["inter-op thread count"], "default");
+    }
+
+    #[tokio::test]
+    async fn startup_path_resolves_relative_default_models_in_models_directory() {
+        let mut config = InferenceConfig::default();
+        config.models.models_directory = PathBuf::from(FIXTURES);
+        config.models.default_models = Some(HashMap::from([(
+            "identity".to_string(),
+            "identity.onnx".to_string(),
+        )]));
+
+        let mut engine = InferenceEngine::new(config).await.unwrap();
+        engine.initialize().await.unwrap();
+
+        let status = engine.get_backend_status().await;
+        assert!(status.loaded_models.contains(&"identity".to_string()));
     }
 }

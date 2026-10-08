@@ -20,7 +20,7 @@ The AI Edge MQTT Publisher Service is a production-ready Rust-based microservice
 - Azure Container Registry access
 - Rust 1.89+ with Azure IoT Operations SDKs (for local builds)
 
-**Quick Start**: See the [component README](../README.md) for local development setup with docker-compose.
+**Quick Start**: See the [component README](../../README.md) for local development setup with docker-compose.
 
 ### ✅ Current Implementation Status
 
@@ -242,7 +242,7 @@ The service now processes industrial images through actual ONNX models, providin
 # MQTT Configuration
 MQTT_BROKER_HOST=aio-broker.azure-iot-operations
 MQTT_BROKER_PORT=18883
-MQTT_INPUT_TOPIC=edge-ai/+/+/+/+/camera/snapshots
+MQTT_INPUT_TOPICS=edge-ai/+/+/camera/snapshots,edge-ai/+/+/+/camera/snapshots
 MQTT_SENSOR_TOPIC=edge-ai/+/+/+/+/sensors/+
 MQTT_OUTPUT_TOPIC=edge-ai/business_unit/facility/gateway_id/device_id/ai/inference
 
@@ -266,8 +266,8 @@ ONNX_PROVIDER=CPU
 
 # Monitoring
 RUST_LOG=info
-TELEMETRY_ENABLED=true
-METRICS_PORT=9090
+HEALTH_PORT=8081
+ENABLE_TEST_ENDPOINTS=false
 ```
 
 ### Model Configuration Schema
@@ -466,10 +466,6 @@ kubectl apply -f model-config.yaml
 # Hot-swap models
 kubectl patch configmap ai-model-config \
   --patch '{"data":{"vision-model":"leak-detection/vision-v2.2.onnx"}}'
-
-# Monitor model performance
-kubectl port-forward svc/ai-edge-inference 9090:9090
-curl http://localhost:9090/metrics
 ```
 
 ## Monitoring and Observability
@@ -485,17 +481,12 @@ curl http://localhost:9090/metrics
 ### Health Checks
 
 ```bash
-# Service health
-kubectl exec -it deployment/ai-edge-inference -- \
-  curl http://localhost:8080/health
+# Readiness: 200 only after a model has loaded
+kubectl port-forward svc/ai-edge-inference 8081:8081
+curl http://localhost:8081/readyz
 
-# Model status
-kubectl exec -it deployment/ai-edge-inference -- \
-  curl http://localhost:8080/models/status
-
-# Performance metrics
-kubectl exec -it deployment/ai-edge-inference -- \
-  curl http://localhost:9090/metrics
+# Loaded models
+curl http://localhost:8081/models
 ```
 
 ## Development and Testing
@@ -589,6 +580,6 @@ minimal = []  # Ultra-lightweight build
 
 For more information, see:
 
-- [Component README](../README.md) - Local development and quick start
+- [Component README](../../README.md) - Local development and quick start
 - [AI Edge Inference Crate README](../ai-edge-inference-crate/README.md) - Core library documentation
 - [Main Repository](../../../../../README.md) - Overall project documentation

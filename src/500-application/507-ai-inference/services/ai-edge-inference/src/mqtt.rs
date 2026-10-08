@@ -207,53 +207,51 @@ impl MqttPublisher {
             stats.is_connected = true;
         }
 
-        // Subscribe to the topic pattern from config with retry logic
-        let topics_pattern = self.config.input_topics.first()
-            .unwrap_or(&"edge-ai/+/+/camera/snapshots".to_string())
-            .clone();
-        info!("Attempting subscription to pattern: {}", topics_pattern);
+        // Subscribe to every configured input filter, retrying each independently
+        let patterns = input_patterns(&self.config.input_topics);
+        info!("Attempting subscription to patterns: {}", patterns.join(", "));
 
-        // Spawn subscription task with retry mechanism
-        let client_clone = self.client.clone();
-        let pattern_for_sub = topics_pattern.clone();
-        tokio::spawn(async move {
-            let topic_filter = match TopicFilter::new(&pattern_for_sub) {
-                Ok(tf) => tf,
-                Err(e) => {
-                    error!("Invalid subscription pattern {}: {}", pattern_for_sub, e);
-                    return;
-                }
-            };
-            loop {
-                match client_clone
-                    .subscribe(
-                        topic_filter.clone(),
-                        QoS::AtLeastOnce,
-                        false,
-                        RetainOptions::default(),
-                        SubscribeProperties::default(),
-                    )
-                    .await
-                {
-                    Ok(_) => {
-                        info!("✅ Successfully subscribed to pattern: {}", pattern_for_sub);
-                        break;
-                    }
+        for pattern in &patterns {
+            let client_clone = self.client.clone();
+            let pattern_for_sub = pattern.clone();
+            tokio::spawn(async move {
+                let topic_filter = match TopicFilter::new(&pattern_for_sub) {
+                    Ok(tf) => tf,
                     Err(e) => {
-                        warn!("Failed to subscribe (retrying in 10s): {}", e);
-                        tokio::time::sleep(Duration::from_secs(10)).await;
+                        error!("Invalid subscription pattern {}: {}", pattern_for_sub, e);
+                        return;
+                    }
+                };
+                loop {
+                    match client_clone
+                        .subscribe(
+                            topic_filter.clone(),
+                            QoS::AtLeastOnce,
+                            false,
+                            RetainOptions::default(),
+                            SubscribeProperties::default(),
+                        )
+                        .await
+                    {
+                        Ok(_) => {
+                            info!("✅ Successfully subscribed to pattern: {}", pattern_for_sub);
+                            break;
+                        }
+                        Err(e) => {
+                            warn!("Failed to subscribe to {} (retrying in 10s): {}", pattern_for_sub, e);
+                            tokio::time::sleep(Duration::from_secs(10)).await;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // Start message processing using proper Azure IoT Operations SDK receiver
         let context = self.clone_for_processing().await;
-        let pattern_clone = topics_pattern.clone();
 
         tokio::spawn(async move {
-            info!("Starting Azure IoT Operations message processing for pattern: {}", pattern_clone);
-            if let Err(e) = context.process_aio_messages(&pattern_clone).await {
+            info!("Starting Azure IoT Operations message processing for patterns: {}", patterns.join(", "));
+            if let Err(e) = context.process_aio_messages(&patterns).await {
                 error!("❌ Error in AIO message processing: {}", e);
             }
         });
@@ -675,8 +673,8 @@ impl MqttProcessingContext {
     /// Process messages using direct polling approach (bypassing receivers)
     #[instrument(skip(self))]
     /// Process messages using Azure IoT Operations SDK receiver
-    pub async fn process_aio_messages(&self, pattern: &str) -> anyhow::Result<()> {
-        info!("Starting Azure IoT Operations message processing for pattern: {}", pattern);
+    pub async fn process_aio_messages(&self, patterns: &[String]) -> anyhow::Result<()> {
+        info!("Starting Azure IoT Operations message processing for patterns: {}", patterns.join(", "));
 
         // Create unfiltered receiver (we'll filter manually)
         let mut receiver = self.client.create_unfiltered_pub_receiver();
@@ -688,7 +686,7 @@ impl MqttProcessingContext {
 
             // Log heartbeat every 60 iterations (about 1 minute at 1 second intervals)
             if heartbeat_counter % 60 == 0 {
-                debug!("AIO message processing heartbeat - pattern: {}", pattern);
+                debug!("AIO message processing heartbeat - patterns: {}", patterns.join(", "));
             }
 
             // Wait for connection if needed
@@ -708,8 +706,8 @@ impl MqttProcessingContext {
                     let topic_str = message.topic_name.to_string();
                     info!("🚀 AIO MESSAGE RECEIVED on topic: {} (payload: {} bytes)", topic_str, message.payload.len());
 
-                    // Check if topic matches our pattern
-                    if self.topic_matches_pattern(&topic_str, pattern) {
+                    // Check if topic matches any configured pattern
+                    if patterns.iter().any(|pattern| topic_matches_pattern(&topic_str, pattern)) {
                         let payload_str = String::from_utf8_lossy(&message.payload);
                         info!("Processing AIO message from topic: {} (payload preview: {})",
                               topic_str,
@@ -743,23 +741,6 @@ impl MqttProcessingContext {
         }
     }
 
-    /// Check if a topic matches a wildcard pattern
-    fn topic_matches_pattern(&self, topic: &str, pattern: &str) -> bool {
-        let topic_parts: Vec<&str> = topic.split('/').collect();
-        let pattern_parts: Vec<&str> = pattern.split('/').collect();
-
-        if topic_parts.len() != pattern_parts.len() {
-            return false;
-        }
-
-        for (topic_part, pattern_part) in topic_parts.iter().zip(pattern_parts.iter()) {
-            if *pattern_part != "+" && *pattern_part != *topic_part {
-                return false;
-            }
-        }
-
-        true
-    }
 
 
 
@@ -1111,6 +1092,42 @@ impl MqttProcessingContext {
     }
 }
 
+/// Default input filters used when `MQTT_INPUT_TOPICS` lists none.
+const DEFAULT_INPUT_PATTERN: &str = "edge-ai/+/+/camera/snapshots";
+
+/// Returns the non-empty configured input filters, or the default filter.
+fn input_patterns(input_topics: &[String]) -> Vec<String> {
+    let patterns: Vec<String> = input_topics
+        .iter()
+        .map(|topic| topic.trim())
+        .filter(|topic| !topic.is_empty())
+        .map(str::to_string)
+        .collect();
+    if patterns.is_empty() {
+        vec![DEFAULT_INPUT_PATTERN.to_string()]
+    } else {
+        patterns
+    }
+}
+
+/// Returns true when a topic matches a filter using `+` and trailing `#` wildcards.
+fn topic_matches_pattern(topic: &str, pattern: &str) -> bool {
+    let topic_parts: Vec<&str> = topic.split('/').collect();
+    let pattern_parts: Vec<&str> = pattern.split('/').collect();
+
+    for (index, pattern_part) in pattern_parts.iter().enumerate() {
+        if *pattern_part == "#" {
+            return index == pattern_parts.len() - 1;
+        }
+        match topic_parts.get(index) {
+            Some(topic_part) if *pattern_part == "+" || pattern_part == topic_part => {}
+            _ => return false,
+        }
+    }
+
+    topic_parts.len() == pattern_parts.len()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1135,5 +1152,40 @@ mod tests {
 
         let result: Result<IncomingMessage, _> = serde_json::from_str(image_message);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn input_patterns_keep_every_filter_and_default_when_empty() {
+        let configured = vec![
+            "edge-ai/+/+/camera/snapshots".to_string(),
+            " edge-ai/+/+/+/camera/snapshots ".to_string(),
+            String::new(),
+        ];
+        assert_eq!(
+            input_patterns(&configured),
+            vec!["edge-ai/+/+/camera/snapshots", "edge-ai/+/+/+/camera/snapshots"]
+        );
+        assert_eq!(input_patterns(&[String::new()]), vec![DEFAULT_INPUT_PATTERN]);
+    }
+
+    #[test]
+    fn topic_matching_supports_both_snapshot_depths() {
+        let patterns = input_patterns(&[
+            "edge-ai/+/+/camera/snapshots".to_string(),
+            "edge-ai/+/+/+/camera/snapshots".to_string(),
+        ]);
+        let matches = |topic: &str| patterns.iter().any(|pattern| topic_matches_pattern(topic, pattern));
+        assert!(matches("edge-ai/site/gateway/camera/snapshots"));
+        assert!(matches("edge-ai/v1/snapshot-normalizer/camera-01/camera/snapshots"));
+        assert!(!matches("edge-ai/a/b/c/d/camera/snapshots"));
+        assert!(!matches("edge-ai/site/gateway/camera/results"));
+    }
+
+    #[test]
+    fn topic_matching_supports_trailing_multi_level_wildcard() {
+        assert!(topic_matches_pattern("edge-ai/a/b", "edge-ai/#"));
+        assert!(topic_matches_pattern("edge-ai", "edge-ai/#"));
+        assert!(!topic_matches_pattern("other/a", "edge-ai/#"));
+        assert!(!topic_matches_pattern("edge-ai/a", "edge-ai/#/a"));
     }
 }

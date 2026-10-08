@@ -186,16 +186,39 @@ kubectl apply -k charts/base/
 
 ### Environment Variables
 
-| Variable              | Description               | Default                                               |
-|-----------------------|---------------------------|-------------------------------------------------------|
-| `AIO_BROKER_HOSTNAME` | MQTT broker hostname      | `host.docker.internal`                                |
-| `AIO_BROKER_TCP_PORT` | MQTT broker port          | `1883`                                                |
-| `MQTT_INPUT_TOPICS`   | Input topic patterns      | `edge-ai/+/+/camera/snapshots`                        |
-| `TOPIC_PREFIX`        | Output topic prefix       | `edge-ai/business_unit/facility/gateway_id`           |
-| `DEFAULT_BACKEND`     | Default inference backend | `onnx`                                                |
-| `ENABLE_DUAL_BACKEND` | Enable backend comparison | `true`                                                |
-| `MODEL_CONFIG_PATH`   | Model configuration file  | `/app/resources/model_configs/industrial-safety.yaml` |
-| `RUST_LOG`            | Logging level             | `info,ai_edge_inference=debug`                        |
+| Variable                | Description                                                                | Default                                                       |
+|-------------------------|----------------------------------------------------------------------------|---------------------------------------------------------------|
+| `AIO_BROKER_HOSTNAME`   | MQTT broker hostname                                                       | `host.docker.internal`                                        |
+| `AIO_BROKER_TCP_PORT`   | MQTT broker port                                                           | `1883`                                                        |
+| `MQTT_INPUT_TOPICS`     | Comma-separated input topic filters; the service subscribes to each        | `edge-ai/+/+/camera/snapshots,edge-ai/+/+/+/camera/snapshots` |
+| `MODELS_DIRECTORY`      | Base directory for relative model paths                                    | `/models`                                                     |
+| `DEFAULT_MODELS`        | Models loaded at startup, relative to `MODELS_DIRECTORY`                   | `tiny-yolov2`                                                 |
+| `HEALTH_PORT`           | Probe listener port                                                        | `8081`                                                        |
+| `ENABLE_TEST_ENDPOINTS` | Mount the unauthenticated `/test/inference` and `/process-files` endpoints | `false`                                                       |
+| `TOPIC_PREFIX`          | Output topic prefix                                                        | `edge-ai/business_unit/facility/gateway_id`                   |
+| `DEFAULT_BACKEND`       | Default inference backend                                                  | `onnx`                                                        |
+| `ENABLE_DUAL_BACKEND`   | Enable backend comparison                                                  | `true`                                                        |
+| `MODEL_CONFIG_PATH`     | Model configuration file                                                   | `/app/resources/model_configs/industrial-safety.yaml`         |
+| `RUST_LOG`              | Logging level                                                              | `info,ai_edge_inference=debug`                                |
+
+### Health, Readiness, and Test Endpoints
+
+The service runs one HTTP listener on `HEALTH_PORT` for Kubernetes probes:
+
+- `/startup` returns 200 once the inference backend initializes.
+- `/readyz` returns 200 only after at least one model has loaded, so a missing or invalid model keeps the pod out of service.
+- `/healthz` reports liveness.
+
+`/test/inference` and `/process-files` run inference on request bodies and on
+files in the models volume without authentication. They respond 404 unless
+`ENABLE_TEST_ENDPOINTS` is `true`, which is intended for local development
+only. The service starts no metrics listener, so the manifests advertise no
+metrics port.
+
+`DEFAULT_MODELS` names resolve inside `MODELS_DIRECTORY`: `tiny-yolov2` maps
+to `tiny-yolov2/tinyyolov2-8.onnx` and `yolov4` to `yolov4/yolov4.onnx`, the
+files written by [`charts/model-downloader-job.yaml`](charts/model-downloader-job.yaml).
+Any other value is a relative model file path.
 
 ### Topic Structure
 
@@ -349,7 +372,7 @@ docker-compose exec ai-edge-inference cat /app/resources/model_configs/industria
 
 ## Contributing
 
-See the main repository [CONTRIBUTING.md](/CONTRIBUTING.md) for development guidelines and contribution process.
+See the main repository [CONTRIBUTING.md](../../../CONTRIBUTING.md) for development guidelines and contribution process.
 
 ## License
 
