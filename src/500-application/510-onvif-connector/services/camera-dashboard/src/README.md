@@ -1,6 +1,6 @@
 ---
 title: Camera Dashboard Source Modules
-description: Python source modules for the camera-dashboard NiceGUI application including RTSP capture, MJPEG streaming, MQTT integration, ONVIF discovery, and PTZ control
+description: Python source modules for the camera-dashboard NiceGUI application including RTSP capture, camera onboarding, MQTT integration, ONVIF discovery, and PTZ control
 author: Edge AI Team
 ms.date: 2026-04-09
 ms.topic: reference
@@ -25,6 +25,8 @@ Python source modules for the camera-dashboard service. Each module encapsulates
 | Module               | Purpose                                                                            |
 |----------------------|------------------------------------------------------------------------------------|
 | `app.py`             | Application entry point — NiceGUI page definitions, camera registration, UI layout |
+| `camera_onboarding.py` | RTSP frame verification and deterministic Azure IoT Operations Terraform output   |
+| `camera_onboarding_ui.py` | Explicit-scope onboarding, selection, inspection, and output controls           |
 | `camera_manager.py`  | RTSP capture threads with auto-reconnection and frame registry                     |
 | `mjpeg_server.py`    | FastAPI MJPEG streaming endpoint and health check                                  |
 | `mqtt_handler.py`    | MQTT client for PTZ command publishing and event subscription                      |
@@ -37,7 +39,7 @@ Python source modules for the camera-dashboard service. Each module encapsulates
 
 Application entry point that wires all modules together and defines the NiceGUI UI.
 
-* **`/`** — Dashboard page with camera grid, add-camera form, network discovery dialog, PTZ controls, and MQTT event feed
+* **`/`** — Dashboard page with camera grid, camera onboarding preflight, PTZ controls, and MQTT event feed
 * **`/camera/{cam_id}`** — Single-camera view with full-size MJPEG stream and dedicated PTZ controls
 * `register_camera()` — Adds a camera to both the `CameraManager` capture registry and the `PTZController` ONVIF registry
 * Loads initial cameras from `CAMERA_URLS` and `CAMERA_NAMES` environment variables
@@ -67,6 +69,22 @@ Application entry point that wires all modules together and defines the NiceGUI 
   * **Multicast discovery** — WS-Discovery UDP probe to `239.255.255.250:3702`
 * `_expand_targets()` — Parses comma-separated target strings into `(host, port)` tuples with support for CIDR and range notation
 * Concurrency-limited (semaphore of 50) for targeted subnet scans
+* Requires an explicit target scope or an explicit multicast selection
+* Reports candidate evidence without treating an open TCP port as a confirmed camera
+
+### `camera_onboarding.py`
+
+* Verifies a selected RTSP profile by receiving and decoding a frame
+* Removes credentials from stream endpoints and accepts only secret names in Terraform output
+* Renders stable `namespaced_devices`, `namespaced_assets`, and connector enablement values
+* Writes confidential evidence and the reviewable proposal under the gitignored `.camera-onboarding/` directory
+
+### `camera_onboarding_ui.py`
+
+* Guides explicit-scope discovery, ONVIF authentication, capability inspection, profile selection, and feed verification
+* Keeps credentials in memory only and allows verified cameras to be selected as a subset
+* Generates `.camera-onboarding/camera-discovery-results.json` and `.camera-onboarding/camera-onboarding.tfvars.example` without applying Terraform
+* Provides copy and download actions for the generated Terraform proposal
 
 ### `ptz_controller.py`
 
