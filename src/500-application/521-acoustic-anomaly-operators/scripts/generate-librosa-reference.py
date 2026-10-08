@@ -5,6 +5,7 @@ librosa 0.11.0 installed:
 
     python3 generate-librosa-reference.py \
       > ../operators/featurize-acoustic/tests/fixtures/librosa-reference.json
+    npx prettier --write ../operators/featurize-acoustic/tests/fixtures/librosa-reference.json
 """
 
 import json
