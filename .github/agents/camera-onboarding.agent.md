@@ -22,10 +22,10 @@ source of truth; this workflow never creates or maintains a parallel registry.
 5. Require successful ONVIF authentication and capability inspection before profile selection.
 6. Require a decoded RTSP frame for the selected profile before allowing Terraform output.
 7. Generate only through the checked-in deterministic implementation:
-   `services/camera-dashboard/src/camera_onboarding.py`.
+   `src/500-application/510-onvif-connector/services/camera-dashboard/src/camera_onboarding.py`.
 8. Review the generated local artifacts with the engineer:
-   - `.camera-onboarding/camera-discovery-results.json`
-   - `.camera-onboarding/camera-onboarding.tfvars.example`
+   - `src/500-application/510-onvif-connector/.camera-onboarding/camera-discovery-results.json`
+   - `src/500-application/510-onvif-connector/.camera-onboarding/camera-onboarding.tfvars.example`
 9. Stop after review. Never run `terraform apply`.
 
 ## Security Boundaries
@@ -35,7 +35,8 @@ source of truth; this workflow never creates or maintains a parallel registry.
   URLs to output, logs, or source-controlled files.
 - Generated Terraform may contain only Kubernetes secret names for credentials.
 - Treat IP addresses, device identifiers, locations, and topology as confidential.
-- Keep generated artifacts under the component's gitignored `.camera-onboarding/` directory.
+- Keep generated artifacts under
+  `src/500-application/510-onvif-connector/.camera-onboarding/`.
 - Never expand discovery beyond the explicitly approved scope.
 - Multicast must be an explicit engineer selection.
 - Never set or recommend `acceptUntrustedServerCertificates = true`.
