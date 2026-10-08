@@ -74,6 +74,7 @@ Outfeed
 Profinet
 psnet
 PUBACK
+SUBACK
 pymodbus
 resedge
 rosbag
