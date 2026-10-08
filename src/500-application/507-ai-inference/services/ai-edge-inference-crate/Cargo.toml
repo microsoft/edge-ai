@@ -67,8 +67,9 @@ mockall = "0.11"
 [features]
 default = ["onnx"]
 minimal = []
-onnx = ["ort", "ndarray"]
-onnx-runtime = ["ort", "ndarray"]  # Legacy alias
+# The ONNX Runtime backend is compiled under `onnx-runtime`; `onnx` enables it
+onnx = ["onnx-runtime"]
+onnx-runtime = ["ort", "ndarray"]
 candle = ["candle-core", "candle-nn", "candle-transformers", "candle-onnx"]
 gpu = ["ort?/cuda", "ort?/tensorrt"]
 cpu-only = []
