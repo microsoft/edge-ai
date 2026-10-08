@@ -48,12 +48,12 @@ export ONVIF_PTZ_URL=<ptz-service-address>
 PROFILE_TOKEN=<profile-token> ./onvif-ptz-check.sh move
 ```
 
-| Result                                                 | Meaning                             | Action                                                     |
-|--------------------------------------------------------|-------------------------------------|------------------------------------------------------------|
-| `Connection refused`                                   | Wrong port or ONVIF service stopped | Check the ONVIF port; common values are 80, 8000, and 8080 |
-| Timeout                                                | Firewall or wrong address           | Check network connectivity from the cluster                |
-| `HTTP 401`                                             | Credentials rejected                | Check the username, password, and ONVIF user permissions   |
-| `HTTP 400` or `500` with `Data required for operation` | ONVIF turned off on the camera      | Turn on ONVIF in the camera settings                       |
+| Result                                                 | Meaning                             | Action                                                                                                                                                                                                                          |
+|--------------------------------------------------------|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Connection refused`                                   | Wrong port or ONVIF service stopped | Check the ONVIF port; common values are 80, 8000, and 8080                                                                                                                                                                      |
+| Timeout                                                | Firewall or wrong address           | Check network connectivity from the cluster                                                                                                                                                                                     |
+| `HTTP 401`                                             | Credentials rejected                | Check the username, password, and ONVIF user permissions. If the credentials are correct, the camera might accept only WS-UsernameToken; set digest authentication on the camera or use the connector's username token fallback |
+| `HTTP 400` or `500` with `Data required for operation` | ONVIF turned off on the camera      | Turn on ONVIF in the camera settings                                                                                                                                                                                            |
 
 ## Step 2: Store the Camera Credentials
 
@@ -255,7 +255,7 @@ az resource list --resource-group <resource-group> \
 
 kubectl get devices.namespaces.deviceregistry.microsoft.com --namespace azure-iot-operations
 kubectl get assets.namespaces.deviceregistry.microsoft.com --namespace azure-iot-operations
-kubectl logs --namespace azure-iot-operations --selector app.kubernetes.io/component=connector --tail=100
+kubectl logs --namespace azure-iot-operations $(kubectl get pods --namespace azure-iot-operations --output name | grep onvif) --tail=100
 ```
 
 ## Step 6: Control the Camera

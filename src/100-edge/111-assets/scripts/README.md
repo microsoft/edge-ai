@@ -19,7 +19,7 @@ Checks an ONVIF camera directly over ONVIF SOAP, independent of Azure IoT Operat
 
 | Command    | ONVIF operation                 | Output                                                   |
 |------------|---------------------------------|----------------------------------------------------------|
-| `services` | Device `GetServices`            | Media, PTZ, and other service addresses                  |
+| `services` | Device `GetServices`            | Device, Media, Media2, PTZ, and other service addresses  |
 | `profiles` | Media `GetProfiles`             | Profile tokens, names, and whether each has a PTZ config |
 | `move`     | PTZ `ContinuousMove` and `Stop` | Pans right and left, tilts up and down, then stops       |
 
@@ -36,6 +36,8 @@ export ONVIF_PTZ_URL=<ptz-service-address>
 ./onvif-ptz-check.sh profiles
 PROFILE_TOKEN=<profile-token> ./onvif-ptz-check.sh move
 ```
+
+`profiles` queries the ONVIF Media (ver10) service. A camera that lists only Media2 supports Profile T without Profile S, and `profiles` might fail for it.
 
 The script prompts for the password when `CAMERA_PASSWORD` is unset and it runs in a terminal. To read the credentials from an existing Kubernetes secret with `username` and `password` keys, set `K8S_SECRET_NAME` (and `K8S_NAMESPACE` if it isn't `azure-iot-operations`).
 

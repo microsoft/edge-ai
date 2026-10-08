@@ -12,6 +12,7 @@ set -euo pipefail
 readonly SOAP_ENV="http://www.w3.org/2003/05/soap-envelope"
 readonly NS_DEVICE="http://www.onvif.org/ver10/device/wsdl"
 readonly NS_MEDIA="http://www.onvif.org/ver10/media/wsdl"
+readonly NS_MEDIA2="http://www.onvif.org/ver20/media/wsdl"
 readonly NS_PTZ="http://www.onvif.org/ver20/ptz/wsdl"
 readonly NS_SCHEMA="http://www.onvif.org/ver10/schema"
 
@@ -200,7 +201,9 @@ cmd_services() {
   local address
   while read -r namespace address; do
     case "${namespace}" in
+      "${NS_DEVICE}") printf '%-8s %s\n' "Device" "${address}" ;;
       "${NS_MEDIA}") printf '%-8s %s\n' "Media" "${address}" ;;
+      "${NS_MEDIA2}") printf '%-8s %s\n' "Media2" "${address}" ;;
       "${NS_PTZ}") printf '%-8s %s\n' "PTZ" "${address}" ;;
       *) printf '%-8s %s (%s)\n' "Other" "${address}" "${namespace}" ;;
     esac
