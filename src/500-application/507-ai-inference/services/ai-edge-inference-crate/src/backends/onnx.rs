@@ -210,7 +210,7 @@ fn graph_optimization_level(
         OptimizationLevel::None => GraphOptimizationLevel::Disable,
         OptimizationLevel::Basic => GraphOptimizationLevel::Level1,
         OptimizationLevel::Extended => GraphOptimizationLevel::Level2,
-        OptimizationLevel::All => GraphOptimizationLevel::Level3,
+        OptimizationLevel::All => GraphOptimizationLevel::All,
     }
 }
 
@@ -841,7 +841,7 @@ mod tests {
         ));
         assert!(matches!(
             graph_optimization_level(&OptimizationLevel::All),
-            GraphOptimizationLevel::Level3
+            GraphOptimizationLevel::All
         ));
     }
 
@@ -991,7 +991,7 @@ mod tests {
             .applied;
         assert_eq!(
             applied,
-            vec!["optimization level=Level3", "parallel execution=false"]
+            vec!["optimization level=All", "parallel execution=false"]
         );
     }
 

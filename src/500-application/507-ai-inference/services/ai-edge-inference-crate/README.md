@@ -278,12 +278,12 @@ fn create_custom_config() -> InferenceConfig {
 
 The ONNX Runtime backend is compiled with the `onnx-runtime` feature, which the default `onnx` feature enables. When it loads a model, it builds the ONNX Runtime session from the `BackendConfig` passed to `initialize`:
 
-| Setting                            | Session option                                                                          |
-|------------------------------------|-----------------------------------------------------------------------------------------|
-| `optimization_level`               | Graph optimization: `None` disabled, `Basic` level 1, `Extended` level 2, `All` level 3 |
-| `parallel_execution`               | Parallel execution mode                                                                 |
-| `onnx_config.intra_op_num_threads` | Intra-op thread count; ONNX Runtime default when `None`                                 |
-| `onnx_config.inter_op_num_threads` | Inter-op thread count; ONNX Runtime default when `None`                                 |
+| Setting                            | Session option                                                                                    |
+|------------------------------------|---------------------------------------------------------------------------------------------------|
+| `optimization_level`               | Graph optimization: `None` disabled, `Basic` level 1, `Extended` level 2, `All` all optimizations |
+| `parallel_execution`               | Parallel execution mode                                                                           |
+| `onnx_config.intra_op_num_threads` | Intra-op thread count; ONNX Runtime default when `None`                                           |
+| `onnx_config.inter_op_num_threads` | Inter-op thread count; ONNX Runtime default when `None`                                           |
 
 A setting that ONNX Runtime rejects fails `load_model` with `BackendError::ModelLoadFailed`. Execution providers, memory arena, and memory pattern settings aren't applied by the ONNX Runtime backend.
 

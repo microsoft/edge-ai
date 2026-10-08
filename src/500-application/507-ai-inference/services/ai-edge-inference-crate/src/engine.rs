@@ -613,7 +613,7 @@ mod tests {
         let status = engine.get_backend_status().await;
         assert_eq!(status.backend_type, BackendType::OnnxRuntime);
         assert!(status.loaded_models.contains(&"identity".to_string()));
-        assert_eq!(status.session_settings["optimization level"], "level3");
+        assert_eq!(status.session_settings["optimization level"], "all");
         assert_eq!(status.session_settings["parallel execution"], "false");
         assert_eq!(status.session_settings["intra-op thread count"], "default");
         assert_eq!(status.session_settings["inter-op thread count"], "default");
