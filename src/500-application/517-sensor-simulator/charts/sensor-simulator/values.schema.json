@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "sensor-simulator chart values",
+  "type": "object",
+  "required": ["image", "serviceAccount", "simulator", "mqtt", "volumes"],
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": ["repository"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] },
+        "tag": { "type": "string" }
+      }
+    },
+    "imagePullSecrets": { "type": "array" },
+    "nameOverride": { "type": "string" },
+    "fullnameOverride": { "type": "string" },
+    "namespace": { "type": "string" },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": { "type": "boolean" },
+        "name": { "type": "string" },
+        "annotations": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "simulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assetId", "sensorId", "modalities"],
+      "properties": {
+        "assetId": { "$ref": "#/definitions/segment" },
+        "sensorId": { "$ref": "#/definitions/segment" },
+        "modalities": {
+          "type": "string",
+          "pattern": "^\\s*(vibration|acoustic|temperature)\\s*(,\\s*(vibration|acoustic|temperature)\\s*)*$"
+        },
+        "publishIntervalSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 3600 },
+        "seed": {
+          "description": "Integer seed for repeatable signals, or an empty string for a random seed.",
+          "oneOf": [
+            { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+            { "type": "string", "pattern": "^(-?[0-9]{1,15})?$" }
+          ]
+        },
+        "injectAnomaly": { "type": "boolean" },
+        "controlEnabled": { "type": "boolean" },
+        "qos": { "type": "integer", "enum": [0, 1] },
+        "topicDomain": { "$ref": "#/definitions/segment" },
+        "controlDomain": { "$ref": "#/definitions/segment" },
+        "producer": { "$ref": "#/definitions/segment" },
+        "resourceKind": { "$ref": "#/definitions/segment" },
+        "eventSource": { "type": "string", "pattern": "^[A-Za-z0-9._~:/-]{1,128}$" },
+        "dataSchema": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^([A-Za-z][A-Za-z0-9+.-]*:\\S+)?$"
+        },
+        "acousticSampleRate": { "type": "integer", "minimum": 8000, "maximum": 192000 },
+        "acousticSampleCount": { "type": "integer", "minimum": 2048, "maximum": 65536 }
+      }
+    },
+    "mqtt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brokerHostname", "brokerTcpPort", "clientIdPrefix", "tlsCaFile", "satFile"],
+      "properties": {
+        "brokerHostname": { "type": "string", "minLength": 1 },
+        "brokerTcpPort": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 65535 },
+            { "type": "string", "pattern": "^[1-9][0-9]{0,4}$" }
+          ]
+        },
+        "clientIdPrefix": { "type": "string", "minLength": 1 },
+        "tlsCaFile": { "$ref": "#/definitions/absoluteFile" },
+        "satFile": { "$ref": "#/definitions/absoluteFile" }
+      }
+    },
+    "volumes": {
+      "type": "object",
+      "properties": {
+        "mqSat": {
+          "type": "object",
+          "required": ["audience", "expirationSeconds"],
+          "properties": {
+            "audience": { "type": "string", "minLength": 1 },
+            "expirationSeconds": { "type": "integer", "minimum": 600 }
+          }
+        },
+        "trustBundle": {
+          "type": "object",
+          "required": ["configMapName"],
+          "properties": {
+            "configMapName": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "resources": { "type": "object" },
+    "podSecurityContext": { "type": "object" },
+    "securityContext": { "type": "object" },
+    "nodeSelector": { "type": "object" },
+    "tolerations": { "type": "array" },
+    "affinity": { "type": "object" },
+    "podAnnotations": { "type": "object" },
+    "podLabels": { "type": "object" }
+  },
+  "definitions": {
+    "segment": {
+      "type": "string",
+      "pattern": "^[a-z0-9._-]{1,64}$"
+    },
+    "absoluteFile": {
+      "type": "string",
+      "pattern": "^/.*[^/]$"
+    }
+  }
+}

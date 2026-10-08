@@ -31,6 +31,7 @@ simulator:
   modalities: vibration,acoustic,temperature
   publishIntervalSeconds: 2
   # Set an integer for repeatable signals; leave empty for a random seed.
+  # values.schema.json accepts an integer or a string of digits.
   seed: ""
   injectAnomaly: false
   # Subscribes to control/v1/<producer>/<resourceKind>/<assetId>/anomaly when true.
@@ -40,8 +41,15 @@ simulator:
   controlDomain: control
   producer: sensor-simulator
   resourceKind: asset
+  # CloudEvents source: a URI reference such as sensor-simulator or urn:example:simulator.
   eventSource: sensor-simulator
+  # Optional absolute URI sent as the CloudEvents dataschema attribute, for
+  # example where you host resources/schemas/sensor-reading-v1.schema.json.
+  dataSchema: ""
+  # 8000-192000 Hz.
   acousticSampleRate: 16000
+  # 2048-65536 samples. 2048 is the minimum window acoustic consumers such as
+  # 521 accept; 65536 samples produce payloads of about 615 KB.
   acousticSampleCount: 2048
 
 mqtt:

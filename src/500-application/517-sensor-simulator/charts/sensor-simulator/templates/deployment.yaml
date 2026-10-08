@@ -67,6 +67,7 @@ spec:
               value: {{ $s.publishIntervalSeconds | quote }}
             {{- if ne (toString $s.seed) "" }}
             - name: SIMULATOR_SEED
+              {{- /* Values-file numbers are float64, so toString would render 1e+07; values.schema.json limits seed to integers. */}}
               value: {{ $s.seed | int64 | quote }}
             {{- end }}
             - name: INJECT_ANOMALY
@@ -85,6 +86,10 @@ spec:
               value: {{ $s.resourceKind | quote }}
             - name: EVENT_SOURCE
               value: {{ $s.eventSource | quote }}
+            {{- with $s.dataSchema }}
+            - name: DATA_SCHEMA
+              value: {{ . | quote }}
+            {{- end }}
             - name: ACOUSTIC_SAMPLE_RATE
               value: {{ $s.acousticSampleRate | int64 | quote }}
             - name: ACOUSTIC_SAMPLE_COUNT
