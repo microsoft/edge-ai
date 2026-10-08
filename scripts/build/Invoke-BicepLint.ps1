@@ -409,6 +409,10 @@ function Write-GitHubBicepOutput {
         "failures=$Failures" | Add-Content -Path $env:GITHUB_OUTPUT -Encoding UTF8
     }
 
+    if ($Failures -gt 0 -and -not [string]::IsNullOrWhiteSpace($env:GITHUB_ENV)) {
+        'BICEP_LINT_FAILED=true' | Add-Content -Path $env:GITHUB_ENV -Encoding UTF8
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
         $Summary | Add-Content -Path $env:GITHUB_STEP_SUMMARY -Encoding UTF8
     }
