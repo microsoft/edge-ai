@@ -38,6 +38,8 @@ normalizer:
   # Optional dataschema reference. Keep it consistent with any data flow source
   # schema that consumes the output topic.
   dataSchema: ""
+  # Keep maxEnvelopeBytes below the broker maximum packet size, which the AIO
+  # memory profile bounds (4 MB on Tiny). Base64 adds about one third.
   maxJpegBytes: 4194304
   maxEnvelopeBytes: 8388608
   dedupCapacity: 1024

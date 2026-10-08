@@ -109,7 +109,12 @@ Rejections log the reason and payload length. Counters are logged every
 | `COUNTERS_INTERVAL_SECONDS` | No       | `60`                                                          | Interval between counter log lines          |
 | `RUST_LOG`                  | No       | `info`                                                        | Log filter                                  |
 
-Numeric values must be positive integers. The broker connection uses the
+Numeric values must be positive integers. Keep `MAX_ENVELOPE_BYTES` below the
+broker's maximum packet size, leaving room for the topic and user properties.
+The [memory profile](https://learn.microsoft.com/azure/iot-operations/reference/mqtt-support#broker-limits)
+bounds that size: 4 MB for Tiny, 16 MB for Low, and 64 MB for Medium, the
+default. The broker disconnects a client that sends a larger packet, so lower
+both maxima on a Tiny profile, for example to 2 MiB and 3 MiB. The broker connection uses the
 Azure IoT Operations SDK variables, including `AIO_BROKER_HOSTNAME`,
 `AIO_BROKER_TCP_PORT`, `AIO_MQTT_CLIENT_ID`, `AIO_MQTT_USE_TLS`,
 `AIO_TLS_CA_FILE`, and `AIO_SAT_FILE`.
