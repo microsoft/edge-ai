@@ -42,15 +42,19 @@ namespaced_devices = [
       outbound = { assigned = {} }
       inbound = {
         "warehouse-camera-endpoint" = {
-          endpoint_type = "Microsoft.Onvif"
+          endpoint_type = "Microsoft.ONVIF"
           address       = "http://192.168.1.100/onvif/device_service"
           version       = "21.06"
           authentication = {
             method = "UsernamePassword"  // Options: Anonymous, UsernamePassword, X509Certificate
-            usernamePasswordCredentials = {
-              usernameSecretName = "warehouse-camera-username"
-              passwordSecretName = "warehouse-camera-password"
+            username_password_ref = {
+              secret_name = "warehouse-camera-credentials"
+              username_ref = "username"
+              password_ref = "password"
             }
+          }
+          trustSettings = {
+            acceptUntrustedServerCertificates = false  // Set to true for self-signed certs (dev only)
           }
         }
       }
@@ -65,14 +69,15 @@ namespaced_devices = [
       outbound = { assigned = {} }
       inbound = {
         "perimeter-camera-endpoint" = {
-          endpoint_type = "Microsoft.Onvif"
+          endpoint_type = "Microsoft.ONVIF"
           address       = "http://192.168.1.101/onvif/device_service"
           version       = "21.06"
           authentication = {
             method = "UsernamePassword"
-            usernamePasswordCredentials = {
-              usernameSecretName = "perimeter-camera-username"
-              passwordSecretName = "perimeter-camera-password"
+            username_password_ref = {
+              secret_name = "perimeter-camera-credentials"
+              username_ref = "username"
+              password_ref = "password"
             }
           }
           trustSettings = null
@@ -89,7 +94,7 @@ namespaced_devices = [
       outbound = { assigned = {} }
       inbound = {
         "assembly-camera-endpoint" = {
-          endpoint_type = "Microsoft.Onvif"
+          endpoint_type = "Microsoft.ONVIF"
           address       = "http://192.168.1.102/onvif/device_service"
           version       = "21.06"
           authentication = {
@@ -151,49 +156,67 @@ namespaced_assets = [
             name                 = "pan_right"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
-            action_configuration = "{\"direction\":\"right\",\"speed\":0.5}"
+            action_configuration = jsonencode({
+              direction = "right"
+              speed     = 0.5
+            })
           },
           {
             name                 = "pan_left"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
-            action_configuration = "{\"direction\":\"left\",\"speed\":0.5}"
+            action_configuration = jsonencode({
+              direction = "left"
+              speed     = 0.5
+            })
           },
           {
             name                 = "tilt_up"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
-            action_configuration = "{\"direction\":\"up\",\"speed\":0.5}"
+            action_configuration = jsonencode({
+              direction = "up"
+              speed     = 0.5
+            })
           },
           {
             name                 = "tilt_down"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
-            action_configuration = "{\"direction\":\"down\",\"speed\":0.5}"
+            action_configuration = jsonencode({
+              direction = "down"
+              speed     = 0.5
+            })
           },
           {
             name                 = "zoom_in"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
-            action_configuration = "{\"direction\":\"in\",\"speed\":0.3}"
+            action_configuration = jsonencode({
+              direction = "in"
+              speed     = 0.3
+            })
           },
           {
             name                 = "zoom_out"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/ContinuousMove"
-            action_configuration = "{\"direction\":\"out\",\"speed\":0.3}"
+            action_configuration = jsonencode({
+              direction = "out"
+              speed     = 0.3
+            })
           },
           {
             name                 = "stop"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/Stop"
-            action_configuration = "{}"
+            action_configuration = jsonencode({})
           },
           {
             name                 = "goto_home"
             action_type          = "Call"
             target_uri           = "http://onvif.org/onvif/ver20/ptz/wsdl/GotoHomePosition"
-            action_configuration = "{}"
+            action_configuration = jsonencode({})
           }
         ]
       }
@@ -207,7 +230,10 @@ namespaced_assets = [
           {
             name        = "motion-detected"
             data_source = "motion"
-            event_configuration = "{\"capability_id\":\"http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription\",\"topic\":\"tns1:VideoAnalytics/MotionDetection\"}"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoAnalytics/MotionDetection"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
             destinations = [
               {
                 target = "Mqtt"
@@ -222,7 +248,10 @@ namespaced_assets = [
           {
             name        = "tampering-alert"
             data_source = "tampering"
-            event_configuration = "{\"capability_id\":\"http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription\",\"topic\":\"tns1:VideoSource/Tampering\"}"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoSource/Tampering"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
             destinations = [
               {
                 target = "Mqtt"
@@ -277,7 +306,10 @@ namespaced_assets = [
           {
             name        = "motion-detected"
             data_source = "motion"
-            event_configuration = "{\"capability_id\":\"http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription\",\"topic\":\"tns1:VideoAnalytics/MotionDetection\"}"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoAnalytics/MotionDetection"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
             destinations = [
               {
                 target = "Mqtt"
@@ -292,7 +324,10 @@ namespaced_assets = [
           {
             name        = "tampering-alert"
             data_source = "tampering"
-            event_configuration = "{\"capability_id\":\"http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription\",\"topic\":\"tns1:VideoSource/Tampering\"}"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoSource/Tampering"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
             destinations = [
               {
                 target = "Mqtt"
@@ -344,7 +379,10 @@ namespaced_assets = [
           {
             name        = "motion-detected"
             data_source = "motion"
-            event_configuration = "{\"capability_id\":\"http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription\",\"topic\":\"tns1:VideoAnalytics/MotionDetection\"}"
+            event_configuration = jsonencode({
+              topic         = "tns1:VideoAnalytics/MotionDetection"
+              capability_id = "http://onvif.org/onvif/ver10/events/wsdl/EventsBinding/PullPointSubscription"
+            })
             destinations = [
               {
                 target = "Mqtt"
@@ -403,7 +441,7 @@ namespaced_assets = [
  * 7. Security:
  *    - Store credentials in Kubernetes secrets (not in this file)
  *    - Use TLS/HTTPS for production deployments
- *    - Configure trusted certificate material rather than bypassing validation
+ *    - Set acceptUntrustedServerCertificates=false except for development
  *    - Implement network segmentation for camera VLANs
  *
  * 8. Testing:
