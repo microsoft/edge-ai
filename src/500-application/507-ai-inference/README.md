@@ -138,14 +138,14 @@ for the full public surface.
 It subscribes to a binary JPEG snapshot topic, such as a media connector
 `snapshot-to-mqtt` stream, and publishes each accepted snapshot as an
 `image_snapshot` v1 request to
-`edge-ai/v1/snapshot-normalizer/{camera-id}/camera/snapshots`, which the
-inference service receives through its `edge-ai/+/+/+/camera/snapshots` input
-filter.
+`edge-ai/v1/snapshot-normalizer/camera/{camera-id}/snapshots`, which the
+inference service receives through its pinned `edge-ai/v1/+/camera/+/snapshots`
+input filter.
 
 - Carries CloudEvents attributes as MQTTv5 user properties
 - Deduplicates on the producer-supplied CloudEvents `id`, never on content
 - Refuses to start when its output topic matches its own input filter
-- Deploys with the [`charts/snapshot-normalizer`](charts/snapshot-normalizer/) Helm chart as one replica per camera, with a unique client ID per pod
+- Deploys with the [`charts/snapshot-normalizer`](charts/snapshot-normalizer/) Helm chart as a single-replica StatefulSet per camera, with a stable, unique client ID
 
 See [`services/snapshot-normalizer/README.md`](services/snapshot-normalizer/README.md)
 for configuration, delivery semantics, and an authorization example.

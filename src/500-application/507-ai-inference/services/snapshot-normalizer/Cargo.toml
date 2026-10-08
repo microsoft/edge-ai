@@ -17,7 +17,7 @@ snapshot-normalizer-core = { path = "../snapshot-normalizer-core" }
 tokio = { version = "1.44", features = ["macros", "rt-multi-thread", "signal", "time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-uuid = { version = "1.8", features = ["v4", "v5"] }
+uuid = { version = "1.8", features = ["v4"] }
 
 [profile.release]
 strip = true

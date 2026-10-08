@@ -1,6 +1,6 @@
 # The adapter keeps deduplication state in memory and subscribes without a
-# shared subscription, so the chart always runs a single replica with the
-# Recreate strategy. Run one release per input topic to scale out.
+# shared subscription, so the chart always runs a single-replica StatefulSet.
+# Run one release per input topic to scale out.
 
 image:
   # Placeholder. Build the image from services/snapshot-normalizer and push it
@@ -31,9 +31,9 @@ normalizer:
   deviceName: camera-device-01
   # Topic the media connector snapshot-to-mqtt stream publishes to.
   inputTopic: media/v1/media-connector/camera-01/snapshots
-  # Leave empty for edge-ai/v1/snapshot-normalizer/<cameraId>/camera/snapshots,
-  # which the component 507 inference service receives through its
-  # edge-ai/+/+/+/camera/snapshots input filter.
+  # Leave empty for edge-ai/v1/snapshot-normalizer/camera/<cameraId>/snapshots,
+  # which the component 507 inference service receives through its pinned
+  # edge-ai/v1/+/camera/+/snapshots input filter.
   outputTopic: ""
   eventSource: snapshot-normalizer
   # Optional dataschema reference. Keep it consistent with any data flow source
@@ -52,8 +52,12 @@ normalizer:
 mqtt:
   brokerHostname: aio-broker.azure-iot-operations
   brokerTcpPort: "18883"
-  # Each pod connects as <clientIdPrefix>-<pod name>, which is unique per pod.
+  # The pod connects as <clientIdPrefix>-<release fullname>-0, which is stable
+  # across restarts so the broker resumes the persistent session.
   clientIdPrefix: snapshot-normalizer
+  # Seconds the broker keeps the session, and its queued QoS 1 snapshots, after
+  # the pod disconnects. Bounds orphaned sessions; 0 discards them at once.
+  sessionExpirySeconds: 3600
   tlsCaFile: /var/run/certs/ca.crt
   satFile: /var/run/secrets/tokens/mq-sat
 

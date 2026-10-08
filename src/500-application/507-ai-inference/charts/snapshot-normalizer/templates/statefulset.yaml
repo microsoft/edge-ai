@@ -1,6 +1,6 @@
 {{- $n := .Values.normalizer }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "snapshot-normalizer.fullname" . }}
   namespace: {{ include "snapshot-normalizer.namespace" . }}
@@ -8,9 +8,12 @@ metadata:
     {{- include "snapshot-normalizer.labels" . | nindent 4 }}
 spec:
   # In-memory deduplication and a non-shared subscription require one replica.
+  # The StatefulSet keeps the pod name, and so the MQTT client ID, stable at
+  # <fullname>-0 and never runs two copies, so the persistent session resumes.
   replicas: 1
-  strategy:
-    type: Recreate
+  serviceName: {{ include "snapshot-normalizer.fullname" . }}
+  updateStrategy:
+    type: RollingUpdate
   selector:
     matchLabels:
       {{- include "snapshot-normalizer.selectorLabels" . | nindent 6 }}
@@ -53,6 +56,8 @@ spec:
               value: {{ .Values.mqtt.brokerTcpPort | quote }}
             - name: AIO_MQTT_USE_TLS
               value: "true"
+            - name: AIO_MQTT_SESSION_EXPIRY
+              value: {{ required "mqtt.sessionExpirySeconds is required" .Values.mqtt.sessionExpirySeconds | int64 | quote }}
             - name: AIO_TLS_CA_FILE
               value: {{ .Values.mqtt.tlsCaFile | quote }}
             - name: AIO_SAT_FILE

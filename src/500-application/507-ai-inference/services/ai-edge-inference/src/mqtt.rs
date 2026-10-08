@@ -1117,6 +1117,33 @@ impl MqttProcessingContext {
 mod tests {
     use super::*;
 
+    #[test]
+    fn image_snapshot_v1_without_metadata_deserializes() {
+        let schema: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../resources/schemas/image-snapshot-v1.schema.json"
+        ))
+        .unwrap();
+        let examples = schema["examples"].as_array().unwrap();
+        assert!(examples
+            .iter()
+            .any(|example| example.get("metadata").is_none()));
+        // Field order and omissions match snapshot-normalizer-core serialize_envelope output.
+        let normalizer_output = r#"{"message_type":"image_snapshot","schema_version":"1.0","camera_id":"camera-01","timestamp":1700000000,"image_data":"/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==","device_name":"device-01","correlation_id":"00000000-0000-4000-8000-000000000001"}"#;
+
+        for payload in examples
+            .iter()
+            .map(serde_json::Value::to_string)
+            .chain([normalizer_output.to_string()])
+        {
+            match serde_json::from_str::<IncomingMessage>(&payload) {
+                Ok(IncomingMessage::ImageSnapshot { camera_id, .. }) => {
+                    assert_eq!(camera_id, "camera-01");
+                }
+                other => panic!("expected image_snapshot, got {other:?}"),
+            }
+        }
+    }
+
     #[tokio::test]
     async fn test_mqtt_publisher_creation() {
         // This test would require a running MQTT broker and inference engine

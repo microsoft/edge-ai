@@ -33,6 +33,17 @@ pub const DEFAULT_DEDUP_WINDOW_SECONDS: u64 = 300;
 pub const DEFAULT_PUBLISH_ATTEMPTS: u32 = 3;
 pub const DEFAULT_COUNTERS_INTERVAL_SECONDS: u64 = 60;
 
+/// Most publish attempts per request, bounding how long one request can hold
+/// the in-order receive loop.
+pub const MAX_PUBLISH_ATTEMPTS: u32 = 10;
+
+/// Most unacknowledged QoS 1 inputs the broker may have in flight to the adapter.
+pub const RECEIVE_MAX: u16 = 8;
+
+/// Room above `MAX_JPEG_BYTES` for the fixed header, topic, and user properties
+/// of an input PUBLISH.
+pub const RECEIVE_PACKET_HEADROOM_BYTES: usize = 64 * 1024;
+
 /// Longest accepted camera identifier, which also becomes a topic segment.
 pub const MAX_CAMERA_ID_LEN: usize = 64;
 
@@ -121,7 +132,7 @@ impl Config {
                 DEDUP_WINDOW_SECONDS_VAR,
                 DEFAULT_DEDUP_WINDOW_SECONDS,
             )?),
-            publish_attempts: positive(&value, PUBLISH_ATTEMPTS_VAR, DEFAULT_PUBLISH_ATTEMPTS)?,
+            publish_attempts: publish_attempts(&value)?,
             counters_interval: Duration::from_secs(positive(
                 &value,
                 COUNTERS_INTERVAL_SECONDS_VAR,
@@ -131,12 +142,35 @@ impl Config {
     }
 }
 
-/// Default versioned output topic for a camera.
+impl Config {
+    /// Largest input PUBLISH the adapter accepts from the broker: the JPEG bound
+    /// plus header room, saturated to the MQTT maximum.
+    pub fn receive_packet_size_max(&self) -> u32 {
+        u32::try_from(
+            self.limits
+                .max_jpeg_bytes
+                .saturating_add(RECEIVE_PACKET_HEADROOM_BYTES),
+        )
+        .unwrap_or(u32::MAX)
+    }
+}
+
+/// Default versioned output topic for a camera, following the
+/// `{domain}/{version}/{producer}/{resource-kind}/{resource-id}/{message-kind}`
+/// grammar.
 ///
-/// The topic matches the component 507 inference service's
-/// `edge-ai/+/+/+/camera/snapshots` input filter.
+/// The topic matches the component 507 inference service's pinned
+/// `edge-ai/v1/+/camera/+/snapshots` input filter.
 pub fn default_output_topic(camera_id: &str) -> String {
-    format!("edge-ai/v1/{DEFAULT_EVENT_SOURCE}/{camera_id}/camera/snapshots")
+    format!("edge-ai/v1/{DEFAULT_EVENT_SOURCE}/camera/{camera_id}/snapshots")
+}
+
+fn publish_attempts(value: &impl Fn(&str) -> Option<String>) -> Result<u32> {
+    let attempts = positive(value, PUBLISH_ATTEMPTS_VAR, DEFAULT_PUBLISH_ATTEMPTS)?;
+    if attempts > MAX_PUBLISH_ATTEMPTS {
+        bail!("{PUBLISH_ATTEMPTS_VAR} must be at most {MAX_PUBLISH_ATTEMPTS}");
+    }
+    Ok(attempts)
 }
 
 /// Returns true when the value is a lowercase, URL-safe, single topic segment.
@@ -205,7 +239,7 @@ mod tests {
         let config = Config::from_lookup(lookup(&required())).unwrap();
         assert_eq!(
             config.output_topic.as_str(),
-            "edge-ai/v1/snapshot-normalizer/camera-01/camera/snapshots"
+            "edge-ai/v1/snapshot-normalizer/camera/camera-01/snapshots"
         );
         assert_eq!(config.event_source, DEFAULT_EVENT_SOURCE);
         assert_eq!(config.data_schema, None);
@@ -220,10 +254,12 @@ mod tests {
     }
 
     #[test]
-    fn default_output_topic_matches_inference_subscription() {
+    fn default_output_topic_matches_pinned_v1_inference_subscription() {
         let topic = TopicName::new(default_output_topic("camera-01")).unwrap();
-        let filter = TopicFilter::new("edge-ai/+/+/+/camera/snapshots").unwrap();
-        assert!(topic.matches_topic_filter(&filter));
+        let v1 = TopicFilter::new("edge-ai/v1/+/camera/+/snapshots").unwrap();
+        let legacy = TopicFilter::new("edge-ai/+/+/camera/snapshots").unwrap();
+        assert!(topic.matches_topic_filter(&v1));
+        assert!(!topic.matches_topic_filter(&legacy));
     }
 
     #[test]
@@ -275,12 +311,18 @@ mod tests {
 
     #[test]
     fn rejects_output_topic_matching_input_filter() {
-        let pairs = [
-            (CAMERA_ID_VAR, "camera-01"),
-            (DEVICE_NAME_VAR, "camera-device-01"),
-            (INPUT_TOPIC_VAR, "edge-ai/#"),
-        ];
-        assert!(error_of(&pairs).contains("republish"));
+        for input_topic in [
+            "edge-ai/#",
+            "edge-ai/v1/+/camera/+/snapshots",
+            "edge-ai/v1/snapshot-normalizer/camera/camera-01/snapshots",
+        ] {
+            let pairs = [
+                (CAMERA_ID_VAR, "camera-01"),
+                (DEVICE_NAME_VAR, "camera-device-01"),
+                (INPUT_TOPIC_VAR, input_topic),
+            ];
+            assert!(error_of(&pairs).contains("republish"), "{input_topic}");
+        }
 
         let pairs = with(&[(
             OUTPUT_TOPIC_VAR,
@@ -291,7 +333,7 @@ mod tests {
 
     #[test]
     fn rejects_wildcard_output_topic() {
-        let pairs = with(&[(OUTPUT_TOPIC_VAR, "edge-ai/v1/+/camera/snapshots")]);
+        let pairs = with(&[(OUTPUT_TOPIC_VAR, "edge-ai/v1/+/camera/camera-01/snapshots")]);
         assert!(error_of(&pairs).contains(OUTPUT_TOPIC_VAR));
     }
 
@@ -322,6 +364,28 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn bounds_publish_attempts() {
+        let config = Config::from_lookup(lookup(&with(&[(PUBLISH_ATTEMPTS_VAR, "10")]))).unwrap();
+        assert_eq!(config.publish_attempts, MAX_PUBLISH_ATTEMPTS);
+        assert!(error_of(&with(&[(PUBLISH_ATTEMPTS_VAR, "11")])).contains(PUBLISH_ATTEMPTS_VAR));
+    }
+
+    #[test]
+    fn receive_packet_size_max_covers_jpeg_bound_and_saturates() {
+        let config = Config::from_lookup(lookup(&required())).unwrap();
+        assert_eq!(
+            config.receive_packet_size_max() as usize,
+            DEFAULT_MAX_JPEG_BYTES + RECEIVE_PACKET_HEADROOM_BYTES
+        );
+
+        let huge = (u64::from(u32::MAX) + 1).to_string();
+        let mut pairs: Vec<(&str, &str)> = required();
+        pairs.push((MAX_JPEG_BYTES_VAR, huge.as_str()));
+        let config = Config::from_lookup(lookup(&pairs)).unwrap();
+        assert_eq!(config.receive_packet_size_max(), u32::MAX);
     }
 
     #[test]

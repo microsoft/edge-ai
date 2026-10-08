@@ -32,16 +32,14 @@ pub const CONTENT_TYPE: &str = "application/json";
 /// Longest producer identifier used as a deduplication key.
 pub const MAX_PRODUCER_ID_LEN: usize = 256;
 
-/// Namespace for name-based output event identifiers.
-const EVENT_ID_NAMESPACE: Uuid = Uuid::from_u128(0x6d1f_3c2a_9b4e_4f7a_8c5d_2e1b_0a9f_7c3e);
-
 /// Separator between deduplication key parts. It can't appear in a topic name.
 const KEY_SEPARATOR: char = '\u{0}';
 
 /// Producer-keyed duplicate detector bounded by entry count and time window.
 ///
-/// Keys are recorded only after a request has been published, so a message
-/// that failed to publish isn't suppressed when the broker redelivers it.
+/// Keys are recorded only after a request has been published, so an input the
+/// broker redelivers after a restart is published again unless this pod
+/// already published it within the window.
 #[derive(Debug)]
 pub struct KeyedDedup {
     capacity: usize,
@@ -143,7 +141,7 @@ pub fn prepare(
         }
     }
 
-    let event_id = event_id(dedup_key.as_deref());
+    let event_id = event_id();
     let time = capture_time(properties).unwrap_or(wall_clock);
     let envelope = build_envelope(EnvelopeInput {
         camera_id: &config.camera_id,
@@ -190,16 +188,11 @@ pub fn producer_key(topic: &str, properties: &PublishProperties) -> Option<Strin
     Some(format!("{topic}{KEY_SEPARATOR}{source}{KEY_SEPARATOR}{id}"))
 }
 
-/// Output event identifier.
+/// Random output event identifier, also used as the request `correlation_id`.
 ///
-/// Keyed messages get a name-based identifier, so a redelivered input yields
-/// the same output `id` and downstream consumers can deduplicate it.
-pub fn event_id(dedup_key: Option<&str>) -> String {
-    match dedup_key {
-        Some(key) => Uuid::new_v5(&EVENT_ID_NAMESPACE, key.as_bytes()),
-        None => Uuid::new_v4(),
-    }
-    .to_string()
+/// Identifiers are never derived from producer IDs, topics, or content.
+pub fn event_id() -> String {
+    Uuid::new_v4().to_string()
 }
 
 /// Capture time from the producer's CloudEvents `time` attribute.
@@ -481,12 +474,9 @@ mod tests {
         let first = published(run(&config, &mut dedup, JPEG, &input));
         let key = first.dedup_key.clone().unwrap();
 
-        // An unrecorded key models a publish that failed and is redelivered.
+        // An unrecorded key models an input redelivered before it was published.
         let retried = published(run(&config, &mut dedup, JPEG, &input));
-        assert_eq!(
-            property(&retried, ID_PROPERTY),
-            property(&first, ID_PROPERTY)
-        );
+        assert_eq!(retried.dedup_key, first.dedup_key);
 
         dedup.record(key, Instant::now());
         assert!(matches!(
@@ -504,6 +494,20 @@ mod tests {
             dedup.record(prepared.dedup_key.unwrap(), Instant::now());
         }
         assert_eq!(dedup.len(), 2);
+    }
+
+    #[test]
+    fn event_ids_are_random_v4_and_not_derived_from_producer_ids() {
+        let config = config_with(&[]);
+        let input = props(&[(ID_PROPERTY, "capture-1")]);
+        let first = published(run(&config, &mut dedup(), JPEG, &input));
+        let second = published(run(&config, &mut dedup(), JPEG, &input));
+        let id = Uuid::parse_str(property(&first, ID_PROPERTY).unwrap()).unwrap();
+        assert_eq!(id.get_version(), Some(uuid::Version::Random));
+        assert_ne!(
+            property(&first, ID_PROPERTY),
+            property(&second, ID_PROPERTY)
+        );
     }
 
     #[test]
