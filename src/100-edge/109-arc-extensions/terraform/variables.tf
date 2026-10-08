@@ -22,7 +22,7 @@ variable "arc_extensions" {
   default = {
     cert_manager_extension = {
       enabled                            = true
-      version                            = "0.12.0"
+      version                            = "1.1.2"
       train                              = "stable"
       auto_upgrade_minor_version         = false
       agent_operation_timeout_in_minutes = 20
@@ -30,7 +30,7 @@ variable "arc_extensions" {
     }
     container_storage_extension = {
       enabled                    = true
-      version                    = "2.6.0"
+      version                    = "2.12.0"
       train                      = "stable"
       auto_upgrade_minor_version = false
       disk_storage_class         = ""

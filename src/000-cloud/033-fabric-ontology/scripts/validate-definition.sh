@@ -1,94 +1,32 @@
 #!/usr/bin/env bash
-#===============================================================================
-# Ontology Definition Validation Script
-#===============================================================================
-# Validates ontology definition YAML files against schema and semantic rules.
-#
-# This script performs two levels of validation:
-# 1. Structural validation - Required fields, types, allowed values
-# 2. Semantic validation - Cross-references, consistency checks
-#
-# USAGE:
-#   ./validate-definition.sh --definition <path-to-yaml>
-#   ./validate-definition.sh -d <path-to-yaml>
-#   ./validate-definition.sh --help
-#
-# ARGUMENTS:
-#   -d, --definition  Path to ontology definition YAML file (required)
-#   -v, --verbose     Enable verbose output
-#   -h, --help        Show this help message
-#
-# EXIT CODES:
-#   0 - Definition is valid
-#   1 - Validation failed (see error messages)
-#   2 - Invalid arguments or missing dependencies
-#
-# EXAMPLES:
-#   # Validate the Lakeshore Retail example
-#   ./validate-definition.sh --definition ../definitions/examples/lakeshore-retail.yaml
-#
-#   # Validate with verbose output
-#   ./validate-definition.sh -d my-ontology.yaml --verbose
-#
-# DEPENDENCIES:
-#   - yq (https://github.com/mikefarah/yq) - YAML parser
-#   - jq - JSON processor
-#
-# SEE ALSO:
-#   - definitions/schema.json - JSON Schema for structural validation
-#   - lib/definition-parser.sh - YAML parsing utilities
-#===============================================================================
+# Validates ontology definition YAML files against the checked-in schema and semantic rules.
 
 set -e
 set -o pipefail
 
-# Script location for relative imports
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCHEMA_FILE="${SCRIPT_DIR}/../definitions/schema.json"
 
-source "${SCRIPT_DIR}/lib/definition-parser.sh"
-
-#===============================================================================
-# Configuration
-#===============================================================================
-readonly SUPPORTED_TYPES=("string" "int" "double" "datetime" "boolean" "object")
-readonly SUPPORTED_BINDINGS=("static" "timeseries")
-readonly SUPPORTED_SOURCES=("lakehouse" "eventhouse")
-
-#===============================================================================
-# Logging Functions
-#===============================================================================
 VERBOSE=${VERBOSE:-false}
+DEFINITION_FILE=""
+DEFINITION_JSON=""
+PYTHON_COMMAND=""
+ERRORS=()
+WARNINGS=()
 
-log() {
-  printf "[ INFO  ]: %s\n" "$1"
-}
-
-warn() {
-  printf "[ WARN  ]: %s\n" "$1" >&2
-}
-
-err() {
-  printf "[ ERROR ]: %s\n" "$1" >&2
-}
-
+log() { printf "[ INFO  ]: %s\n" "$1"; }
+warn() { printf "[ WARN  ]: %s\n" "$1" >&2; }
+err() { printf "[ ERROR ]: %s\n" "$1" >&2; }
 debug() {
   if [[ "$VERBOSE" == "true" ]]; then
     printf "[ DEBUG ]: %s\n" "$1"
   fi
 }
+success() { printf "[ OK    ]: %s\n" "$1"; }
 
-success() {
-  printf "[ OK    ]: %s\n" "$1"
-}
-
-#===============================================================================
-# Usage
-#===============================================================================
 usage() {
   cat <<'EOF'
 Ontology Definition Validation Script
-
-Validates ontology definition YAML files before deployment.
 
 USAGE:
   validate-definition.sh --definition <path> [OPTIONS]
@@ -100,13 +38,6 @@ OPTIONS:
   -v, --verbose             Enable verbose output
   -h, --help                Show this help message
 
-EXAMPLES:
-  # Validate the Lakeshore Retail example
-  ./validate-definition.sh -d definitions/examples/lakeshore-retail.yaml
-
-  # Validate with verbose output
-  ./validate-definition.sh -d my-ontology.yaml --verbose
-
 EXIT CODES:
   0 - Definition is valid
   1 - Validation failed
@@ -114,15 +45,24 @@ EXIT CODES:
 EOF
 }
 
-#===============================================================================
-# Argument Parsing
-#===============================================================================
-DEFINITION_FILE=""
+add_error() {
+  ERRORS+=("$1")
+  err "$1"
+}
+
+add_warning() {
+  WARNINGS+=("$1")
+  warn "$1"
+}
 
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -d | --definition)
+        if [[ $# -lt 2 ]]; then
+          err "Missing value for $1"
+          exit 2
+        fi
         DEFINITION_FILE="$2"
         shift 2
         ;;
@@ -144,439 +84,319 @@ parse_args() {
 
   if [[ -z "$DEFINITION_FILE" ]]; then
     err "Missing required argument: --definition"
-    usage
     exit 2
   fi
-
   if [[ ! -f "$DEFINITION_FILE" ]]; then
     err "Definition file not found: $DEFINITION_FILE"
     exit 2
   fi
 }
 
-#===============================================================================
-# Validation Functions
-#===============================================================================
-ERRORS=()
-WARNINGS=()
+require_dependencies() {
+  if ! command -v jq >/dev/null 2>&1; then
+    err "Required tool not found: jq"
+    exit 2
+  fi
 
-add_error() {
-  ERRORS+=("$1")
-  err "$1"
-}
-
-add_warning() {
-  WARNINGS+=("$1")
-  warn "$1"
-}
-
-# Check if value is in array
-in_array() {
-  local needle="$1"
-  shift
-  local item
-  for item in "$@"; do
-    [[ "$item" == "$needle" ]] && return 0
+  local candidate
+  local candidates=("${PYTHON:-}" python3 python /c/Python313/python.exe /mnt/c/Python313/python.exe)
+  for candidate in "${candidates[@]}"; do
+    if [[ -n "$candidate" ]] && command -v "$candidate" >/dev/null 2>&1 \
+      && "$candidate" -c 'import jsonschema, yaml' >/dev/null 2>&1; then
+      PYTHON_COMMAND="$candidate"
+      break
+    fi
   done
-  return 1
-}
-
-#-------------------------------------------------------------------------------
-# Validate API version and kind
-#-------------------------------------------------------------------------------
-validate_api_version() {
-  debug "Checking apiVersion and kind..."
-
-  local api_version
-  api_version=$(yq -r '.apiVersion // ""' "$DEFINITION_FILE")
-
-  if [[ -z "$api_version" ]]; then
-    add_error "Missing required field: apiVersion"
-  elif [[ "$api_version" != "fabric.ontology/v1" ]]; then
-    add_error "Invalid apiVersion: '$api_version' (expected 'fabric.ontology/v1')"
-  fi
-
-  local kind
-  kind=$(yq -r '.kind // ""' "$DEFINITION_FILE")
-
-  if [[ -z "$kind" ]]; then
-    add_error "Missing required field: kind"
-  elif [[ "$kind" != "OntologyDefinition" ]]; then
-    add_error "Invalid kind: '$kind' (expected 'OntologyDefinition')"
+  if [[ -z "$PYTHON_COMMAND" ]]; then
+    err "No Python interpreter with jsonschema and PyYAML was found"
+    exit 2
   fi
 }
 
-#-------------------------------------------------------------------------------
-# Validate metadata section
-#-------------------------------------------------------------------------------
-validate_metadata() {
-  debug "Checking metadata..."
+cleanup() {
+  [[ -n "$DEFINITION_JSON" ]] && rm -f "$DEFINITION_JSON"
+}
 
-  local name
-  name=$(get_metadata_name "$DEFINITION_FILE")
-
-  if [[ -z "$name" || "$name" == "null" ]]; then
-    add_error "Missing required field: metadata.name"
+python_file_path() {
+  local path="$1"
+  if [[ "$PYTHON_COMMAND" == *.exe ]] && command -v wslpath >/dev/null 2>&1; then
+    wslpath -w "$path"
   else
-    debug "  metadata.name: $name"
+    printf '%s\n' "$path"
   fi
 }
 
-#-------------------------------------------------------------------------------
-# Validate entity types
-#-------------------------------------------------------------------------------
-validate_entity_types() {
-  debug "Checking entityTypes..."
+convert_definition() {
+  local definition_path output_path
+  DEFINITION_JSON=$(mktemp)
+  trap cleanup EXIT
+  definition_path=$(python_file_path "$DEFINITION_FILE")
+  output_path=$(python_file_path "$DEFINITION_JSON")
 
-  local count
-  count=$(get_entity_type_count "$DEFINITION_FILE")
+  if ! "$PYTHON_COMMAND" - "$definition_path" "$output_path" <<'PY'; then
+import json
+import sys
 
-  if [[ "$count" -eq 0 ]]; then
-    add_error "At least one entityType is required"
-    return
+import yaml
+
+with open(sys.argv[1], encoding="utf-8") as definition_file:
+    definition = yaml.safe_load(definition_file)
+with open(sys.argv[2], "w", encoding="utf-8") as output_file:
+    json.dump(definition, output_file)
+PY
+    add_error "Definition is not valid YAML"
+    return 1
   fi
-
-  debug "  Found $count entity type(s)"
-
-  # Collect all entity names for relationship validation
-  local entity_names=()
-  while IFS= read -r name; do
-    entity_names+=("$name")
-  done < <(get_entity_type_names "$DEFINITION_FILE")
-
-  # Validate each entity type
-  for entity_name in "${entity_names[@]}"; do
-    validate_entity_type "$entity_name"
-  done
+  if ! jq empty "$DEFINITION_JSON"; then
+    add_error "Definition could not be converted to valid JSON"
+    return 1
+  fi
 }
 
-validate_entity_type() {
-  local entity_name="$1"
-  debug "  Validating entity: $entity_name"
+validate_schema() {
+  debug "Validating Draft 7 JSON Schema"
 
-  # Get entity key
-  local key
-  key=$(get_entity_key "$DEFINITION_FILE" "$entity_name")
+  local definition_path schema_output schema_path
+  schema_path=$(python_file_path "$SCHEMA_FILE")
+  definition_path=$(python_file_path "$DEFINITION_JSON")
+  if schema_output=$(
+    "$PYTHON_COMMAND" - "$schema_path" "$definition_path" <<'PY'
+import json
+import sys
 
-  if [[ -z "$key" || "$key" == "null" ]]; then
-    add_error "Entity '$entity_name': Missing required field 'key'"
+from jsonschema import Draft7Validator, FormatChecker
+
+with open(sys.argv[1], encoding="utf-8") as schema_file:
+    schema = json.load(schema_file)
+with open(sys.argv[2], encoding="utf-8") as instance_file:
+    instance = json.load(instance_file)
+
+Draft7Validator.check_schema(schema)
+validator = Draft7Validator(schema, format_checker=FormatChecker())
+errors = sorted(validator.iter_errors(instance), key=lambda error: list(error.absolute_path))
+for error in errors:
+    path = ".".join(str(part) for part in error.absolute_path) or "<root>"
+    print(f"{path}: {error.message}")
+sys.exit(1 if errors else 0)
+PY
+  ); then
     return
   fi
 
-  # Get property names
-  local prop_names=()
-  while IFS= read -r prop_name; do
-    prop_names+=("$prop_name")
-  done < <(get_entity_property_names "$DEFINITION_FILE" "$entity_name")
-
-  if [[ ${#prop_names[@]} -eq 0 ]]; then
-    add_error "Entity '$entity_name': At least one property is required"
-    return
-  fi
-
-  # Validate key references a valid property
-  if ! in_array "$key" "${prop_names[@]}"; then
-    add_error "Entity '$entity_name': Key '$key' does not reference a valid property. Available: ${prop_names[*]}"
-  fi
-
-  # Validate each property
-  local properties
-  properties=$(get_entity_properties "$DEFINITION_FILE" "$entity_name")
-
-  echo "$properties" | jq -c '.[]' | while read -r prop; do
-    local prop_name prop_type prop_binding
-    prop_name=$(echo "$prop" | jq -r '.name')
-    prop_type=$(echo "$prop" | jq -r '.type')
-    prop_binding=$(echo "$prop" | jq -r '.binding // "static"')
-
-    # Validate property type
-    if ! in_array "$prop_type" "${SUPPORTED_TYPES[@]}"; then
-      add_error "Entity '$entity_name', property '$prop_name': Invalid type '$prop_type'. Supported: ${SUPPORTED_TYPES[*]}"
-    fi
-
-    # Validate binding type if specified
-    if [[ "$prop_binding" != "null" ]] && ! in_array "$prop_binding" "${SUPPORTED_BINDINGS[@]}"; then
-      add_error "Entity '$entity_name', property '$prop_name': Invalid binding '$prop_binding'. Supported: ${SUPPORTED_BINDINGS[*]}"
-    fi
-  done
-
-  # Validate data bindings
-  validate_entity_bindings "$entity_name"
+  while IFS= read -r message; do
+    [[ -n "$message" ]] && add_error "Schema: $message"
+  done <<<"$schema_output"
 }
 
-validate_entity_bindings() {
-  local entity_name="$1"
+add_duplicate_errors() {
+  local collection="$1"
+  local label="$2"
+  local duplicate
 
-  # Check for single dataBinding
-  local single_binding
-  single_binding=$(get_entity_data_binding "$DEFINITION_FILE" "$entity_name")
+  while IFS= read -r duplicate; do
+    [[ -n "$duplicate" ]] && add_error "Duplicate $label name: '$duplicate'"
+  done < <(jq -r "$collection | map(.name) | sort | group_by(.)[] | select(length > 1) | .[0]" "$DEFINITION_JSON")
+}
 
-  # Check for multiple dataBindings
-  local multi_bindings
-  multi_bindings=$(get_entity_data_bindings "$DEFINITION_FILE" "$entity_name")
+table_exists() {
+  local source="$1"
+  local table="$2"
+  jq -e --arg source "$source" --arg table "$table" \
+    '.dataSources[$source].tables // [] | any(.name == $table)' "$DEFINITION_JSON" >/dev/null
+}
 
-  local has_single has_multi
-  has_single=$([[ "$single_binding" != "null" && -n "$single_binding" ]] && echo "true" || echo "false")
-  has_multi=$([[ $(echo "$multi_bindings" | jq 'length') -gt 0 ]] && echo "true" || echo "false")
-
-  if [[ "$has_single" == "false" && "$has_multi" == "false" ]]; then
-    add_warning "Entity '$entity_name': No dataBinding or dataBindings defined"
-    return
-  fi
-
-  # Validate single binding
-  if [[ "$has_single" == "true" ]]; then
-    validate_binding "$entity_name" "$single_binding" "dataBinding"
-  fi
-
-  # Validate multiple bindings
-  if [[ "$has_multi" == "true" ]]; then
-    echo "$multi_bindings" | jq -c '.[]' | while read -r binding; do
-      local binding_type
-      binding_type=$(echo "$binding" | jq -r '.type')
-      validate_binding "$entity_name" "$binding" "dataBindings[$binding_type]"
-    done
-  fi
+eventhouse_column_exists() {
+  local table="$1"
+  local column="$2"
+  jq -e --arg table "$table" --arg column "$column" \
+    '.dataSources.eventhouse.tables // [] | map(select(.name == $table)) | .[0].schema // [] | any(.name == $column)' \
+    "$DEFINITION_JSON" >/dev/null
 }
 
 validate_binding() {
   local entity_name="$1"
   local binding="$2"
-  local binding_path="$3"
+  local path="$3"
+  local binding_type source table timestamp_column correlation_column
 
-  local binding_type source table
-  binding_type=$(echo "$binding" | jq -r '.type')
-  source=$(echo "$binding" | jq -r '.source')
-  table=$(echo "$binding" | jq -r '.table')
+  binding_type=$(jq -r '.type // ""' <<<"$binding")
+  source=$(jq -r '.source // ""' <<<"$binding")
+  table=$(jq -r '.table // ""' <<<"$binding")
 
-  # Validate binding type
-  if ! in_array "$binding_type" "${SUPPORTED_BINDINGS[@]}"; then
-    add_error "Entity '$entity_name', $binding_path: Invalid type '$binding_type'. Supported: ${SUPPORTED_BINDINGS[*]}"
+  if [[ "$binding_type" == "static" && "$source" != "lakehouse" ]]; then
+    add_error "Entity '$entity_name', $path: Static bindings must use lakehouse"
+  elif [[ "$binding_type" == "timeseries" && "$source" != "eventhouse" ]]; then
+    add_error "Entity '$entity_name', $path: Timeseries bindings must use eventhouse"
   fi
 
-  # Validate source
-  if ! in_array "$source" "${SUPPORTED_SOURCES[@]}"; then
-    add_error "Entity '$entity_name', $binding_path: Invalid source '$source'. Supported: ${SUPPORTED_SOURCES[*]}"
+  if [[ -n "$source" && -n "$table" ]] && ! table_exists "$source" "$table"; then
+    add_error "Entity '$entity_name', $path: Table '$table' is not declared for source '$source'"
   fi
 
-  # Validate table is specified
-  if [[ -z "$table" || "$table" == "null" ]]; then
-    add_error "Entity '$entity_name', $binding_path: Missing required field 'table'"
-  fi
-
-  # Validate source is defined in dataSources
-  if [[ "$source" == "lakehouse" ]]; then
-    local lakehouse_name
-    lakehouse_name=$(get_lakehouse_name "$DEFINITION_FILE")
-    if [[ -z "$lakehouse_name" || "$lakehouse_name" == "null" ]]; then
-      add_error "Entity '$entity_name', $binding_path: References lakehouse but dataSources.lakehouse is not defined"
-    else
-      # Validate table exists in lakehouse
-      local table_exists
-      table_exists=$(yq ".dataSources.lakehouse.tables[] | select(.name == \"$table\") | .name" "$DEFINITION_FILE")
-      if [[ -z "$table_exists" ]]; then
-        add_error "Entity '$entity_name', $binding_path: Table '$table' not found in dataSources.lakehouse.tables"
-      fi
-    fi
-  elif [[ "$source" == "eventhouse" ]]; then
-    local eventhouse_name
-    eventhouse_name=$(get_eventhouse_name "$DEFINITION_FILE")
-    if [[ -z "$eventhouse_name" || "$eventhouse_name" == "null" ]]; then
-      add_error "Entity '$entity_name', $binding_path: References eventhouse but dataSources.eventhouse is not defined"
-    else
-      # Validate table exists in eventhouse
-      local table_exists
-      table_exists=$(yq ".dataSources.eventhouse.tables[] | select(.name == \"$table\") | .name" "$DEFINITION_FILE")
-      if [[ -z "$table_exists" ]]; then
-        add_error "Entity '$entity_name', $binding_path: Table '$table' not found in dataSources.eventhouse.tables"
-      fi
-    fi
-  fi
-
-  # Validate timeseries-specific fields
-  if [[ "$binding_type" == "timeseries" ]]; then
-    local timestamp_col
-    timestamp_col=$(echo "$binding" | jq -r '.timestampColumn // ""')
-    if [[ -z "$timestamp_col" ]]; then
-      add_error "Entity '$entity_name', $binding_path: Timeseries binding requires 'timestampColumn'"
-    fi
-  fi
-}
-
-#-------------------------------------------------------------------------------
-# Validate relationships
-#-------------------------------------------------------------------------------
-validate_relationships() {
-  debug "Checking relationships..."
-
-  local count
-  count=$(get_relationship_count "$DEFINITION_FILE")
-
-  if [[ "$count" -eq 0 ]]; then
-    debug "  No relationships defined (optional)"
+  if [[ "$binding_type" != "timeseries" ]]; then
     return
   fi
 
-  debug "  Found $count relationship(s)"
+  timestamp_column=$(jq -r '.timestampColumn // ""' <<<"$binding")
+  correlation_column=$(jq -r '.correlationColumn // ""' <<<"$binding")
 
-  # Collect all entity names
-  local entity_names=()
-  while IFS= read -r name; do
-    entity_names+=("$name")
-  done < <(get_entity_type_names "$DEFINITION_FILE")
+  if [[ -z "$timestamp_column" ]]; then
+    add_error "Entity '$entity_name', $path: Timeseries binding requires timestampColumn"
+  elif ! eventhouse_column_exists "$table" "$timestamp_column"; then
+    add_error "Entity '$entity_name', $path: Timestamp column '$timestamp_column' is not declared in '$table'"
+  fi
 
-  # Validate each relationship
-  while IFS= read -r rel_name; do
-    validate_relationship "$rel_name" "${entity_names[@]}"
-  done < <(get_relationship_names "$DEFINITION_FILE")
+  if [[ -z "$correlation_column" ]]; then
+    add_error "Entity '$entity_name', $path: Timeseries binding requires correlationColumn"
+  elif ! eventhouse_column_exists "$table" "$correlation_column"; then
+    add_error "Entity '$entity_name', $path: Correlation column '$correlation_column' is not declared in '$table'"
+  fi
+}
+
+validate_entity() {
+  local entity="$1"
+  local entity_name key display_name property_count property_name
+  local binding binding_index binding_type candidate count
+  local binding_types=()
+
+  entity_name=$(jq -r '.name // ""' <<<"$entity")
+  key=$(jq -r '.key // ""' <<<"$entity")
+  display_name=$(jq -r '.displayName // ""' <<<"$entity")
+  property_count=$(jq '.properties // [] | length' <<<"$entity")
+  [[ "$property_count" -eq 0 ]] && return
+
+  if ! jq -e --arg key "$key" '.properties | any(.name == $key)' <<<"$entity" >/dev/null; then
+    add_error "Entity '$entity_name': Key '$key' does not reference a property"
+  fi
+  if [[ -n "$display_name" ]] && ! jq -e --arg display "$display_name" '.properties | any(.name == $display)' <<<"$entity" >/dev/null; then
+    add_error "Entity '$entity_name': Display property '$display_name' does not reference a property"
+  fi
+
+  while IFS= read -r property_name; do
+    add_error "Entity '$entity_name': Duplicate property name '$property_name'"
+  done < <(jq -r '.properties | map(.name) | sort | group_by(.)[] | select(length > 1) | .[0]' <<<"$entity")
+
+  if jq -e 'has("dataBinding") and has("dataBindings")' <<<"$entity" >/dev/null; then
+    add_error "Entity '$entity_name': Use either dataBinding or dataBindings, not both"
+  fi
+
+  if jq -e 'has("dataBinding")' <<<"$entity" >/dev/null; then
+    binding=$(jq -c '.dataBinding' <<<"$entity")
+    binding_type=$(jq -r '.type // ""' <<<"$binding")
+    binding_types+=("$binding_type")
+    if [[ "$binding_type" == "timeseries" ]]; then
+      add_error "Entity '$entity_name': Singular dataBinding supports static bindings only; use dataBindings for timeseries"
+    fi
+    validate_binding "$entity_name" "$binding" "dataBinding"
+  fi
+
+  binding_index=0
+  while IFS= read -r binding; do
+    binding_type=$(jq -r '.type // ""' <<<"$binding")
+    binding_types+=("$binding_type")
+    validate_binding "$entity_name" "$binding" "dataBindings[$binding_index]"
+    binding_index=$((binding_index + 1))
+  done < <(jq -c '.dataBindings // [] | .[]' <<<"$entity")
+
+  if [[ ${#binding_types[@]} -eq 0 ]]; then
+    add_warning "Entity '$entity_name': No data binding is defined"
+    return
+  fi
+
+  while IFS= read -r binding_type; do
+    count=0
+    for candidate in "${binding_types[@]}"; do
+      [[ "$candidate" == "$binding_type" ]] && count=$((count + 1))
+    done
+    if [[ "$count" -eq 0 ]]; then
+      add_error "Entity '$entity_name': Property binding '$binding_type' has no matching data binding"
+    fi
+  done < <(jq -r '.properties[] | .binding // empty' <<<"$entity" | sort -u)
+
+  while IFS= read -r binding_type; do
+    count=0
+    for candidate in "${binding_types[@]}"; do
+      [[ "$candidate" == "$binding_type" ]] && count=$((count + 1))
+    done
+    if [[ "$count" -gt 1 ]]; then
+      add_error "Entity '$entity_name': Duplicate '$binding_type' data binding"
+    fi
+  done < <(printf '%s\n' "${binding_types[@]}" | sort -u)
+
+  return 0
 }
 
 validate_relationship() {
-  local rel_name="$1"
-  shift
-  local entity_names=("$@")
+  local relationship="$1"
+  local relationship_name from_entity to_entity table from_column to_column
 
-  debug "  Validating relationship: $rel_name"
+  relationship_name=$(jq -r '.name // ""' <<<"$relationship")
+  from_entity=$(jq -r '.from // ""' <<<"$relationship")
+  to_entity=$(jq -r '.to // ""' <<<"$relationship")
 
-  local rel
-  rel=$(get_relationship "$DEFINITION_FILE" "$rel_name")
-
-  local from_entity to_entity
-  from_entity=$(echo "$rel" | jq -r '.from')
-  to_entity=$(echo "$rel" | jq -r '.to')
-
-  # Validate from entity exists
-  if ! in_array "$from_entity" "${entity_names[@]}"; then
-    add_error "Relationship '$rel_name': 'from' entity '$from_entity' not found. Available: ${entity_names[*]}"
+  if ! jq -e --arg name "$from_entity" '.entityTypes | any(.name == $name)' "$DEFINITION_JSON" >/dev/null; then
+    add_error "Relationship '$relationship_name': From entity '$from_entity' is not declared"
+  fi
+  if ! jq -e --arg name "$to_entity" '.entityTypes | any(.name == $name)' "$DEFINITION_JSON" >/dev/null; then
+    add_error "Relationship '$relationship_name': To entity '$to_entity' is not declared"
+  fi
+  if ! jq -e 'has("binding")' <<<"$relationship" >/dev/null; then
+    return
   fi
 
-  # Validate to entity exists
-  if ! in_array "$to_entity" "${entity_names[@]}"; then
-    add_error "Relationship '$rel_name': 'to' entity '$to_entity' not found. Available: ${entity_names[*]}"
+  table=$(jq -r '.binding.table // ""' <<<"$relationship")
+  from_column=$(jq -r '.binding.fromColumn // ""' <<<"$relationship")
+  to_column=$(jq -r '.binding.toColumn // ""' <<<"$relationship")
+
+  if [[ -n "$table" ]] && ! table_exists "lakehouse" "$table"; then
+    add_error "Relationship '$relationship_name': Binding table '$table' is not declared in the lakehouse"
   fi
+  [[ -z "$from_column" ]] && add_error "Relationship '$relationship_name': Binding requires fromColumn"
+  [[ -z "$to_column" ]] && add_error "Relationship '$relationship_name': Binding requires toColumn"
+
+  return 0
 }
 
-#-------------------------------------------------------------------------------
-# Validate data sources
-#-------------------------------------------------------------------------------
-validate_data_sources() {
-  debug "Checking dataSources..."
+validate_semantics() {
+  debug "Validating semantic constraints"
+  add_duplicate_errors '.dataSources.lakehouse.tables // []' "lakehouse table"
+  add_duplicate_errors '.dataSources.eventhouse.tables // []' "eventhouse table"
+  add_duplicate_errors '.entityTypes' "entity"
+  add_duplicate_errors '.relationships // []' "relationship"
 
-  local has_lakehouse has_eventhouse
-  has_lakehouse=$(has_lakehouse "$DEFINITION_FILE" && echo "true" || echo "false")
-  has_eventhouse=$(has_eventhouse "$DEFINITION_FILE" && echo "true" || echo "false")
+  local entity relationship
+  while IFS= read -r entity; do
+    validate_entity "$entity"
+  done < <(jq -c '.entityTypes[]' "$DEFINITION_JSON")
 
-  if [[ "$has_lakehouse" == "false" && "$has_eventhouse" == "false" ]]; then
-    add_warning "No data sources defined (dataSources.lakehouse or dataSources.eventhouse)"
-  fi
+  while IFS= read -r relationship; do
+    validate_relationship "$relationship"
+  done < <(jq -c '.relationships // [] | .[]' "$DEFINITION_JSON")
 
-  if [[ "$has_lakehouse" == "true" ]]; then
-    validate_lakehouse_config
-  fi
-
-  if [[ "$has_eventhouse" == "true" ]]; then
-    validate_eventhouse_config
-  fi
+  return 0
 }
 
-validate_lakehouse_config() {
-  debug "  Validating lakehouse configuration..."
-
-  local name
-  name=$(get_lakehouse_name "$DEFINITION_FILE")
-  debug "    name: $name"
-
-  local tables
-  tables=$(get_lakehouse_tables "$DEFINITION_FILE")
-  local table_count
-  table_count=$(echo "$tables" | jq 'length')
-
-  if [[ "$table_count" -eq 0 ]]; then
-    add_error "dataSources.lakehouse: At least one table is required"
-  fi
-
-  # Validate each table has name
-  echo "$tables" | jq -c '.[]' | while read -r table; do
-    local table_name
-    table_name=$(echo "$table" | jq -r '.name // ""')
-    if [[ -z "$table_name" ]]; then
-      add_error "dataSources.lakehouse.tables: Table missing required field 'name'"
-    fi
-  done
-}
-
-validate_eventhouse_config() {
-  debug "  Validating eventhouse configuration..."
-
-  local name database
-  name=$(get_eventhouse_name "$DEFINITION_FILE")
-  database=$(get_eventhouse_database "$DEFINITION_FILE")
-
-  debug "    name: $name"
-  debug "    database: $database"
-
-  if [[ -z "$database" || "$database" == "null" ]]; then
-    add_error "dataSources.eventhouse: Missing required field 'database'"
-  fi
-
-  local tables
-  tables=$(get_eventhouse_tables "$DEFINITION_FILE")
-  local table_count
-  table_count=$(echo "$tables" | jq 'length')
-
-  if [[ "$table_count" -eq 0 ]]; then
-    add_error "dataSources.eventhouse: At least one table is required"
-  fi
-
-  # Validate each table has name and schema
-  echo "$tables" | jq -c '.[]' | while read -r table; do
-    local table_name schema_count
-    table_name=$(echo "$table" | jq -r '.name // ""')
-    schema_count=$(echo "$table" | jq '.schema | length // 0')
-
-    if [[ -z "$table_name" ]]; then
-      add_error "dataSources.eventhouse.tables: Table missing required field 'name'"
-    elif [[ "$schema_count" -eq 0 ]]; then
-      add_error "dataSources.eventhouse.tables[$table_name]: Missing required field 'schema'"
-    fi
-  done
-}
-
-#===============================================================================
-# Main
-#===============================================================================
 main() {
   parse_args "$@"
-
+  require_dependencies
   log "Validating definition: $DEFINITION_FILE"
-  echo
 
-  # Run all validations
-  validate_api_version
-  validate_metadata
-  validate_data_sources
-  validate_entity_types
-  validate_relationships
+  if convert_definition; then
+    validate_schema
+    validate_semantics
+  fi
 
-  echo
-
-  # Summary
   local error_count=${#ERRORS[@]}
   local warning_count=${#WARNINGS[@]}
-
-  if [[ $error_count -eq 0 ]]; then
-    success "Definition is valid"
-    if [[ $warning_count -gt 0 ]]; then
-      log "$warning_count warning(s)"
-    fi
-    exit 0
-  else
+  if [[ "$error_count" -gt 0 ]]; then
     err "Validation failed with $error_count error(s)"
-    if [[ $warning_count -gt 0 ]]; then
-      log "$warning_count warning(s)"
-    fi
-    exit 1
+    [[ "$warning_count" -gt 0 ]] && log "$warning_count warning(s)"
+    return 1
   fi
+
+  success "Definition is valid"
+  [[ "$warning_count" -gt 0 ]] && log "$warning_count warning(s)"
+  return 0
 }
 
 main "$@"

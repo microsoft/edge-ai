@@ -2,7 +2,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.51.0"
+      version = ">= 5.3.0, < 6.0.0"
     }
     azapi = {
       source  = "Azure/azapi"
@@ -10,16 +10,22 @@ terraform {
     }
     fabric = {
       source  = "microsoft/fabric"
-      version = "1.3.0"
+      version = "1.10.0"
     }
   }
   required_version = ">= 1.12.0, < 2.0"
 }
 
 provider "azurerm" {
-  storage_use_azuread = true
-  partner_id          = "acce1e78-0375-4637-a593-86aa36dcfeac"
-  features {}
+  resource_provider_registrations = "none"
+  storage_use_azuread             = true
+  partner_id                      = "acce1e78-0375-4637-a593-86aa36dcfeac"
+  features {
+    enhanced_validation {
+      locations          = true
+      resource_providers = true
+    }
+  }
 }
 
 provider "fabric" {

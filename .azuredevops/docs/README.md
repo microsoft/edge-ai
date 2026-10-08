@@ -48,11 +48,11 @@ Reusable pipeline templates for GitHub integration and release operations:
 
 Complete reference for all available templates with usage examples.
 
-* **GitHub Authentication** - [github-auth.yml](../templates/github-auth.md)
-* **Branch Operations** - [github-branch-operations.yml](../templates/github-branch-operations.md)
-* **Pull Request Management** - [pr-creation.yml](../templates/pr-creation.md)
-* **Git Synchronization** - [git-sync-operations.yml](../templates/git-sync-operations.md)
-* **Release Validation** - [release-validation.yml](../templates/release-validation.md)
+* **GitHub Authentication** - [github-auth.yml](./github-auth.md)
+* **Branch Operations** - [github-branch-operations.yml](./github-branch-operations.md)
+* **Pull Request Management** - [pr-creation.yml](./pr-creation.md)
+* **Git Synchronization** - [git-sync-operations.yml](./git-sync-operations.md)
+* **Release Validation** - [release-validation.yml](./release-validation.md)
 
 ### [Authentication Guide](./authentication.md)
 
@@ -153,7 +153,7 @@ All release automation pipelines use GitHub App authentication for secure API ac
 ### Developer Documentation
 
 * [Build CI/CD Documentation](../../docs/build-cicd/README.md) - Build and test pipelines
-* [Azure Pipelines Overview](../../docs/build-cicd/azure-pipelines.md) - General pipeline architecture
+* [Azure Pipelines Overview](../../docs/build-cicd/azure-pipelines/README.md) - General pipeline architecture
 * [Contributing Guide](../../CONTRIBUTING.md) - Development workflow and standards
 
 ### External References

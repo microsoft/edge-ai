@@ -94,6 +94,12 @@ variable "sku_name" {
  * Private Endpoint Configuration - Optional
  */
 
+variable "private_dns_zone_id" {
+  description = "Existing private DNS zone ID used when should_create_private_dns_zone is false"
+  type        = string
+  default     = null
+}
+
 variable "should_create_private_dns_zone" {
   description = "Whether to create a new private DNS zone. Set to false if using existing zone"
   type        = bool

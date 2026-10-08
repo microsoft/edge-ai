@@ -70,6 +70,37 @@ function validateWebhookUrl(urlString) {
 }
 
 /**
+ * Parse a webhook URL's hostname for provider detection.
+ * @param {string} webhookUrl - Destination webhook URL
+ * @returns {string} Lowercased hostname, or empty string if the URL is invalid
+ */
+function getWebhookHostname(webhookUrl) {
+  try {
+    return new URL(webhookUrl).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Determine whether a hostname belongs to Microsoft Teams / Power Automate.
+ * @param {string} hostname - Lowercased hostname
+ * @returns {boolean} True if the hostname is a Teams/Power Automate endpoint
+ */
+function isTeamsWebhookHost(hostname) {
+  return hostname === "webhook.office.com" || hostname.endsWith(".logic.azure.com");
+}
+
+/**
+ * Determine whether a hostname belongs to Slack.
+ * @param {string} hostname - Lowercased hostname
+ * @returns {boolean} True if the hostname is a Slack endpoint
+ */
+function isSlackWebhookHost(hostname) {
+  return hostname === "hooks.slack.com";
+}
+
+/**
  * In-memory deduplication cache.
  * Key: "source|label|severity" → value: timestamp of last dispatched alert.
  * Entries older than DEDUP_WINDOW_MS are evicted on each access.
@@ -312,11 +343,11 @@ function buildGenericPayload(alert, severity) {
  * @returns {object} Webhook-appropriate payload
  */
 function buildWebhookPayload(webhookUrl, alert, severity) {
-  const url = webhookUrl.toLowerCase();
-  if (url.includes("webhook.office.com") || url.includes(".logic.azure.com")) {
+  const hostname = getWebhookHostname(webhookUrl);
+  if (isTeamsWebhookHost(hostname)) {
     return buildTeamsPayload(alert, severity);
   }
-  if (url.includes("hooks.slack.com")) {
+  if (isSlackWebhookHost(hostname)) {
     return buildSlackPayload(alert, severity);
   }
   return buildGenericPayload(alert, severity);
@@ -375,7 +406,7 @@ async function dispatchWebhook(webhookUrl, payload, context) {
  * @returns {object} Webhook-appropriate digest payload
  */
 function buildDigestPayload(webhookUrl, alerts) {
-  const url = webhookUrl.toLowerCase();
+  const hostname = getWebhookHostname(webhookUrl);
   const summary = alerts.map((a) => {
     const source = a.alert.source ?? a.alert.device_id ?? a.alert.topic ?? "edge";
     const label = a.alert.label ?? a.alert.class_name ?? "N/A";
@@ -383,7 +414,7 @@ function buildDigestPayload(webhookUrl, alerts) {
     return `${source}: ${label} (${confidence})`;
   });
 
-  if (url.includes("webhook.office.com") || url.includes(".logic.azure.com")) {
+  if (isTeamsWebhookHost(hostname)) {
     return {
       type: "message",
       attachments: [
@@ -413,7 +444,7 @@ function buildDigestPayload(webhookUrl, alerts) {
     };
   }
 
-  if (url.includes("hooks.slack.com")) {
+  if (isSlackWebhookHost(hostname)) {
     return {
       blocks: [
         {

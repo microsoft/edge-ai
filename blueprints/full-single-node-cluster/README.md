@@ -1,391 +1,113 @@
 ---
-title: Full Single Cluster Blueprint
-description: Complete end-to-end deployment of an Arc-enabled Kubernetes cluster with optional Azure IoT Operations on a single node, including all components from VM creation to cluster setup
+title: Full Single-node Cluster Blueprint (Consolidated)
+description: Migration pointer for the retired full-single-node-cluster blueprint, now consolidated into full-multi-node-cluster with a verified Terraform state move and Bicep parameter guide
 author: Edge AI Team
-ms.date: 2026-02-17
-ms.topic: reference
+ms.date: 2026-06-16
+ms.topic: how-to
 keywords:
   - azure iot operations
   - single node cluster
-  - kubernetes
-  - arc-enabled
-  - terraform
+  - migration
+  - terraform state mv
   - bicep
   - edge computing
-  - vm deployment
-  - k3s cluster
-  - dataflow graphs
-  - schema registry
-estimated_reading_time: 5
 ---
 
-## Full Single Cluster Blueprint
+## Overview
 
-This blueprint provides a complete end-to-end deployment of an Arc-enabled Kubernetes cluster on a single node, with optional Azure IoT Operations (AIO). It deploys all necessary components from VM creation to cluster setup, resulting in a fully functional edge computing environment that integrates with Azure cloud services. Set `should_deploy_aio = false` to deploy an Arc-connected cluster without AIO.
-Please follow general blueprint recommendations from blueprints [README.md](../README.md).
+This blueprint has been consolidated into [full-multi-node-cluster](../full-multi-node-cluster/). A single parameterized blueprint now covers both single-node and multi-node deployments, so the standalone `full-single-node-cluster` blueprint is retained only as this migration pointer.
 
-## Architecture
+Single-node is the default configuration of the unified blueprint. With `host_machine_count = 1` and `should_use_arc_machines = false`, the unified blueprint reproduces the exact topology that this blueprint previously deployed.
 
-This blueprint deploys:
+Use the unified blueprint going forward:
 
-1. A Linux VM host in Azure
-2. A K3s Kubernetes cluster on the VM
-3. Azure Arc connection for the cluster
-4. Cloud resources (Key Vault, Storage, Observability, Messaging, ACR)
-5. Azure IoT Operations components (optional, controlled by `should_deploy_aio`)
-6. Schema registry with versioned message schemas (when AIO is enabled)
-7. Optional messaging and observability components
-8. Optional dataflow graphs for WASM-based data processing pipelines (in Terraform only)
-9. Optional Preview Connectors for asset discovery (in Terraform only)
+* Terraform: [full-multi-node-cluster/terraform](../full-multi-node-cluster/terraform/)
+* Bicep: [full-multi-node-cluster/bicep](../full-multi-node-cluster/bicep/)
 
-The resulting architecture provides a unified edge-to-cloud solution with secure communication, data processing capabilities, and comprehensive monitoring.
+## Why It Moved
 
-## Implementation Options
+Maintaining separate single-node and multi-node blueprints duplicated nearly identical orchestration. The unified blueprint parameterizes node count and Arc-machine targeting, which keeps one source of truth and lets you scale from a single VM-backed node to a multi-node or Arc-enabled cluster by changing inputs rather than switching blueprints.
 
-This blueprint is available in two implementation options:
+## Terraform State Migration
 
-- **Terraform** - Infrastructure as Code using HashiCorp Terraform
-- **Bicep** - Infrastructure as Code using Azure Bicep
+If you previously deployed `full-single-node-cluster` with Terraform, migrate your existing state to the unified blueprint. Only one module address changed: `module.cloud_vm_host` is now count-gated (`count = local.should_use_arc_machines ? 0 : 1`, which evaluates to `1` by default), so its instance address became `module.cloud_vm_host[0]`.
 
-Choose the implementation that best fits your team's expertise and existing pipelines.
+For a **local-state** deployment, back up first, seed the unified blueprint directory with your variables, a working copy of the state, **and the generated SSH key directory**, then perform the single documented move:
 
-## Terraform Structure
+```sh
+# From the repository root
 
-This blueprint consists of the following key components:
+# 1. Back up your live state outside the repo
+cp blueprints/full-single-node-cluster/terraform/terraform.tfstate \
+   ~/sn-state-backup-$(date +%Y%m%d-%H%M%S).tfstate
 
-- **Main Configuration** (`main.tf`): Orchestrates the deployment workflow and module dependencies
-- **Variables** (`variables.tf`): Defines input parameters with descriptions and defaults
-- **Outputs** (`outputs.tf`): Exposes important resource information for future reference
-- **Versions** (`versions.tf`): Specifies provider versions and requirements
+# 2. Seed the unified blueprint with your tfvars and a working copy of the state
+cp blueprints/full-single-node-cluster/terraform/terraform.tfvars \
+   blueprints/full-multi-node-cluster/terraform/terraform.tfvars
+cp blueprints/full-single-node-cluster/terraform/terraform.tfstate \
+   blueprints/full-multi-node-cluster/terraform/terraform.tfstate
 
-### Key Modules Used in Terraform
+# 3. Copy the generated SSH key directory (see "Migration no-op requirements").
+#    cloud_vm_host writes local_sensitive_file.private_key to ../.ssh relative to the
+#    terraform directory. If the key file is absent in the new working directory,
+#    Terraform treats it as a deleted resource and that single change cascades into a
+#    full IoT Operations and dataflow replacement.
+cp -rp blueprints/full-single-node-cluster/.ssh \
+   blueprints/full-multi-node-cluster/.ssh
 
-| Module                    | Purpose                                 | Source Location                                          |
-|---------------------------|-----------------------------------------|----------------------------------------------------------|
-| `cloud_resource_group`    | Creates resource groups                 | `../../../src/000-cloud/000-resource-group/terraform`    |
-| `cloud_security_identity` | Handles identity and security resources | `../../../src/000-cloud/010-security-identity/terraform` |
-| `cloud_observability`     | Sets up monitoring infrastructure       | `../../../src/000-cloud/020-observability/terraform`     |
-| `cloud_data`              | Creates data storage resources          | `../../../src/000-cloud/030-data/terraform`              |
-| `cloud_messaging`         | Sets up messaging infrastructure        | `../../../src/000-cloud/040-messaging/terraform`         |
-| `cloud_vm_host`           | Creates the VM host for the cluster     | `../../../src/000-cloud/051-vm-host/terraform`           |
-| `cloud_acr`               | Azure Container Registry                | `../../../src/000-cloud/060-acr/terraform`               |
-| `edge_cncf_cluster`       | Deploys K3s Kubernetes cluster          | `../../../src/100-edge/100-cncf-cluster/terraform`       |
-| `edge_iot_ops`            | Installs Azure IoT Operations           | `../../../src/100-edge/110-iot-ops/terraform`            |
-| `edge_observability`      | Sets up edge monitoring                 | `../../../src/100-edge/120-observability/terraform`      |
-| `edge_messaging`          | Deploys edge messaging components       | `../../../src/100-edge/130-messaging/terraform`          |
+# 4. Set the subscription environment, then init and move
+source scripts/az-sub-init.sh
+cd blueprints/full-multi-node-cluster/terraform
+terraform init
+terraform state mv 'module.cloud_vm_host' 'module.cloud_vm_host[0]'
 
-### Variable Reference in Terraform
-
-Beyond the basic required variables, this blueprint supports advanced customization:
-
-| Variable                                  | Description                        | Default  | Notes                                                       |
-|-------------------------------------------|------------------------------------|----------|-------------------------------------------------------------|
-| `environment`                             | Environment type                   | Required | "dev", "test", "prod", etc.                                 |
-| `resource_prefix`                         | Prefix for resource naming         | Required | Short unique alphanumeric string (max 8 chars recommended)  |
-| `resource_group_name`                     | Name of resource group             | `null`   | When null, name is generated from prefix, env, and instance |
-| `location`                                | Azure region location              | Required | "eastus2", "westus3", etc.                                  |
-| `instance`                                | Deployment instance number         | `"001"`  | For multiple deployments                                    |
-| `should_get_custom_locations_oid`         | Auto-retrieve Custom Locations OID | `true`   | Set to false when providing custom_locations_oid            |
-| `custom_locations_oid`                    | Custom Locations SP Object ID      | `null`   | Required for Arc custom locations                           |
-| `should_deploy_aio`                       | Deploy Azure IoT Operations        | `true`   | Set to false for Arc-only deployment without AIO            |
-| `should_create_anonymous_broker_listener` | Enable anonymous MQTT listener     | `false`  | For dev/test only, not secure for production                |
-| `should_create_aks`                       | Create Azure Kubernetes Service    | `false`  | When true, deploys AKS in addition to the K3s cluster       |
-| `should_create_acr_private_endpoint`      | Enable ACR private endpoint        | `false`  | Creates a private endpoint for the Azure Container Registry |
-| `aio_features`                            | AIO feature configurations         | `null`   | Map of feature settings for Azure IoT Operations            |
-| `schemas`                                 | Schema registry schemas            | Default  | List of schemas with versions for the schema registry       |
-| `dataflow_graphs`                         | Dataflow graph definitions         | `[]`     | List of dataflow graphs with nodes and connections          |
-
-For additional configuration options, review the variables in `variables.tf`.
-
-> Note: The `aio_features` variable is a map that allows you to specify feature flags for Azure IoT Operations. This can be used to enable or disable specific features based on your deployment needs. For example, you can use the following format of variables to enable the preview feature [OPC UA asset discovery](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-autodetect-opc-ua-assets-use-akri):
-
-```hcl
-should_deploy_resource_sync_rules     = true
-
-aio_features = {
-  connectors = {
-    settings = {
-      preview = "Enabled"
-    }
-  }
-}
-
+# 5. Plan, preserving your existing resource-group blueprint tag (see "Migration no-op
+#    requirements"). Omitting this flag flips the tag and cascades into a full replacement.
+terraform plan -var 'tags={"blueprint":"full-single-node-cluster"}'   # expect: 0 to add, 0 to destroy
 ```
 
-## Bicep Structure
+For a **remote backend**, point the unified blueprint at the same backend (reuse your `backend` block / `-backend-config`), run `terraform init`, then run only the SSH key copy, `terraform state mv`, and `terraform plan` steps above.
 
-This blueprint also provides a Bicep implementation with the following components:
+The module-level move relocates the entire `cloud_vm_host` subtree (virtual machine, SSH key, generated password, VM extension, and role assignments), so no per-child moves are required.
 
-- **Main Template** (`bicep/main.bicep`): The primary deployment template that orchestrates the overall solution
-- **Types Definition** (`bicep/types.core.bicep`): Defines core parameter types and structures used throughout the deployment
+The new `data.azurerm_arc_machine.arc_machines` and `terraform_data.defer_arc_machine_prefix` resources are count-0 when `should_use_arc_machines = false` (the single-node default), so they create no state entries and need no moves.
 
-The Bicep implementation follows the same architecture as the Terraform version, providing a native Azure Resource Manager (ARM) approach to deploying the same resources.
+### Migration no-op requirements
 
-### Key Modules Used in Bicep
+A clean migration produces a `terraform plan` with `0 to add, 0 to destroy`. Two non-obvious requirements protect that outcome, and skipping either one cascades into a full replacement of the IoT Operations instance, custom location, MQTT broker, and every dataflow graph:
 
-| Module                  | Purpose                             | Source Location                                      |
-|-------------------------|-------------------------------------|------------------------------------------------------|
-| `resourceGroup`         | Creates the resource group          | Inline resource in main.bicep                        |
-| `cloudResourceGroup`    | Sets up cloud resources             | `../../../src/000-cloud/000-resource-group/bicep`    |
-| `cloudSecurityIdentity` | Handles identity and security       | `../../../src/000-cloud/010-security-identity/bicep` |
-| `edgeVmHost`            | Creates the VM host for the cluster | `../../../src/100-edge/051-vm-host/bicep`            |
-| `edgeCncfCluster`       | Deploys K3s Kubernetes cluster      | `../../../src/100-edge/100-cncf-cluster/bicep`       |
-| `edgeIotOps`            | Installs Azure IoT Operations       | `../../../src/100-edge/110-iot-ops/bicep`            |
+* **Copy the `.ssh` directory.** `module.cloud_vm_host` writes its generated private key to `blueprints/full-multi-node-cluster/.ssh/` via `local_sensitive_file`. A missing key file is a pending change on `cloud_vm_host`. Because the edge modules declare `depends_on = [module.cloud_vm_host]`, that pending change defers the cluster identity data sources to apply time, which forces the downstream Arc and IoT Operations resources to be replaced.
+* **Preserve the `blueprint` resource-group tag.** The unified blueprint tags resources `blueprint = full-multi-cluster`, but your state carries `blueprint = full-single-node-cluster`. The tag is overridable through `var.tags`, so pass `-var 'tags={"blueprint":"full-single-node-cluster"}'`. A bare tag change re-reads the current-user identity data sources at apply, making the bootstrap script and OIDC issuer "known after apply" and triggering the same cascade.
 
-## Parameter Reference in Bicep
+After both safeguards are in place, the migration plan reports `0 to add, 0 to destroy` with only benign in-place updates: an observability dashboard drift refresh and a cosmetic `headers: [] -> null` normalization on the dataflow graphs and endpoints. Once your topology is migrated, you can drop the tag override to adopt the `full-multi-cluster` tag in a later apply.
 
-The Bicep implementation uses a streamlined parameter approach with a `Common` object type and additional parameters:
+## Variable Changes
 
-| Parameter                             | Description                    | Default        | Notes                                                       |
-|---------------------------------------|--------------------------------|----------------|-------------------------------------------------------------|
-| `common.resourcePrefix`               | Prefix for resource naming     | Required       | Short unique alphanumeric string (max 8 chars recommended)  |
-| `common.location`                     | Azure region location          | Required       | "eastus2", "westus3", etc.                                  |
-| `common.environment`                  | Environment type               | Required       | "dev", "test", "prod", etc.                                 |
-| `common.instance`                     | Deployment instance number     | Required       | For multiple deployments                                    |
-| `useExistingResourceGroup`            | Use existing resource group    | `false`        | When true, looks up a resource group instead of creating it |
-| `resourceGroupName`                   | Name of resource group         | Generated      | When empty, name is generated from common parameters        |
-| `resourceGroupName`                   | Resource group name            | Auto-generated | Uses pattern: `rg-{prefix}-{environment}-{instance}`        |
-| `adminPassword`                       | VM admin password              | Required       | **Important**: always pass this securely                    |
-| `customLocationsOid`                  | Custom Locations SP Object ID  | Required       | Needed for Arc custom locations feature                     |
-| `shouldCreateAnonymousBrokerListener` | Enable anonymous MQTT listener | `false`        | For dev/test only                                           |
+No existing variable default changed in a way that alters deployed infrastructure. `host_machine_count` is new and defaults to `1`, which reproduces the single node. The unified blueprint adds 17 new variables, all with single-node-safe defaults (`should_use_arc_machines = false`, `arc_machine_count = 1`). You do not need to re-pin any variable to preserve your current topology. Setting `host_machine_count > 1` or `should_use_arc_machines = true` are opt-in changes that intentionally alter infrastructure.
 
-## Prerequisites
+## Bicep Migration
 
-Ensure you have the following prerequisites:
+No Bicep parameters were removed or renamed. Adjusting your `.bicepparam` for the unified blueprint:
 
-- Sufficient quota for a VM in your target region
-- At least 8 GB of RAM per VM, recommended 16 GB of RAM per VM
-- Registered resource providers (see deployment instructions)
-- Appropriate permissions to create resources
+* `adminPassword` is now nullable (`string?`) but remains required for the VM deployment path, so keep supplying it.
+* Nine new cluster parameters are available: `arcMachineCount`, `arcMachineName`, `arcMachineNamePrefix`, `arcMachineResourceGroupName`, `clusterServerHostMachineUsername`, `clusterServerIp`, `hostMachineCount`, `serverToken`, and `shouldUseArcMachines`.
+* Nine new notification parameters are available for the optional 045-notification Logic App: `shouldDeployNotification`, `alertEventHubName`, `notificationEventSchema`, `notificationMessageTemplate`, `closureMessageTemplate`, `notificationPartitionKeyField`, `teamsRecipientId`, `teamsGroupId`, and `teamsPostLocation`.
+* `@minValue(1)` was added to `hostMachineCount` and `arcMachineCount`.
+* `serverToken` is only needed when `hostMachineCount > 1`.
 
-## Advanced Configuration
+All new parameters default to single-node VM behavior, so a migrating Bicep user reproduces the prior topology without adopting any of them.
 
-### Schema Registry Configuration in Terraform
+## Output Set
 
-This blueprint deploys schemas into the Azure Device Registry schema registry through the `cloud_data` module. A default temperature schema is included, and you can customize or extend schemas via the `schemas` variable.
+The unified Terraform blueprint preserves the full single-node output set, including `kubernetes`, `function_app`,
+`azureml_workspace`, `azureml_compute_cluster`, `azureml_extension`, `azureml_inference_cluster`, `vpn_gateway`,
+`vpn_gateway_public_ip`, `vpn_client_connection_info`, and `private_resolver_dns_ip`.
+These are emitted with `try(..., null)`, so they return `null` when the corresponding module is not deployed —
+see the unified blueprint's [outputs.tf](../full-multi-node-cluster/terraform/outputs.tf).
+For the impact on existing multi-node deployments,
+see [Migration Notes for Existing Multi-node Deployments](../full-multi-node-cluster/README.md#migration-notes-for-existing-multi-node-deployments).
 
-Each schema supports:
+## Related
 
-- Multiple named versions with independent content
-- Configurable format (defaults to `JsonSchema/draft-07`)
-- Display name and description metadata
-
-**Quick Example:**
-
-```hcl
-schemas = [
-  {
-    name         = "temperature-schema"
-    display_name = "Temperature Schema"
-    description  = "Schema for temperature sensor data"
-    format       = "JsonSchema/draft-07"
-    type         = "MessageSchema"
-    versions = {
-      "1" = {
-        description = "Initial version"
-        content     = "{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"temperature\":{\"type\":\"number\"}}}"
-      }
-    }
-  }
-]
-```
-
-### Dataflow Graphs in Terraform
-
-This blueprint supports deploying dataflow graphs for WASM-based data processing pipelines through the `edge_messaging` module. Dataflow graphs define processing pipelines with source, graph (WASM operator), and destination nodes connected to route and transform data.
-
-**Key Benefits:**
-
-- Declarative configuration using Terraform variables
-- WASM-based graph operators from Azure Container Registry
-- Configurable node connections with optional schema references
-- Version control for pipeline definitions
-
-**Quick Example:**
-
-```hcl
-dataflow_graphs = [
-  {
-    name = "temperature-processing"
-    nodes = [
-      {
-        nodeType = "Source"
-        name     = "temperature-source"
-        sourceSettings = {
-          endpointRef = "default"
-          dataSources = ["raw"]
-        }
-      },
-      {
-        nodeType = "Graph"
-        name     = "temperature-map-custom"
-        graphSettings = {
-          registryEndpointRef = "acr-myprefix"
-          artifact            = "graph-simple-map-custom:1.0.0"
-        }
-      },
-      {
-        nodeType = "Destination"
-        name     = "temperature-destination"
-        destinationSettings = {
-          endpointRef     = "default"
-          dataDestination = "processed"
-        }
-      }
-    ]
-    node_connections = [
-      {
-        from = { name = "temperature-source" }
-        to   = { name = "temperature-map-custom" }
-      },
-      {
-        from = { name = "temperature-map-custom" }
-        to   = { name = "temperature-destination" }
-      }
-    ]
-  }
-]
-```
-
-See [dataflow-graphs.tfvars.example](terraform/dataflow-graphs.tfvars.example) for a complete configuration example.
-
-### REST HTTP Connector Assets in Terraform
-
-This blueprint supports deploying REST HTTP connector devices and assets using the `111-assets` component. This provides Infrastructure as Code (IaC) management of REST endpoints with full state management.
-
-**Key Benefits:**
-
-- ✅ Declarative configuration using Terraform variables
-- ✅ Version control for asset definitions
-- ✅ Integrated with blueprint deployment
-- ✅ Replaces manual kubectl and YAML management
-
-**Quick Example:**
-
-```hcl
-namespaced_devices = [
-   {
-    name    = "rest-auth-device"
-    enabled = true
-    endpoints = {
-      outbound = { assigned = {} }
-      inbound = {
-        "auth-device-endpoint" = {
-          endpoint_type = "Microsoft.Http"
-          address       = "http://auth-device:8082"
-          version       = "1.0"
-          additionalConfiguration = "{\"tlsEnabled\":false,\"timeoutSeconds\":45}"
-          authentication = {
-            method = "UsernamePassword"
-            usernamePasswordCredentials = {
-              usernameSecretName = "device-username"
-              passwordSecretName = "device-password"
-            }
-          }
-          trustSettings = null
-        }
-      }
-    }
-  }
-]
-
-namespaced_assets = [
-  {
-    name         = "rest-auth-device-asset"
-    display_name = "Authenticated REST Device"
-    enabled      = true
-    device_ref = {
-      device_name   = "rest-auth-device"
-      endpoint_name = "auth-device-endpoint"
-    }
-    description  = "Secure REST HTTP device with basic authentication"
-    manufacturer = "SecureIoT"
-    model        = "SecureDevice-1000"
-    serial_number = "SD-003"
-    attributes = {
-      deviceType     = "secure-device"
-      security_level = "basic-auth"
-    }
-    datasets = [
-      {
-        name                  = "device-status"
-        data_source           = "api/device/status"
-        dataset_configuration = "{\"samplingIntervalInMilliseconds\":20000}"
-        data_points = []
-        destinations = [
-          {
-            target = "Mqtt"
-            configuration = {
-              topic  = "telemetry/company/cloud/region/environment/auth-device-01/status"
-              retain = "Never"
-              qos    = "Qos1"
-            }
-          }
-        ]
-      }
-    ]
-    default_datasets_configuration = "{\"publishingInterval\":20000,\"samplingInterval\":20000,\"queueSize\":1}"
-  }
-]
-```
-
-See [rest-connector-assets.tfvars.example](terraform/rest-connector-assets.tfvars.example) for complete configuration examples.
-
-## Deploy Blueprint
-
-Follow detailed deployment instructions from the blueprints README.md, [Detailed Deployment Workflow](../README.md#detailed-deployment-workflow)
-
-## Testing and Validation
-
-This blueprint includes comprehensive test suites for validating deployments and maintaining code quality.
-
-### Test Directory
-
-**Location:** [tests/](tests/)
-
-The tests directory contains contract tests and end-to-end deployment validation for both Terraform and Bicep implementations.
-
-**Key Components:**
-
-- **Contract Tests** - Fast static validation ensuring output declarations match test expectations (zero cost, no Azure resources)
-- **Deployment Tests** - Full end-to-end deployment validation with infrastructure creation and functional testing
-- **Helper Scripts** - `run-contract-tests.sh` and `run-deployment-tests.sh` for simplified test execution
-
-**See:** [tests/README.md](tests/README.md) for complete testing documentation including setup, usage, and troubleshooting
-
-### For Maintainers
-
-When modifying this blueprint:
-
-#### Before Making Changes
-
-1. **Run contract tests** to establish baseline: `cd tests && ./run-contract-tests.sh both`
-2. **Review test structure** in [tests/outputs.go](tests/outputs.go) to understand output contract
-
-#### After Making Changes
-
-1. **Update output contract** if adding/removing/renaming outputs:
-   - Update struct fields in [tests/outputs.go](tests/outputs.go)
-   - Update framework configurations: [terraform/outputs.tf](terraform/outputs.tf) or [bicep/main.bicep](bicep/main.bicep)
-
-2. **Run contract tests** to verify declarations: `cd tests && ./run-contract-tests.sh both`
-
-3. **Update deployment tests** if changing deployment behavior:
-   - Review [tests/deploy_terraform_test.go](tests/deploy_terraform_test.go) or [tests/deploy_bicep_test.go](tests/deploy_bicep_test.go)
-   - Update validation logic in [tests/validation.go](tests/validation.go) if needed
-
-4. **Run deployment tests** to validate changes: `cd tests && ./run-deployment-tests.sh <framework>`
-   - Valid framework values: 'terraform', 'bicep', or 'both'
-   - Set `CLEANUP_RESOURCES=true` to auto-delete resources after testing
-   - Expected duration: 30-45 minutes for full deployment
-
-5. **Update documentation** if changing parameters, modules, or architecture:
-   - Update this README.md with new parameters or module references
-   - Update [tests/README.md](tests/README.md) if test behavior changes
-
----
-
-<!-- markdownlint-disable MD036 -->
-*🤖 Crafted with precision by ✨Copilot following brilliant human instruction,
-then carefully refined by our team of discerning human reviewers.*
-<!-- markdownlint-enable MD036 -->
+* [Blueprints overview](../README.md)
+* [Full Multi-node Cluster Blueprint](../full-multi-node-cluster/README.md)

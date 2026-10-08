@@ -1,0 +1,29 @@
+---
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+metadata:
+  name: InvalidDuplicateNames
+dataSources:
+  lakehouse:
+    name: TestLakehouse
+    tables:
+      - name: robot
+entityTypes:
+  - name: Robot
+    key: Id
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robot
+    properties:
+      - name: Id
+        type: string
+  - name: Robot
+    key: Id
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robot
+    properties:
+      - name: Id
+        type: string

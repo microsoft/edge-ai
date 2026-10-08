@@ -98,7 +98,7 @@ if ! command -v "az" &>/dev/null; then
     case "$OS_TYPE" in
       ubuntu)
         # Pin Azure CLI install via Microsoft apt keyring/repo and explicit version (OSSF Scorecard pinned-dependencies)
-        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.67.0}"
+        AZ_CLI_INSTALL_VER="${AZ_CLI_VER:-2.88.0}"
         sudo apt-get update
         sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
         sudo mkdir -p /etc/apt/keyrings
@@ -125,7 +125,7 @@ fi
 if [ -z "$SKIP_AZ_LOGIN" ]; then
   if [ -n "$CLIENT_ID" ]; then
     log "Logging in with User Assigned Managed Identity (client ID: $CLIENT_ID)"
-    if ! az login --identity --username "$CLIENT_ID"; then
+    if ! az login --identity --client-id "$CLIENT_ID"; then
       err "Failed to login with User Assigned Managed Identity (client ID: $CLIENT_ID)"
     fi
   else
@@ -150,27 +150,32 @@ else
   SECRET_NAME="${OS_TYPE}-${KUBERNETES_DISTRO}-${NODE_TYPE}-script"
 fi
 
-# Path to the downloaded script
+# Script secrets are stored gzip-compressed and base64-encoded to fit the Key Vault secret size limit
 SCRIPT_PATH="./$SECRET_NAME.sh"
-trap 'rm "$SCRIPT_PATH"' EXIT
+SCRIPT_GZ_PATH="$SCRIPT_PATH.gz"
+trap 'rm -f "$SCRIPT_PATH" "$SCRIPT_GZ_PATH"' EXIT
 
-log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --file $SCRIPT_PATH"
+log "Downloading script: az keyvault secret download --vault-name $KEY_VAULT_NAME --name $SECRET_NAME --encoding base64 --file $SCRIPT_GZ_PATH"
 
 # Download the script from Key Vault. Retry with backoff to handle RBAC
 # propagation delay when using system-assigned managed identity.
 KV_OK=false
 for attempt in $(seq 1 10); do
-  if az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --file "$SCRIPT_PATH" 2>&1; then
+  if az keyvault secret download --vault-name "$KEY_VAULT_NAME" --name "$SECRET_NAME" --encoding base64 --file "$SCRIPT_GZ_PATH" 2>&1; then
     KV_OK=true
     break
   fi
   log "Key Vault download attempt $attempt/10 failed, retrying in 30s..."
-  rm -f "$SCRIPT_PATH"
+  rm -f "$SCRIPT_GZ_PATH"
   sleep 30
 done
 
 if [ "$KV_OK" != true ]; then
   err "Failed to download script from Key Vault after 10 attempts"
+fi
+
+if ! gunzip -c "$SCRIPT_GZ_PATH" >"$SCRIPT_PATH"; then
+  err "Failed to decompress script downloaded from Key Vault secret '$SECRET_NAME'"
 fi
 
 # Make the script executable

@@ -118,6 +118,32 @@ The script will:
 
 If you don't have any capacities or choose not to use one, the deployment will use the Fabric free tier.
 
+### Network Security Perimeter (Optional)
+
+Set `should_use_network_security_perimeter = true` to place the Storage Account behind an `Enforced` Network Security Perimeter. Perimeter association is only available on the control-plane resource, so enabling this switches the Storage Account from the `azurerm_storage_account` resource to the `azapi_resource.storage_account` resource.
+
+> **Warning — destructive migration on existing deployments.** Toggling `should_use_network_security_perimeter` from `false` to `true` (or back) on a Storage Account that already exists moves it between two different Terraform resource addresses (`azurerm_storage_account.storage_account` → `azapi_resource.storage_account`). Terraform plans this as **destroy-then-create**, which means data loss and a likely name collision. A `moved` block cannot bridge two different resource types.
+
+To migrate an existing, populated Storage Account without data loss, re-point the Terraform state instead of applying the flag flip directly:
+
+1. Review the plan and confirm the only intended change is the perimeter association — never approve a plan that destroys a populated account.
+2. Remove the old address from state (does not touch the live resource):
+
+   ```bash
+   terraform state rm 'module.<data_module>.module.storage_account.azurerm_storage_account.storage_account[0]'
+   ```
+
+3. Import the same account under the new `azapi` address:
+
+   ```bash
+   terraform import 'module.<data_module>.module.storage_account.azapi_resource.storage_account[0]' \
+     '/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.Storage/storageAccounts/<account-name>'
+   ```
+
+4. Run `terraform plan` again and confirm no destroy/create remains before applying.
+
+For greenfield deployments (no existing account), enable the flag from the start and no migration is needed.
+
 ## Terraform
 
 The terraform code can be found in the [terraform](terraform) folder.

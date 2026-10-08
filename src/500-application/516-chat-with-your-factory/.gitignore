@@ -1,0 +1,10 @@
+node_modules/
+dist/
+public/dist/
+.env
+.env.*
+!.env.template
+*.zip
+*.tsbuildinfo
+.copilot-tracking/
+appManifest/manifest.json

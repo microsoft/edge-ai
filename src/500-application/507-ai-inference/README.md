@@ -2,9 +2,9 @@
 title: AI Inference Service
 description: Production-ready AI inference service with dual-backend machine learning capabilities for edge computing, supporting ONNX Runtime and Candle (pure Rust) inference engines with MQTT integration
 author: Edge AI Team
-ms.date: 2025-10-17
+ms.date: 2026-09-30
 ms.topic: how-to
-estimated_reading_time: 8
+estimated_reading_time: 10
 keywords:
   - ai inference
   - onnx runtime
@@ -16,6 +16,7 @@ keywords:
   - machine learning
   - docker compose
   - kubernetes
+  - image snapshot schema
 ---
 
 A production-ready AI inference service that provides dual-backend machine learning capabilities for edge computing environments. Supports both ONNX Runtime and Candle (pure Rust) inference engines with MQTT integration for real-time processing.
@@ -63,15 +64,71 @@ This component implements a scalable AI inference service designed for industria
 ├── docker-compose.yaml          # Local development environment
 ├── services/                    # Service implementations
 │   ├── ai-edge-inference/       # Main inference service (Rust)
-│   └── ai-edge-inference-crate/ # Shared Rust crate
+│   ├── ai-edge-inference-crate/ # Shared Rust crate
+│   └── snapshot-normalizer-core/ # Snapshot normalization library (Rust)
 ├── charts/                      # Kubernetes deployment manifests
 │   ├── base/                    # Base Kubernetes resources
 │   └── model-downloader-job.yaml
 └── resources/                   # Configuration and model files
     ├── model_configs/           # Model configuration files
     ├── models/                  # ML model files (if present)
+    ├── schemas/                 # Published message contracts
     └── mosquitto.conf           # MQTT broker configuration
 ```
+
+## Snapshot Normalizer Core
+
+`services/snapshot-normalizer-core/` is a standalone Rust **library crate**. It
+is not a service, not a container, and not a deployable unit. It builds the
+canonical `image_snapshot` v1 request value from raw JPEG bytes and does
+nothing else.
+
+### What the library does
+
+- Classifies a byte slice as JPEG by its start-of-image marker prefix
+- Applies caller-supplied maxima to the raw payload and to the serialized envelope
+- Base64-encodes the payload with the standard, padded alphabet
+- Builds and serializes the canonical envelope value
+- Offers a fixed-capacity recent-hash duplicate detector, a byte-free FNV-1a 64-bit payload digest, and a fixed-cardinality counter set
+
+Envelope construction is pure: it reads no clock, draws no randomness, performs
+no input or output, and depends on no transport. The same input always yields
+the same envelope.
+
+### Non-goals and limits
+
+- **MQTT and any other transport are out of scope.** The crate publishes nothing, subscribes to nothing, and links no transport client.
+- **Topic-derived identity is out of scope.** `camera_id` and `device_name` are opaque caller-supplied strings. Nothing is parsed out of a topic, and the envelope carries no `source_topic`.
+- No camera is acquired, opened, or driven by this crate; the caller supplies bytes that are already in memory.
+- No character-set check and no length bound are applied to identifiers.
+- No size bound is baked in. `SizeLimits` holds caller-supplied maxima, so the crate stays deployment-neutral. A length equal to a maximum is accepted; only a greater length is rejected.
+- Payload digests are not a cryptographic commitment and payload bytes are never stored or logged.
+
+### Published contract
+
+The emitted value is defined by
+[`resources/schemas/image-snapshot-v1.schema.json`](resources/schemas/image-snapshot-v1.schema.json).
+
+Required: `message_type` (constant `image_snapshot`), `schema_version`,
+`camera_id`, `timestamp` (integer epoch seconds), `image_data` (standard-alphabet
+Base64), `device_name`.
+
+Optional and emitted when supplied: `metadata` (free-form object) and
+`correlation_id` (string). Both are omitted when absent rather than emitted as
+`null`.
+
+Optional and never emitted by this producer: `location`, a
+`[latitude, longitude]` pair reserved in the contract so consumers keep
+accepting envelopes from other producers.
+
+The schema sets `additionalProperties: true`. Readers are tolerant: unknown
+members are accepted and discarded rather than rejected, so a later field
+addition stays non-breaking. The schema documents recommended bounds of 4 MiB
+maximum raw JPEG and 8 MiB maximum serialized envelope; those are caller-configured
+defaults, not schema-enforced limits.
+
+See [`services/snapshot-normalizer-core/README.md`](services/snapshot-normalizer-core/README.md)
+for the full public surface.
 
 ## Quick Start
 

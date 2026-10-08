@@ -128,7 +128,7 @@ git push origin dev
 | **Work Item Link** | Optional                    | Required (Azure DevOps)  |
 | **Code Owners**    | Optional                    | Required                 |
 
-Full configuration files: [GitHub](.github/workflows/) · [Azure DevOps](azure-pipelines.yml)
+Full configuration files: [GitHub](https://github.com/microsoft/edge-ai/tree/main/.github/workflows) · [Azure DevOps](https://github.com/microsoft/edge-ai/blob/main/azure-pipelines.yml)
 
 ## Common Scenarios
 

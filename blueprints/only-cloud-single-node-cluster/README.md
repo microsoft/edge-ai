@@ -23,6 +23,9 @@ This blueprint provides a deployment of the cloud components required for Azure 
 
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 This blueprint deploys:
@@ -88,8 +91,7 @@ Follow detailed deployment instructions from the blueprints README.md, [Detailed
 
 ## Related Blueprints
 
-- **[Full Single Cluster](../full-single-node-cluster/README.md)**: Complete deployment including edge components
-- **[Full Multi-node Cluster](../full-multi-node-cluster/README.md)**: Multi-node high-availability deployment
+- **[Full Multi-Node Cluster](../full-multi-node-cluster/README.md)**: Complete deployment including edge components
 - **[Only Edge IoT Ops](../only-edge-iot-ops/README.md)**: Deploy only the edge components assuming cloud infrastructure exists
 
 ---

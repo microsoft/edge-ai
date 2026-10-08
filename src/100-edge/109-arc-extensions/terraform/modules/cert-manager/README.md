@@ -5,15 +5,16 @@ Deploys the cert-manager extension for Arc-enabled Kubernetes clusters.
 
 ## Requirements
 
-| Name      | Version          |
-|-----------|------------------|
-| terraform | >= 1.12.0, < 2.0 |
+| Name      | Version           |
+|-----------|-------------------|
+| terraform | >= 1.12.0, < 2.0  |
+| azurerm   | >= 5.3.0, < 6.0.0 |
 
 ## Providers
 
-| Name    | Version |
-|---------|---------|
-| azurerm | n/a     |
+| Name    | Version           |
+|---------|-------------------|
+| azurerm | >= 5.3.0, < 6.0.0 |
 
 ## Resources
 

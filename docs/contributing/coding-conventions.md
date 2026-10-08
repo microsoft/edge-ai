@@ -103,7 +103,7 @@ Example structure:
 ```text
 /blueprints/
   terraform/
-    full-single-cluster/
+    full-multi-node-cluster/
       main.tf
       variables.tf
       outputs.tf

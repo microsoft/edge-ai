@@ -2,7 +2,7 @@
 title: Security Scanning & Supply Chain Hardening
 description: Comprehensive security scanning, supply chain hardening, and vulnerability assessment for the Edge AI Accelerator CI/CD pipelines.
 author: Edge AI Team
-ms.date: 2025-06-06
+ms.date: 2026-06-09
 ms.topic: concept
 keywords:
   - security scanning
@@ -251,12 +251,16 @@ Monitors pinned dependencies for security updates and generates build warnings f
 
 **File**: `.github/dependabot.yml`
 
-Automated dependency updates for:
+Automated dependency updates for eight ecosystems, each on a weekly schedule (Monday 09:00 US/Pacific) with one grouped pull request per ecosystem:
 
-- GitHub Actions (weekly updates)
-- Docker images (weekly updates)
-- npm packages (weekly updates)
-- Python packages (weekly updates)
+- GitHub Actions
+- npm packages
+- Cargo (Rust) crates
+- Python packages (pip)
+- Docker images
+- NuGet packages
+- Terraform providers and modules
+- Go modules (gomod)
 
 #### Azure DevOps Dependency Scanning
 

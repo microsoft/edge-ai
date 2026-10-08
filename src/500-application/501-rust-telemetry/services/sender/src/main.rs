@@ -11,8 +11,8 @@ use std::time::Duration;
 
 // Azure IoT Operations imports
 use azure_iot_operations_mqtt::{
-    session::{Session, SessionManagedClient, SessionOptionsBuilder},
-    MqttConnectionSettingsBuilder,
+    aio::connection_settings::MqttConnectionSettingsBuilder,
+    session::{Session, SessionOptionsBuilder},
 };
 use azure_iot_operations_protocol::{
     application::ApplicationContextBuilder,
@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
 
     // Create a telemetry Sender with the custom Payload type
-    let sender: telemetry::Sender<Payload, _> = telemetry::Sender::new(
+    let sender: telemetry::Sender<Payload> = telemetry::Sender::new(
         application_context,
         session.create_managed_client(),
         sender_options,
@@ -123,7 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 /// * `sender` - The telemetry sender instance used to send messages
 async fn telemetry_loop(
-    sender: &telemetry::Sender<Payload, SessionManagedClient>,
+    sender: &telemetry::Sender<Payload>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting telemetry sender loop");
 
@@ -138,7 +138,7 @@ async fn telemetry_loop(
 
 #[instrument(skip_all)]
 async fn simulate_and_send(
-    sender: &telemetry::Sender<Payload, SessionManagedClient>,
+    sender: &telemetry::Sender<Payload>,
     source: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Simulate temperature change
@@ -166,7 +166,7 @@ async fn simulate_and_send(
 /// * `sender` - The telemetry sender instance used to send messages
 #[instrument(name = "send", skip_all, fields(otel.kind = "PRODUCER", messaging.system = "mqtt", messaging.operation = "publish"))]
 async fn send_telemetry(
-    sender: &telemetry::Sender<Payload, SessionManagedClient>,
+    sender: &telemetry::Sender<Payload>,
     payload: Payload,
     source: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {

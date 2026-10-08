@@ -12,10 +12,10 @@ Hashed pip lockfiles consumed by GitHub Actions workflows. Each `<name>.in` is t
 
 ## Regeneration
 
-Lockfiles are compiled against Python 3.11 (the version pinned via `actions/setup-python` in the consumer workflows). Regenerate after any `*.in` edit or to refresh transitive versions:
+Lockfiles are compiled against Python 3.12 (the version pinned via `actions/setup-python` in the consumer workflows). Regenerate after any `*.in` edit or to refresh transitive versions:
 
 ```bash
-python3.11 -m venv .venv-pip-tools
+python3.12 -m venv .venv-pip-tools
 source .venv-pip-tools/bin/activate
 pip install pip-tools
 

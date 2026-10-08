@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # deploy-ontology.sh - Deploy Fabric Ontology from ontology definition
 #
-# Creates entity types, properties, data bindings, relationships, and contextualizations
-# using the Microsoft Fabric Ontology REST API.
+# Publishes entity types, properties, data bindings, relationships, and
+# contextualizations into existing Microsoft Fabric resources.
 #
-# Dependencies: curl, jq, yq, az (Azure CLI), uuidgen
+# Dependencies: curl, jq, yq, az (Azure CLI), sha256sum
 #
 # Usage:
-#   ./deploy-ontology.sh --definition <path> --workspace-id <id> --lakehouse-id <id> \
-#     --eventhouse-id <id> --cluster-uri <uri>
+#   ./deploy-ontology.sh --definition <path> --workspace-id <id> --lakehouse-id <id>
 
 set -e
 set -o pipefail
@@ -32,11 +31,23 @@ EVENTHOUSE_ID=""
 KQL_DATABASE_ID=""
 CLUSTER_URI=""
 DRY_RUN="false"
+ID_MAPPING_OUTPUT="${ID_MAPPING_OUTPUT:-/tmp/ontology-id-mapping.json}"
+DEFINITION_PARTS_OUTPUT=""
+PUBLICATION_OUTPUT=""
+ROLLBACK_OUTPUT=""
+DIFF_OUTPUT=""
+EXISTING_ONTOLOGY_ID=""
+EXISTING_DEFINITION_PARTS="[]"
+EXISTING_DEFINITION_PAYLOAD=""
 
-# Associative arrays for ID tracking (entity name -> generated ID)
+# Associative arrays for ID tracking
 declare -A ENTITY_TYPE_IDS
 declare -A PROPERTY_IDS
 declare -A RELATIONSHIP_IDS
+declare -A DATA_BINDING_IDS
+declare -A CONTEXTUALIZATION_IDS
+declare -A ENTITY_NAMES_BY_ID
+declare -A RELATIONSHIP_NAMES_BY_ID
 
 ####
 # Usage and Argument Parsing
@@ -58,19 +69,28 @@ Conditional Arguments (required if eventhouse tables exist):
   --cluster-uri <uri>     Kusto cluster URI (e.g., https://xxx.kusto.fabric.microsoft.com)
 
 Optional Arguments:
+  --output <path>          Write the publication result as JSON
+  --rollback-output <path>
+                           Write rollback input keyed by ontology item ID
+  --diff-output <path>     Write the semantic definition diff as JSON
   --kql-database-id <id>  KQL Database ID (for reference)
 
 Options:
+  --id-mapping-output <path>
+                           Write the logical-name-to-Fabric-ID mapping to this path
+                           (default: /tmp/ontology-id-mapping.json)
+  --definition-parts-output <path>
+                           Write generated definition parts and exit before authentication
   --dry-run               Show what would be created without making changes
   -h, --help              Show this help message
 
 Examples:
-  # Static data only (lakehouse)
-  $(basename "$0") --definition ./definitions/examples/lakeshore-retail.yaml \\
+  # Supported static Lakehouse publisher profile
+  $(basename "$0") --definition ./definitions/examples/cora-corax-dim.yaml \
     --workspace-id abc123 --lakehouse-id def456
 
-  # With time-series data (lakehouse + eventhouse)
-  $(basename "$0") --definition ./definitions/examples/lakeshore-retail.yaml \\
+  # Experimental time-series binding path
+  $(basename "$0") --definition ./definitions/examples/cora-corax-dim-timeseries.yaml \
     --workspace-id abc123 --lakehouse-id def456 \\
     --eventhouse-id ghi789 --cluster-uri https://xyz.kusto.fabric.microsoft.com
 EOF
@@ -100,6 +120,26 @@ while [[ $# -gt 0 ]]; do
       ;;
     --cluster-uri)
       CLUSTER_URI="$2"
+      shift 2
+      ;;
+    --id-mapping-output)
+      ID_MAPPING_OUTPUT="$2"
+      shift 2
+      ;;
+    --definition-parts-output)
+      DEFINITION_PARTS_OUTPUT="$2"
+      shift 2
+      ;;
+    --output)
+      PUBLICATION_OUTPUT="$2"
+      shift 2
+      ;;
+    --rollback-output)
+      ROLLBACK_OUTPUT="$2"
+      shift 2
+      ;;
+    --diff-output)
+      DIFF_OUTPUT="$2"
       shift 2
       ;;
     --dry-run)
@@ -133,6 +173,16 @@ if [[ -z "$LAKEHOUSE_ID" ]]; then
   err "Missing required argument: --lakehouse-id"
 fi
 
+if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$PUBLICATION_OUTPUT" ]]; then
+  err "Missing required argument: --output"
+fi
+if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$ROLLBACK_OUTPUT" ]]; then
+  err "Missing required argument: --rollback-output"
+fi
+if [[ -z "$DEFINITION_PARTS_OUTPUT" && "$DRY_RUN" != "true" && -z "$DIFF_OUTPUT" ]]; then
+  err "Missing required argument: --diff-output"
+fi
+
 # Check for eventhouse requirements if time-series data exists
 HAS_EVENTHOUSE=$(get_eventhouse_name "$DEFINITION_FILE")
 if [[ -n "$HAS_EVENTHOUSE" && "$HAS_EVENTHOUSE" != "null" ]]; then
@@ -151,7 +201,7 @@ fi
 log "Validating Definition"
 info "Validating definition: $DEFINITION_FILE"
 
-if ! "$SCRIPT_DIR/validate-definition.sh" --definition "$DEFINITION_FILE"; then
+if ! "$SCRIPT_DIR/validate-definition.sh" --definition "$DEFINITION_FILE" >&2; then
   err "Definition validation failed"
 fi
 
@@ -171,42 +221,145 @@ info "Ontology: $ONTOLOGY_NAME"
 info "Description: ${ONTOLOGY_DESC:-N/A}"
 
 ####
-# Authentication
+# ID Reconciliation and Generation
 ####
 
-log "Authenticating to Fabric API"
-FABRIC_TOKEN=$(get_fabric_token)
-info "Authentication successful"
-
-####
-# Verify Workspace Access
-####
-
-log "Verifying Workspace Access"
-workspace_response=$(get_workspace "$WORKSPACE_ID" "$FABRIC_TOKEN")
-workspace_name=$(echo "$workspace_response" | jq -r '.displayName')
-info "Workspace: $workspace_name ($WORKSPACE_ID)"
-
-####
-# ID Generation Functions
-####
-
-# Generate unique 64-bit ID (BigInt as string)
-generate_bigint_id() {
-  local timestamp random_part
-  timestamp=$(date +%s%N | cut -c1-13)
-  random_part=$((RANDOM % 10000))
-  printf "%s%04d" "$timestamp" "$random_part"
+deterministic_hash() {
+  local logical_key="$1"
+  printf '%s' "fabric-ontology:$logical_key" | sha256sum | cut -d ' ' -f 1
 }
 
-# Generate UUID v4
+generate_bigint_id() {
+  local logical_key="$1"
+  local hash
+  hash=$(deterministic_hash "$logical_key")
+  printf '%d\n' "0x${hash:0:15}"
+}
+
 generate_uuid() {
-  if command -v uuidgen >/dev/null 2>&1; then
-    uuidgen | tr '[:upper:]' '[:lower:]'
-  else
-    # Fallback using /dev/urandom
-    od -x /dev/urandom | head -1 | awk '{OFS="-"; print $2$3,$4,$5,$6,$7$8$9}'
+  local logical_key="$1"
+  local hash
+  hash=$(deterministic_hash "$logical_key")
+  printf '%s-%s-5%s-8%s-%s\n' \
+    "${hash:0:8}" \
+    "${hash:8:4}" \
+    "${hash:13:3}" \
+    "${hash:17:3}" \
+    "${hash:20:12}"
+}
+
+binding_logical_name() {
+  printf '%s|%s|%s|%s\n' "$1" "$2" "$3" "$4"
+}
+
+contextualization_logical_name() {
+  printf '%s|%s|%s|%s|%s\n' "$1" "$2" "$3" "$4" "$5"
+}
+
+decode_item_definition() {
+  local response="$1"
+  local decoded_parts="[]"
+  local part
+
+  if ! jq -e '.definition.parts | type == "array"' <<<"$response" >/dev/null; then
+    return 1
   fi
+
+  while IFS= read -r part; do
+    local path payload payload_type content
+    path=$(jq -er '.path' <<<"$part") || return 1
+    payload=$(jq -er '.payload' <<<"$part") || return 1
+    payload_type=$(jq -er '.payloadType' <<<"$part") || return 1
+    [[ "$payload_type" == "InlineBase64" ]] || return 1
+    content=$(printf '%s' "$payload" | base64 --decode 2>/dev/null) || return 1
+    jq -e . <<<"$content" >/dev/null || return 1
+    if ! decoded_parts=$(jq \
+      --arg path "$path" \
+      --argjson content "$content" \
+      '. += [{path: $path, content: $content}]' <<<"$decoded_parts"); then
+      return 1
+    fi
+  done < <(jq -c '.definition.parts[]' <<<"$response")
+
+  printf '%s\n' "$decoded_parts"
+}
+
+load_existing_ids() {
+  local entity_name entity_id property_name property_id
+  while IFS=$'\t' read -r entity_name entity_id; do
+    [[ -n "$entity_name" && -n "$entity_id" ]] || err "Existing entity definition is missing a name or ID"
+    ENTITY_TYPE_IDS[$entity_name]="$entity_id"
+    ENTITY_NAMES_BY_ID[$entity_id]="$entity_name"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^EntityTypes/[0-9]+/definition\\.json$"))
+    | [.content.name, .content.id]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  while IFS=$'\t' read -r entity_name property_name property_id; do
+    [[ -n "$property_name" && -n "$property_id" ]] || err "Existing property definition is missing a name or ID"
+    PROPERTY_IDS["${entity_name}:${property_name}"]="$property_id"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^EntityTypes/[0-9]+/definition\\.json$"))
+    | .content.name as $entityName
+    | (.content.properties[]?, .content.timeseriesProperties[]?)
+    | [$entityName, .name, .id]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  local relationship_name relationship_id
+  while IFS=$'\t' read -r relationship_name relationship_id; do
+    [[ -n "$relationship_name" && -n "$relationship_id" ]] || err "Existing relationship definition is missing a name or ID"
+    RELATIONSHIP_IDS[$relationship_name]="$relationship_id"
+    RELATIONSHIP_NAMES_BY_ID[$relationship_id]="$relationship_name"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^RelationshipTypes/[0-9]+/definition\\.json$"))
+    | [.content.name, .content.id]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  local parent_id binding_id binding_type source_type table_name logical_name
+  while IFS=$'\t' read -r parent_id binding_id binding_type source_type table_name; do
+    entity_name="${ENTITY_NAMES_BY_ID[$parent_id]:-}"
+    [[ -n "$entity_name" && -n "$binding_id" ]] || err "Existing data binding cannot be matched to an entity"
+    logical_name=$(binding_logical_name "$entity_name" "$binding_type" "$source_type" "$table_name")
+    DATA_BINDING_IDS[$logical_name]="$binding_id"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^EntityTypes/[0-9]+/DataBindings/[0-9a-fA-F-]+\\.json$"))
+    | [
+        (.path | capture("^EntityTypes/(?<id>[0-9]+)/").id),
+        .content.id,
+        .content.dataBindingConfiguration.dataBindingType,
+        .content.dataBindingConfiguration.sourceTableProperties.sourceType,
+        .content.dataBindingConfiguration.sourceTableProperties.sourceTableName
+      ]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
+
+  local source_columns target_columns
+  while IFS=$'\t' read -r parent_id binding_id source_type table_name source_columns target_columns; do
+    relationship_name="${RELATIONSHIP_NAMES_BY_ID[$parent_id]:-}"
+    [[ -n "$relationship_name" && -n "$binding_id" ]] || err "Existing contextualization cannot be matched to a relationship"
+    logical_name=$(contextualization_logical_name \
+      "$relationship_name" "$source_type" "$table_name" "$source_columns" "$target_columns")
+    CONTEXTUALIZATION_IDS[$logical_name]="$binding_id"
+  done < <(jq -r '
+    .[]
+    | select(.path | test("^RelationshipTypes/[0-9]+/Contextualizations/[0-9a-fA-F-]+\\.json$"))
+    | [
+        (.path | capture("^RelationshipTypes/(?<id>[0-9]+)/").id),
+        .content.id,
+        .content.dataBindingTable.sourceType,
+        .content.dataBindingTable.sourceTableName,
+        ([.content.sourceKeyRefBindings[].sourceColumnName] | join(",")),
+        ([.content.targetKeyRefBindings[].sourceColumnName] | join(","))
+      ]
+    | @tsv
+  ' <<<"$EXISTING_DEFINITION_PARTS")
 }
 
 # Get or generate entity type ID (uses pre-generated ID if available)
@@ -215,7 +368,7 @@ get_entity_type_id() {
   if [[ -z "${ENTITY_TYPE_IDS[$entity_name]:-}" ]]; then
     # This should not happen if pre_generate_ids was called
     warn "Entity type ID not pre-generated for: $entity_name"
-    ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id)
+    ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id "entity:$entity_name")
   fi
   echo "${ENTITY_TYPE_IDS[$entity_name]}"
 }
@@ -228,7 +381,7 @@ get_property_id() {
   if [[ -z "${PROPERTY_IDS[$key]:-}" ]]; then
     # This should not happen if pre_generate_ids was called
     warn "Property ID not pre-generated for: $key"
-    PROPERTY_IDS[$key]=$(generate_bigint_id)
+    PROPERTY_IDS[$key]=$(generate_bigint_id "property:$key")
   fi
   echo "${PROPERTY_IDS[$key]}"
 }
@@ -239,14 +392,16 @@ get_relationship_id() {
   if [[ -z "${RELATIONSHIP_IDS[$rel_name]:-}" ]]; then
     # This should not happen if pre_generate_ids was called
     warn "Relationship ID not pre-generated for: $rel_name"
-    RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id)
+    RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id "relationship:$rel_name")
   fi
   echo "${RELATIONSHIP_IDS[$rel_name]}"
 }
 
 ####
-# JSON Generation Functions
+# Authoritative Ontology Part Generation
 ####
+
+# Ontology definition parts are constructed programmatically with jq in this file.
 
 # Build property JSON object
 build_property_json() {
@@ -366,9 +521,10 @@ build_lakehouse_binding() {
   local entity_name="$1"
   local binding_json="$2"
 
-  local table_name binding_id
+  local table_name binding_id logical_name
   table_name=$(echo "$binding_json" | jq -r '.table')
-  binding_id=$(generate_uuid)
+  logical_name=$(binding_logical_name "$entity_name" "NonTimeSeries" "LakehouseTable" "$table_name")
+  binding_id="${DATA_BINDING_IDS[$logical_name]}"
 
   # Build property bindings from entity properties
   local property_bindings="[]"
@@ -414,10 +570,11 @@ build_eventhouse_binding() {
   local entity_name="$1"
   local binding_json="$2"
 
-  local table_name timestamp_col binding_id
+  local table_name timestamp_col binding_id logical_name
   table_name=$(echo "$binding_json" | jq -r '.table')
   timestamp_col=$(echo "$binding_json" | jq -r '.timestampColumn // "timestamp"')
-  binding_id=$(generate_uuid)
+  logical_name=$(binding_logical_name "$entity_name" "TimeSeries" "KustoTable" "$table_name")
+  binding_id="${DATA_BINDING_IDS[$logical_name]}"
 
   # Build property bindings from timeseries properties
   local property_bindings="[]"
@@ -518,11 +675,14 @@ build_contextualization() {
     return 0
   fi
 
-  ctx_id=$(generate_uuid)
   local table_name from_col to_col
   table_name=$(echo "$binding" | jq -r '.table')
   from_col=$(echo "$binding" | jq -r '.fromColumn')
   to_col=$(echo "$binding" | jq -r '.toColumn')
+  local logical_name
+  logical_name=$(contextualization_logical_name \
+    "$rel_name" "LakehouseTable" "$table_name" "$from_col" "$to_col")
+  ctx_id="${CONTEXTUALIZATION_IDS[$logical_name]}"
 
   # Get source entity key property ID
   local from_key from_key_prop_id
@@ -582,8 +742,9 @@ pre_generate_ids() {
   for i in $(seq 0 $((entity_count - 1))); do
     local entity_name
     entity_name=$(echo "$entity_types" | jq -r ".[$i].name")
-    # Generate and cache the entity type ID
-    ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id)
+    if [[ -z "${ENTITY_TYPE_IDS[$entity_name]:-}" ]]; then
+      ENTITY_TYPE_IDS[$entity_name]=$(generate_bigint_id "entity:$entity_name")
+    fi
 
     # Pre-generate property IDs for this entity
     local static_props ts_props prop_count
@@ -592,7 +753,9 @@ pre_generate_ids() {
     for j in $(seq 0 $((prop_count - 1))); do
       local prop_name
       prop_name=$(echo "$static_props" | jq -r ".[$j].name")
-      PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id)
+      if [[ -z "${PROPERTY_IDS["${entity_name}:${prop_name}"]:-}" ]]; then
+        PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id "property:${entity_name}:${prop_name}")
+      fi
     done
 
     ts_props=$(get_entity_timeseries_properties "$DEFINITION_FILE" "$entity_name")
@@ -600,8 +763,30 @@ pre_generate_ids() {
     for j in $(seq 0 $((prop_count - 1))); do
       local prop_name
       prop_name=$(echo "$ts_props" | jq -r ".[$j].name")
-      PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id)
+      if [[ -z "${PROPERTY_IDS["${entity_name}:${prop_name}"]:-}" ]]; then
+        PROPERTY_IDS["${entity_name}:${prop_name}"]=$(generate_bigint_id "property:${entity_name}:${prop_name}")
+      fi
     done
+
+    local static_binding table_name logical_name
+    static_binding=$(get_entity_static_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$static_binding" && "$static_binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$static_binding")
+      logical_name=$(binding_logical_name "$entity_name" "NonTimeSeries" "LakehouseTable" "$table_name")
+      if [[ -z "${DATA_BINDING_IDS[$logical_name]:-}" ]]; then
+        DATA_BINDING_IDS[$logical_name]=$(generate_uuid "binding:$logical_name")
+      fi
+    fi
+
+    local timeseries_binding
+    timeseries_binding=$(get_entity_timeseries_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$timeseries_binding" && "$timeseries_binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$timeseries_binding")
+      logical_name=$(binding_logical_name "$entity_name" "TimeSeries" "KustoTable" "$table_name")
+      if [[ -z "${DATA_BINDING_IDS[$logical_name]:-}" ]]; then
+        DATA_BINDING_IDS[$logical_name]=$(generate_uuid "binding:$logical_name")
+      fi
+    fi
   done
 
   # Pre-generate relationship IDs
@@ -612,8 +797,186 @@ pre_generate_ids() {
   for i in $(seq 0 $((rel_count - 1))); do
     local rel_name
     rel_name=$(echo "$relationships" | jq -r ".[$i].name")
-    RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id)
+    if [[ -z "${RELATIONSHIP_IDS[$rel_name]:-}" ]]; then
+      RELATIONSHIP_IDS[$rel_name]=$(generate_bigint_id "relationship:$rel_name")
+    fi
+
+    local rel_binding table_name from_col to_col logical_name
+    rel_binding=$(echo "$relationships" | jq ".[$i].binding // null")
+    if [[ "$rel_binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$rel_binding")
+      from_col=$(jq -r '.fromColumn' <<<"$rel_binding")
+      to_col=$(jq -r '.toColumn' <<<"$rel_binding")
+      logical_name=$(contextualization_logical_name \
+        "$rel_name" "LakehouseTable" "$table_name" "$from_col" "$to_col")
+      if [[ -z "${CONTEXTUALIZATION_IDS[$logical_name]:-}" ]]; then
+        CONTEXTUALIZATION_IDS[$logical_name]=$(generate_uuid "contextualization:$logical_name")
+      fi
+    fi
   done
+}
+
+build_id_mapping() {
+  local mapping='{"version":1,"terms":[]}'
+  local entity_types entity_count
+  entity_types=$(get_entity_types "$DEFINITION_FILE")
+  entity_count=$(jq 'length' <<<"$entity_types")
+
+  for i in $(seq 0 $((entity_count - 1))); do
+    local entity_name properties property_count property_name property_key
+    entity_name=$(jq -r ".[$i].name" <<<"$entity_types")
+    mapping=$(jq --arg logicalName "$entity_name" --arg id "${ENTITY_TYPE_IDS[$entity_name]}" \
+      '.terms += [{kind: "entity", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+
+    properties=$(jq ".[$i] | [(.properties // [])[], (.timeseriesProperties // [])[]]" <<<"$entity_types")
+    property_count=$(jq 'length' <<<"$properties")
+    for j in $(seq 0 $((property_count - 1))); do
+      property_name=$(jq -r ".[$j].name" <<<"$properties")
+      property_key="${entity_name}:${property_name}"
+      mapping=$(jq \
+        --arg logicalName "${entity_name}.${property_name}" \
+        --arg id "${PROPERTY_IDS[$property_key]}" \
+        '.terms += [{kind: "property", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    done
+
+    local binding table_name logical_name
+    binding=$(get_entity_static_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$binding" && "$binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$binding")
+      logical_name=$(binding_logical_name "$entity_name" "NonTimeSeries" "LakehouseTable" "$table_name")
+      mapping=$(jq --arg logicalName "$logical_name" --arg id "${DATA_BINDING_IDS[$logical_name]}" \
+        '.terms += [{kind: "binding", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    fi
+
+    binding=$(get_entity_timeseries_binding "$DEFINITION_FILE" "$entity_name")
+    if [[ -n "$binding" && "$binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$binding")
+      logical_name=$(binding_logical_name "$entity_name" "TimeSeries" "KustoTable" "$table_name")
+      mapping=$(jq --arg logicalName "$logical_name" --arg id "${DATA_BINDING_IDS[$logical_name]}" \
+        '.terms += [{kind: "binding", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    fi
+  done
+
+  local relationships relationship_count
+  relationships=$(get_relationships "$DEFINITION_FILE")
+  relationship_count=$(jq 'length' <<<"$relationships")
+  for i in $(seq 0 $((relationship_count - 1))); do
+    local relationship_name binding table_name from_col to_col logical_name
+    relationship_name=$(jq -r ".[$i].name" <<<"$relationships")
+    mapping=$(jq --arg logicalName "$relationship_name" --arg id "${RELATIONSHIP_IDS[$relationship_name]}" \
+      '.terms += [{kind: "relationship", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+
+    binding=$(jq ".[$i].binding // null" <<<"$relationships")
+    if [[ "$binding" != "null" ]]; then
+      table_name=$(jq -r '.table' <<<"$binding")
+      from_col=$(jq -r '.fromColumn' <<<"$binding")
+      to_col=$(jq -r '.toColumn' <<<"$binding")
+      logical_name=$(contextualization_logical_name \
+        "$relationship_name" "LakehouseTable" "$table_name" "$from_col" "$to_col")
+      mapping=$(jq --arg logicalName "$logical_name" --arg id "${CONTEXTUALIZATION_IDS[$logical_name]}" \
+        '.terms += [{kind: "contextualization", logicalName: $logicalName, id: $id}]' <<<"$mapping")
+    fi
+  done
+
+  jq -S '.terms |= sort_by(.kind, .logicalName)' <<<"$mapping"
+}
+
+write_json_atomically() (
+  local output_path="$1"
+  local content="$2"
+  local output_dir temp_file
+  output_dir=$(dirname "$output_path")
+  mkdir -p "$output_dir"
+  temp_file=$(mktemp "$output_path.tmp.XXXXXX")
+  trap 'rm -f "$temp_file"' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  if ! jq -e -S . <<<"$content" >"$temp_file"; then
+    err "Failed to encode JSON output: $output_path"
+  fi
+  mv "$temp_file" "$output_path"
+)
+
+build_semantic_diff() {
+  local previous_parts="$1"
+  local target_parts="$2"
+
+  jq -n -S \
+    --argjson previous "$previous_parts" \
+    --argjson target "$target_parts" '
+      def indexed($parts):
+        $parts
+        | map({key: .path, value: .content})
+        | sort_by(.key)
+        | from_entries;
+      (indexed($previous)) as $before
+      | (indexed($target)) as $after
+      | (($before | keys) - ($after | keys) | sort) as $removed
+      | (($after | keys) - ($before | keys) | sort) as $added
+      | ([($before | keys[]) as $path
+          | select($after | has($path))
+          | select($before[$path] != $after[$path])
+          | $path] | sort) as $changed
+      | {
+          version: 1,
+          comparison: "DecodedCanonicalJsonByPath",
+          addedPaths: $added,
+          removedPaths: $removed,
+          changedPaths: $changed,
+          counts: {
+            added: ($added | length),
+            removed: ($removed | length),
+            changed: ($changed | length)
+          }
+        }
+    '
+}
+
+write_existing_rollback() {
+  local ontology_id="$1"
+  local rollback
+  rollback=$(jq -n \
+    --arg workspaceId "$WORKSPACE_ID" \
+    --arg ontologyItemId "$ontology_id" \
+    --argjson definition "$EXISTING_DEFINITION_PAYLOAD" '
+      {
+        version: 1,
+        schema: "fabric-ontology-rollback/1.0",
+        workspaceId: $workspaceId,
+        items: {
+          ($ontologyItemId): {
+            ontologyItemId: $ontologyItemId,
+            preMutationState: "Present",
+            rollbackAction: "updateDefinition",
+            request: {definition: $definition}
+          }
+        }
+      }
+    ')
+  write_json_atomically "$ROLLBACK_OUTPUT" "$rollback"
+}
+
+write_created_rollback() {
+  local ontology_id="$1"
+  local rollback
+  rollback=$(jq -n \
+    --arg workspaceId "$WORKSPACE_ID" \
+    --arg ontologyItemId "$ontology_id" '
+      {
+        version: 1,
+        schema: "fabric-ontology-rollback/1.0",
+        workspaceId: $workspaceId,
+        items: {
+          ($ontologyItemId): {
+            ontologyItemId: $ontologyItemId,
+            preMutationState: "Absent",
+            rollbackAction: "deleteItem"
+          }
+        }
+      }
+    ')
+  write_json_atomically "$ROLLBACK_OUTPUT" "$rollback"
 }
 
 ####
@@ -729,83 +1092,109 @@ build_ontology_definition() {
 create_ontology() {
   local definition_parts="$1"
 
-  log "Creating Ontology"
+  log "Publishing Ontology"
 
-  # Check if ontology already exists
-  local existing_response ontology_id
-  existing_response=$(fabric_api_call "GET" "/workspaces/$WORKSPACE_ID/ontologies" "" "$FABRIC_TOKEN" 2>/dev/null || echo '{"value":[]}')
-  ontology_id=$(echo "$existing_response" | jq -r ".value[] | select(.displayName == \"$ONTOLOGY_NAME\") | .id")
+  local ontology_id="$EXISTING_ONTOLOGY_ID"
 
   if [[ -n "$ontology_id" ]]; then
     info "Ontology '$ONTOLOGY_NAME' already exists: $ontology_id"
-    info "Updating definition..."
-
-    if [[ "$DRY_RUN" == "true" ]]; then
-      info "[DRY-RUN] Would update ontology definition"
-      echo "$ontology_id"
-      return 0
+  elif [[ "$DRY_RUN" == "true" ]]; then
+    info "[DRY-RUN] Would create generic Ontology item: $ONTOLOGY_NAME"
+  else
+    local item_response
+    if ! item_response=$(create_item "$WORKSPACE_ID" "Ontology" "$ONTOLOGY_NAME" "$FABRIC_TOKEN"); then
+      err "Failed to create generic Ontology item: $ONTOLOGY_NAME"
     fi
-
-    # Update existing ontology definition
-    local update_body
-    update_body=$(jq -n --argjson parts "$definition_parts" '{"definition": {"parts": $parts}}')
-
-    fabric_api_call "POST" "/workspaces/$WORKSPACE_ID/ontologies/$ontology_id/updateDefinition" "$update_body" "$FABRIC_TOKEN"
-    ok "Ontology definition updated"
-    echo "$ontology_id"
-    return 0
+    if ! ontology_id=$(jq -er '.id' <<<"$item_response"); then
+      err "Failed to retrieve created Ontology item ID: $ONTOLOGY_NAME"
+    fi
+    write_created_rollback "$ontology_id"
+    info "Rollback input recorded for newly created ontology: $ROLLBACK_OUTPUT"
+    ok "Ontology item created: $ontology_id"
   fi
-
-  # Create new ontology with definition
-  info "Creating ontology: $ONTOLOGY_NAME"
 
   if [[ "$DRY_RUN" == "true" ]]; then
-    info "[DRY-RUN] Would create ontology: $ONTOLOGY_NAME"
-    local parts_count
-    parts_count=$(echo "$definition_parts" | jq 'length')
-    info "[DRY-RUN] Definition parts count: $parts_count"
-    echo "dry-run-ontology-id"
+    info "[DRY-RUN] Would update generic item definition with metadata"
     return 0
   fi
 
-  # Write parts to temp file to avoid shell argument length limits
-  local parts_file request_body_file response
-  parts_file=$(mktemp)
-  request_body_file=$(mktemp)
-  echo "$definition_parts" >"$parts_file"
-
-  # Build request body using file-based approach
-  jq -n \
-    --arg name "$ONTOLOGY_NAME" \
-    --arg desc "${ONTOLOGY_DESC:-}" \
-    --slurpfile parts "$parts_file" \
-    '{
-      "displayName": $name,
-      "description": $desc,
-      "definition": {"parts": $parts[0]}
-    }' >"$request_body_file"
-
-  rm -f "$parts_file"
-
-  # Save request body for debugging
-  cp "$request_body_file" /tmp/ontology-request.json
-  info "Request body saved to /tmp/ontology-request.json"
-
-  response=$(fabric_api_call_file "POST" "/workspaces/$WORKSPACE_ID/ontologies" "$request_body_file" "$FABRIC_TOKEN")
-  rm -f "$request_body_file"
-
-  ontology_id=$(echo "$response" | jq -r '.id // empty')
-  if [[ -z "$ontology_id" ]]; then
-    # May be in createdItem for LRO
-    ontology_id=$(echo "$response" | jq -r '.createdItem.id // empty')
+  if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then
+    write_existing_rollback "$ontology_id"
+    info "Pre-update rollback input recorded: $ROLLBACK_OUTPUT"
   fi
 
-  if [[ -n "$ontology_id" ]]; then
-    ok "Ontology created: $ontology_id"
-    echo "$ontology_id"
-  else
-    err "Failed to create ontology - no ID returned"
+  info "Updating ontology definition..."
+  if ! update_item_definition "$WORKSPACE_ID" "$ontology_id" "$definition_parts" "$FABRIC_TOKEN" >/dev/null; then
+    err "Failed to update ontology definition: $ontology_id"
   fi
+  ok "Ontology definition updated"
+  echo "$ontology_id"
+}
+
+verify_ontology_definition() {
+  local ontology_id="$1"
+  local expected_parts="$2"
+  local response actual_parts expected_canonical actual_canonical
+
+  info "Retrieving published ontology definition: $ontology_id"
+  if ! response=$(get_item_definition "$WORKSPACE_ID" "$ontology_id" "$FABRIC_TOKEN"); then
+    err "Failed to retrieve published ontology definition: $ontology_id"
+  fi
+  if ! actual_parts=$(decode_item_definition "$response"); then
+    err "Failed to decode published ontology definition: $ontology_id"
+  fi
+
+  if ! expected_canonical=$(jq -cS '
+    map({path, content: (.payload | @base64d | fromjson)})
+    | sort_by(.path)
+  ' <<<"$expected_parts"); then
+    err "Failed to canonicalize generated ontology definition parts"
+  fi
+  if ! actual_canonical=$(jq -cS '
+    map({path, content})
+    | sort_by(.path)
+  ' <<<"$actual_parts"); then
+    err "Failed to canonicalize published ontology definition parts"
+  fi
+  if [[ "$expected_canonical" != "$actual_canonical" ]]; then
+    err "Published ontology definition content does not match generated parts"
+  fi
+
+  if ! jq -e '
+    def path_id($pattern): .path | capture($pattern).id;
+    ([.[] | select(.path | test("^EntityTypes/[0-9]+/definition\\.json$"))]) as $entities
+    | ([.[] | select(.path | test("^RelationshipTypes/[0-9]+/definition\\.json$"))]) as $relationships
+    | ($entities | map(.content.id)) as $entityIds
+    | ($relationships | map(.content.id)) as $relationshipIds
+    | ($entities | map({key: .content.id, value: ([.content.properties[]?.id, .content.timeseriesProperties[]?.id])}) | from_entries) as $propertyIds
+    | all($entities[]; . as $entity
+      | ($entity.content.id == ($entity | path_id("^EntityTypes/(?<id>[0-9]+)/definition\\.json$")))
+      and all($entity.content.entityIdParts[]; $propertyIds[$entity.content.id] | index(.) != null)
+      and ($propertyIds[$entity.content.id] | index($entity.content.displayNamePropertyId) != null))
+    and all(.[] | select(.path | test("^EntityTypes/[0-9]+/DataBindings/[0-9a-fA-F-]+\\.json$"));
+        (path_id("^EntityTypes/(?<id>[0-9]+)/DataBindings/") as $entityId
+        | ($entityIds | index($entityId) != null)
+        and (.content.id == (.path | capture("/DataBindings/(?<id>[0-9a-fA-F-]+)\\.json$").id))
+        and all(.content.dataBindingConfiguration.propertyBindings[]; . as $binding
+          | $propertyIds[$entityId] | index($binding.targetPropertyId) != null)))
+    and all($relationships[]; . as $relationship
+      | ($relationship.content.id == ($relationship | path_id("^RelationshipTypes/(?<id>[0-9]+)/definition\\.json$")))
+      and ($entityIds | index($relationship.content.source.entityTypeId) != null)
+      and ($entityIds | index($relationship.content.target.entityTypeId) != null))
+    and all(.[] | select(.path | test("^RelationshipTypes/[0-9]+/Contextualizations/[0-9a-fA-F-]+\\.json$"));
+        (path_id("^RelationshipTypes/(?<id>[0-9]+)/Contextualizations/") as $relationshipId
+        | ($relationships[] | select(.content.id == $relationshipId).content) as $relationship
+        | ($relationshipIds | index($relationshipId) != null)
+        and (.content.id == (.path | capture("/Contextualizations/(?<id>[0-9a-fA-F-]+)\\.json$").id))
+        and all(.content.sourceKeyRefBindings[]; . as $binding
+          | $propertyIds[$relationship.source.entityTypeId] | index($binding.targetPropertyId) != null)
+        and all(.content.targetKeyRefBindings[]; . as $binding
+          | $propertyIds[$relationship.target.entityTypeId] | index($binding.targetPropertyId) != null)))
+  ' <<<"$actual_parts" >/dev/null; then
+    err "Published ontology definition contains invalid internal references"
+  fi
+
+  ok "Published ontology definition content and references verified"
 }
 
 ####
@@ -824,26 +1213,115 @@ if [[ "$DRY_RUN" == "true" ]]; then
   warn "DRY-RUN mode enabled"
 fi
 
+if [[ -n "$DEFINITION_PARTS_OUTPUT" ]]; then
+  pre_generate_ids
+  DEFINITION_PARTS=$(build_ontology_definition)
+  mkdir -p "$(dirname "$DEFINITION_PARTS_OUTPUT")"
+  jq . <<<"$DEFINITION_PARTS" >"$DEFINITION_PARTS_OUTPUT"
+  info "Ontology definition parts: $DEFINITION_PARTS_OUTPUT"
+  exit 0
+fi
+
+log "Authenticating to Fabric API"
+FABRIC_TOKEN=$(get_fabric_token)
+info "Authentication successful"
+
+log "Verifying Workspace Access"
+workspace_response=$(get_workspace "$WORKSPACE_ID" "$FABRIC_TOKEN")
+workspace_name=$(echo "$workspace_response" | jq -r '.displayName')
+info "Workspace: $workspace_name ($WORKSPACE_ID)"
+
+# Reconcile IDs from the selected deployed definition before allocating missing IDs
+if ! existing_ontology=$(select_workspace_item_by_display_name \
+  "$WORKSPACE_ID" "Ontology" "$ONTOLOGY_NAME" "$FABRIC_TOKEN"); then
+  err "Failed to select existing Ontology item: $ONTOLOGY_NAME"
+fi
+if [[ -n "$existing_ontology" ]]; then
+  if ! EXISTING_ONTOLOGY_ID=$(jq -er '.id' <<<"$existing_ontology"); then
+    err "Failed to decode selected Ontology item: $ONTOLOGY_NAME"
+  fi
+fi
+
+if [[ -n "$EXISTING_ONTOLOGY_ID" ]]; then
+  info "Exporting deployed ontology definition: $EXISTING_ONTOLOGY_ID"
+  if ! existing_definition_response=$(get_item_definition "$WORKSPACE_ID" "$EXISTING_ONTOLOGY_ID" "$FABRIC_TOKEN"); then
+    err "Failed to retrieve deployed ontology definition: $EXISTING_ONTOLOGY_ID"
+  fi
+  if ! EXISTING_DEFINITION_PARTS=$(decode_item_definition "$existing_definition_response"); then
+    err "Failed to decode deployed ontology definition: $EXISTING_ONTOLOGY_ID"
+  fi
+  if ! EXISTING_DEFINITION_PAYLOAD=$(jq -ec '.definition' <<<"$existing_definition_response"); then
+    err "Failed to retain deployed ontology rollback payload: $EXISTING_ONTOLOGY_ID"
+  fi
+  load_existing_ids
+fi
+
 # Pre-generate all IDs to avoid subshell issues with associative arrays
 pre_generate_ids
+ID_MAPPING=$(build_id_mapping)
+if [[ "$DRY_RUN" != "true" ]]; then
+  write_json_atomically "$ID_MAPPING_OUTPUT" "$ID_MAPPING"
+  info "Ontology ID mapping: $ID_MAPPING_OUTPUT"
+fi
 
 # Build ontology definition parts
 DEFINITION_PARTS=$(build_ontology_definition)
+
+TARGET_DEFINITION_PARTS=$(jq -c '
+  map({path, content: (.payload | @base64d | fromjson)})
+  | sort_by(.path)
+' <<<"$DEFINITION_PARTS")
+SEMANTIC_DIFF=$(build_semantic_diff "$EXISTING_DEFINITION_PARTS" "$TARGET_DEFINITION_PARTS")
+if [[ "$DRY_RUN" != "true" ]]; then
+  write_json_atomically "$DIFF_OUTPUT" "$SEMANTIC_DIFF"
+  info "Semantic definition diff: $DIFF_OUTPUT"
+fi
 
 parts_count=$(echo "$DEFINITION_PARTS" | jq 'length')
 info "Total definition parts: $parts_count"
 
 # Create or update ontology
-ONTOLOGY_ID=$(create_ontology "$DEFINITION_PARTS")
+if ! ONTOLOGY_ID=$(create_ontology "$DEFINITION_PARTS"); then
+  err "Ontology publication failed"
+fi
+
+if [[ "$DRY_RUN" != "true" ]]; then
+  verify_ontology_definition "$ONTOLOGY_ID" "$DEFINITION_PARTS"
+fi
 
 log "Deployment Complete"
-ok "Ontology ID: $ONTOLOGY_ID"
-warn "Ontology setup is async - entity types take 10-20 minutes to fully provision"
-info "The portal will show 'Setting up your ontology' until complete"
-
-# Output for scripting
-if [[ "$DRY_RUN" != "true" ]]; then
-  echo ""
-  echo "# Environment variables for downstream scripts:"
-  echo "export ONTOLOGY_ID=\"$ONTOLOGY_ID\""
+if [[ "$DRY_RUN" == "true" ]]; then
+  warn "DRY RUN - No ontology was published and no evidence output was written"
+else
+  PUBLICATION_RESULT=$(jq -n \
+    --arg workspaceId "$WORKSPACE_ID" \
+    --arg lakehouseId "$LAKEHOUSE_ID" \
+    --arg ontologyItemId "$ONTOLOGY_ID" \
+    --arg rollbackEvidence "$ROLLBACK_OUTPUT" \
+    --arg diffEvidence "$DIFF_OUTPUT" \
+    --argjson mapping "$ID_MAPPING" \
+    '{
+      version: 2,
+      workspaceId: $workspaceId,
+      lakehouseId: $lakehouseId,
+      ontologyItemId: $ontologyItemId,
+      evidence: {
+        rollback: $rollbackEvidence,
+        semanticDiff: $diffEvidence
+      },
+      itemOperation: {
+        status: "Succeeded",
+        verification: "DefinitionPartsVerified"
+      },
+      graphReadiness: {
+        status: "NotChecked",
+        reason: "Graph readiness requires separate qualification"
+      },
+      mapping: $mapping
+    }')
+  write_json_atomically "$PUBLICATION_OUTPUT" "$PUBLICATION_RESULT"
+  ok "Ontology ID: $ONTOLOGY_ID"
+  info "Publication output: $PUBLICATION_OUTPUT"
+  ok "Item operation and definition verification succeeded"
+  warn "Graph readiness was not checked and requires separate qualification"
 fi

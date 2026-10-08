@@ -2,10 +2,13 @@ use std::{fmt::Write, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, Context, Result};
 use azure_iot_operations_mqtt::{
-    control_packet::{Publish, QoS},
-    interface::{AckToken, ManagedClient, MqttPubSub, PubReceiver},
+    aio::connection_settings::MqttConnectionSettingsBuilder,
+    control_packet::{
+        DeliveryQoS, Publish, PublishProperties, QoS, RetainOptions, SubscribeProperties,
+        TopicFilter, TopicName,
+    },
     session::{Session, SessionManagedClient, SessionOptionsBuilder},
-    MqttConnectionSettingsBuilder,
+    token::AckToken,
 };
 use opentelemetry::{
     trace::{Span, Status, Tracer},
@@ -47,7 +50,7 @@ pub async fn run(config: AppConfig) -> Result<()> {
     });
 
     tokio::select! {
-        result = session.run() => result.context("session loop failed")?,
+        result = session.run() => result.map_err(|e| anyhow::anyhow!("session loop failed: {e}"))?,
         _ = signal::ctrl_c() => {
             info!("Received Ctrl+C, shutting down MQTT session");
         }
@@ -131,12 +134,19 @@ async fn subscribe_topic(
         )
     };
 
-    let mut receiver = client
-        .create_filtered_pub_receiver(&subscription)
-        .map_err(|err| anyhow!("failed to create filtered receiver: {err}"))?;
+    let topic_filter = TopicFilter::new(&subscription)
+        .map_err(|err| anyhow!("invalid topic filter {subscription}: {err}"))?;
+
+    let mut receiver = client.create_filtered_pub_receiver(topic_filter.clone());
 
     client
-        .subscribe(subscription.clone(), QoS::AtLeastOnce)
+        .subscribe(
+            topic_filter,
+            QoS::AtLeastOnce,
+            false,
+            RetainOptions::default(),
+            SubscribeProperties::default(),
+        )
         .await
         .map_err(|err| anyhow!("failed to issue subscribe: {err}"))?
         .await
@@ -161,17 +171,18 @@ async fn process_publish(
     let tracer = telemetry::tracer();
     let mut span = tracer.start("mqtt.receive");
 
-    let topic = String::from_utf8_lossy(publish.topic.as_ref()).to_string();
+    let topic = publish.topic_name.to_string();
     let payload_bytes = publish.payload.as_ref();
     let ack_required = ack_token.is_some();
 
+    let (qos_level, dup) = delivery_qos_info(&publish.qos);
     span.set_attribute(KeyValue::new("messaging.system", "mqtt"));
     span.set_attribute(KeyValue::new("messaging.destination", topic.clone()));
     span.set_attribute(KeyValue::new("messaging.destination_kind", "topic"));
     span.set_attribute(KeyValue::new("messaging.operation", "process"));
-    span.set_attribute(KeyValue::new("messaging.mqtt.qos", qos_to_i64(publish.qos)));
+    span.set_attribute(KeyValue::new("messaging.mqtt.qos", qos_level));
     span.set_attribute(KeyValue::new("messaging.mqtt.retain", publish.retain));
-    span.set_attribute(KeyValue::new("messaging.mqtt.dup", publish.dup));
+    span.set_attribute(KeyValue::new("messaging.mqtt.dup", dup));
     span.set_attribute(KeyValue::new(
         "messaging.message_payload_size_bytes",
         payload_bytes.len() as i64,
@@ -272,11 +283,11 @@ async fn acknowledge_message(token: Option<AckToken>) -> Result<bool> {
     }
 }
 
-fn qos_to_i64(qos: QoS) -> i64 {
+fn delivery_qos_info(qos: &DeliveryQoS) -> (i64, bool) {
     match qos {
-        QoS::AtMostOnce => 0,
-        QoS::AtLeastOnce => 1,
-        QoS::ExactlyOnce => 2,
+        DeliveryQoS::AtMostOnce => (0, false),
+        DeliveryQoS::AtLeastOnce(info) => (1, info.dup),
+        DeliveryQoS::ExactlyOnce(info) => (2, info.dup),
     }
 }
 
@@ -307,9 +318,17 @@ async fn run_heartbeat(client: SessionManagedClient, config: Arc<AppConfig>) -> 
         .map(|base| format!("{base}/heartbeat"))
         .unwrap_or_else(|| "health/heartbeat".to_string());
 
+    let heartbeat_topic_name = TopicName::new(&heartbeat_topic)
+        .map_err(|err| anyhow!("invalid heartbeat topic {heartbeat_topic}: {err}"))?;
+
     loop {
         match client
-            .publish(&heartbeat_topic, QoS::AtLeastOnce, false, HEARTBEAT_PAYLOAD)
+            .publish_qos1(
+                heartbeat_topic_name.clone(),
+                false,
+                HEARTBEAT_PAYLOAD,
+                PublishProperties::default(),
+            )
             .await
         {
             Ok(token) => {

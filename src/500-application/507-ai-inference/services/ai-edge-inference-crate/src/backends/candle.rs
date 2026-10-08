@@ -36,7 +36,6 @@ struct CandleModel {
 
 #[cfg(feature = "candle")]
 #[derive(Debug)]
-#[expect(dead_code)]
 struct PreprocessingConfig {
     normalize_mean: Vec<f32>,
     normalize_std: Vec<f32>,
@@ -413,6 +412,7 @@ impl InferenceBackend for CandleBackend {
             last_inference_time_ms: self.stats.last_inference_time_ms,
             total_inferences: self.stats.total_inferences,
             errors: vec![], // Could be enhanced to track errors
+            session_settings: Default::default(),
         }
     }
     
@@ -465,6 +465,7 @@ impl InferenceBackend for CandleBackend {
             last_inference_time_ms: None,
             total_inferences: 0,
             errors: vec!["Candle backend not compiled".to_string()],
+            session_settings: Default::default(),
         }
     }
     

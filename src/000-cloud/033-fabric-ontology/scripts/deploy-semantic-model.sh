@@ -517,7 +517,9 @@ create_semantic_model() {
     rm -f "$update_body_file"
 
     info "Updating semantic model definition..." >&2
-    fabric_api_call "POST" "/workspaces/$WORKSPACE_ID/semanticModels/$existing_id/updateDefinition" "$update_body" "$FABRIC_TOKEN" || true
+    if ! fabric_api_call "POST" "/workspaces/$WORKSPACE_ID/semanticModels/$existing_id/updateDefinition" "$update_body" "$FABRIC_TOKEN"; then
+      err "Failed to update semantic model definition: $existing_id"
+    fi
 
     rm -f "$request_body_file"
     echo "$existing_model"

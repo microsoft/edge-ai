@@ -149,7 +149,7 @@ Implement the leak detection pipeline as a five-layer architecture deployed on a
 
 ### Reference Implementation
 
-The `blueprints/full-single-node-cluster` blueprint (applied with `leak-detection.tfvars.example`) implements this architecture using:
+The `blueprints/full-multi-node-cluster` blueprint (applied with `leak-detection.tfvars.example`) implements this architecture using:
 
 | Layer             | Reference Implementation                                                 | Component                                         |
 |-------------------|--------------------------------------------------------------------------|---------------------------------------------------|
@@ -430,7 +430,7 @@ The reference scenario provides Teams notification with stateful deduplication. 
 
 ## Decision Conclusion
 
-The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation is realized as a *scenario* on top of `blueprints/full-single-node-cluster` (using `leak-detection.tfvars.example`) and provides an opinionated starting point:
+The leak detection pipeline architecture uses a **layered, MQTT-brokered design** where each layer is decoupled through topic contracts and independently substitutable. The reference implementation is realized as a *scenario* on top of `blueprints/full-multi-node-cluster` (using `leak-detection.tfvars.example`) and provides an opinionated starting point:
 
 | Layer            | Reference Choice                                       | Substitution Guidance                                                                     |
 |------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------|
@@ -474,7 +474,7 @@ The leak detection pipeline architecture uses a **layered, MQTT-brokered design*
 
 ## References
 
-- [full-single-node-cluster blueprint (host of the leak detection scenario)](../../blueprints/full-single-node-cluster/README.md)
+- [full-multi-node-cluster blueprint (host of the leak detection scenario)](../../blueprints/full-multi-node-cluster/README.md)
 
 ## Related ADRs
 

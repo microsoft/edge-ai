@@ -3,7 +3,13 @@ output "azure_monitor_workspace" {
 }
 
 output "log_analytics_workspace" {
-  value = azurerm_log_analytics_workspace.monitor
+  value = {
+    id                 = azurerm_log_analytics_workspace.monitor.id
+    name               = azurerm_log_analytics_workspace.monitor.name
+    location           = azurerm_log_analytics_workspace.monitor.location
+    workspace_id       = azurerm_log_analytics_workspace.monitor.workspace_id
+    primary_shared_key = azurerm_log_analytics_workspace.monitor.primary_shared_key
+  }
 
   sensitive = true
 }

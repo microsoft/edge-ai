@@ -11,7 +11,7 @@ variable "grafana_admin_principal_id" {
 variable "grafana_major_version" {
   description = "Major version of grafana to use"
   type        = string
-  default     = "11"
+  default     = "12"
 }
 
 variable "log_retention_in_days" {
@@ -76,6 +76,12 @@ variable "virtual_network_id" {
   type        = string
   description = "The ID of the virtual network for private DNS zone linking. Required if should_enable_private_endpoints is true."
   default     = null
+}
+
+variable "should_create_blob_dns_zone" {
+  type        = bool
+  description = "Whether to create the shared blob private DNS zone (consumed by the storage account component) independently of the Azure Monitor private endpoints. Lets callers keep the blob zone when monitor private endpoints are disabled."
+  default     = false
 }
 
 variable "tags" {

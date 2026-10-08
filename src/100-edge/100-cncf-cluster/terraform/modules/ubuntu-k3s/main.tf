@@ -33,6 +33,8 @@ locals {
     ARC_TENANT_ID         = var.arc_tenant_id
     AZ_CLI_VER            = "$${AZ_CLI_VER}"
     AZ_CONNECTEDK8S_VER   = "$${AZ_CONNECTEDK8S_VER}"
+    AZ_MODE               = coalesce(var.az_mode, "$${AZ_MODE}")
+    AZ_CLI_IMAGE          = coalesce(var.az_cli_image, "$${AZ_CLI_IMAGE}")
     CUSTOM_LOCATIONS_OID  = var.custom_locations_oid
     DEVICE_USERNAME       = var.cluster_server_host_machine_username
     SKIP_INSTALL_AZ_CLI   = var.should_skip_installing_az_cli ? "true" : "$${SKIP_INSTALL_AZ_CLI}"
@@ -110,6 +112,9 @@ resource "local_sensitive_file" "cluster_node_setup_script" {
 
 /*
  * Key Vault Secrets
+ *
+ * Scripts are stored gzip-compressed and base64-encoded to stay within the
+ * Key Vault 25,600 character secret value limit.
  */
 
 // Create Key Vault Secret for Server Script
@@ -117,7 +122,8 @@ resource "azurerm_key_vault_secret" "server_script" {
   count = var.should_upload_to_key_vault ? 1 : 0
 
   name         = "ubuntu-k3s-server-script"
-  value        = local.script_server_rendered
+  value        = base64gzip(local.script_server_rendered)
+  content_type = "application/gzip;base64"
   key_vault_id = var.key_vault.id
 }
 
@@ -126,6 +132,7 @@ resource "azurerm_key_vault_secret" "node_script" {
   count = var.should_upload_to_key_vault ? 1 : 0
 
   name         = "ubuntu-k3s-node-script"
-  value        = local.script_node_rendered
+  value        = base64gzip(local.script_node_rendered)
+  content_type = "application/gzip;base64"
   key_vault_id = var.key_vault.id
 }

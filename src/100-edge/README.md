@@ -154,7 +154,7 @@ Each component supports multiple Infrastructure as Code frameworks:
 ## Getting Started
 
 1. **Review Architecture**: Start with [blueprint examples](../../blueprints/README.md) to see complete deployment scenarios
-2. **Choose Blueprint**: Select from [single-node](../../blueprints/full-single-node-cluster/README.md) or [multi-node](../../blueprints/full-multi-node-cluster/README.md) blueprints
+2. **Choose Blueprint**: Select the [full-multi-node-cluster](../../blueprints/full-multi-node-cluster/README.md) blueprint
 3. **Prepare Infrastructure**: Either prepare hardware for new K3s deployment or ensure existing physical cluster is Arc-enabled
 4. **Plan Network**: Configure network connectivity and security
 5. **Deploy/Verify Foundation**: Deploy 100-cncf-cluster for new installations, or verify Arc enablement on existing clusters

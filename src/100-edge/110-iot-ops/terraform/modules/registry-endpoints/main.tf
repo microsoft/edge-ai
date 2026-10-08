@@ -7,7 +7,7 @@
 
 // Default MCR endpoint (always created)
 resource "azapi_resource" "registry_endpoint_mcr" {
-  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2026-07-01"
   name      = "default"
   parent_id = var.aio_instance_id
 
@@ -32,7 +32,7 @@ resource "azapi_resource" "registry_endpoint_mcr" {
 // Custom registry endpoints
 resource "azapi_resource" "registry_endpoint" {
   for_each  = { for endpoint in var.registry_endpoints : endpoint.name => endpoint }
-  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2026-03-01"
+  type      = "Microsoft.IoTOperations/instances/registryEndpoints@2026-07-01"
   name      = each.value.name
   parent_id = var.aio_instance_id
 
@@ -47,9 +47,9 @@ resource "azapi_resource" "registry_endpoint" {
         { method = each.value.authentication.method },
         each.value.authentication.method == "SystemAssignedManagedIdentity" ? {
           systemAssignedManagedIdentitySettings = each.value.authentication.system_assigned_managed_identity_settings != null ? {
-            audience = coalesce(each.value.authentication.system_assigned_managed_identity_settings.audience, "https://management.azure.com/")
+            audience = coalesce(each.value.authentication.system_assigned_managed_identity_settings.audience, "https://containerregistry.azure.net")
             } : {
-            audience = "https://management.azure.com/"
+            audience = "https://containerregistry.azure.net"
           }
         } : {},
         each.value.authentication.method == "UserAssignedManagedIdentity" ? {

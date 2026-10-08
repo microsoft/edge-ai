@@ -225,7 +225,9 @@ pub fn handle_receive_trace(custom_user_data: &Vec<(String, String)>) {
 
     // Set the parent context to link this span to the sender's trace
     // This creates a continuous trace across services
-    span.set_parent(cx);
+    if let Err(error) = span.set_parent(cx) {
+        tracing::warn!(%error, "failed to set span parent context");
+    }
 }
 
 #[cfg(test)]

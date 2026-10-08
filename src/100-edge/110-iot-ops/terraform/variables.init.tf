@@ -13,7 +13,7 @@ variable "secret_sync_controller" {
     train   = string
   })
   default = {
-    version = "1.4.1"
+    version = "1.5.3"
     train   = "stable"
   }
 }

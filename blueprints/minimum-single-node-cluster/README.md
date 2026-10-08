@@ -22,6 +22,9 @@ estimated_reading_time: 3
 This blueprint provides a minimal deployment of an Arc-enabled Kubernetes cluster on a single node, with optional Azure IoT Operations (AIO). It is designed to use the minimum required resources while still providing a functional edge deployment. Set `should_deploy_aio = false` to deploy an Arc-connected cluster without AIO.
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 This blueprint deploys:
@@ -138,9 +141,9 @@ The Bicep implementation uses a streamlined parameter approach with a `Common` o
 
 ## Prerequisites
 
-**IMPORTANT:** We highly suggest using [this project's integrated dev container](../../../.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
+**IMPORTANT:** We highly suggest using [this project's integrated dev container](../../.devcontainer/README.md) to get started quickly with Windows-based systems and also works well with nix-compatible environments.
 
-Refer to the Environment Setup section in the [Root README](../../../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
+Refer to the Environment Setup section in the [Root README](../../README.md#getting-started-and-prerequisites-setup) for detailed instructions on setting up your environment.
 
 Ensure you have the following prerequisites:
 

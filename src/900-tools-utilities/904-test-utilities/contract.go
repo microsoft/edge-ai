@@ -4,6 +4,7 @@ package testutil
 
 import (
 	"encoding/json"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
@@ -29,8 +30,14 @@ import (
 //
 // This is a static analysis tool - no deployment or Azure authentication required.
 func GetTerraformDeclaredOutputs(t *testing.T, terraformDir string) []string {
-	// Run terraform-docs to get output schema
-	cmd := exec.Command("terraform-docs", "json", terraformDir)
+	// terraform-docs walks up to discover .terraform-docs.yml; the repo-root config sets
+	// output.file=README.md which would rewrite the module README instead of printing JSON.
+	// Pass an explicit minimal config so JSON is written to stdout.
+	cfgPath := filepath.Join(t.TempDir(), "terraform-docs.yml")
+	require.NoError(t, os.WriteFile(cfgPath, []byte("formatter: json\n"), 0600),
+		"Failed to write terraform-docs config")
+
+	cmd := exec.Command("terraform-docs", "-c", cfgPath, "json", terraformDir)
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "Failed to run terraform-docs: %s\nOutput: %s", err, string(output))
 

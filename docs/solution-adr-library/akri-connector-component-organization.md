@@ -73,7 +73,7 @@ The repository follows these organizational principles:
 The existing Fabric RTI blueprint (`blueprints/fabric-rti/`) demonstrates a successful pattern for addon/layered deployments:
 
 * Provides complete Terraform implementation for deploying Fabric Real-Time Intelligence
-* Can be applied on top of existing base blueprints (e.g., `full-single-node-cluster`)
+* Can be applied on top of existing base blueprints (e.g., `full-multi-node-cluster`)
 * Contains no buildable application code
 * Focuses on infrastructure orchestration and configuration
 
@@ -463,7 +463,7 @@ If Option 2 is selected, the following tasks must be completed:
 
 * [ ] Validate blueprint deployments in test environment
 * [ ] Verify docker-compose dev environments still function
-* [ ] Test blueprint layering on top of full-single-node-cluster
+* [ ] Test blueprint layering on top of full-multi-node-cluster
 * [ ] Validate CI/CD pipeline with new structure
 
 **Communication**:

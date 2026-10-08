@@ -1,0 +1,37 @@
+---
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+metadata:
+  name: InvalidIncompleteTimeseriesBinding
+dataSources:
+  lakehouse:
+    name: TestLakehouse
+    tables:
+      - name: robot
+  eventhouse:
+    name: TestEventhouse
+    database: TestDatabase
+    tables:
+      - name: telemetry
+        format: csv
+        schema:
+          - name: RobotId
+            type: string
+          - name: RecordedAt
+            type: datetime
+entityTypes:
+  - name: Robot
+    key: Id
+    dataBindings:
+      - type: static
+        source: lakehouse
+        table: robot
+      - type: timeseries
+        source: eventhouse
+        table: telemetry
+        timestampColumn: RecordedAt
+    properties:
+      - name: Id
+        type: string
+        binding: static
+...

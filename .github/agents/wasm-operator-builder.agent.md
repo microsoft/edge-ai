@@ -176,7 +176,7 @@ Actions:
 
 2. Update Terraform (optional):
    - No blueprint modifications are required
-   - Add a `dataflow_graphs` entry to the user's `terraform.tfvars` following the pattern in `blueprints/full-single-node-cluster/terraform/dataflow-graphs.tfvars.example`
+   - Add a `dataflow_graphs` entry to the user's `terraform.tfvars` following the pattern in `blueprints/full-multi-node-cluster/terraform/dataflow-graphs.tfvars.example`
    - Follow Terraform integration patterns from `.github/instructions/wasm-build-deploy.instructions.md`
 
 3. Register with rust-analyzer:

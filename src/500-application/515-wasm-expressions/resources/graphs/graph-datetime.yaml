@@ -1,0 +1,72 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "graph-datetime"
+  description: "Parse, format, reformat, datediff, and extract parts from UTC timestamps; outputs new fields to continue the graph"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: module-datetime/map
+    parameters:
+      mode:
+        name: mode
+        required: true
+        description: "REQUIRED. Operation to run on this node. One of: parse | format | reformat | duration | parts. Each mode uses a different subset of the fields below; fields that do not apply to the chosen mode are rejected at deploy time."
+      inputSource:
+        name: inputSource
+        default: "payload"
+        description: "Where the input timestamp comes from: payload (default, read from inputPath) | messageTimestamp (the message HLC event-time; leave inputPath empty)."
+      inputPath:
+        name: inputPath
+        description: "REQUIRED when inputSource=payload. JSON Pointer (RFC 6901) to the source timestamp field. Example: /event_timestamp. For duration, this is the first (later) timestamp. Leave empty when inputSource=messageTimestamp."
+      inputPath2:
+        name: inputPath2
+        description: "REQUIRED for mode=duration only. JSON Pointer to the second (earlier) timestamp. duration computes inputPath minus inputPath2. Example: /production_date. Not used by other modes."
+      outputPath:
+        name: outputPath
+        required: true
+        description: "REQUIRED. JSON Pointer where the result is written. Intermediate objects are created as needed. Example: /age_minutes."
+      inputFormat:
+        name: inputFormat
+        description: "Optional for mode=parse | reformat | duration | parts. strftime layout used to parse the input when it is not RFC 3339. Example: %Y-%m-%d %H:%M. Not used by mode=format."
+      format:
+        name: format
+        description: "REQUIRED for mode=format and mode=reformat. strftime layout for the output string. Examples: %Y-%m-%dT%H:%M:%S%.3fZ or %Y-%m-%d %H:%M. Not used by other modes."
+      unit:
+        name: unit
+        description: "Optional for mode=duration only. Output unit of the diff: ms (default) | seconds | minutes | hours. Leave empty for other modes."
+      epochUnit:
+        name: epochUnit
+        description: "Optional for mode=parse and mode=format only. Epoch granularity in and out: ms (default) | seconds. Leave empty for other modes."
+      parts:
+        name: parts
+        description: "REQUIRED for mode=parts only. Comma list of components to extract: year,month,day,hour,minute,second,weekday,ordinal. Example: year,month,day. Not used by other modes."
+      onMissing:
+        name: onMissing
+        default: "skip"
+        description: "Behavior when the input field is missing or malformed: skip (default, pass the message through unchanged with a warning) | error (drop the message). With skip, downstream consumers MUST tolerate the derived output field being absent. Set onMissing=error for graphs where the derived field is load-bearing."
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "module-datetime/map"
+    module: "datetime:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "module-datetime/map"
+  - from:
+      name: "module-datetime/map"
+    to:
+      name: "sink"

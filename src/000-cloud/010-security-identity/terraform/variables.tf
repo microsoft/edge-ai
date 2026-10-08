@@ -39,6 +39,44 @@ variable "should_enable_purge_protection" {
 }
 
 /*
+ * Network Security Perimeter - Optional
+ */
+
+variable "network_security_perimeter_id" {
+  type        = string
+  description = "Resource ID of an existing Network Security Perimeter to associate the Key Vault with; null to skip association"
+  default     = null
+  validation {
+    condition     = (var.network_security_perimeter_id == null) == (var.network_security_perimeter_profile_id == null)
+    error_message = "network_security_perimeter_id and network_security_perimeter_profile_id must both be null or both be provided"
+  }
+}
+
+variable "should_use_network_security_perimeter" {
+  type        = bool
+  description = "Whether to associate the Key Vault with a Network Security Perimeter"
+  default     = false
+}
+
+variable "network_security_perimeter_profile_id" {
+  type        = string
+  description = "Resource ID of the Network Security Perimeter profile to associate the Key Vault with"
+  default     = null
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  type        = string
+  description = "Duration to wait after enforcing Network Security Perimeter associations before allowing Terraform data-plane operations"
+  default     = "15m"
+}
+
+variable "network_security_perimeter_propagation_trigger" {
+  type        = string
+  description = "Value that changes when the Network Security Perimeter access rules change, used to re-trigger the propagation delay"
+  default     = null
+}
+
+/*
  * Key Vault Diagnostic Settings - Optional
  */
 

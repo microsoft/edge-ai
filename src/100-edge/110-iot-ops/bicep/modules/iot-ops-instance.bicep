@@ -123,6 +123,10 @@ var trust = trustIssuerSettings ?? {
   configMapKey: ''
 }
 
+// Trust bundle the WASM graph controller reads the CA cert from. Unlike trustBundleSettings
+// (empty for self-signed), this always resolves; self-signed publishes the bundle under 'ca.crt'.
+var trustCaCertFileName = trustSource == 'CustomerManaged' ? trust.configMapKey : 'ca.crt'
+
 var aioMqBrokerAddress = 'mqtts://${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}:${aioMqBrokerConfig.brokerListenerPort}'
 
 var defaultConfigurationSettings = {
@@ -134,6 +138,8 @@ var defaultConfigurationSettings = {
   'dataFlows.values.tinyKube.mqttBroker.hostName': '${aioMqBrokerConfig.brokerListenerServiceName}.${aioExtensionConfig.settings.namespace}'
   'dataFlows.values.tinyKube.mqttBroker.port': any(aioMqBrokerConfig.brokerListenerPort)
   'dataFlows.values.tinyKube.mqttBroker.authentication.serviceAccountTokenAudience': aioMqBrokerConfig.serviceAccountAudience
+  'dataFlows.values.wasmGraphController.mqttBroker.caCertConfigMapRef': trust.configMapName
+  'dataFlows.values.wasmGraphController.mqttBroker.caCertFileName': trustCaCertFileName
   'observability.metrics.enabled': '${metrics.enabled}'
   'observability.metrics.openTelemetryCollectorAddress': metrics.otelCollectorAddress
   #disable-next-line prefer-unquoted-property-names
@@ -283,7 +289,7 @@ resource defaultSecretSyncSecretProviderClass 'Microsoft.SecretSyncController/az
   }
 }
 
-resource aioInstance 'Microsoft.IoTOperations/instances@2026-03-01' = {
+resource aioInstance 'Microsoft.IoTOperations/instances@2026-07-01' = {
   name: aioInstanceName
   location: common.location
   extendedLocation: {
@@ -321,7 +327,7 @@ resource aioInstance 'Microsoft.IoTOperations/instances@2026-03-01' = {
   )
 }
 
-resource broker 'Microsoft.IoTOperations/instances/brokers@2026-03-01' = {
+resource broker 'Microsoft.IoTOperations/instances/brokers@2026-07-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -372,7 +378,7 @@ resource broker 'Microsoft.IoTOperations/instances/brokers@2026-03-01' = {
   )
 }
 
-resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2026-03-01' = {
+resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@2026-07-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -391,7 +397,7 @@ resource brokerAuthn 'Microsoft.IoTOperations/instances/brokers/authentications@
   }
 }
 
-resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2026-03-01' = {
+resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@2026-07-01' = {
   parent: broker
   name: 'default'
   extendedLocation: {
@@ -420,7 +426,7 @@ resource brokerListener 'Microsoft.IoTOperations/instances/brokers/listeners@202
   }
 }
 
-resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2026-03-01' = if (shouldCreateAnonymousBrokerListener) {
+resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/listeners@2026-07-01' = if (shouldCreateAnonymousBrokerListener) {
   parent: broker
   name: 'default-anon'
   extendedLocation: {
@@ -442,7 +448,7 @@ resource brokerListenerAnonymous 'Microsoft.IoTOperations/instances/brokers/list
   ]
 }
 
-resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-03-01' = {
+resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@2026-07-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {
@@ -454,7 +460,7 @@ resource dataFlowProfile 'Microsoft.IoTOperations/instances/dataflowProfiles@202
   }
 }
 
-resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-03-01' = {
+resource dataFlowEndpoint 'Microsoft.IoTOperations/instances/dataflowEndpoints@2026-07-01' = {
   parent: aioInstance
   name: 'default'
   extendedLocation: {

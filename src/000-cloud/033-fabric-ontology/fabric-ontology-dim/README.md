@@ -27,28 +27,36 @@ This starter kit provides a complete dimensional schema based on IEEE 1872 robot
 - Fabric workspace with capacity
 - Bash shell (Git Bash on Windows)
 
-### Deploy with Seed Data
+### Publish the Ontology
 
 ```bash
-cd src/000-cloud/033-fabric-ontology/scripts
+cd src/000-cloud/033-fabric-ontology
+mkdir -p artifacts
 
-# Deploy ontology with sample robotics data
-./deploy-cora-corax-dim.sh \
+./scripts/deploy-ontology.sh \
+  --definition definitions/examples/cora-corax-dim.yaml \
   --workspace-id <your-workspace-guid> \
-  --with-seed-data
+  --lakehouse-id <your-lakehouse-guid> \
+  --output artifacts/ontology-publication.json \
+  --rollback-output artifacts/ontology-rollback.json \
+  --diff-output artifacts/ontology-semantic-diff.json
 
 # Dry run (preview without changes)
-./deploy-cora-corax-dim.sh \
+./scripts/deploy-ontology.sh \
+  --definition definitions/examples/cora-corax-dim.yaml \
   --workspace-id <your-workspace-guid> \
-  --with-seed-data \
+  --lakehouse-id <your-lakehouse-guid> \
   --dry-run
 ```
 
+The existing Lakehouse must contain the 19 Delta tables represented by the CSV
+files in [seed](seed). The publisher does not create the Lakehouse or load seed
+data.
+
 ### What Gets Deployed
 
-1. **Lakehouse**: `RoboticsOntologyLH` with 19 Delta tables
-2. **Semantic Model**: `CORA_CORAX_DimensionalModel` (Direct Lake)
-3. **Ontology**: `CORA_CORAX_Dimensional` with entity types and relationships
+The publisher creates or updates the `CORA_CORAX_Dimensional` ontology with its
+entity types, relationships, and bindings to the existing Lakehouse tables.
 
 ## Sample Questions
 
@@ -195,7 +203,7 @@ fabric-ontology-dim/
 1. Add row to `seed/Robot.csv`
 2. Add relationships in `seed/Robot_RobotGroup.csv`, `seed/Robot_RoboticSystem.csv`
 3. Add measurements in `seed/Robot_PositionMeasure.csv`, etc.
-4. Re-run deployment with `--with-seed-data`
+4. Reload the updated CSV files into the existing Lakehouse tables before republishing
 
 ### Adding Telemetry Data
 

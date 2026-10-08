@@ -77,7 +77,7 @@ connections:
 
 WASM dataflow graphs are deployed via the `dataflow_graphs` variable in Terraform configurations. No blueprint modifications are required — add or update entries in your `terraform.tfvars` file.
 
-See `blueprints/full-single-node-cluster/terraform/dataflow-graphs.tfvars.example` for the canonical example.
+See `blueprints/full-multi-node-cluster/terraform/dataflow-graphs.tfvars.example` for the canonical example.
 
 Add an entry to the `dataflow_graphs` variable array in your `terraform.tfvars`:
 

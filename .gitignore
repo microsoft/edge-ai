@@ -425,6 +425,7 @@ venv/
 
 # Bicep compiled ARM templates
 **/.arm/
+**/bicep/main.json
 
 # Mac finder files
 .DS_Store
@@ -472,3 +473,12 @@ crates/
 # Docusaurus build artifacts
 docs/docusaurus/.docusaurus/
 docs/docusaurus/build/
+
+# MegaLinter generated reports
+megalinter-reports/
+
+# C# language server / Dev Kit project cache
+*.lscache
+
+# HVE-Core local tooling install (not part of this repo)
+.hve-core/

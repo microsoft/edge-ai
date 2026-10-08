@@ -34,6 +34,7 @@ module "managed_redis" {
 
   // Private Endpoint
   private_endpoint_subnet_id     = try(var.private_endpoint_subnet.id, null)
+  private_dns_zone_id            = var.private_dns_zone_id
   should_create_private_dns_zone = var.should_create_private_dns_zone
   should_enable_private_endpoint = var.should_enable_private_endpoint
   virtual_network_id             = try(var.virtual_network.id, null)

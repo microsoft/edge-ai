@@ -24,20 +24,29 @@ run "create_default_network" {
 
   # Subnet assertions
   assert {
-    condition     = azurerm_subnet.main.name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_subnet.main[0].name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Subnet name does not match expected pattern"
   }
 
   # NSG assertions
   assert {
-    condition     = azurerm_network_security_group.main.name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_network_security_group.main[0].name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Network Security Group name does not match expected pattern"
   }
 
   # Virtual Network assertions
   assert {
-    condition     = azurerm_virtual_network.main.name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_virtual_network.main[0].name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Virtual Network name does not match expected pattern"
+  }
+
+  # Network Security Perimeter assertions
+  # should_use_network_security_perimeter defaults to false; the enabled path requires a real
+  # external IP-detection lookup (see main.tf's data "external" "deployment_client_ip") and is
+  # not covered by fast plan tests.
+  assert {
+    condition     = output.network_security_perimeter == null
+    error_message = "Network Security Perimeter output should be null when should_use_network_security_perimeter is false"
   }
 }
 
@@ -59,19 +68,19 @@ run "create_non_default_network" {
 
   # Subnet assertions
   assert {
-    condition     = azurerm_subnet.main.name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_subnet.main[0].name == "snet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Subnet name does not match expected pattern"
   }
 
   # NSG assertions
   assert {
-    condition     = azurerm_network_security_group.main.name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_network_security_group.main[0].name == "nsg-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Network Security Group name does not match expected pattern"
   }
 
   # Virtual Network assertions
   assert {
-    condition     = azurerm_virtual_network.main.name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
+    condition     = azurerm_virtual_network.main[0].name == "vnet-${var.resource_prefix}-${var.environment}-${var.instance}"
     error_message = "Virtual Network name does not match expected pattern"
   }
 }

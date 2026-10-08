@@ -1,8 +1,8 @@
-use azure_iot_operations_mqtt::session::SessionConnectionMonitor;
+use azure_iot_operations_mqtt::session::SessionMonitor;
 use std::time::{Duration, Instant};
 use tracing::{event, Level};
 
-pub async fn uptime_monitor(monitor: SessionConnectionMonitor) {
+pub async fn uptime_monitor(monitor: SessionMonitor) {
     let mut total_uptime = Duration::default();
     loop {
         event!(Level::INFO, "Waiting for connection...");

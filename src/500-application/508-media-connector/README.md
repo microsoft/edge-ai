@@ -2,7 +2,7 @@
 title: Media Connector for Azure IoT Operations
 description: Local development environment for testing Azure IoT Operations Media Connector with mock cameras, MQTT broker, and monitoring tools. Production deployment via blueprints.
 author: Edge AI Team
-ms.date: 11/12/2025
+ms.date: 2026-10-05
 ms.topic: reference
 estimated_reading_time: 12
 keywords:
@@ -20,7 +20,7 @@ keywords:
 
 This directory provides a **local development and testing environment** for the Azure IoT Operations Media Connector using Docker Compose. It includes mock RTSP cameras, MQTT broker, and monitoring tools for development without requiring a full Kubernetes cluster.
 
-**For production deployment**, the Media Connector is deployed via blueprints (e.g., `blueprints/full-single-node-cluster`) by enabling the Akri media connector feature.
+**For production deployment**, the Media Connector is deployed via blueprints (e.g., `blueprints/full-multi-node-cluster`) by enabling the Akri media connector feature.
 
 ## Overview
 
@@ -198,7 +198,7 @@ docker compose down
 
 #### Setup Prerequisites
 
-1. Deploy the `full-single-node-cluster` blueprint (or another blueprint with IoT Operations)
+1. Deploy the `full-multi-node-cluster` blueprint (or another blueprint with IoT Operations)
 2. Ensure media sources (cameras, RTSP streams) are accessible from the cluster
 
 #### Step 1: Deploy the Media Connector Template
@@ -208,7 +208,7 @@ Choose one of two deployment options:
 ##### Option A: Simple Enablement (Recommended for Getting Started)
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
 # Edit terraform.tfvars
 cat >> terraform.tfvars <<EOF
@@ -253,72 +253,67 @@ terraform apply
 
 #### Step 2: Configure Devices and Assets
 
-After deploying the connector template, configure your cameras (devices) and capture tasks (assets):
-
-```bash
-cd blueprints/full-single-node-cluster/terraform
-
-# Create or edit media-connector-assets.tfvars
-# Copy example configuration (when available)
-# cp media-connector-assets.tfvars.example media-connector-assets.tfvars
-```
-
-Add device and asset configurations using `namespaced_devices` and `namespaced_assets` variables:
+After deploying the connector template, configure your cameras (devices) and capture tasks (assets) in the variables file you apply the blueprint with. [alert-dataflow.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/alert-dataflow.tfvars.example) shows a complete configuration:
 
 ```hcl
-# In media-connector-assets.tfvars
-
-# Define camera devices
 namespaced_devices = [
   {
-    name         = "warehouse-camera-01"
-    display_name = "Warehouse Camera 01"
-    enabled      = true
-    endpoint = {
-      name = "warehouse-camera-endpoint"
-      authentication = {
-        method = "UsernamePassword"
-        username_secret_ref = { name = "camera-credentials", key = "username" }
-        password_secret_ref = { name = "camera-credentials", key = "password" }
+    name    = "warehouse-camera-01"
+    enabled = true
+    endpoints = {
+      inbound = {
+        "warehouse-camera-endpoint" = {
+          endpoint_type = "Microsoft.Media"
+          address       = "rtsp://192.168.1.100:554/stream1"
+          authentication = {
+            method = "UsernamePassword"
+            usernamePasswordCredentials = {
+              usernameSecretName = "camera-credentials/username"
+              passwordSecretName = "camera-credentials/password"
+            }
+          }
+        }
       }
-      target_address = "rtsp://192.168.1.100:554/stream1"
     }
-    # ... additional device properties
   }
 ]
 
-# Define capture tasks (assets)
 namespaced_assets = [
   {
     name         = "warehouse-camera-01-snapshots"
     display_name = "Warehouse Camera 01 Snapshots"
-    enabled      = true
     device_ref = {
       device_name   = "warehouse-camera-01"
       endpoint_name = "warehouse-camera-endpoint"
     }
-    datasets = [{
-      name = "snapshots"
-      dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
-      destinations = [{ target = "Mqtt", configuration = { topic = "warehouse/camera-01/snapshots" } }]
-    }]
+    streams = [
+      {
+        name                 = "snapshots"
+        stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"format\":\"jpeg\",\"snapshotsPerSecond\":0.2}"
+        destinations = [
+          {
+            target        = "Mqtt"
+            configuration = { topic = "warehouse/camera-01/snapshots" }
+          }
+        ]
+      }
+    ]
   }
 ]
 ```
 
-See the [Configuring Media Connector Assets](#configuring-media-connector-assets) section below for detailed examples.
-
-Apply the device and asset configuration:
+See [Configuring Media Connector Assets](#configuring-media-connector-assets) for task types and destinations, then apply the blueprint again:
 
 ```bash
-terraform apply -var-file="media-connector-assets.tfvars"
+cd blueprints/full-multi-node-cluster/terraform
+terraform apply -var-file="terraform.tfvars"
 ```
 
 #### Verify
 
 ```bash
 # Check deployed devices and assets
-kubectl get devices,assets -n azure-iot-operations
+kubectl get devices.namespaces.deviceregistry.microsoft.com,assets.namespaces.deviceregistry.microsoft.com -n azure-iot-operations
 
 # Check connector instances
 kubectl get connectorinstance,connectortemplate -n azure-iot-operations
@@ -330,84 +325,65 @@ kubectl logs -l app.kubernetes.io/name=media-connector -n azure-iot-operations -
 kubectl exec -it mqtt-client -n azure-iot-operations -- \
   sh -c "mosquitto_sub --host aio-broker.azure-iot-operations --port 18883 \
          --username 'K8S-SAT' --pw \$(cat /var/run/secrets/tokens/broker-sat) \
-         --cafile /var/run/certs/ca.crt --topic 'media/#' -v"
+         --cafile /var/run/certs/ca.crt --topic 'warehouse/#' -v"
 ```
-
-**Configuration Reference**: See `blueprints/full-single-node-cluster/terraform/media-connector-assets.tfvars.example`
-for a complete example of all available configuration options including device and asset definitions.
 
 ## Configuring Media Connector Assets
 
-When configuring media connector assets in your `terraform.tfvars` or `media-connector-assets.tfvars`, define devices for your cameras/media sources and assets for capture tasks.
+Define each camera or media source as a device with a `Microsoft.Media` inbound endpoint, and each capture task as a stream on an asset that references the device endpoint.
 
 ### Device Configuration Example
-
-Define RTSP cameras or other media sources as devices:
 
 ```hcl
 namespaced_devices = [
   {
-    name         = "warehouse-camera-01"
-    display_name = "Warehouse Camera 01"
-    enabled      = true
-    endpoint = {
-      name = "warehouse-camera-endpoint"
-      authentication = {
-        method = "UsernamePassword"
-        username_secret_ref = {
-          name = "camera-credentials"
-          key  = "username"
-        }
-        password_secret_ref = {
-          name = "camera-credentials"
-          key  = "password"
+    name    = "warehouse-camera-01"
+    enabled = true
+    endpoints = {
+      inbound = {
+        "warehouse-camera-endpoint" = {
+          endpoint_type = "Microsoft.Media"
+          address       = "rtsp://192.168.1.100:554/stream1"
+          authentication = {
+            method = "UsernamePassword"
+            usernamePasswordCredentials = {
+              usernameSecretName = "camera-credentials/username"
+              passwordSecretName = "camera-credentials/password"
+            }
+          }
         }
       }
-      target_address = "rtsp://192.168.1.100:554/stream1"
-    }
-    description = "Warehouse main entrance camera"
-    manufacturer = "Hikvision"
-    model        = "DS-2CD2T85FWD-I8"
-    serial_number = "DS2CD2T85FWDI820230101"
-    attributes = {
-      location   = "Warehouse Main Entrance"
-      resolution = "1920x1080"
-      frameRate  = "30"
     }
   }
 ]
 ```
 
-### Asset Configuration Example
+The credential references use the `<secret-name>/<key>` form and point to a secret synchronized to the cluster. See [Configure the media connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-use-media-connector) for creating the secret.
 
-Define media capture tasks as assets:
+### Asset Configuration Example
 
 ```hcl
 namespaced_assets = [
   {
-    name         = "warehouse-camera-01-snapshots"
-    display_name = "Warehouse Camera 01 Snapshots"
-    enabled      = true
+    name = "warehouse-camera-01-snapshots"
     device_ref = {
       device_name   = "warehouse-camera-01"
       endpoint_name = "warehouse-camera-endpoint"
     }
-    description = "Snapshot capture from warehouse camera for AI processing"
     attributes = {
       assetType = "media-snapshots"
-      location  = "Warehouse Main Entrance"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "snapshots"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
-        data_points           = []
+        name                 = "snapshots"
+        stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"format\":\"jpeg\",\"snapshotsPerSecond\":0.2}"
         destinations = [
           {
             target = "Mqtt"
             configuration = {
-              topic = "warehouse/camera-01/snapshots"
+              topic  = "warehouse/camera-01/snapshots"
+              qos    = "Qos1"
+              retain = "Never"
             }
           }
         ]
@@ -415,44 +391,45 @@ namespaced_assets = [
     ]
   },
   {
-    name         = "warehouse-camera-01-clips"
-    display_name = "Warehouse Camera 01 Video Clips"
-    enabled      = true
+    name = "warehouse-camera-01-clips"
     device_ref = {
       device_name   = "warehouse-camera-01"
       endpoint_name = "warehouse-camera-endpoint"
     }
-    description = "Video clip recording from warehouse camera"
     attributes = {
       assetType = "media-clips"
-      location  = "Warehouse Main Entrance"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "clips"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"clip-to-fs\",\"durationSeconds\":30,\"storagePath\":\"/clips\"}"
-        data_points           = []
-        destinations = []  # Clips stored to filesystem, not MQTT
+        name                 = "clips"
+        stream_configuration = "{\"taskType\":\"clip-to-fs\",\"autostart\":true,\"format\":\"mkv\",\"duration\":30}"
+        destinations = [
+          {
+            target        = "Storage"
+            configuration = { path = "/tmp/clips" }
+          }
+        ]
       }
     ]
   }
 ]
 ```
 
-### Task Types in Dataset Configuration
+### Task Types and Stream Configuration
 
-Configure different media connector tasks via `dataset_configuration` JSON:
+Each stream's `stream_configuration` is a JSON string with `taskType`, `autostart`, and task settings:
 
-| Task Type            | Configuration Example                                                                                   |
-|----------------------|---------------------------------------------------------------------------------------------------------|
-| **snapshot-to-mqtt** | `{"taskType":"snapshot-to-mqtt","intervalSeconds":5,"quality":85}`                                      |
-| **clip-to-fs**       | `{"taskType":"clip-to-fs","durationSeconds":30,"storagePath":"/clips"}`                                 |
-| **snapshot-to-fs**   | `{"taskType":"snapshot-to-fs","intervalSeconds":10,"quality":90,"storagePath":"/snapshots"}`            |
-| **stream-to-rtsp**   | `{"taskType":"stream-to-rtsp","mediaServerEndpoint":"rtsp://mediamtx:8554/stream"}`                     |
-| **stream-to-rtsps**  | `{"taskType":"stream-to-rtsps","mediaServerEndpoint":"rtsps://mediamtx:8555/stream","tlsEnabled":true}` |
+| Task Type            | Settings                                          | Destination                          |
+|----------------------|---------------------------------------------------|--------------------------------------|
+| **snapshot-to-mqtt** | `format` (default `jpeg`), `snapshotsPerSecond`   | `Mqtt` with `topic`, `qos`, `retain` |
+| **snapshot-to-fs**   | `format` (default `png`), `snapshotsPerSecond`    | `Storage` with `path`                |
+| **clip-to-fs**       | `format` (default `mkv`), `duration` in seconds   | `Storage` with `path`                |
+| **stream-to-rtsp**   | Media server address, port, and path              | Northbound RTSP media server         |
+| **stream-to-rtsps**  | Media server address, port, path, and certificate | Northbound RTSPS media server        |
 
-**Complete Configuration Example**: See `blueprints/full-single-node-cluster/terraform/media-connector-assets.tfvars.example` for a production-ready configuration file with multiple cameras, authentication, and various task types.
+A `Storage` path must be the root of a volume mounted on the connector template or start with `/tmp`; other container paths are read-only. The connector templates deployed by the blueprints don't mount a volume, so file system tasks write to ephemeral `/tmp` paths unless you add one.
+
+For allowed values and defaults, see [Configure the media connector](https://learn.microsoft.com/azure/iot-operations/discover-manage-assets/howto-use-media-connector#stream-configuration). The media server settings for `stream-to-rtsp` and `stream-to-rtsps` depend on the connector version; `az iot ops ns asset media stream add` sets them for the installed version.
 
 ## Local Development and Testing
 
@@ -605,79 +582,44 @@ The media connector can be deployed using either:
 - **Simple enablement**: Set `should_enable_akri_media_connector = true` for default configuration
 - **Advanced configuration**: Use `custom_akri_connectors` list for custom images, MQTT settings, or multiple instances
 
-Specific camera and asset configuration is managed through **Device** and **Asset** resources defined in `media-connector-assets.tfvars`.
+Camera and capture task configuration is managed through the `namespaced_devices` and `namespaced_assets` variables in the blueprint variables file.
 
 ### Scenario 1: Basic Snapshot Capture
 
-Deploy media connector with default settings and configure snapshot capture:
+Enable the media connector, add the device and snapshot asset from [Configuring Media Connector Assets](#configuring-media-connector-assets) to `terraform.tfvars`, and apply:
 
 ```bash
-cd blueprints/full-single-node-cluster/terraform
+cd blueprints/full-multi-node-cluster/terraform
 
-# Enable media connector (simple flag approach)
 cat >> terraform.tfvars <<EOF
 should_enable_akri_media_connector = true
 EOF
 
-# Configure camera and snapshot asset in media-connector-assets.tfvars
-# See "Configuring Media Connector Assets" section above for examples
-
-terraform apply -var-file="media-connector-assets.tfvars"
+terraform apply -var-file="terraform.tfvars"
 ```
 
 ### Scenario 2: Video Clip Recording
 
-Configure video clip recording to persistent storage. This requires both device (camera) and asset (clip recording task) configuration:
+Record clips with a `clip-to-fs` stream. Mount a persistent volume on the connector template and set the destination `path` to its root to keep clips beyond the connector pod's lifetime:
 
 ```hcl
-# In media-connector-assets.tfvars
-
-# Define the security camera device
-namespaced_devices = [
-  {
-    name         = "security-camera-01"
-    display_name = "Security Camera 01"
-    enabled      = true
-    endpoint = {
-      name = "security-camera-endpoint"
-      authentication = {
-        method = "UsernamePassword"
-        username_secret_ref = {
-          name = "camera-credentials"
-          key  = "username"
-        }
-        password_secret_ref = {
-          name = "camera-credentials"
-          key  = "password"
-        }
-      }
-      target_address = "rtsp://192.168.1.105:554/stream1"
-    }
-    description = "Security camera for motion-triggered recording"
-  }
-]
-
-# Define the video clip recording asset
 namespaced_assets = [
   {
-    name         = "security-camera-clips"
-    display_name = "Security Camera Video Clips"
-    enabled      = true
+    name = "security-camera-clips"
     device_ref = {
       device_name   = "security-camera-01"
       endpoint_name = "security-camera-endpoint"
     }
-    description = "Motion-triggered video clip recording"
-    attributes = {
-      assetType = "media-clips"
-    }
-    datasets = [
+    streams = [
       {
-        name                  = "motion-clips"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"clip-to-fs\",\"durationSeconds\":60,\"storagePath\":\"/security/clips\"}"
-        data_points           = []
-        destinations          = []  # Clips stored to filesystem
+        name                 = "motion-clips"
+        stream_configuration = "{\"taskType\":\"clip-to-fs\",\"autostart\":true,\"format\":\"mp4\",\"duration\":60}"
+        destinations = [
+          {
+            target        = "Storage"
+            configuration = { path = "/tmp/security-clips" }
+          }
+        ]
       }
     ]
   }
@@ -686,27 +628,32 @@ namespaced_assets = [
 
 ### Scenario 3: Multi-Camera Deployment
 
-Deploy multiple cameras with different capture configurations:
+Define one device per camera and one asset per capture task:
 
 ```hcl
-# In media-connector-assets.tfvars
 namespaced_devices = [
   {
-    name         = "camera-entrance"
-    display_name = "Main Entrance Camera"
-    endpoint = {
-      name = "entrance-endpoint"
-      target_address = "rtsp://192.168.1.100:554/stream1"
-      # ... authentication config
+    name = "camera-entrance"
+    endpoints = {
+      inbound = {
+        "entrance-endpoint" = {
+          endpoint_type  = "Microsoft.Media"
+          address        = "rtsp://192.168.1.100:554/stream1"
+          authentication = { method = "Anonymous" }
+        }
+      }
     }
   },
   {
-    name         = "camera-warehouse"
-    display_name = "Warehouse Floor Camera"
-    endpoint = {
-      name = "warehouse-endpoint"
-      target_address = "rtsp://192.168.1.101:554/stream1"
-      # ... authentication config
+    name = "camera-warehouse"
+    endpoints = {
+      inbound = {
+        "warehouse-endpoint" = {
+          endpoint_type  = "Microsoft.Media"
+          address        = "rtsp://192.168.1.101:554/stream1"
+          authentication = { method = "Anonymous" }
+        }
+      }
     }
   }
 ]
@@ -715,81 +662,40 @@ namespaced_assets = [
   {
     name       = "entrance-snapshots"
     device_ref = { device_name = "camera-entrance", endpoint_name = "entrance-endpoint" }
-    datasets = [{
-      name = "snapshots"
-      dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":2,\"quality\":90}"
-      destinations = [{ target = "Mqtt", configuration = { topic = "entrance/snapshots" } }]
+    streams = [{
+      name                 = "snapshots"
+      stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"format\":\"jpeg\",\"snapshotsPerSecond\":0.5}"
+      destinations         = [{ target = "Mqtt", configuration = { topic = "entrance/snapshots" } }]
     }]
   },
   {
     name       = "warehouse-snapshots"
     device_ref = { device_name = "camera-warehouse", endpoint_name = "warehouse-endpoint" }
-    datasets = [{
-      name = "snapshots"
-      dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
-      destinations = [{ target = "Mqtt", configuration = { topic = "warehouse/snapshots" } }]
+    streams = [{
+      name                 = "snapshots"
+      stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"format\":\"jpeg\",\"snapshotsPerSecond\":0.2}"
+      destinations         = [{ target = "Mqtt", configuration = { topic = "warehouse/snapshots" } }]
     }]
   }
 ]
 ```
 
+> **Security Note**: `Anonymous` authentication is for development cameras only. Use `UsernamePassword` with synchronized secrets in production.
+
 ### Scenario 4: Live Streaming with MediaMTX
 
-Configure live stream proxying for operator access (requires MediaMTX deployment). This requires both device (camera) and asset (streaming task) configuration:
+Proxy a camera stream to a MediaMTX server for operator access. Create the device and an asset without streams through the blueprint, then add a `stream-to-rtsp` stream with the Azure CLI, which writes the media server settings for the installed connector version:
 
-```hcl
-# In media-connector-assets.tfvars
-
-# Define the control room camera device
-namespaced_devices = [
-  {
-    name         = "control-room-camera"
-    display_name = "Control Room Camera"
-    enabled      = true
-    endpoint = {
-      name = "control-room-endpoint"
-      authentication = {
-        method = "UsernamePassword"
-        username_secret_ref = {
-          name = "camera-credentials"
-          key  = "username"
-        }
-        password_secret_ref = {
-          name = "camera-credentials"
-          key  = "password"
-        }
-      }
-      target_address = "rtsp://192.168.1.200:554/stream1"
-    }
-    description = "Control room monitoring camera for operator dashboard"
-  }
-]
-
-# Define the live streaming asset
-namespaced_assets = [
-  {
-    name         = "operator-view-stream"
-    display_name = "Operator Dashboard Stream"
-    enabled      = true
-    device_ref = {
-      device_name   = "control-room-camera"
-      endpoint_name = "control-room-endpoint"
-    }
-    description = "Live stream proxy for operator dashboard access"
-    attributes = {
-      assetType = "media-stream"
-    }
-    datasets = [
-      {
-        name                  = "live-stream"
-        data_source           = ""  # Media connector uses device endpoint
-        dataset_configuration = "{\"taskType\":\"stream-to-rtsp\",\"mediaServerEndpoint\":\"rtsp://mediamtx-service:8554/control-room\"}"
-        data_points           = []
-        destinations          = []  # Stream proxied to MediaMTX
-      }
-    ]
-  }
-]
+```bash
+az iot ops ns asset media stream add \
+  --asset operator-view-stream \
+  --instance <instance-name> \
+  --resource-group <resource-group> \
+  --name live-stream \
+  --task-type stream-to-rtsp \
+  --media-server-address mediamtx-service \
+  --media-server-port 8554 \
+  --media-server-path control-room
 ```
 
 ## Infrastructure Components
@@ -811,7 +717,7 @@ When deploying via blueprints, the media connector integrates with Arc-enabled K
 
 #### Monitoring Components Deployed by Blueprints
 
-The `full-single-node-cluster` and related blueprints deploy:
+The `full-multi-node-cluster` and related blueprints deploy:
 
 - **Azure Monitor Workspace** - Managed Prometheus for metrics collection
 - **Azure Managed Grafana** - Hosted Grafana instance with built-in dashboards

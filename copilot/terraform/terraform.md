@@ -113,7 +113,7 @@ provider "azurerm" {
 <!-- <example-terraform-blueprint-structure> -->
 ```plain
 blueprints/
-  full-single-node-cluster/
+  full-multi-node-cluster/
     terraform/            # BLUEPRINT MODULE
       main.tf             # Calls COMPONENT MODULES (NEVER INTERNAL MODULES)
       variables.tf        # Variables for locals or component inputs

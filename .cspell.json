@@ -33,5 +33,5 @@
     }
   ],
   "dictionaries": ["k8s", "docker", "rust", "data-science", "aws", "terraform", "azure-services", "iot-operations", "microsoft-sample-companies", "industry-acronyms", "project-specific", "general-technical"],
-  "words": ["Acks", "analyzability", "ASAN", "Atheris", "atheris", "behaviour", "cdylib", "cflite", "Chronograf", "clusterfuzzlite", "distpath", "edgeai", "EUSAGE", "GHCP", "Kapacitor", "Kata", "Katas", "learning", "libfuzzer", "msazure", "myorg", "myorga", "myorgb", "onefile", "preinstalls", "pyinstaller", "SARIF", "Segoe", "shuf", "symbolizer", "westeurope"]
+  "words": ["Acks", "analyzability", "ASAN", "Atheris", "atheris", "behaviour", "cdylib", "cflite", "Chronograf", "clusterfuzzlite", "distpath", "edgeai", "EUSAGE", "GHCP", "Kapacitor", "Kata", "Katas", "learning", "libfuzzer", "msazure", "myorg", "myorga", "myorgb", "onefile", "preinstalls", "pyinstaller", "SARIF", "Segoe", "shuf", "symbolizer", "westeurope", "botframework", "copilotstudio", "devtunnel", "devtunnels", "directline", "sideload", "sideloading", "voicelive", "webspeech"]
 }

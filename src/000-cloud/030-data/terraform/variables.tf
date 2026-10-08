@@ -136,6 +136,41 @@ variable "should_enable_public_network_access" {
   default     = true
 }
 
+variable "network_security_perimeter_id" {
+  description = "Resource ID of the Network Security Perimeter to associate with the storage account"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = (var.network_security_perimeter_id == null) == (var.network_security_perimeter_profile_id == null)
+    error_message = "network_security_perimeter_id and network_security_perimeter_profile_id must both be null or both be provided"
+  }
+}
+
+variable "should_use_network_security_perimeter" {
+  description = "Whether to create the storage account through the ARM control plane and associate it with a Network Security Perimeter"
+  type        = bool
+  default     = false
+}
+
+variable "network_security_perimeter_profile_id" {
+  description = "Resource ID of the Network Security Perimeter profile applied to the storage account"
+  type        = string
+  default     = null
+}
+
+variable "network_security_perimeter_propagation_delay" {
+  description = "Duration to wait after enforcing the Network Security Perimeter association before allowing data-plane operations"
+  type        = string
+  default     = "15m"
+}
+
+variable "network_security_perimeter_propagation_trigger" {
+  description = "Value that changes when Network Security Perimeter access rules change"
+  type        = string
+  default     = null
+}
+
 /*
  * Private Endpoint for Storage Account - Optional
  */

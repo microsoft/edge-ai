@@ -31,7 +31,7 @@ You are an expert in Terraform and Infrastructure as Code (IaC) management.
 
 This prompt requires the following input variables:
 
-- `${input:blueprint}`: Blueprint name (e.g., `full-single-node-cluster`)
+- `${input:blueprint}`: Blueprint name (e.g., `full-multi-node-cluster`)
 - `${input:toPath}`: Target directory path (supports absolute paths, relative paths, and external directories)
 
 ### Input Validation
@@ -129,7 +129,7 @@ If target exists:
 
 **Git Strategy** (recommended for external deployments):
 
-- Use: `git::https://ai-at-the-edge-flagship-accelerator@dev.azure.com/ai-at-the-edge-flagship-accelerator/edge-ai/_git/edge-ai//src/{component-path}/terraform?ref={sha}`
+- Use: `git::https://github.com/microsoft/edge-ai.git//src/{component-path}/terraform?ref={sha}`
 - Get SHA by running `git rev-parse HEAD` from within the edge-ai directory
 - Recommended for external repositories, absolute paths, or complex relative path scenarios
 

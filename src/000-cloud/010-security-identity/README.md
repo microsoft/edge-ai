@@ -77,6 +77,13 @@ Refer to [Bicep Components - Getting Started](../README.md#bicep-components---ge
 
 Learn more about the required configuration by reading the [./bicep/README.md](./bicep/README.md)
 
+## Network Security Perimeter (Optional)
+
+Set `should_use_network_security_perimeter = true` and provide `network_security_perimeter_id` /
+`network_security_perimeter_profile_id` to associate the Key Vault with an existing `Enforced` Network
+Security Perimeter. This component only consumes a perimeter created elsewhere — it does not create or
+manage the perimeter itself; the `050-networking` component is responsible for creating and owning it.
+
 ## Security Considerations
 
 - All managed identities follow the principle of least privilege

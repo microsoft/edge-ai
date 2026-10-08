@@ -28,4 +28,8 @@ module "ci" {
   should_create_fabric_workspace  = var.should_create_fabric_workspace
   should_create_fabric_lakehouse  = var.should_create_fabric_lakehouse
   should_create_fabric_eventhouse = var.should_create_fabric_eventhouse
+
+  // CI defaults to skipping validation since capacity may be paused
+  skip_capacity_state_validation = var.skip_capacity_state_validation
+
 }

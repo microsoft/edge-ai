@@ -13,9 +13,9 @@ mod otel;
 
 // Azure IoT Operations imports
 use azure_iot_operations_mqtt::{
-    interface::AckToken,
-    session::{Session, SessionManagedClient, SessionOptionsBuilder},
-    MqttConnectionSettingsBuilder,
+    aio::connection_settings::MqttConnectionSettingsBuilder,
+    session::{Session, SessionOptionsBuilder},
+    token::AckToken,
 };
 use azure_iot_operations_protocol::{
     application::ApplicationContextBuilder,
@@ -84,7 +84,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
 
     // Create a telemetry Receiver with our custom Payload type
-    let mut receiver: telemetry::Receiver<Payload, _> = telemetry::Receiver::new(
+    let mut receiver: telemetry::Receiver<Payload> = telemetry::Receiver::new(
         application_context.clone(),
         session.create_managed_client(),
         receiver_options,
@@ -99,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Shutting down");
     receiver.shutdown().await?;
-    exit_handle.try_exit().await?;
+    exit_handle.try_exit()?;
     info!("Shutdown complete");
     Ok(())
 }
@@ -129,7 +129,7 @@ async fn receive(
 
     info!("Received telemetry message: {:?}", message);
 
-    match telemetry::receiver::CloudEvent::from_telemetry(&message) {
+    match telemetry::receiver::cloud_event_from_telemetry(&message) {
         Ok(cloud_event) => {
             info!("{cloud_event}");
             set_cloud_event_attributes(&cloud_event);
@@ -154,7 +154,7 @@ async fn receive(
 ///
 /// * `receiver` - The telemetry receiver instance used to receive messages
 async fn telemetry_processing_loop(
-    receiver: &mut telemetry::Receiver<Payload, SessionManagedClient>,
+    receiver: &mut telemetry::Receiver<Payload>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     info!("Telemetry processing loop started");
 

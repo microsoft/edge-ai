@@ -65,10 +65,21 @@ error_output=$("$(dirname "$0")/update-all-terraform-docs.sh" 2>&1) || {
 
 # Check for changes in README.md files
 echo "Checking for changes in README.md files ..."
-changed_files=$(git diff --name-only)
+changed_files=$(
+  {
+    git diff --name-only
+    git ls-files --others --exclude-standard
+  } | sort -u
+)
 readme_changed=false
 for file in $changed_files; do
-  if [[ $file == src/*/README.md ]]; then
+  if [[ $file == src/*/terraform/README.md ||
+    $file == src/*/terraform/modules/*/README.md ||
+    $file == src/*/ci/terraform/README.md ||
+    $file == blueprints/*/terraform/README.md ||
+    $file == blueprints/*/terraform/modules/*/README.md ||
+    $file == deploy/azdo/README.md ||
+    $file == deploy/azdo/modules/*/README.md ]]; then
     if head -n 1 "$file" | grep -q "^<!-- BEGIN_TF_DOCS -->$"; then
       echo "Updates required for: ./$file"
       readme_changed=true

@@ -111,7 +111,7 @@ This component contains only the application code deployed to the Terraform-prov
 
 ## Prerequisites
 
-* [Full Single Node Cluster](../../../blueprints/full-single-node-cluster/) blueprint deployed with alert dataflow configuration (see [alert-dataflow.tfvars.example](../../../blueprints/full-single-node-cluster/terraform/alert-dataflow.tfvars.example))
+* [Full Multi-Node Cluster](../../../blueprints/full-multi-node-cluster/) blueprint deployed with alert dataflow configuration (see [alert-dataflow.tfvars.example](../../../blueprints/full-multi-node-cluster/terraform/alert-dataflow.tfvars.example))
 * [507-ai-inference](../507-ai-inference/) service deployed to the edge cluster, publishing inference results to MQTT topics
 * [Azure Functions Core Tools v4](https://learn.microsoft.com/azure/azure-functions/functions-run-local) for local development and deployment
 * [Node.js >= 20](https://nodejs.org/) runtime
@@ -122,7 +122,7 @@ This component contains only the application code deployed to the Terraform-prov
 
 ### Step 1: Deploy Infrastructure
 
-Deploy the `full-single-node-cluster` blueprint with alert dataflow support enabled. The `alert-dataflow.tfvars.example` provides a reference configuration:
+Deploy the `full-multi-node-cluster` blueprint with alert dataflow support enabled. The `alert-dataflow.tfvars.example` provides a reference configuration:
 
 ```hcl
 should_create_azure_functions = true
@@ -180,7 +180,7 @@ After completing the deployment:
 
 ## Integration with Azure IoT Operations
 
-The alert notification pipeline relies on the [507-ai-inference](../507-ai-inference/) service and AIO dataflows to route inference results from MQTT topics to the dedicated Event Hub. The `alert-dataflow.tfvars.example` in the `full-single-node-cluster` blueprint configures:
+The alert notification pipeline relies on the [507-ai-inference](../507-ai-inference/) service and AIO dataflows to route inference results from MQTT topics to the dedicated Event Hub. The `alert-dataflow.tfvars.example` in the `full-multi-node-cluster` blueprint configures:
 
 * A Kafka-type dataflow endpoint targeting the Event Hub namespace
 * A dataflow subscribing to inference alert topics (`edge-ai/+/+/+/inference/+/+/high`, `edge-ai/+/+/+/alerts/triggers`)

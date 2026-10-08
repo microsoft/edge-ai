@@ -10,23 +10,28 @@ data "azurerm_client_config" "current" {}
 module "storage_account" {
   source = "./modules/storage-account"
 
-  account_tier                         = var.storage_account_tier
-  account_replication_type             = var.storage_account_replication
-  account_kind                         = var.storage_account_kind
-  is_hns_enabled                       = var.storage_account_is_hns_enabled
-  blob_soft_delete_retention_days      = var.blob_soft_delete_retention_days
-  container_soft_delete_retention_days = var.container_soft_delete_retention_days
-  environment                          = var.environment
-  instance                             = var.instance
-  location                             = var.location
-  private_endpoint_subnet_id           = var.private_endpoint_subnet_id
-  resource_group                       = var.resource_group
-  resource_prefix                      = var.resource_prefix
-  should_enable_private_endpoint       = var.should_enable_private_endpoint
-  should_enable_public_network_access  = var.should_enable_public_network_access
-  virtual_network_id                   = var.virtual_network_id
-  should_create_blob_dns_zone          = var.should_create_blob_dns_zone
-  blob_dns_zone                        = var.blob_dns_zone
+  account_tier                                   = var.storage_account_tier
+  account_replication_type                       = var.storage_account_replication
+  account_kind                                   = var.storage_account_kind
+  is_hns_enabled                                 = var.storage_account_is_hns_enabled
+  blob_soft_delete_retention_days                = var.blob_soft_delete_retention_days
+  container_soft_delete_retention_days           = var.container_soft_delete_retention_days
+  environment                                    = var.environment
+  instance                                       = var.instance
+  location                                       = var.location
+  private_endpoint_subnet_id                     = var.private_endpoint_subnet_id
+  resource_group                                 = var.resource_group
+  resource_prefix                                = var.resource_prefix
+  should_enable_private_endpoint                 = var.should_enable_private_endpoint
+  should_enable_public_network_access            = var.should_enable_public_network_access
+  virtual_network_id                             = var.virtual_network_id
+  should_create_blob_dns_zone                    = var.should_create_blob_dns_zone
+  blob_dns_zone                                  = var.blob_dns_zone
+  network_security_perimeter_id                  = var.network_security_perimeter_id
+  network_security_perimeter_profile_id          = var.network_security_perimeter_profile_id
+  network_security_perimeter_propagation_delay   = var.network_security_perimeter_propagation_delay
+  network_security_perimeter_propagation_trigger = var.network_security_perimeter_id == null ? null : coalesce(var.network_security_perimeter_propagation_trigger, sha256("${var.network_security_perimeter_id}:${var.network_security_perimeter_profile_id}"))
+  should_use_network_security_perimeter          = var.should_use_network_security_perimeter
 }
 
 module "schema_registry" {

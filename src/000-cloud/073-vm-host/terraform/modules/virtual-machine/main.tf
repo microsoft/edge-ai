@@ -14,6 +14,12 @@ resource "azurerm_public_ip" "aio_edge" {
   allocation_method   = "Static"
   sku                 = "Standard"
   domain_name_label   = "dns-${var.label_prefix}-${var.vm_index}"
+
+  lifecycle {
+    // ip_tags are stamped by the Azure platform on Standard SKU public IPs and are
+    // ForceNew; the platform owns this field, so ignore it to avoid replacement.
+    ignore_changes = [ip_tags]
+  }
 }
 
 resource "azurerm_network_interface" "aio_edge" {

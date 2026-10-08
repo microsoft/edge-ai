@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "chat-with-your-factory.fullname" . }}
+  namespace: {{ include "chat-with-your-factory.namespace" . }}
+  labels:
+    {{- include "chat-with-your-factory.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "chat-with-your-factory.selectorLabels" . | nindent 4 }}

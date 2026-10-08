@@ -1,0 +1,76 @@
+[
+  {
+    "content": {
+      "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+      "config": {
+        "logicalId": "00000000-0000-0000-0000-000000000000",
+        "version": "2.0"
+      },
+      "metadata": {
+        "displayName": "ValidStatic",
+        "type": "Ontology"
+      }
+    },
+    "path": ".platform"
+  },
+  {
+    "content": {
+      "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/ontology/dataBinding/1.0.0/schema.json",
+      "dataBindingConfiguration": {
+        "dataBindingType": "NonTimeSeries",
+        "propertyBindings": [
+          {
+            "sourceColumnName": "Id",
+            "targetPropertyId": "487851753083743163"
+          },
+          {
+            "sourceColumnName": "Name",
+            "targetPropertyId": "1109756670168694178"
+          }
+        ],
+        "sourceTableProperties": {
+          "sourceSchema": null,
+          "sourceTableName": "robot",
+          "sourceType": "LakehouseTable"
+        }
+      },
+      "id": "75306a93-1594-51e7-8afc-b0280ab7c010"
+    },
+    "path": "EntityTypes/40804189945967542/DataBindings/75306a93-1594-51e7-8afc-b0280ab7c010.json"
+  },
+  {
+    "content": {
+      "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/ontology/entityType/1.0.0/schema.json",
+      "baseEntityTypeId": null,
+      "displayNamePropertyId": "1109756670168694178",
+      "entityIdParts": ["487851753083743163"],
+      "id": "40804189945967542",
+      "name": "Robot",
+      "namespace": "usertypes",
+      "namespaceType": "Custom",
+      "properties": [
+        {
+          "baseTypeNamespaceType": null,
+          "id": "487851753083743163",
+          "name": "Id",
+          "redefines": null,
+          "valueType": "String"
+        },
+        {
+          "baseTypeNamespaceType": null,
+          "id": "1109756670168694178",
+          "name": "Name",
+          "redefines": null,
+          "valueType": "String"
+        }
+      ],
+      "timeseriesProperties": [],
+      "visibility": "Visible"
+    },
+    "path": "EntityTypes/40804189945967542/definition.json"
+  },
+  {
+    "content": {},
+    "path": "definition.json"
+  }
+]

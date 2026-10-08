@@ -1,10 +1,13 @@
 use std::error::Error;
 use std::sync::Arc;
 use std::collections::HashMap;
-use azure_iot_operations_mqtt::control_packet::QoS;
-use azure_iot_operations_mqtt::interface::{MqttPubSub, PubReceiver, ManagedClient};
-use azure_iot_operations_mqtt::session::{Session, SessionManagedClient, SessionOptionsBuilder, SessionConnectionMonitor};
-use azure_iot_operations_mqtt::MqttConnectionSettingsBuilder;
+use azure_iot_operations_mqtt::aio::connection_settings::MqttConnectionSettingsBuilder;
+use azure_iot_operations_mqtt::control_packet::{
+    PublishProperties, QoS, RetainOptions, SubscribeProperties, TopicFilter, TopicName,
+};
+use azure_iot_operations_mqtt::session::{
+    Session, SessionManagedClient, SessionMonitor, SessionOptionsBuilder, SessionPubReceiver,
+};
 use tokio::time::{timeout, Duration};
 use tokio::sync::RwLock;
 use tracing::{error, info, debug, warn, instrument};
@@ -18,7 +21,7 @@ use anyhow::Result;
 /// MQTT publisher for AI Edge Inference service - using Azure IoT Operations SDK pattern
 pub struct MqttPublisher {
     client: SessionManagedClient,
-    monitor: SessionConnectionMonitor,
+    monitor: SessionMonitor,
     session: Option<Session>,
     config: MqttConfig,
     inference_engine: Arc<InferenceEngine>,
@@ -34,7 +37,7 @@ pub struct MqttProcessingContext {
     pub topic_router: Option<Arc<crate::topic_router::TopicRouter>>,
     pub config: MqttConfig,
     pub client: SessionManagedClient,
-    pub monitor: SessionConnectionMonitor,
+    pub monitor: SessionMonitor,
 }
 
 /// MQTT publishing statistics
@@ -149,7 +152,7 @@ impl MqttPublisher {
         let session = Session::new(session_options)
             .map_err(|e| anyhow::anyhow!("Failed to create session: {}", e))?;
 
-        let monitor = session.create_connection_monitor();
+        let monitor = session.create_session_monitor();
         let client = session.create_managed_client();
         let _exit_handle = session.create_exit_handle();
 
@@ -214,8 +217,24 @@ impl MqttPublisher {
         let client_clone = self.client.clone();
         let pattern_for_sub = topics_pattern.clone();
         tokio::spawn(async move {
+            let topic_filter = match TopicFilter::new(&pattern_for_sub) {
+                Ok(tf) => tf,
+                Err(e) => {
+                    error!("Invalid subscription pattern {}: {}", pattern_for_sub, e);
+                    return;
+                }
+            };
             loop {
-                match client_clone.subscribe(pattern_for_sub.clone(), QoS::AtLeastOnce).await {
+                match client_clone
+                    .subscribe(
+                        topic_filter.clone(),
+                        QoS::AtLeastOnce,
+                        false,
+                        RetainOptions::default(),
+                        SubscribeProperties::default(),
+                    )
+                    .await
+                {
                     Ok(_) => {
                         info!("✅ Successfully subscribed to pattern: {}", pattern_for_sub);
                         break;
@@ -524,9 +543,20 @@ impl MqttPublisher {
         const MAX_RETRIES: usize = 3;
         const RETRY_DELAY: Duration = Duration::from_secs(2);
 
+        let topic_name = TopicName::new(topic)?;
+
         for attempt in 1..=MAX_RETRIES {
-            match timeout(Duration::from_secs(10),
-                         self.client.publish(topic.to_string(), QoS::AtLeastOnce, false, payload.to_string())).await {
+            match timeout(
+                Duration::from_secs(10),
+                self.client.publish_qos1(
+                    topic_name.clone(),
+                    false,
+                    payload.to_string(),
+                    PublishProperties::default(),
+                ),
+            )
+            .await
+            {
                 Ok(Ok(_)) => {
                     debug!("Successfully published to topic: {} (attempt {})", topic, attempt);
                     return Ok(());
@@ -597,7 +627,7 @@ impl MqttPublisher {
 impl MqttProcessingContext {
     /// Process messages from a specific topic
     #[instrument(skip(self, receiver))]
-    pub async fn process_topic_messages(&self, topic: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
+    pub async fn process_topic_messages(&self, topic: &str, mut receiver: SessionPubReceiver) -> anyhow::Result<()> {
         info!("Starting message processing for topic: {}", topic);
 
         loop {
@@ -606,7 +636,7 @@ impl MqttProcessingContext {
             // Try with a timeout to see if recv() is blocking indefinitely
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
-                    let topic_str = String::from_utf8_lossy(&message.topic);
+                    let topic_str = message.topic_name.to_string();
                     info!("✅ Message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
 
                     // Convert bytes to strings
@@ -675,7 +705,7 @@ impl MqttProcessingContext {
             // Try to receive message with reasonable timeout
             match timeout(Duration::from_secs(1), receiver.recv()).await {
                 Ok(Some(message)) => {
-                    let topic_str = String::from_utf8_lossy(&message.topic);
+                    let topic_str = message.topic_name.to_string();
                     info!("🚀 AIO MESSAGE RECEIVED on topic: {} (payload: {} bytes)", topic_str, message.payload.len());
 
                     // Check if topic matches our pattern
@@ -735,7 +765,7 @@ impl MqttProcessingContext {
 
     /// Process messages from filtered receiver (Microsoft examples pattern)
     #[instrument(skip(self, receiver))]
-    pub async fn process_filtered_messages(&self, pattern: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
+    pub async fn process_filtered_messages(&self, pattern: &str, mut receiver: SessionPubReceiver) -> anyhow::Result<()> {
         info!("Starting filtered message processing for pattern: {}", pattern);
 
         loop {
@@ -744,7 +774,7 @@ impl MqttProcessingContext {
             // Use same timeout approach but with filtered receiver
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
-                    let topic_str = String::from_utf8_lossy(&message.topic);
+                    let topic_str = message.topic_name.to_string();
                     info!("✅ Filtered message received on topic {}: payload size {} bytes", topic_str, message.payload.len());
 
                     // Convert bytes to strings
@@ -782,7 +812,7 @@ impl MqttProcessingContext {
 
     /// Process messages from unfiltered receiver (receives all messages)
     #[instrument(skip(self, receiver))]
-    pub async fn process_unfiltered_messages(&self, pattern: &str, mut receiver: impl PubReceiver) -> anyhow::Result<()> {
+    pub async fn process_unfiltered_messages(&self, pattern: &str, mut receiver: SessionPubReceiver) -> anyhow::Result<()> {
         info!("Starting unfiltered message processing for pattern: {}", pattern);
 
         loop {
@@ -791,7 +821,7 @@ impl MqttProcessingContext {
             // Try with a timeout to see if recv() is blocking indefinitely
             match tokio::time::timeout(Duration::from_secs(10), receiver.recv()).await {
                 Ok(Some(message)) => {
-                    let topic_str = String::from_utf8_lossy(&message.topic);
+                    let topic_str = message.topic_name.to_string();
 
                     // Filter for camera snapshot topics
                     if topic_str.ends_with("/camera/snapshots") {
@@ -1018,8 +1048,9 @@ impl MqttProcessingContext {
         info!("Publishing inference result to topic: {} (payload size: {} bytes)", output_topic, payload.len());
         debug!("Inference result payload: {}", payload);
 
+        let output_topic_name = TopicName::new(&output_topic)?;
         match timeout(Duration::from_secs(10),
-                     self.client.publish(output_topic.clone(), QoS::AtLeastOnce, false, payload)).await {
+                     self.client.publish_qos1(output_topic_name, false, payload, PublishProperties::default())).await {
             Ok(Ok(_)) => {
                 info!("Successfully published inference result to topic: {}", output_topic);
                 Ok(())

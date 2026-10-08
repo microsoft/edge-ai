@@ -84,3 +84,53 @@ variable "nat_gateway_zones" {
   default     = []
 }
 
+/*
+ * Network Security Perimeter - Optional
+ */
+
+variable "should_use_network_security_perimeter" {
+  type        = bool
+  description = "Whether to create a Network Security Perimeter that allows the detected deployment client IP for supported PaaS resources"
+  default     = false
+}
+
+variable "network_security_perimeter_allowed_ip_address_prefixes" {
+  type        = list(string)
+  description = "Additional IPv4 or IPv6 CIDR prefixes allowed through the Network Security Perimeter; the detected deployment client IP is added automatically"
+  default     = []
+}
+
+/*
+ * Existing Networking Parameters - Optional
+ */
+
+variable "use_existing_virtual_network" {
+  type        = bool
+  description = "Whether to reference an existing virtual network, subnet, and network security group instead of creating new ones"
+  default     = false
+}
+
+variable "existing_resource_group_name" {
+  type        = string
+  description = "Resource group name containing the existing virtual network when use_existing_virtual_network is true. Otherwise, the resource_group input's name"
+  default     = null
+}
+
+variable "virtual_network_name" {
+  type        = string
+  description = "Name of the virtual network to create or reference. Otherwise, 'vnet-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
+variable "subnet_name" {
+  type        = string
+  description = "Name of the subnet to create or reference. Otherwise, 'snet-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
+variable "network_security_group_name" {
+  type        = string
+  description = "Name of the network security group to create or reference. Otherwise, 'nsg-{resource_prefix}-{environment}-{instance}'"
+  default     = null
+}
+
