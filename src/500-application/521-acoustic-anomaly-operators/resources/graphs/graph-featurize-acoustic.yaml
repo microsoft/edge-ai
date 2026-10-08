@@ -1,0 +1,47 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "graph-featurize-acoustic"
+  description: "Converts mono audio windows into 640-dimensional log-mel rows and wraps them as MQTT predict adapter requests"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: module-featurize-acoustic/map
+    parameters:
+      max_batch_size:
+        name: max_batch_size
+        default: "32"
+        description: "Most feature rows per request, 1 to 1024. Windows beyond this are dropped and counted. Match the model's batch limit."
+      max_samples:
+        name: max_samples
+        default: "960000"
+        description: "Largest accepted samples array. Larger messages are rejected."
+      context_fields:
+        name: context_fields
+        default: "asset_id,sensor_id,timestamp"
+        description: "Comma list of up to 8 input fields copied into the request context so the verdict can identify its source."
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "module-featurize-acoustic/map"
+    module: "featurize-acoustic:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "module-featurize-acoustic/map"
+  - from:
+      name: "module-featurize-acoustic/map"
+    to:
+      name: "sink"
