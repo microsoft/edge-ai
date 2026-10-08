@@ -198,18 +198,18 @@ completes.
 Defaults are the values the service binary uses when a variable is unset. The
 Kubernetes manifests and `docker-compose.yaml` override several of them.
 
-| Variable                | Description                                                                | Default                                                         |
-|-------------------------|----------------------------------------------------------------------------|-----------------------------------------------------------------|
-| `AIO_BROKER_HOSTNAME`   | MQTT broker hostname                                                       | `aio-broker.azure-iot-operations`                               |
-| `AIO_BROKER_TCP_PORT`   | MQTT broker port                                                           | `18883`                                                         |
-| `MQTT_INPUT_TOPICS`     | Comma-separated input topic filters; the service subscribes to each        | `edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots`  |
-| `MODELS_DIRECTORY`      | Base directory for relative model paths                                    | `/models`                                                       |
-| `DEFAULT_MODELS`        | Models loaded at startup, relative to `MODELS_DIRECTORY`                   | unset: `default.onnx` (manifests set `tiny-yolov2`)             |
-| `HEALTH_PORT`           | Probe listener port                                                        | `8080` (the image and manifests set `8081`)                     |
-| `ENABLE_TEST_ENDPOINTS` | Mount the unauthenticated `/test/inference` and `/process-files` endpoints | `false`                                                         |
-| `TOPIC_PREFIX`          | Output topic prefix                                                        | `edge-ai/business_unit/facility/gateway_id`                     |
-| `MODEL_CONFIG_PATH`     | Optional YAML model configuration loaded at startup                        | unset                                                           |
-| `RUST_LOG`              | Logging filter                                                             | unset (the image sets `info`)                                   |
+| Variable                | Description                                                                | Default                                                        |
+|-------------------------|----------------------------------------------------------------------------|----------------------------------------------------------------|
+| `AIO_BROKER_HOSTNAME`   | MQTT broker hostname                                                       | `aio-broker.azure-iot-operations`                              |
+| `AIO_BROKER_TCP_PORT`   | MQTT broker port                                                           | `18883`                                                        |
+| `MQTT_INPUT_TOPICS`     | Comma-separated input topic filters; the service subscribes to each        | `edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots` |
+| `MODELS_DIRECTORY`      | Base directory for relative model paths                                    | `/models`                                                      |
+| `DEFAULT_MODELS`        | Models loaded at startup, relative to `MODELS_DIRECTORY`                   | unset: `default.onnx` (manifests set `tiny-yolov2`)            |
+| `HEALTH_PORT`           | Probe listener port                                                        | `8080` (the image and manifests set `8081`)                    |
+| `ENABLE_TEST_ENDPOINTS` | Mount the unauthenticated `/test/inference` and `/process-files` endpoints | `false`                                                        |
+| `TOPIC_PREFIX`          | Output topic prefix                                                        | `edge-ai/business_unit/facility/gateway_id`                    |
+| `MODEL_CONFIG_PATH`     | Optional YAML model configuration loaded at startup                        | unset                                                          |
+| `RUST_LOG`              | Logging filter                                                             | unset (the image sets `info`)                                  |
 
 The inference backend is chosen at build time with the `BACKEND` build argument
 (`AI_BACKEND` in compose); the service reads no backend selection variable.
