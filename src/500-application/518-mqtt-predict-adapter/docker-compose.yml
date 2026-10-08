@@ -21,6 +21,8 @@ services:
   mock-model:
     image: mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2
     command: ["python3", "/app/mock_predict.py"]
+    environment:
+      MOCK_LATENCY_SECONDS: ${MOCK_LATENCY_SECONDS:-0}
     volumes:
       - "./resources/mock_predict.py:/app/mock_predict.py:ro"
     read_only: true

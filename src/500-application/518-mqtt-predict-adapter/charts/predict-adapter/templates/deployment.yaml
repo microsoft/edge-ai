@@ -1,4 +1,7 @@
 {{- $a := .Values.adapter }}
+{{- if and .Values.backend.sat.enabled (not (hasPrefix "https://" $a.modelEndpointTemplate)) }}
+{{- fail "adapter.modelEndpointTemplate must use https:// while backend.sat.enabled is true" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,6 +34,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "predict-adapter.serviceAccountName" . }}
+      # Covers the longest request (attempts x timeout plus backoff) so in-flight results are published on shutdown.
+      terminationGracePeriodSeconds: {{ add (ceil (mulf $a.backendTimeoutSeconds $a.backendAttempts)) 20 }}
       automountServiceAccountToken: false
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -75,6 +80,8 @@ spec:
               value: {{ $a.backendAttempts | int64 | quote }}
             - name: MAX_REQUEST_BYTES
               value: {{ $a.maxRequestBytes | int64 | quote }}
+            - name: MAX_RESPONSE_BYTES
+              value: {{ $a.maxResponseBytes | int64 | quote }}
             - name: MAX_CONCURRENCY
               value: {{ $a.maxConcurrency | int64 | quote }}
             - name: BACKEND_AUTH_FILE

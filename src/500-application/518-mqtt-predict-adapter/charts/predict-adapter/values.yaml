@@ -30,9 +30,13 @@ adapter:
   requestKind: request
   responseKind: response
   eventSource: predict-adapter
+  # Per-attempt deadline. Keep backendTimeoutSeconds x backendAttempts below the
+  # requester's own timeout, such as the 519 orchestrator's timeoutSeconds.
   backendTimeoutSeconds: 30
   backendAttempts: 2
   maxRequestBytes: 1048576
+  # Largest model endpoint response body; larger responses fail with OUTPUT_TOO_LARGE.
+  maxResponseBytes: 4194304
   maxConcurrency: 4
 
 backend:

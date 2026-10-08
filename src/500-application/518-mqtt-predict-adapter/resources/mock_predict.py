@@ -1,12 +1,16 @@
 """Local-development stand-in for a Foundry Local /v1/predict deployment.
 
 Accepts one JSON tensor item and returns {"score": <mean>} in the same items
-envelope. Not for production use.
+envelope. MOCK_LATENCY_SECONDS delays every answer. Not for production use.
 """
 
 import base64
 import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+LATENCY_SECONDS = float(os.environ.get("MOCK_LATENCY_SECONDS", "0"))
 
 
 class PredictHandler(BaseHTTPRequestHandler):
@@ -20,6 +24,7 @@ class PredictHandler(BaseHTTPRequestHandler):
             self.send_response(400)
             self.end_headers()
             return
+        time.sleep(LATENCY_SECONDS)
         item = {
             "content_type": "application/json",
             "encoder": "base64",
@@ -37,4 +42,4 @@ class PredictHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    HTTPServer(("0.0.0.0", 8000), PredictHandler).serve_forever()  # noqa: S104
+    ThreadingHTTPServer(("0.0.0.0", 8000), PredictHandler).serve_forever()  # noqa: S104

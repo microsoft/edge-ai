@@ -25,6 +25,7 @@ import httpx
 import paho.mqtt.client as mqtt
 from models import (
     MAX_CORRELATION_DATA_LEN,
+    RETRY_BACKOFF_SECONDS,
     AdapterConfig,
     PredictItem,
     PredictRequest,
@@ -32,6 +33,7 @@ from models import (
     RequestError,
     build_predict_body,
     decode_predict_response,
+    load_json,
     parse_request_payload,
     parse_request_topic,
     request_id,
@@ -46,7 +48,8 @@ SAT_AUTH_METHOD = "K8S-SAT"
 CONTENT_TYPE = "application/json"
 RESPONSE_TYPE = "edge-ai.predict.response"
 TRACEPARENT = re.compile(r"^00-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}$")
-RETRYABLE_STATUS = {429, 502, 503, 504}
+UNAVAILABLE_STATUS = {429, 502, 503, 504}
+PHASE_TIMEOUT_SECONDS = 5.0
 INITIAL_RECONNECT_DELAY = 1.0
 MAX_RECONNECT_DELAY = 30.0
 COUNTERS_INTERVAL_SECONDS = 60.0
@@ -70,48 +73,73 @@ class PredictBackend:
         config: AdapterConfig,
         client: httpx.Client | None = None,
         sleep: Callable[[float], None] = time.sleep,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._config = config
-        self._client = client or httpx.Client(
-            timeout=config.backend_timeout_seconds,
-            verify=config.backend_ca_file or True,
-        )
+        self._client = client or httpx.Client(verify=config.backend_ca_file or True)
         self._sleep = sleep
+        self._clock = clock
 
-    def predict(self, model_id: str, item: PredictItem) -> object:
-        """Return decoded model outputs, retrying transient failures."""
+    def predict(self, model_id: str, item: PredictItem, deadline: float | None = None) -> object:
+        """Return decoded model outputs, retrying transient failures.
+
+        ``deadline`` is a monotonic time after which the requester no longer
+        wants an answer; attempts and backoff never extend past it.
+        """
         url = self._config.endpoint_for(model_id)
         body = build_predict_body(item)
-        delay = 0.5
+        delay = RETRY_BACKOFF_SECONDS
         for attempt in range(1, self._config.backend_attempts + 1):
+            budget = self._config.backend_timeout_seconds
+            if deadline is not None:
+                budget = min(budget, deadline - self._clock())
+                if budget <= 0:
+                    raise BackendError("REQUEST_EXPIRED", retryable=True)
             try:
-                return self._call(url, body)
+                return self._call(url, body, budget)
             except BackendError as error:
                 if not error.retryable or attempt == self._config.backend_attempts:
+                    raise
+                if deadline is not None and self._clock() + delay >= deadline:
                     raise
             self._sleep(delay)
             delay *= 2
         raise BackendError("BACKEND_UNAVAILABLE", retryable=True)
 
-    def _call(self, url: str, body: dict) -> object:
+    def _call(self, url: str, body: dict, budget: float) -> object:
+        attempt_deadline = self._clock() + budget
+        phase = min(PHASE_TIMEOUT_SECONDS, budget)
+        timeout = httpx.Timeout(budget, connect=phase, write=phase, pool=phase)
         try:
-            response = self._client.post(url, json=body, headers=self._headers())
+            with self._client.stream("POST", url, json=body, headers=self._headers(), timeout=timeout) as response:
+                _raise_for_status(response.status_code)
+                raw = self._read_body(response, attempt_deadline)
         except httpx.TimeoutException as error:
             raise BackendError("BACKEND_TIMEOUT", retryable=True) from error
         except httpx.TransportError as error:
             raise BackendError("BACKEND_UNAVAILABLE", retryable=True) from error
-        if response.status_code in (401, 403):
-            raise BackendError("BACKEND_UNAUTHORIZED", retryable=False, status=response.status_code)
-        if response.status_code == 404:
-            raise BackendError("MODEL_UNAVAILABLE", retryable=False, status=404)
-        if response.status_code in RETRYABLE_STATUS:
-            raise BackendError("BACKEND_UNAVAILABLE", retryable=True, status=response.status_code)
-        if response.status_code >= 400:
-            raise BackendError("BACKEND_REJECTED", retryable=False, status=response.status_code)
         try:
-            return decode_predict_response(response.json())
+            return decode_predict_response(load_json(raw))
         except ValueError as error:
             raise BackendError("BACKEND_INVALID_RESPONSE", retryable=False) from error
+
+    def _read_body(self, response: httpx.Response, attempt_deadline: float) -> bytes:
+        limit = self._config.max_response_bytes
+        declared = response.headers.get("content-length", "")
+        if declared.isdigit() and int(declared) > limit:
+            raise BackendError("OUTPUT_TOO_LARGE", retryable=False)
+        chunks: list[bytes] = []
+        size = 0
+        for chunk in response.iter_bytes():
+            if self._clock() > attempt_deadline:
+                raise BackendError("BACKEND_TIMEOUT", retryable=True)
+            size += len(chunk)
+            if size > limit:
+                raise BackendError("OUTPUT_TOO_LARGE", retryable=False)
+            chunks.append(chunk)
+        if self._clock() > attempt_deadline:
+            raise BackendError("BACKEND_TIMEOUT", retryable=True)
+        return b"".join(chunks)
 
     def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": CONTENT_TYPE}
@@ -119,6 +147,19 @@ class PredictBackend:
             with open(self._config.backend_auth_file, encoding="utf-8") as handle:
                 headers["Authorization"] = f"Bearer {handle.read().strip()}"
         return headers
+
+
+def _raise_for_status(status: int) -> None:
+    if status in (401, 403):
+        raise BackendError("BACKEND_UNAUTHORIZED", retryable=False, status=status)
+    if status == 404:
+        raise BackendError("MODEL_UNAVAILABLE", retryable=False, status=404)
+    if status in UNAVAILABLE_STATUS:
+        raise BackendError("BACKEND_UNAVAILABLE", retryable=True, status=status)
+    if status >= 500:
+        raise BackendError("BACKEND_ERROR", retryable=True, status=status)
+    if status >= 400:
+        raise BackendError("BACKEND_REJECTED", retryable=False, status=status)
 
 
 @dataclass
@@ -130,6 +171,9 @@ class Counters:
     failed: int = 0
     rejected: int = 0
     busy: int = 0
+    expired: int = 0
+    retained: int = 0
+    unhandled: int = 0
     publish_failed: int = 0
     connects: int = 0
     by_error: dict[str, int] = field(default_factory=dict)
@@ -143,7 +187,7 @@ class Outgoing:
     """Response ready to publish from the MQTT thread."""
 
     topic: str
-    payload: bytes
+    payload: bytes | None
     properties: Properties
     error_code: str | None = None
     from_worker: bool = False
@@ -179,6 +223,12 @@ def response_properties(
     if correlation_data:
         properties.CorrelationData = correlation_data
     return properties
+
+
+def message_expiry(properties: Properties | None) -> int | None:
+    """Return the broker-decremented Message Expiry Interval in seconds, if set."""
+    interval = getattr(properties, "MessageExpiryInterval", None)
+    return interval if isinstance(interval, int) and not isinstance(interval, bool) else None
 
 
 def request_context(properties: Properties | None) -> tuple[list[tuple[str, str]], bytes | None, str | None]:
@@ -224,14 +274,18 @@ def error_body(code: str, message: str, retryable: bool) -> dict:
 class Adapter:
     """Owns the MQTT client; only the main thread touches it."""
 
-    def __init__(self, config: AdapterConfig, backend: PredictBackend) -> None:
+    def __init__(
+        self, config: AdapterConfig, backend: PredictBackend, clock: Callable[[], float] = time.monotonic
+    ) -> None:
         self.config = config
         self.backend = backend
+        self.clock = clock
         self.counters = Counters()
         self.connected = False
         self.outgoing: queue.Queue[Outgoing] = queue.Queue()
         self.executor = ThreadPoolExecutor(max_workers=config.max_concurrency, thread_name_prefix="predict")
         self.in_flight = 0
+        self.stopping = False
         self.client = self._build_client()
 
     def _build_client(self) -> mqtt.Client:
@@ -272,15 +326,33 @@ class Adapter:
         logger.warning("Disconnected from broker: %s", reason_code)
 
     def _on_message(self, client, userdata, message: mqtt.MQTTMessage) -> None:
-        self.handle(message.topic, message.payload, getattr(message, "properties", None))
+        # paho re-raises callback exceptions from loop(), which would stop the adapter.
+        try:
+            self.handle(message.topic, message.payload, getattr(message, "properties", None), message.retain)
+        except Exception as error:  # noqa: BLE001
+            self.counters.unhandled += 1
+            logger.error("Unhandled error processing a message: %s", type(error).__name__)
 
-    def handle(self, topic: str, payload: bytes, properties: Properties | None) -> None:
-        """Validate a request and dispatch it to a worker or answer immediately."""
-        started = time.monotonic()
+    def handle(self, topic: str, payload: bytes, properties: Properties | None, retain: bool = False) -> None:
+        """Validate a request and dispatch it to a worker or answer immediately.
+
+        Retained requests are ignored. Requests whose Message Expiry Interval
+        has elapsed are dropped without a response, because the requester has
+        stopped waiting.
+        """
+        started = self.clock()
         parsed = parse_request_topic(self.config, topic)
         if parsed is None:
             return
+        if retain:
+            self.counters.retained += 1
+            return
         self.counters.received += 1
+        expiry = message_expiry(properties)
+        if expiry is not None and expiry <= 0:
+            self.counters.expired += 1
+            return
+        expires_at = None if expiry is None else started + expiry
         user_properties, correlation, traceparent = request_context(properties)
         req_id = request_id(user_properties)
         reply_topic = self.config.response_topic(parsed.client, parsed.model_id)
@@ -308,13 +380,19 @@ class Adapter:
         except RequestError as error:
             reject(error.code, error.message, False)
             return
+        if self.stopping:
+            self.counters.busy += 1
+            reject("BUSY", "adapter is shutting down", True, request.context)
+            return
         if self.in_flight >= self.config.max_concurrency:
             self.counters.busy += 1
             reject("BUSY", "adapter is at its concurrency limit", True, request.context)
             return
 
+        self.executor.submit(
+            self._predict, parsed.model_id, request, req_id, started, expires_at, reply_topic, reply_properties
+        )
         self.in_flight += 1
-        self.executor.submit(self._predict, parsed.model_id, request, req_id, started, reply_topic, reply_properties)
 
     def _predict(
         self,
@@ -322,13 +400,15 @@ class Adapter:
         request: PredictRequest,
         req_id: str | None,
         started: float,
+        expires_at: float | None,
         reply_topic: str,
         reply_properties: Properties,
     ) -> None:
         error_code: str | None = None
         context = request.context
+        body: bytes | None
         try:
-            outputs = self.backend.predict(model_id, request.item)
+            outputs = self.backend.predict(model_id, request.item, expires_at)
             body = build_response(self.config, model_id, req_id, started, outputs=outputs, context=context)
         except BackendError as error:
             error_code = error.code
@@ -351,6 +431,8 @@ class Adapter:
                 error=error_body("INTERNAL_ERROR", "adapter failed to process the request", True),
                 context=context,
             )
+        if expires_at is not None and self.clock() >= expires_at:
+            body, error_code = None, "REQUEST_EXPIRED"
         self.outgoing.put(Outgoing(reply_topic, body, reply_properties, error_code, from_worker=True))
 
     def drain(self) -> None:
@@ -362,6 +444,9 @@ class Adapter:
                 return
             if outgoing.from_worker:
                 self.in_flight -= 1
+                if outgoing.payload is None:
+                    self.counters.expired += 1
+                    continue
                 if outgoing.error_code is None:
                     self.counters.succeeded += 1
                 else:
@@ -427,7 +512,20 @@ def run(config: AdapterConfig) -> None:
             adapter.log_counters("Counters")
             next_counters = time.monotonic() + COUNTERS_INTERVAL_SECONDS
 
-    adapter.executor.shutdown(wait=True, cancel_futures=True)
+    # Answer new requests with BUSY and publish in-flight results, bounded by the
+    # longest a request can take; the chart's termination grace period covers it.
+    adapter.stopping = True
+    if socket_open and adapter.connected:
+        adapter.client.unsubscribe(config.request_filter)
+    shutdown_deadline = time.monotonic() + config.max_request_seconds + 1
+    while adapter.in_flight and time.monotonic() < shutdown_deadline:
+        if socket_open and adapter.client.loop(timeout=0.05) != mqtt.MQTT_ERR_SUCCESS:
+            socket_open = False
+            adapter.connected = False
+        if not socket_open:
+            time.sleep(0.05)
+        adapter.drain()
+    adapter.executor.shutdown(wait=False, cancel_futures=True)
     if socket_open and adapter.connected:
         adapter.drain()
         adapter.client.loop(timeout=0.5)

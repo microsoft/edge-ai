@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+import math
 import os
 import re
 from collections.abc import Callable, Mapping
@@ -21,6 +22,8 @@ CONTENT_TYPE = re.compile(r"^[a-z]+/[a-z0-9.+-]+$")
 MAX_REQUEST_ID_LEN = 256
 MAX_CORRELATION_DATA_LEN = 256
 MAX_CONTEXT_BYTES = 1024
+MAX_TENSOR_DIMENSIONS = 4
+RETRY_BACKOFF_SECONDS = 0.5
 
 
 class AdapterConfig(BaseModel):
@@ -48,6 +51,7 @@ class AdapterConfig(BaseModel):
     backend_attempts: int = Field(default=2, ge=1, le=5)
 
     max_request_bytes: int = Field(default=1024 * 1024, gt=0, le=16 * 1024 * 1024)
+    max_response_bytes: int = Field(default=4 * 1024 * 1024, gt=0, le=64 * 1024 * 1024)
     max_concurrency: int = Field(default=4, ge=1, le=64)
 
     @model_validator(mode="after")
@@ -66,9 +70,19 @@ class AdapterConfig(BaseModel):
             raise ValueError("endpoint_template must contain {model_id} exactly once")
         if not self.endpoint_template.startswith(("https://", "http://")):
             raise ValueError("endpoint_template must be an http or https URL")
+        if self.backend_auth_file and not self.endpoint_template.startswith("https://"):
+            raise ValueError("backend_auth_file requires an https endpoint_template; set BACKEND_AUTH_FILE empty")
+        if self.sat_file and not self.use_tls:
+            raise ValueError("sat_file requires TLS to the broker; set AIO_SAT_FILE empty or enable AIO_MQTT_USE_TLS")
         if not self.client_id.strip():
             raise ValueError("client_id must not be empty")
         return self
+
+    @property
+    def max_request_seconds(self) -> float:
+        """Return the longest a request can spend in backend attempts and retry backoff."""
+        backoff = sum(RETRY_BACKOFF_SECONDS * 2**attempt for attempt in range(self.backend_attempts - 1))
+        return self.backend_timeout_seconds * self.backend_attempts + backoff
 
     @property
     def request_filter(self) -> str:
@@ -119,6 +133,7 @@ class AdapterConfig(BaseModel):
         put("backend_timeout_seconds", "BACKEND_TIMEOUT_SECONDS", float)
         put("backend_attempts", "BACKEND_ATTEMPTS", int)
         put("max_request_bytes", "MAX_REQUEST_BYTES", int)
+        put("max_response_bytes", "MAX_RESPONSE_BYTES", int)
         put("max_concurrency", "MAX_CONCURRENCY", int)
 
         for name, field in (("AIO_SAT_FILE", "sat_file"), ("BACKEND_AUTH_FILE", "backend_auth_file")):
@@ -202,16 +217,14 @@ def parse_request_payload(payload: bytes, max_bytes: int) -> PredictRequest:
     if len(payload) > max_bytes:
         raise RequestError("PAYLOAD_TOO_LARGE", f"request exceeds {max_bytes} bytes")
     try:
-        body = json.loads(payload)
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise RequestError("INVALID_JSON", "request is not valid JSON") from error
+        body = load_json(payload)
+    except ValueError as error:
+        raise RequestError("INVALID_JSON", "request is not valid JSON with finite numbers") from error
     if not isinstance(body, dict):
         raise RequestError("INVALID_PAYLOAD", "request must be a JSON object")
 
     context = body.get("context")
-    if context is not None and (
-        not isinstance(context, dict) or len(json.dumps(context, separators=(",", ":")).encode()) > MAX_CONTEXT_BYTES
-    ):
+    if context is not None and not _is_bounded_object(context, MAX_CONTEXT_BYTES):
         raise RequestError("INVALID_PAYLOAD", f"context must be an object of at most {MAX_CONTEXT_BYTES} bytes")
 
     has_inputs = "inputs" in body
@@ -224,8 +237,9 @@ def parse_request_payload(payload: bytes, max_bytes: int) -> PredictRequest:
         if not isinstance(inputs, list) or not inputs:
             raise RequestError("INVALID_PAYLOAD", "inputs must be a non-empty list")
         tensor = inputs if isinstance(inputs[0], list) else [inputs]
-        if not _is_numeric_tensor(tensor):
-            raise RequestError("INVALID_PAYLOAD", "inputs must contain only numbers")
+        if tensor_shape(tensor) is None:
+            message = f"inputs must be a rectangular numeric tensor of up to {MAX_TENSOR_DIMENSIONS} dimensions"
+            raise RequestError("INVALID_PAYLOAD", message)
         item = PredictItem("application/json", json.dumps(tensor, separators=(",", ":")).encode())
         return PredictRequest(item, context)
 
@@ -242,12 +256,52 @@ def parse_request_payload(payload: bytes, max_bytes: int) -> PredictRequest:
     return PredictRequest(PredictItem(content_type, decoded), context)
 
 
-def _is_numeric_tensor(value: Any, depth: int = 0) -> bool:
-    if depth > 4:
+def _reject_constant(name: str) -> Any:
+    raise ValueError(f"{name} is not a finite number")
+
+
+def _finite_float(raw: str) -> float:
+    value = float(raw)
+    if not math.isfinite(value):
+        raise ValueError("number is not finite")
+    return value
+
+
+def load_json(raw: bytes | str) -> Any:
+    """Parse JSON, rejecting non-finite numbers and nesting too deep to decode.
+
+    Raises ValueError for every rejection, including RecursionError from
+    deeply nested input.
+    """
+    try:
+        return json.loads(raw, parse_constant=_reject_constant, parse_float=_finite_float)
+    except RecursionError as error:
+        raise ValueError("JSON nesting is too deep") from error
+
+
+def _is_bounded_object(value: Any, max_bytes: int) -> bool:
+    if not isinstance(value, dict):
         return False
+    try:
+        return len(json.dumps(value, separators=(",", ":")).encode()) <= max_bytes
+    except (RecursionError, ValueError):
+        return False
+
+
+def tensor_shape(value: Any, depth: int = 0) -> tuple[int, ...] | None:
+    """Return the shape of a rectangular tensor of finite numbers, or None."""
     if isinstance(value, list):
-        return bool(value) and all(_is_numeric_tensor(item, depth + 1) for item in value)
-    return isinstance(value, int | float) and not isinstance(value, bool)
+        if not value or depth >= MAX_TENSOR_DIMENSIONS:
+            return None
+        first = tensor_shape(value[0], depth + 1)
+        if first is None or any(tensor_shape(item, depth + 1) != first for item in value[1:]):
+            return None
+        return (len(value), *first)
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return ()
 
 
 def build_predict_body(item: PredictItem) -> dict[str, Any]:
@@ -267,16 +321,20 @@ def decode_predict_response(body: Any) -> Any:
     """Return model outputs from a ``/v1/predict`` response body.
 
     JSON items are decoded; other content types are returned as Base64 with
-    their content type.
+    their content type. Raises ValueError when items[0] isn't a decodable object.
     """
     try:
         item = body["items"][0]
+        if not isinstance(item, dict):
+            raise TypeError("items[0] is not an object")
         content_type = item.get("content_type", "application/json")
+        if not isinstance(content_type, str):
+            raise TypeError("content_type is not a string")
         raw = base64.b64decode(item["data"], validate=True)
     except (KeyError, IndexError, TypeError, binascii.Error, ValueError) as error:
         raise ValueError("backend response has no decodable items[0]") from error
     if content_type == "application/json":
-        return json.loads(raw)
+        return load_json(raw)
     return {"content_type": content_type, "data": base64.b64encode(raw).decode("ascii")}
 
 
