@@ -191,6 +191,7 @@ variable "namespaced_assets" {
           topic  = optional(string)
           retain = optional(string)
           qos    = optional(string)
+          path   = optional(string)
         })
       })), [])
     })), [])
