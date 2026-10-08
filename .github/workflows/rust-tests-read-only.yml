@@ -1,0 +1,114 @@
+---
+name: Rust Tests Read Only
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - crate: src/500-application/501-rust-telemetry/services/receiver
+          - crate: src/500-application/501-rust-telemetry/services/sender
+          - crate: src/500-application/502-rust-http-connector/services/broker
+          - crate: src/500-application/502-rust-http-connector/services/subscriber
+          - crate: src/500-application/503-media-capture-service/services/media-capture-service
+            system_deps: ffmpeg
+          - crate: src/500-application/504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter
+          - crate: src/500-application/507-ai-inference/services/ai-edge-inference
+          - crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - crate: src/500-application/507-ai-inference/services/snapshot-normalizer-core
+          - crate: src/900-tools-utilities/901-video-tools/cli/video-to-gif
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install base system build dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            protobuf-compiler \
+            pkg-config \
+            clang
+
+      - name: Install ffmpeg system libraries
+        if: matrix.system_deps == 'ffmpeg'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y --no-install-recommends \
+            libavcodec-dev \
+            libavformat-dev \
+            libavfilter-dev \
+            libavdevice-dev \
+            libavutil-dev \
+            libswscale-dev \
+            libswresample-dev \
+            libopencv-dev \
+            libclang-dev
+
+      - name: Install Rust toolchain
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Run Rust tests
+        working-directory: ${{ matrix.crate }}
+        shell: bash
+        run: cargo test --locked
+
+      - name: Install SBOM and vulnerability tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          install_tool() {
+            local name="$1" archive="$2" checksums="$3" url="$4"
+            local temp_dir
+            temp_dir="$(mktemp -d)"
+            curl -sSfL --retry 3 --retry-delay 2 --retry-all-errors \
+              -o "${temp_dir}/${archive}" "${url}/${archive}"
+            curl -sSfL --retry 3 --retry-delay 2 --retry-all-errors \
+              -o "${temp_dir}/checksums.txt" "${url}/${checksums}"
+            (cd "${temp_dir}" && grep " ${archive}$" checksums.txt | sha256sum -c -)
+            sudo tar -xzf "${temp_dir}/${archive}" -C /usr/local/bin "${name}"
+            rm -rf "${temp_dir}"
+            "${name}" version
+          }
+
+          SYFT_VERSION="v1.17.0"
+          SYFT_VER="${SYFT_VERSION#v}"
+          install_tool \
+            syft \
+            "syft_${SYFT_VER}_linux_amd64.tar.gz" \
+            "syft_${SYFT_VER}_checksums.txt" \
+            "https://github.com/anchore/syft/releases/download/${SYFT_VERSION}"
+
+          GRYPE_VERSION="v0.86.1"
+          GRYPE_VER="${GRYPE_VERSION#v}"
+          install_tool \
+            grype \
+            "grype_${GRYPE_VER}_linux_amd64.tar.gz" \
+            "grype_${GRYPE_VER}_checksums.txt" \
+            "https://github.com/anchore/grype/releases/download/${GRYPE_VERSION}"
+
+      - name: Generate and scan crate SBOM
+        working-directory: ${{ matrix.crate }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          syft scan dir:. -o cyclonedx-json=sbom.cdx.json
+          grype sbom:./sbom.cdx.json \
+            --config "${{ github.workspace }}/.grype.yaml" \
+            --fail-on critical

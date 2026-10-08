@@ -31,6 +31,15 @@
 .PARAMETER BaseBranch
     The branch to compare against (default: origin/main)
 
+.PARAMETER ChangeMode
+    Change source: branch comparison, immutable range, or all tracked files.
+
+.PARAMETER BaseSha
+    Immutable base commit used in range mode.
+
+.PARAMETER HeadSha
+    Immutable head commit used in range mode.
+
 .PARAMETER OutputFile
     Optional file path to write the JSON output to instead of returning it
 
@@ -103,6 +112,10 @@ param(
     [switch]$IncludeAllApplications,
     [switch]$IncludeFuzzTargets,
     [string]$BaseBranch = "origin/main",
+    [ValidateSet("branch", "range", "full")]
+    [string]$ChangeMode = "branch",
+    [string]$BaseSha = "",
+    [string]$HeadSha = "",
     [string]$OutputFile = "",
     [switch]$OutputJson,
     [string]$ApplicationPath = "src/500-application"
@@ -376,10 +389,32 @@ function Test-RustHasChange {
 function Get-ChangedFileData {
     param (
         [switch]$IncludeAll,
-        [string]$BaseBranch
+        [string]$BaseBranch,
+        [ValidateSet("branch", "range", "full")]
+        [string]$ChangeMode = "branch",
+        [string]$BaseSha = "",
+        [string]$HeadSha = ""
     )
 
-    if ($IncludeAll) {
+    if ($ChangeMode -eq "full") {
+        $allFiles = git ls-files
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to enumerate tracked files for full validation."
+        }
+        return $allFiles
+    }
+    elseif ($ChangeMode -eq "range") {
+        if ([string]::IsNullOrWhiteSpace($BaseSha) -or [string]::IsNullOrWhiteSpace($HeadSha)) {
+            throw "Range mode requires both BaseSha and HeadSha."
+        }
+
+        $diffFiles = git diff --name-only --diff-filter=ACMRT $BaseSha $HeadSha
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to compare immutable range '$BaseSha..$HeadSha'."
+        }
+        return $diffFiles
+    }
+    elseif ($IncludeAll) {
         # CRITICAL PERFORMANCE FIX: Use git ls-files instead of Get-ChildItem for massive speedup
         # This matches what the bash script does with 'find'
         $patterns = @("*.tf", "*.tfvars", "*.tfstate", "*.hcl", "*.bicep")
@@ -638,7 +673,13 @@ function Convert-PathsToJson {
 }
 
 # Get changed files for IaC detection
-$changedFiles = Get-ChangedFileData -IncludeAll:$IncludeAllIaC -BaseBranch $BaseBranch
+$changeParameters = @{
+    BaseBranch = $BaseBranch
+    ChangeMode = $ChangeMode
+    BaseSha    = $BaseSha
+    HeadSha    = $HeadSha
+}
+$changedFiles = Get-ChangedFileData -IncludeAll:$IncludeAllIaC @changeParameters
 
 $bicepFullValidationReasons = @(Get-BicepFullValidationReason -Files $changedFiles)
 $bicepFullValidationRequired = $bicepFullValidationReasons.Count -gt 0
@@ -647,7 +688,7 @@ $bicepFullValidationRequired = $bicepFullValidationReasons.Count -gt 0
 $allChangedFiles = $changedFiles
 if ($IncludeAllApplications -and $IncludeAllIaC) {
     # When both are requested, we need all changed files for application detection
-    $allChangedFiles = Get-ChangedFileData -IncludeAll:$false -BaseBranch $BaseBranch
+    $allChangedFiles = Get-ChangedFileData -IncludeAll:$false @changeParameters
 }
 
 # Batch process subscription file checks
