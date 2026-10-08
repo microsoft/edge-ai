@@ -237,16 +237,18 @@ The chart:
 
 ## Local Development
 
-Run against a local MQTTv5 broker and any HTTP endpoint that speaks the
-`/v1/predict` `items` format:
+`docker-compose.yml` runs the adapter with a local Mosquitto broker and a mock
+`/v1/predict` model (`resources/mock_predict.py`) that returns the mean of the
+input tensor. Copy `.env.example` to `.env` to point the adapter at another
+endpoint:
 
 ```bash
-cd src/500-application/518-mqtt-predict-adapter/services/predict-adapter
-pip install --require-hashes -r requirements.txt
-AIO_BROKER_HOSTNAME=localhost AIO_BROKER_TCP_PORT=1883 AIO_MQTT_USE_TLS=false \
-  AIO_SAT_FILE= BACKEND_AUTH_FILE= ALLOWED_MODELS=sensor-anomaly \
-  MODEL_ENDPOINT_TEMPLATE='http://localhost:8000/{model_id}/v1/predict' \
-  python3 app.py
+cd src/500-application/518-mqtt-predict-adapter
+cp .env.example .env
+docker compose up --build -d
+docker compose exec mosquitto-broker mosquitto_sub -V 5 -t 'predict/v1/local/model/+/response' &
+docker compose exec mosquitto-broker mosquitto_pub -V 5 \
+  -t predict/v1/local/model/sensor-anomaly/request -m '{"inputs": [0.2, 0.4]}'
 ```
 
 ## Testing

@@ -1,0 +1,57 @@
+# Local development: a plain MQTT broker, the adapter, and a mock /v1/predict
+# model. Send a request with:
+#   docker compose exec mosquitto-broker mosquitto_pub -V 5 \
+#     -t predict/v1/local/model/sensor-anomaly/request -m '{"inputs": [0.2, 0.4]}'
+# and read the response from predict/v1/local/model/sensor-anomaly/response.
+services:
+  mosquitto-broker:
+    image: eclipse-mosquitto:2.0.22
+    ports:
+      - "11883:1883"
+    volumes:
+      - "./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+    networks:
+      - predict-adapter
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/broker/uptime", "-C", "1", "-W", "3"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mock-model:
+    image: mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2
+    command: ["python3", "/app/mock_predict.py"]
+    volumes:
+      - "./resources/mock_predict.py:/app/mock_predict.py:ro"
+    read_only: true
+    networks:
+      - predict-adapter
+
+  predict-adapter:
+    image: ${REGISTRY:-local}/mqtt-predict-adapter/predict-adapter:${BUILD_ID:-latest}
+    build:
+      context: .
+      dockerfile: services/predict-adapter/Dockerfile
+    depends_on:
+      mosquitto-broker:
+        condition: service_healthy
+      mock-model:
+        condition: service_started
+    environment:
+      AIO_BROKER_HOSTNAME: mosquitto-broker
+      AIO_BROKER_TCP_PORT: "1883"
+      AIO_MQTT_USE_TLS: "false"
+      AIO_SAT_FILE: ""
+      AIO_MQTT_CLIENT_ID: predict-adapter-local
+      BACKEND_AUTH_FILE: ""
+      ALLOWED_MODELS: ${ALLOWED_MODELS:-sensor-anomaly}
+      MODEL_ENDPOINT_TEMPLATE: ${MODEL_ENDPOINT_TEMPLATE:-http://mock-model:8000/{model_id}/v1/predict}
+      MAX_CONCURRENCY: ${MAX_CONCURRENCY:-4}
+      BACKEND_TIMEOUT_SECONDS: ${BACKEND_TIMEOUT_SECONDS:-10}
+    read_only: true
+    networks:
+      - predict-adapter
+
+networks:
+  predict-adapter:
+    name: predict-adapter
