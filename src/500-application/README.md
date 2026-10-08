@@ -63,7 +63,7 @@ Your application should include the following structure:
 
 The following applications are currently available in this directory:
 
-- **[500-basic-inference](./500-basic-inference/README.md)** - Reference implementation for basic ML inference workloads
+- **[500-basic-inference](./500-basic-inference/)** - Reference implementation for basic ML inference workloads
 - **[501-rust-telemetry](./501-rust-telemetry/README.md)** - Rust-based telemetry collection service
 - **[502-rust-http-connector](./502-rust-http-connector/README.md)** - HTTP connector service built in Rust
 - **[503-media-capture-service](./503-media-capture-service/README.md)** - Media capture and processing service

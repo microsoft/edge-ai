@@ -288,7 +288,7 @@ cargo run --release -- -i test.mp4 -o test.gif
 
 ## Related Documentation
 
-* Component Overview: [../README.md](../README.md)
+* Component Overview: [../../README.md](../../README.md)
 * FFmpeg Documentation: <https://ffmpeg.org/documentation.html>
 * GIF Optimization Guide: <https://cassidy.codes/blog/2017/04/25/ffmpeg-frames-to-gif-optimization/>
 

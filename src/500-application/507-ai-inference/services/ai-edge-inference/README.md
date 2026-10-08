@@ -20,7 +20,7 @@ The AI Edge MQTT Publisher Service is a production-ready Rust-based microservice
 - Azure Container Registry access
 - Rust 1.89+ with Azure IoT Operations SDKs (for local builds)
 
-**Quick Start**: See the [component README](../README.md) for local development setup with docker-compose.
+**Quick Start**: See the [component README](../../README.md) for local development setup with docker-compose.
 
 ### ✅ Current Implementation Status
 
@@ -589,6 +589,6 @@ minimal = []  # Ultra-lightweight build
 
 For more information, see:
 
-- [Component README](../README.md) - Local development and quick start
+- [Component README](../../README.md) - Local development and quick start
 - [AI Edge Inference Crate README](../ai-edge-inference-crate/README.md) - Core library documentation
 - [Main Repository](../../../../../README.md) - Overall project documentation

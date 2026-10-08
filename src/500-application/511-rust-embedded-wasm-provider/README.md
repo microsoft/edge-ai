@@ -20,7 +20,7 @@ estimated_reading_time: 10
 
 ## Rust Embedded WASM Provider
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../../LICENSE)
 
 WebAssembly (WASM) operators for data processing with Azure IoT Operations dataflow graphs, using the WIT Component Model composition pattern to separate infrastructure plumbing from business logic.
 
@@ -253,7 +253,7 @@ To release a new version of the operators:
    version = "2.0.0"
    ```
 
-2. Update the graph artifact reference in [blueprints/full-multi-node-cluster/terraform/terraform.tfvars](../../../blueprints/full-multi-node-cluster/terraform/terraform.tfvars) to match the new version:
+2. Update the graph artifact reference in `blueprints/full-multi-node-cluster/terraform/terraform.tfvars` to match the new version:
 
    ```hcl
    artifact = "graph-simple-map-custom:2.0.0"
