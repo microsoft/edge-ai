@@ -41,10 +41,11 @@ class TestSignalGenerator:
         assert hot.unit == "degC"
 
     def test_acoustic_window_has_configured_length(self):
-        reading = _generator(acoustic_sample_count=64).reading(SensorModality.ACOUSTIC, True, MOMENT)
+        reading = _generator(acoustic_sample_count=4096).reading(SensorModality.ACOUSTIC, True, MOMENT)
         assert isinstance(reading, AcousticReading)
-        assert len(reading.samples) == 64
+        assert len(reading.samples) == 4096
         assert reading.sample_rate == 16000
+        assert all(-1.0 <= sample <= 1.0 for sample in reading.samples)
 
     def test_payload_carries_no_site_or_model_identity(self):
         reading = _generator().reading(SensorModality.VIBRATION, False, MOMENT)
@@ -77,6 +78,13 @@ class TestProperties:
         }
         assert properties.ContentType == "application/json"
         assert properties.PayloadFormatIndicator == 1
+
+    def test_publish_properties_carry_optional_dataschema(self):
+        uri = "https://example.com/schemas/sensor-reading-v1.schema.json"
+        config = SimulatorConfig(data_schema=uri)
+        properties = publish_properties(config, SensorModality.VIBRATION, "event-1", MOMENT)
+        assert properties.UserProperty[-1] == ("dataschema", uri)
+        assert len(properties.UserProperty) == 8
 
     def test_connect_properties_use_sat_enhanced_authentication(self, tmp_path):
         token_file = tmp_path / "token"
