@@ -6,6 +6,10 @@
 //! `{MEDIA_CLOUD_SYNC_DIR}/{camera_id}/{YYYY}/{MM}/{DD}/{HH}/segment_{start}_{camera_id}.{ext}`
 //! with a JSON metadata sidecar, which is the layout the video query API lists
 //! by prefix.
+//!
+//! ffmpeg writes each segment to a staging directory outside the synced
+//! directory, on the same filesystem, and the finished segment is renamed into
+//! place. ACSA therefore never sees, or uploads, an incomplete file.
 
 use crate::{acsa_writer::AcsaWriter, camera_id::camera_id_from_env};
 use chrono::{DateTime, Utc};
@@ -80,6 +84,9 @@ pub struct ContinuousRecorderConfig {
     pub rtsp_url: String,
     pub segment_duration: Duration,
     pub output_base_path: PathBuf,
+    /// Directory for in-progress segments. Must be outside `output_base_path`
+    /// and on the same filesystem so the final rename is atomic.
+    pub staging_path: PathBuf,
     pub location: String,
     /// Local segments older than this are deleted; `None` disables cleanup.
     pub retention: Option<Duration>,
@@ -153,6 +160,10 @@ impl ContinuousRecorder {
             camera_id_from_env()?.ok_or("CAMERA_ID must be set for continuous recording")?;
         let rtsp_url = required_env("RTSP_URL")?;
         let output_base_path = PathBuf::from(required_env("MEDIA_CLOUD_SYNC_DIR")?);
+        let staging_path = match env::var("MEDIA_STAGING_DIR") {
+            Ok(value) if !value.is_empty() => PathBuf::from(value),
+            _ => default_staging_path(&output_base_path)?,
+        };
         let location = env::var("CAMERA_LOCATION").unwrap_or_else(|_| "unknown".to_string());
         let segment_seconds = env_u64("CONTINUOUS_SEGMENT_DURATION_SECONDS", 300, 10..=3600)?;
         let retention_hours = env_u64("LOCAL_RETENTION_HOURS", 24, 0..=8760)?;
@@ -172,6 +183,7 @@ impl ContinuousRecorder {
             rtsp_url,
             segment_duration: Duration::from_secs(segment_seconds),
             output_base_path,
+            staging_path,
             location,
             retention: (retention_hours > 0).then(|| Duration::from_secs(retention_hours * 3600)),
             cleanup_interval: Duration::from_secs(cleanup_minutes * 60),
@@ -196,10 +208,18 @@ impl ContinuousRecorder {
             self.config.segment_duration.as_secs()
         );
 
+        fs::create_dir_all(&self.config.output_base_path).await?;
+        fs::create_dir_all(&self.config.staging_path).await?;
+        ensure_same_filesystem(&self.config.staging_path, &self.config.output_base_path)?;
+        info!(
+            "Staging in-progress segments in {}",
+            self.config.staging_path.display()
+        );
+
         // Idle partial files belong to a recorder that stopped; files another
         // recorder is still writing are recent and stay in place
-        let camera_path = self.config.output_base_path.join(&self.config.camera_id);
-        match remove_stale_partial_segments(&camera_path, PARTIAL_IDLE_LIMIT).await {
+        let staging_camera_path = self.config.staging_path.join(&self.config.camera_id);
+        match remove_stale_partial_segments(&staging_camera_path, PARTIAL_IDLE_LIMIT).await {
             Ok(0) => {}
             Ok(count) => warn!("Removed {count} abandoned incomplete segments"),
             Err(e) => warn!("Failed to remove abandoned incomplete segments: {e}"),
@@ -222,17 +242,16 @@ impl ContinuousRecorder {
     }
 
     async fn record_segment(&self) -> Result<PathBuf, Box<dyn Error>> {
-        let staging = segment_path(
-            &self.config.output_base_path,
+        let partial = staging_partial_path(
+            &self.config.staging_path,
             &self.config.camera_id,
             self.config.output_format,
             &Utc::now(),
         );
-        if let Some(parent) = staging.parent() {
+        if let Some(parent) = partial.parent() {
             fs::create_dir_all(parent).await?;
         }
 
-        let partial = partial_path(&staging);
         let window = match self.capture(&partial).await {
             Ok(window) => window,
             Err(e) => {
@@ -341,6 +360,7 @@ impl ContinuousRecorder {
     /// set, expired segments.
     fn start_cleanup_task(&self, retention: Option<Duration>) {
         let camera_path = self.config.output_base_path.join(&self.config.camera_id);
+        let staging_camera_path = self.config.staging_path.join(&self.config.camera_id);
         let cleanup_interval = self.config.cleanup_interval;
         let camera_id = self.config.camera_id.clone();
         let retention =
@@ -351,7 +371,7 @@ impl ContinuousRecorder {
             loop {
                 timer.tick().await;
                 if let Err(e) =
-                    remove_stale_partial_segments(&camera_path, PARTIAL_IDLE_LIMIT).await
+                    remove_stale_partial_segments(&staging_camera_path, PARTIAL_IDLE_LIMIT).await
                 {
                     warn!("Partial segment cleanup failed for camera {camera_id}: {e}");
                 }
@@ -458,6 +478,62 @@ async fn probe_duration(path: &Path) -> Result<Duration, Box<dyn Error>> {
     Ok(parse_probe_duration(&String::from_utf8_lossy(
         &output.stdout,
     ))?)
+}
+
+/// Default staging directory: a hidden sibling of the synced directory, such
+/// as `/cloud-sync/.media-staging` for `/cloud-sync/media`, so it stays on the
+/// same volume but outside the ACSA ingest subvolume.
+pub fn default_staging_path(sync_dir: &Path) -> Result<PathBuf, String> {
+    let name = sync_dir
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or("MEDIA_CLOUD_SYNC_DIR must name a directory below the volume mount")?;
+    let parent = sync_dir
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .ok_or("MEDIA_CLOUD_SYNC_DIR must name a directory below the volume mount")?;
+    Ok(parent.join(format!(".{name}-staging")))
+}
+
+/// Fails unless `staging` and `sync_dir` are on the same filesystem and
+/// `staging` isn't inside `sync_dir`, so finished segments can be renamed
+/// atomically into a directory that ACSA uploads from.
+pub fn ensure_same_filesystem(staging: &Path, sync_dir: &Path) -> Result<(), String> {
+    use std::os::unix::fs::MetadataExt;
+    if staging.starts_with(sync_dir) {
+        return Err(format!(
+            "staging directory {} must be outside {}",
+            staging.display(),
+            sync_dir.display()
+        ));
+    }
+    let device = |path: &Path| {
+        std::fs::metadata(path)
+            .map(|metadata| metadata.dev())
+            .map_err(|e| format!("cannot read {}: {e}", path.display()))
+    };
+    if device(staging)? != device(sync_dir)? {
+        return Err(format!(
+            "staging directory {} must be on the same volume as {}",
+            staging.display(),
+            sync_dir.display()
+        ));
+    }
+    Ok(())
+}
+
+/// Returns the in-progress path for a segment starting at `timestamp`.
+pub fn staging_partial_path(
+    staging_path: &Path,
+    camera_id: &str,
+    format: OutputFormat,
+    timestamp: &DateTime<Utc>,
+) -> PathBuf {
+    let file_name = segment_path(Path::new(""), camera_id, format, timestamp)
+        .file_name()
+        .map(PathBuf::from)
+        .unwrap_or_default();
+    partial_path(&staging_path.join(camera_id).join(file_name))
 }
 
 /// Returns the path ffmpeg writes to before the segment is complete.
@@ -826,6 +902,91 @@ mod tests {
             "measured {:?}",
             recorded
         );
+    }
+
+    #[test]
+    fn default_staging_is_hidden_sibling_of_sync_dir() {
+        assert_eq!(
+            default_staging_path(Path::new("/cloud-sync/media")).unwrap(),
+            PathBuf::from("/cloud-sync/.media-staging")
+        );
+        assert!(default_staging_path(Path::new("/")).is_err());
+        assert!(default_staging_path(Path::new("media")).is_err());
+    }
+
+    #[test]
+    fn staging_partial_is_outside_sync_dir() {
+        let timestamp = DateTime::parse_from_rfc3339("2026-01-30T19:05:44Z")
+            .unwrap()
+            .with_timezone(&Utc);
+        let partial = staging_partial_path(
+            Path::new("/cloud-sync/.media-staging"),
+            "camera-01",
+            OutputFormat::Mkv,
+            &timestamp,
+        );
+        assert_eq!(
+            partial,
+            PathBuf::from(
+                "/cloud-sync/.media-staging/camera-01/segment_2026-01-30T19:05:44Z_camera-01.mkv.partial"
+            )
+        );
+        assert!(!partial.starts_with("/cloud-sync/media"));
+    }
+
+    #[test]
+    fn staging_must_be_outside_sync_dir_on_same_filesystem() {
+        let dir = tempfile::tempdir().unwrap();
+        let sync = dir.path().join("media");
+        let sibling = dir.path().join(".media-staging");
+        let nested = sync.join("staging");
+        for path in [&sync, &sibling, &nested] {
+            std::fs::create_dir_all(path).unwrap();
+        }
+
+        assert!(ensure_same_filesystem(&sibling, &sync).is_ok());
+        assert!(ensure_same_filesystem(&nested, &sync).is_err());
+        assert!(ensure_same_filesystem(&dir.path().join("missing"), &sync).is_err());
+        let shm = Path::new("/dev/shm");
+        if shm.is_dir() {
+            assert!(ensure_same_filesystem(shm, &sync).is_err());
+        }
+    }
+
+    #[tokio::test]
+    async fn finished_segment_moves_from_staging_into_sync_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let sync = dir.path().join("media");
+        let staging = default_staging_path(&sync).unwrap();
+        let timestamp = Utc::now();
+        let partial = staging_partial_path(&staging, "camera-01", OutputFormat::Mp4, &timestamp);
+        std::fs::create_dir_all(partial.parent().unwrap()).unwrap();
+        std::fs::create_dir_all(&sync).unwrap();
+        std::fs::write(&partial, b"frames").unwrap();
+        assert!(
+            walk(&sync).is_empty(),
+            "nothing is visible to ACSA while recording"
+        );
+
+        let output = segment_path(&sync, "camera-01", OutputFormat::Mp4, &timestamp);
+        std::fs::create_dir_all(output.parent().unwrap()).unwrap();
+        tokio::fs::rename(&partial, &output).await.unwrap();
+
+        assert_eq!(walk(&sync), vec![output]);
+        assert!(!partial.exists());
+    }
+
+    fn walk(dir: &Path) -> Vec<PathBuf> {
+        let mut files = Vec::new();
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                files.extend(walk(&path));
+            } else {
+                files.push(path);
+            }
+        }
+        files
     }
 
     #[test]

@@ -76,6 +76,10 @@ spec:
             # Media Storage
             - name: MEDIA_CLOUD_SYNC_DIR
               value: {{ .Values.mediaCapture.storage.cloudSyncDir | quote }}
+            {{- with .Values.mediaCapture.storage.stagingDir }}
+            - name: MEDIA_STAGING_DIR
+              value: {{ . | quote }}
+            {{- end }}
 
             # Video Configuration
             - name: RTSP_URL
@@ -95,7 +99,11 @@ spec:
 
             # Camera Identity
             - name: CAMERA_ID
+              {{- if .Values.mediaCapture.continuousRecording.enabled }}
+              value: {{ required "mediaCapture.camera.id is required for continuous recording" .Values.mediaCapture.camera.id | quote }}
+              {{- else }}
               value: {{ .Values.mediaCapture.camera.id | quote }}
+              {{- end }}
             - name: CAMERA_LOCATION
               value: {{ .Values.mediaCapture.camera.location | quote }}
 

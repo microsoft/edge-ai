@@ -38,6 +38,10 @@ mediaCapture:
   # Media storage configuration
   storage:
     cloudSyncDir: "/cloud-sync/media"
+    # Continuous recording stages in-progress segments here; must be on the same
+    # volume as cloudSyncDir but outside the ACSA ingest subvolume. Empty uses
+    # a hidden sibling of cloudSyncDir, such as /cloud-sync/.media-staging
+    stagingDir: ""
     pvcName: "pvc-acsa-cloud-backed"
 
   # Video configuration
@@ -53,7 +57,8 @@ mediaCapture:
   # Camera identity. The ID names the {cameraId}/{YYYY}/{MM}/{DD}/{HH}/ output
   # directories in both modes; use letters, digits, '_', or '-'.
   camera:
-    id: "camera-01"
+    # Required when continuousRecording.enabled is true; set a unique ID per release
+    id: ""
     location: "unknown"
 
   # Continuous recording records back-to-back segments instead of MQTT-triggered clips
