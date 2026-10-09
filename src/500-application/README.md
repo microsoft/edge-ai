@@ -78,6 +78,7 @@ The following applications are currently available in this directory:
 - **[512-avro-to-json](./512-avro-to-json/README.md)** - Avro binary to JSON transformation WASM module for Azure IoT Operations dataflow graphs
 - **[513-tiered-notification-service](./513-tiered-notification-service/README.md)** - Azure Function that processes events from Event Hub and dispatches tiered webhook notifications to Teams, Slack, or generic HTTP endpoints
 - **[514-wasm-msg-to-dss](./514-wasm-msg-to-dss/README.md)** - WASM operators for the AIO Distributed State Store: `msg-to-dss-key` writes incoming JSON messages to the state store under a configurable key extracted via JSON Pointer (with TTL and passthrough), and `dss-enricher-key` reads/enriches messages with stored records using a dynamically constructed key
+- **[518-mqtt-predict-adapter](./518-mqtt-predict-adapter/README.md)** - Bridges MQTT predict requests to HTTP predictive model endpoints such as Foundry Local, with versioned topics and service account token authentication
 - **[521-acoustic-anomaly-operators](./521-acoustic-anomaly-operators/README.md)** - WASM data flow graph operators that featurize audio into log-mel rows for an autoencoder served through the MQTT predict adapter and turn model scores into anomaly verdicts
 
 ## Service Implementation
