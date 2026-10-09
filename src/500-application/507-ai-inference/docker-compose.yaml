@@ -19,7 +19,7 @@ services:
       AIO_BROKER_TCP_PORT: "1883"
 
       # Topic configuration
-      MQTT_INPUT_TOPICS: "edge-ai/+/+/camera/snapshots"
+      MQTT_INPUT_TOPICS: "edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots"
       TOPIC_PREFIX: "edge-ai/business_unit/facility/gateway_id"
 
       # Model configuration
