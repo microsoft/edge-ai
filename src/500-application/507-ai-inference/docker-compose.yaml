@@ -40,6 +40,23 @@ services:
     networks:
       - edge-ai-inference
 
+  # Snapshot normalizer: republishes binary JPEG snapshots as image_snapshot v1
+  # requests on edge-ai/v1/snapshot-normalizer/camera/{CAMERA_ID}/snapshots,
+  # which the inference service receives through edge-ai/v1/+/camera/+/snapshots
+  snapshot-normalizer:
+    build:
+      context: ./services
+      dockerfile: snapshot-normalizer/Dockerfile
+    image: ${REGISTRY:-local}/${APPLICATION:-ai-inference}/snapshot-normalizer:${BUILD_ID:-local}
+    # Defaults from the template; an optional .env beside it overrides them
+    env_file:
+      - path: ./services/snapshot-normalizer/.env.template
+      - path: ./services/snapshot-normalizer/.env
+        required: false
+    read_only: true
+    networks:
+      - edge-ai-inference
+
   # Optional: MQTT client for testing
   mqtt-client:
     image: eclipse-mosquitto:latest
