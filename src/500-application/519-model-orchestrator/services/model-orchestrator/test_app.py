@@ -120,6 +120,21 @@ def test_timeout_produces_partial_result_and_late_answers_are_counted():
     assert len([item for item in published if item[0] == RESPONSE]) == 1
 
 
+def test_answer_after_deadline_before_tick_is_late_not_success():
+    orchestrator, published, clock = make(TIMEOUT_SECONDS="5")
+    orchestrator.handle_request(REQUEST, b'{"inputs": [1]}', props())
+    answer(orchestrator, published, "model-a", 0.1)
+    clock.now += 5
+    answer(orchestrator, published, "model-b", 0.9)
+    body, _ = final(published)
+    assert (body["status"], body["decision"]) == ("partial", "unknown")
+    assert orchestrator.counters.late == 1
+    assert orchestrator.counters.complete == 0
+    assert orchestrator.in_flight == 0
+    orchestrator.tick()
+    assert len([item for item in published if item[0] == RESPONSE]) == 1
+
+
 def test_duplicate_model_answer_does_not_overwrite():
     orchestrator, published, _ = make()
     orchestrator.handle_request(REQUEST, b'{"inputs": [1]}', props())

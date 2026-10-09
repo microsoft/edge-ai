@@ -205,6 +205,12 @@ class Orchestrator:
         if fanout is None:
             self.counters.late += 1
             return
+        # Callbacks can run before tick(), so enforce the deadline here as well.
+        if self.clock() >= fanout.deadline:
+            self.counters.late += 1
+            self._finish(fanout)
+            self._dispatch()
+            return
         if model_id not in fanout.in_flight:
             self.counters.duplicate += 1
             return
