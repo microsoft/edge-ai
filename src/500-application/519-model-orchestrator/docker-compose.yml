@@ -1,0 +1,80 @@
+# Local development: a plain MQTT broker, the orchestrator, the component 518
+# predict adapter, and its mock /v1/predict model. Send a request with:
+#   docker compose exec mosquitto-broker mosquitto_pub -V 5 \
+#     -t orchestrate/v1/local/ensemble/default/request -m '{"inputs": [0.6, 0.6]}'
+# and read the aggregate from orchestrate/v1/local/ensemble/default/response.
+services:
+  mosquitto-broker:
+    image: eclipse-mosquitto:2.0.22
+    ports:
+      - "11883:1883"
+    volumes:
+      - "./resources/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+    networks:
+      - model-orchestrator
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/broker/uptime", "-C", "1", "-W", "3"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mock-model:
+    image: mcr.microsoft.com/azurelinux/base/python:3.12@sha256:8300706a0e644a7e260b6a464a1ae3967181ee9057a4accceaaf0ecdedb1d4a2
+    command: ["python3", "/app/mock_predict.py"]
+    environment:
+      MOCK_LATENCY_SECONDS: ${MOCK_LATENCY_SECONDS:-0}
+    volumes:
+      - "../518-mqtt-predict-adapter/resources/mock_predict.py:/app/mock_predict.py:ro"
+    read_only: true
+    networks:
+      - model-orchestrator
+
+  predict-adapter:
+    image: ${REGISTRY:-local}/mqtt-predict-adapter/predict-adapter:${BUILD_ID:-latest}
+    build:
+      context: ../518-mqtt-predict-adapter
+      dockerfile: services/predict-adapter/Dockerfile
+    depends_on:
+      mosquitto-broker:
+        condition: service_healthy
+    environment:
+      AIO_BROKER_HOSTNAME: mosquitto-broker
+      AIO_BROKER_TCP_PORT: "1883"
+      AIO_MQTT_USE_TLS: "false"
+      AIO_SAT_FILE: ""
+      AIO_MQTT_CLIENT_ID: predict-adapter-local
+      BACKEND_AUTH_FILE: ""
+      ALLOWED_MODELS: ${ADAPTER_ALLOWED_MODELS:-model-a,model-b}
+      MODEL_ENDPOINT_TEMPLATE: http://mock-model:8000/{model_id}/v1/predict
+      MAX_CONCURRENCY: ${ADAPTER_MAX_CONCURRENCY:-4}
+      BACKEND_TIMEOUT_SECONDS: ${ADAPTER_BACKEND_TIMEOUT_SECONDS:-4}
+      BACKEND_ATTEMPTS: ${ADAPTER_BACKEND_ATTEMPTS:-2}
+    read_only: true
+    networks:
+      - model-orchestrator
+
+  model-orchestrator:
+    image: ${REGISTRY:-local}/model-orchestrator/model-orchestrator:${BUILD_ID:-latest}
+    build:
+      context: .
+      dockerfile: services/model-orchestrator/Dockerfile
+    depends_on:
+      mosquitto-broker:
+        condition: service_healthy
+    environment:
+      AIO_BROKER_HOSTNAME: mosquitto-broker
+      AIO_BROKER_TCP_PORT: "1883"
+      AIO_MQTT_USE_TLS: "false"
+      AIO_SAT_FILE: ""
+      AIO_MQTT_CLIENT_ID: model-orchestrator-local
+      ENSEMBLE_ID: ${ENSEMBLE_ID:-default}
+      MODELS: ${MODELS:-[{"id":"model-a","result":{"kind":"score","field":"score","threshold":0.5}},{"id":"model-b","result":{"kind":"score","field":"score","threshold":0.7}}]}
+      TIMEOUT_SECONDS: ${TIMEOUT_SECONDS:-10}
+      MAX_INFLIGHT_MODEL_CALLS: ${MAX_INFLIGHT_MODEL_CALLS:-4}
+    read_only: true
+    networks:
+      - model-orchestrator
+
+networks:
+  model-orchestrator:
+    name: model-orchestrator
