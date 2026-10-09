@@ -207,7 +207,7 @@ run "create_default_cluster_with_principal_id" {
 run "test_invalid_multiple_identities" {
   command = plan
   expect_failures = [
-    var.arc_onboarding_identity
+    data.azurerm_client_config.current,
   ]
 
   variables {
@@ -225,3 +225,74 @@ run "test_invalid_multiple_identities" {
   }
 }
 
+
+# Test invalid configuration fetching scripts from Key Vault without uploading them
+run "test_invalid_script_from_secrets_without_key_vault_upload" {
+  command = plan
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+
+  variables {
+    resource_prefix                           = run.setup_tests.resource_prefix
+    environment                               = "dev"
+    resource_group                            = run.setup_tests.aio_resource_group
+    should_get_custom_locations_oid           = false
+    should_deploy_script_to_vm                = true
+    should_assign_roles                       = false
+    arc_onboarding_sp                         = run.setup_tests.mock_sp
+    custom_locations_oid                      = run.setup_tests.mock_custom_locations_oid
+    key_vault                                 = run.setup_tests.key_vault
+    cluster_server_machine                    = run.setup_tests.cluster_server_machine
+    should_upload_to_key_vault                = false
+    should_use_script_from_secrets_for_deploy = true
+  }
+}
+
+# Test invalid configuration deploying over SSH without Arc machines
+run "test_invalid_ssh_without_arc_machines" {
+  command = plan
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+
+  variables {
+    resource_prefix                 = run.setup_tests.resource_prefix
+    environment                     = "dev"
+    resource_group                  = run.setup_tests.aio_resource_group
+    should_get_custom_locations_oid = false
+    should_deploy_script_to_vm      = true
+    should_assign_roles             = false
+    arc_onboarding_sp               = run.setup_tests.mock_sp
+    custom_locations_oid            = run.setup_tests.mock_custom_locations_oid
+    key_vault                       = run.setup_tests.key_vault
+    cluster_server_machine          = run.setup_tests.cluster_server_machine
+    should_deploy_over_ssh          = true
+    should_deploy_arc_machines      = false
+    ssh_local_user                  = "azureuser"
+    ssh_private_key_path            = "~/.ssh/id_rsa"
+  }
+}
+
+# Test invalid configuration deploying over SSH without SSH credentials
+run "test_invalid_ssh_without_credentials" {
+  command = plan
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+
+  variables {
+    resource_prefix                 = run.setup_tests.resource_prefix
+    environment                     = "dev"
+    resource_group                  = run.setup_tests.aio_resource_group
+    should_get_custom_locations_oid = false
+    should_deploy_script_to_vm      = true
+    should_assign_roles             = false
+    arc_onboarding_sp               = run.setup_tests.mock_sp
+    custom_locations_oid            = run.setup_tests.mock_custom_locations_oid
+    key_vault                       = run.setup_tests.key_vault
+    cluster_server_machine          = run.setup_tests.cluster_server_machine
+    should_deploy_over_ssh          = true
+    should_deploy_arc_machines      = true
+  }
+}

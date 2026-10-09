@@ -14,6 +14,20 @@ locals {
   workspace_id = try(module.fabric_workspace[0].workspace.id, data.fabric_workspace.existing[0].id, null)
 }
 
+/*
+ * Input Validation
+ */
+
+// Validates rules that span multiple input variables.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = !var.should_create_fabric_capacity || length(var.fabric_capacity_admins) > 0
+      error_message = "At least one administrator must be specified for Fabric capacity when creating a capacity."
+    }
+  }
+}
+
 // Defer computation to prevent `data` objects from querying for state on `terraform plan`.
 // Needed for testing and build system compatibility.
 resource "terraform_data" "defer_fabric_capacity_created" {

@@ -10,6 +10,20 @@ locals {
 }
 
 /*
+ * Input Validation
+ */
+
+// Validates rules that span multiple input variables.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = var.should_enable_private_endpoint ? var.private_endpoint_subnet != null : true
+      error_message = "private_endpoint_subnet is required when should_enable_private_endpoint is true."
+    }
+  }
+}
+
+/*
  * Azure Managed Redis Cache
  */
 
