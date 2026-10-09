@@ -16,16 +16,14 @@ existing cloud infrastructure including Key Vault, Storage Account, Application 
 
 ## Providers
 
-| Name      | Version           |
-|-----------|-------------------|
-| azurerm   | >= 5.3.0, < 6.0.0 |
-| terraform | n/a               |
+| Name    | Version           |
+|---------|-------------------|
+| azurerm | >= 5.3.0, < 6.0.0 |
 
 ## Resources
 
 | Name                                                                                                                              | Type        |
 |-----------------------------------------------------------------------------------------------------------------------------------|-------------|
-| [terraform_data.validate_inputs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)          | resource    |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
 ## Modules

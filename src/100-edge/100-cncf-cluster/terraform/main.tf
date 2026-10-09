@@ -21,7 +21,8 @@ locals {
  */
 
 // Validates rules that span multiple input variables.
-resource "terraform_data" "validate_inputs" {
+// On a data source rather than a managed resource, so it adds no planned changes.
+data "azurerm_client_config" "current" {
   lifecycle {
     precondition {
       condition     = !var.should_assign_roles || anytrue([var.arc_onboarding_identity != null, var.arc_onboarding_sp != null, var.arc_onboarding_principal_ids != null])
@@ -57,9 +58,6 @@ resource "terraform_data" "validate_inputs" {
 /*
  * Data Sources
  */
-
-data "azurerm_client_config" "current" {
-}
 
 resource "terraform_data" "defer_azuread_user" {
   count = var.should_add_current_user_cluster_admin ? 1 : 0

@@ -207,7 +207,7 @@ run "create_default_cluster_with_principal_id" {
 run "test_invalid_multiple_identities" {
   command = plan
   expect_failures = [
-    terraform_data.validate_inputs
+    data.azurerm_client_config.current,
   ]
 
   variables {
@@ -230,7 +230,7 @@ run "test_invalid_multiple_identities" {
 run "test_invalid_script_from_secrets_without_key_vault_upload" {
   command = plan
   expect_failures = [
-    terraform_data.validate_inputs
+    data.azurerm_client_config.current,
   ]
 
   variables {
@@ -253,7 +253,7 @@ run "test_invalid_script_from_secrets_without_key_vault_upload" {
 run "test_invalid_ssh_without_arc_machines" {
   command = plan
   expect_failures = [
-    terraform_data.validate_inputs
+    data.azurerm_client_config.current,
   ]
 
   variables {
@@ -278,7 +278,7 @@ run "test_invalid_ssh_without_arc_machines" {
 run "test_invalid_ssh_without_credentials" {
   command = plan
   expect_failures = [
-    terraform_data.validate_inputs
+    data.azurerm_client_config.current,
   ]
 
   variables {

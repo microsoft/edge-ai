@@ -6,14 +6,13 @@
  * existing cloud infrastructure including Key Vault, Storage Account, Application Insights, and networking.
  */
 
-data "azurerm_client_config" "current" {}
-
 /*
  * Input Validation
  */
 
 // Validates rules that span multiple input variables.
-resource "terraform_data" "validate_inputs" {
+// On a data source rather than a managed resource, so it adds no planned changes.
+data "azurerm_client_config" "current" {
   lifecycle {
     precondition {
       condition     = !var.should_assign_ml_workload_identity_roles || var.ml_workload_identity != null
@@ -42,6 +41,9 @@ module "network" {
   count = alltrue([var.should_create_compute_cluster, var.should_create_compute_cluster_snet]) ? 1 : 0
 
   source = "./modules/network"
+
+  // Keeps the input preconditions in targeted plans (workspace and inference integration inherit it).
+  depends_on = [data.azurerm_client_config.current]
 
   // Resource dependencies first
   resource_group         = var.resource_group

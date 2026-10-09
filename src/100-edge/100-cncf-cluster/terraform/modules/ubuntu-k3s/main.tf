@@ -84,20 +84,6 @@ locals {
   ], slice(local.script_file, 1, length(local.script_file))))
 }
 
-/*
- * Input Validation
- */
-
-// Validates rules that span multiple input variables.
-resource "terraform_data" "validate_inputs" {
-  lifecycle {
-    precondition {
-      condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
-      error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
-    }
-  }
-}
-
 resource "random_string" "cluster_server_token" {
   count = var.should_generate_cluster_server_token ? 1 : 0
 
@@ -106,6 +92,13 @@ resource "random_string" "cluster_server_token" {
   numeric = true
   upper   = true
   lower   = true
+
+  lifecycle {
+    precondition {
+      condition     = var.cluster_server_token == null
+      error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
+    }
+  }
 }
 
 resource "local_sensitive_file" "cluster_server_setup_script" {
