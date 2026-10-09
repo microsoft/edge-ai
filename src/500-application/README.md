@@ -81,6 +81,7 @@ The following applications are currently available in this directory:
 - **[515-wasm-expressions](./515-wasm-expressions/README.md)** - Extensible WASM map operator library closing dataflow expression gaps, starting with a deterministic UTC datetime operator
 - **[516-chat-with-your-factory](./516-chat-with-your-factory/README.md)** - Voice-enabled AI agent web application for industrial environments powered by Azure AI Foundry Agents or Copilot Studio
 - **[517-sensor-simulator](./517-sensor-simulator/README.md)** - Synthetic vibration, acoustic, and temperature MQTT publisher with versioned topics, CloudEvents attributes, and an anomaly toggle
+- **[518-mqtt-predict-adapter](./518-mqtt-predict-adapter/README.md)** - Bridges MQTT predict requests to HTTP predictive model endpoints such as Foundry Local, with versioned topics and service account token authentication
 
 ## Service Implementation
 
