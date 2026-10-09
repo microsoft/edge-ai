@@ -117,7 +117,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: 'stable'
+          # Pinned: on go1.27.2 the runner is killed while scanning blueprints/full-multi-node-cluster/tests.
+          go-version: '1.27.1'
           cache: false
 
       - name: Install govulncheck
