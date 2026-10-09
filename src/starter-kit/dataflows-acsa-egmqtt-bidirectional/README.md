@@ -53,7 +53,7 @@ The following resources will be created when using the assets available under th
   - The minimum recommended VM size is 8 GB of RAM, with 16 GB of RAM being preferred for optimal performance, for this sample we suggest using `Standard_D8s_v3` VM size.
   - Follow the blueprint documentation for deployment instructions
 
-  Alternatively, you can follow these tutorials: [Creating a cluster](../../100-edge/100-cncf-cluster/README.md), [installing AIO prerequisites](../../030-iot-ops-cloud-reqs/README.md), and [installing AIO](../../100-edge/110-iot-ops/README.md).
+  Alternatively, you can follow these tutorials: [Creating a cluster](../../100-edge/100-cncf-cluster/README.md) and [installing AIO](../../100-edge/110-iot-ops/README.md).
 - [kubectl](https://k8s-docs.netlify.app/en/docs/tasks/tools/install-kubectl/) command-line tool installed and configured to connect to your Kubernetes cluster
 - Access to Arc enabled Kubernetes cluster with a [proxy configured](https://learn.microsoft.com/cli/azure/connectedk8s?view=azure-cli-latest#az-connectedk8s-proxy)
 - An MQTT client such as `mosquitto_pub` for testing the connection
