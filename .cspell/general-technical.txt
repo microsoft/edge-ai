@@ -377,6 +377,7 @@ datediff
 datefmt
 davinci
 dbcc
+DCASE
 dcgm
 debuggability
 dedupe
@@ -486,6 +487,7 @@ Fairlearn
 Falco
 Farah
 fastrack
+featurize
 fflags
 fhir
 fido
@@ -494,6 +496,7 @@ fileno
 fileshare
 fileshares
 filesystem
+filterbank
 Finalizer
 firewall
 firewalls
@@ -556,6 +559,7 @@ greenfield
 grooming
 gruntwork
 hadoop
+Hann
 hardcoded
 harden
 hardened
@@ -760,6 +764,7 @@ lenovo
 letterboxed
 levelname
 libonnxruntime
+librosa
 libx
 lifecycle
 lifecycles
@@ -1317,6 +1322,7 @@ sitelogs
 sjflsiw
 sklearn
 skus
+Slaney
 slas
 sles
 sloc
@@ -1367,6 +1373,7 @@ stackoverflow
 statefulness
 stderr
 stdout
+STFT
 stig
 stimeout
 stonith
