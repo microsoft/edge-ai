@@ -10,6 +10,11 @@
 //! ffmpeg writes each segment to a staging directory outside the synced
 //! directory, on the same filesystem, and the finished segment is renamed into
 //! place. ACSA therefore never sees, or uploads, an incomplete file.
+//!
+//! While ffmpeg writes a segment, the recorder refreshes a lease file next to
+//! it. Cleanup removes an incomplete segment only when its lease has stopped
+//! being refreshed, because ffmpeg can buffer output and leave an active file
+//! unmodified for minutes.
 
 use crate::{acsa_writer::AcsaWriter, camera_id::camera_id_from_env};
 use chrono::{DateTime, Utc};
@@ -21,9 +26,16 @@ use std::{
     path::{Path, PathBuf},
     pin::Pin,
     process::Stdio,
+    sync::{Arc, Mutex},
     time::Duration,
 };
-use tokio::{fs, process::Command, time::interval};
+use tokio::{
+    fs,
+    io::{AsyncBufReadExt, BufReader},
+    process::Command,
+    task::JoinHandle,
+    time::interval,
+};
 use tracing::{debug, error, info, warn};
 
 const SEGMENT_PREFIX: &str = "segment_";
@@ -38,9 +50,12 @@ const RETRY_DELAY: Duration = Duration::from_secs(5);
 /// Video container extensions that continuous recording can produce, so
 /// retention applies after `OUTPUT_FORMAT` changes.
 const VIDEO_EXTENSIONS: [&str; 2] = ["mp4", "mkv"];
-/// An active recorder rewrites its partial file at least this often, so a
-/// partial file idle for longer belongs to a recorder that stopped. Covers the
-/// RTSP I/O timeout and the ffmpeg grace period.
+/// Suffix of the lease file a recorder refreshes while it writes a partial
+/// segment, independent of when ffmpeg flushes media to disk.
+const LEASE_EXTENSION: &str = "lease";
+/// How often an active recorder refreshes its lease.
+const LEASE_REFRESH: Duration = Duration::from_secs(10);
+/// A lease not refreshed for this long belongs to a recorder that stopped.
 const PARTIAL_IDLE_LIMIT: Duration = Duration::from_secs(120);
 /// Recordings shorter than this are treated as failed.
 const MIN_SEGMENT_DURATION: Duration = Duration::from_secs(1);
@@ -96,6 +111,8 @@ pub struct ContinuousRecorderConfig {
 
 pub struct ContinuousRecorder {
     config: ContinuousRecorderConfig,
+    /// Partial segment ffmpeg is writing now, which cleanup never removes.
+    active: Arc<Mutex<Option<PathBuf>>>,
 }
 
 fn required_env(name: &str) -> Result<String, String> {
@@ -150,7 +167,10 @@ pub fn redact_url_credentials(text: &str) -> String {
 
 impl ContinuousRecorder {
     pub fn new(config: ContinuousRecorderConfig) -> Self {
-        Self { config }
+        Self {
+            config,
+            active: Arc::new(Mutex::new(None)),
+        }
     }
 
     /// Builds the recorder from environment variables. `CAMERA_ID`,
@@ -216,10 +236,10 @@ impl ContinuousRecorder {
             self.config.staging_path.display()
         );
 
-        // Idle partial files belong to a recorder that stopped; files another
-        // recorder is still writing are recent and stay in place
+        // Partial files whose lease went stale belong to a recorder that
+        // stopped; a running recorder keeps its lease fresh
         let staging_camera_path = self.config.staging_path.join(&self.config.camera_id);
-        match remove_stale_partial_segments(&staging_camera_path, PARTIAL_IDLE_LIMIT).await {
+        match remove_stale_partial_segments(&staging_camera_path, PARTIAL_IDLE_LIMIT, None).await {
             Ok(0) => {}
             Ok(count) => warn!("Removed {count} abandoned incomplete segments"),
             Err(e) => warn!("Failed to remove abandoned incomplete segments: {e}"),
@@ -251,6 +271,10 @@ impl ContinuousRecorder {
         if let Some(parent) = partial.parent() {
             fs::create_dir_all(parent).await?;
         }
+
+        // Hold the lease and mark the segment active before ffmpeg creates it
+        let _lease = Lease::acquire(&partial, LEASE_REFRESH).await?;
+        let _active = ActiveSegment::mark(&self.active, &partial);
 
         let window = match self.capture(&partial).await {
             Ok(window) => window,
@@ -299,61 +323,30 @@ impl ContinuousRecorder {
 
     /// Records into `partial` and returns the time window its footage covers.
     async fn capture(&self, partial: &Path) -> Result<CaptureWindow, Box<dyn Error>> {
-        self.run_ffmpeg(partial).await?;
+        let input = [
+            "-rtsp_transport".to_string(),
+            "tcp".to_string(),
+            // RTSP socket I/O timeout in microseconds
+            "-timeout".to_string(),
+            "10000000".to_string(),
+            "-i".to_string(),
+            self.config.rtsp_url.clone(),
+        ];
+        let footage_start = run_ffmpeg_capture(
+            &input,
+            self.config.segment_duration,
+            self.config.output_format,
+            partial,
+        )
+        .await?;
         let finished_at = Utc::now();
         let recorded = probe_duration(partial).await?;
         Ok(capture_window(
+            footage_start,
             finished_at,
             recorded,
             self.config.segment_duration,
         )?)
-    }
-
-    async fn run_ffmpeg(&self, output: &Path) -> Result<(), Box<dyn Error>> {
-        let duration = self.config.segment_duration.as_secs().to_string();
-        let output_str = output.to_str().ok_or("Segment path is not valid UTF-8")?;
-
-        let mut command = Command::new("ffmpeg");
-        command
-            .args(["-hide_banner", "-loglevel", "error"])
-            .args(["-rtsp_transport", "tcp"])
-            // RTSP socket I/O timeout in microseconds
-            .args(["-timeout", "10000000"])
-            .args(["-i", &self.config.rtsp_url])
-            .args(["-t", &duration])
-            // Downscale to 360p and favor encoding speed to bound CPU and memory use
-            .args(["-vf", "scale=-2:360"])
-            .args(["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28"])
-            .args(["-g", "30", "-sc_threshold", "0"])
-            .args(["-c:a", "aac", "-b:a", "64k"])
-            .args(["-f", self.config.output_format.muxer()]);
-        if self.config.output_format == OutputFormat::Mp4 {
-            command.args(["-movflags", "+faststart"]);
-        }
-        command
-            .args(["-y", output_str])
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
-            .stderr(Stdio::piped())
-            .kill_on_drop(true);
-
-        let child = command.spawn()?;
-        let limit = self.config.segment_duration + FFMPEG_GRACE;
-        let result = tokio::time::timeout(limit, child.wait_with_output())
-            .await
-            .map_err(|_| {
-                format!(
-                    "ffmpeg did not finish within {}s and was stopped",
-                    limit.as_secs()
-                )
-            })??;
-
-        if !result.status.success() {
-            let stderr = redact_url_credentials(&String::from_utf8_lossy(&result.stderr));
-            let last_line = stderr.lines().next_back().unwrap_or("no error output");
-            return Err(format!("ffmpeg exited with {}: {}", result.status, last_line).into());
-        }
-        Ok(())
     }
 
     /// Periodically removes abandoned partial files and, when retention is
@@ -363,6 +356,7 @@ impl ContinuousRecorder {
         let staging_camera_path = self.config.staging_path.join(&self.config.camera_id);
         let cleanup_interval = self.config.cleanup_interval;
         let camera_id = self.config.camera_id.clone();
+        let active = Arc::clone(&self.active);
         let retention =
             retention.map(|r| chrono::Duration::from_std(r).unwrap_or(chrono::Duration::MAX));
 
@@ -370,8 +364,13 @@ impl ContinuousRecorder {
             let mut timer = interval(cleanup_interval);
             loop {
                 timer.tick().await;
-                if let Err(e) =
-                    remove_stale_partial_segments(&staging_camera_path, PARTIAL_IDLE_LIMIT).await
+                let current = active.lock().ok().and_then(|guard| guard.clone());
+                if let Err(e) = remove_stale_partial_segments(
+                    &staging_camera_path,
+                    PARTIAL_IDLE_LIMIT,
+                    current.as_deref(),
+                )
+                .await
                 {
                     warn!("Partial segment cleanup failed for camera {camera_id}: {e}");
                 }
@@ -420,9 +419,12 @@ pub struct CaptureWindow {
     pub short: bool,
 }
 
-/// Derives the footage window from when ffmpeg finished and the measured
-/// recording length, so connection time before the first frame isn't counted.
+/// Derives the footage window from the measured recording length, starting at
+/// `footage_start` estimated from ffmpeg progress. Connection time before the
+/// first frame, a stalled stream, and file finalization are therefore
+/// excluded. Without an estimate, the window ends when ffmpeg finished.
 pub fn capture_window(
+    footage_start: Option<DateTime<Utc>>,
     finished_at: DateTime<Utc>,
     recorded: Duration,
     requested: Duration,
@@ -435,11 +437,191 @@ pub fn capture_window(
         ));
     }
     let length = chrono::Duration::from_std(recorded).map_err(|e| e.to_string())?;
+    let start = footage_start.unwrap_or(finished_at - length);
     Ok(CaptureWindow {
-        start: finished_at - length,
-        end: finished_at,
+        start,
+        end: (start + length).min(finished_at),
         short: recorded + SHORT_SEGMENT_TOLERANCE < requested,
     })
+}
+
+/// Estimates when the recorded footage started from ffmpeg `-progress` output.
+///
+/// Each report of encoded output time `t` seen at wall-clock time `w` implies
+/// the footage started no later than `w - t`, because a frame can't be encoded
+/// before it arrives. The smallest such value is kept. While a live stream
+/// flows it stays close to the first frame's arrival; reports during a stall,
+/// or the encoder flush when ffmpeg exits, yield later values and are ignored.
+#[derive(Debug, Default)]
+pub struct ProgressTracker {
+    footage_start: Option<DateTime<Utc>>,
+}
+
+impl ProgressTracker {
+    /// Records one `-progress` line seen at `now`.
+    pub fn observe(&mut self, line: &str, now: DateTime<Utc>) {
+        let Some(value) = line.trim().strip_prefix("out_time_us=") else {
+            return;
+        };
+        let Ok(micros) = value.parse::<i64>() else {
+            return;
+        };
+        if micros <= 0 {
+            return;
+        }
+        let candidate = now - chrono::Duration::microseconds(micros);
+        if self.footage_start.is_none_or(|start| candidate < start) {
+            self.footage_start = Some(candidate);
+        }
+    }
+
+    pub fn footage_start(&self) -> Option<DateTime<Utc>> {
+        self.footage_start
+    }
+}
+
+/// Runs ffmpeg with `input` arguments, writes at most `duration` of
+/// re-encoded media to `output`, and returns the estimated footage start.
+pub async fn run_ffmpeg_capture(
+    input: &[String],
+    duration: Duration,
+    format: OutputFormat,
+    output: &Path,
+) -> Result<Option<DateTime<Utc>>, Box<dyn Error>> {
+    let duration_arg = duration.as_secs().to_string();
+    let output_str = output.to_str().ok_or("Segment path is not valid UTF-8")?;
+
+    let mut command = Command::new("ffmpeg");
+    command
+        .args(["-hide_banner", "-loglevel", "error", "-nostats"])
+        .args(["-progress", "pipe:1", "-stats_period", "0.5"])
+        .args(input)
+        .args(["-t", &duration_arg])
+        // Downscale to 360p and favor encoding speed to bound CPU and memory use.
+        // Zero-latency tuning keeps encoder output, and so progress reports, in
+        // step with frame arrival for the footage start estimate.
+        .args(["-vf", "scale=-2:360"])
+        .args(["-c:v", "libx264", "-preset", "ultrafast"])
+        .args(["-tune", "zerolatency", "-crf", "28"])
+        .args(["-g", "30", "-sc_threshold", "0"])
+        .args(["-c:a", "aac", "-b:a", "64k"])
+        .args(["-f", format.muxer()]);
+    if format == OutputFormat::Mp4 {
+        command.args(["-movflags", "+faststart"]);
+    }
+    command
+        .args(["-y", output_str])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
+
+    let mut child = command.spawn()?;
+    let stdout = child
+        .stdout
+        .take()
+        .ok_or("ffmpeg progress output is unavailable")?;
+    let progress = tokio::spawn(async move {
+        let mut tracker = ProgressTracker::default();
+        let mut lines = BufReader::new(stdout).lines();
+        while let Ok(Some(line)) = lines.next_line().await {
+            tracker.observe(&line, Utc::now());
+        }
+        tracker.footage_start()
+    });
+
+    let limit = duration + FFMPEG_GRACE;
+    let result = match tokio::time::timeout(limit, child.wait_with_output()).await {
+        Ok(result) => result?,
+        Err(_) => {
+            progress.abort();
+            return Err(format!(
+                "ffmpeg did not finish within {}s and was stopped",
+                limit.as_secs()
+            )
+            .into());
+        }
+    };
+    let footage_start = progress.await.unwrap_or(None);
+
+    if !result.status.success() {
+        let stderr = redact_url_credentials(&String::from_utf8_lossy(&result.stderr));
+        let last_line = stderr.lines().next_back().unwrap_or("no error output");
+        return Err(format!("ffmpeg exited with {}: {}", result.status, last_line).into());
+    }
+    Ok(footage_start)
+}
+
+/// Lease file refreshed while ffmpeg writes a partial segment. Dropping the
+/// lease stops the refresh and removes the file.
+pub struct Lease {
+    path: PathBuf,
+    refresher: JoinHandle<()>,
+}
+
+impl Lease {
+    /// Creates the lease for `partial` and refreshes it every `refresh`.
+    pub async fn acquire(partial: &Path, refresh: Duration) -> std::io::Result<Self> {
+        let path = lease_path(partial);
+        fs::write(&path, lease_contents()).await?;
+        let refreshed = path.clone();
+        let refresher = tokio::spawn(async move {
+            let mut timer = interval(refresh);
+            timer.tick().await;
+            loop {
+                timer.tick().await;
+                if let Err(e) = fs::write(&refreshed, lease_contents()).await {
+                    warn!("Failed to refresh lease {}: {e}", refreshed.display());
+                }
+            }
+        });
+        Ok(Self { path, refresher })
+    }
+}
+
+impl Drop for Lease {
+    fn drop(&mut self) {
+        self.refresher.abort();
+        let _ = std::fs::remove_file(&self.path);
+    }
+}
+
+fn lease_contents() -> String {
+    format!(
+        "pid={} refreshed={}\n",
+        std::process::id(),
+        Utc::now().to_rfc3339()
+    )
+}
+
+/// Returns the lease file path for a partial segment.
+pub fn lease_path(partial: &Path) -> PathBuf {
+    let mut name = partial.as_os_str().to_owned();
+    name.push(".");
+    name.push(LEASE_EXTENSION);
+    PathBuf::from(name)
+}
+
+/// Marks a partial segment as the one being recorded until dropped.
+struct ActiveSegment<'a> {
+    slot: &'a Mutex<Option<PathBuf>>,
+}
+
+impl<'a> ActiveSegment<'a> {
+    fn mark(slot: &'a Mutex<Option<PathBuf>>, partial: &Path) -> Self {
+        if let Ok(mut current) = slot.lock() {
+            *current = Some(partial.to_path_buf());
+        }
+        Self { slot }
+    }
+}
+
+impl Drop for ActiveSegment<'_> {
+    fn drop(&mut self) {
+        if let Ok(mut current) = self.slot.lock() {
+            *current = None;
+        }
+    }
 }
 
 /// Parses the `format=duration` value printed by `ffprobe`.
@@ -559,15 +741,60 @@ pub async fn cleanup_segments(
     cleanup_tree(camera_path, cutoff, &matches).await
 }
 
-/// Deletes incomplete segments under `camera_path` that haven't been modified
-/// for `idle_limit`. A recorder writing a partial file keeps it recent.
+/// Deletes incomplete segments in `staging_camera_path` whose recorder
+/// stopped, along with their leases, and returns how many segments it removed.
+///
+/// A partial segment is kept while its lease was refreshed within
+/// `idle_limit`, regardless of when ffmpeg last wrote media to it. A partial
+/// segment without a lease is judged by its own modification time. `active`
+/// is never removed. Leases whose segment is gone are removed once stale.
 pub async fn remove_stale_partial_segments(
-    camera_path: &Path,
+    staging_camera_path: &Path,
     idle_limit: Duration,
+    active: Option<&Path>,
 ) -> Result<usize, std::io::Error> {
-    let idle_limit = chrono::Duration::from_std(idle_limit).unwrap_or(chrono::Duration::MAX);
-    let matches = |path: &Path| has_segment_extension(path, &[PARTIAL_EXTENSION]);
-    cleanup_tree(camera_path, Utc::now() - idle_limit, &matches).await
+    if !fs::try_exists(staging_camera_path).await? {
+        return Ok(0);
+    }
+    let cutoff =
+        Utc::now() - chrono::Duration::from_std(idle_limit).unwrap_or(chrono::Duration::MAX);
+
+    let mut removed = 0;
+    let mut entries = fs::read_dir(staging_camera_path).await?;
+    while let Some(entry) = entries.next_entry().await? {
+        let path = entry.path();
+        if !entry.file_type().await?.is_file() {
+            continue;
+        }
+        if has_segment_extension(&path, &[PARTIAL_EXTENSION]) {
+            if active == Some(path.as_path()) {
+                continue;
+            }
+            let lease = lease_path(&path);
+            let last_alive = match modified_at(&lease).await {
+                Ok(time) => time,
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => modified_at(&path).await?,
+                Err(e) => return Err(e),
+            };
+            if last_alive < cutoff {
+                match fs::remove_file(&path).await {
+                    Ok(()) => removed += 1,
+                    Err(e) => warn!("Failed to delete {}: {}", path.display(), e),
+                }
+                let _ = fs::remove_file(&lease).await;
+            }
+        } else if has_segment_extension(&path, &[LEASE_EXTENSION]) {
+            let partial = path.with_extension("");
+            if !fs::try_exists(&partial).await? && modified_at(&path).await? < cutoff {
+                let _ = fs::remove_file(&path).await;
+            }
+        }
+    }
+    Ok(removed)
+}
+
+async fn modified_at(path: &Path) -> Result<DateTime<Utc>, std::io::Error> {
+    Ok(fs::metadata(path).await?.modified()?.into())
 }
 
 async fn cleanup_tree(
@@ -726,41 +953,299 @@ mod tests {
         assert!(new_video.exists());
     }
 
-    #[tokio::test]
-    async fn startup_keeps_active_partial_and_removes_abandoned_one() {
-        let dir = tempfile::tempdir().unwrap();
-        let hour = dir.path().join("camera-01/2026/01/30/19");
-        std::fs::create_dir_all(&hour).unwrap();
-        let complete = hour.join("segment_a_camera-01.mp4");
-        let abandoned = partial_path(&hour.join("segment_b_camera-01.mp4"));
-        let active = partial_path(&hour.join("segment_c_camera-01.mp4"));
-        for file in [&complete, &abandoned, &active] {
-            std::fs::write(file, b"x").unwrap();
-        }
-        let idle_since = FileTime::from_unix_time(
-            Utc::now().timestamp() - PARTIAL_IDLE_LIMIT.as_secs() as i64 - 60,
-            0,
-        );
-        set_file_mtime(&abandoned, idle_since).unwrap();
+    fn old_time(seconds_ago: u64) -> FileTime {
+        FileTime::from_unix_time(Utc::now().timestamp() - seconds_ago as i64, 0)
+    }
 
-        // Another recorder keeps writing its partial file while this one starts
-        let mut writer = std::fs::OpenOptions::new()
-            .append(true)
-            .open(&active)
+    #[tokio::test]
+    async fn stale_cleanup_keeps_partials_with_fresh_leases_even_when_media_is_idle() {
+        let dir = tempfile::tempdir().unwrap();
+        let staging = dir.path().join("camera-01");
+        std::fs::create_dir_all(&staging).unwrap();
+        let idle_for = PARTIAL_IDLE_LIMIT.as_secs() + 60;
+
+        // ffmpeg buffers low-bitrate MP4 output, so an active file can be unchanged for minutes
+        let buffered = staging.join("segment_a_camera-01.mp4.partial");
+        std::fs::write(&buffered, b"ftyp").unwrap();
+        set_file_mtime(&buffered, old_time(idle_for)).unwrap();
+        std::fs::write(lease_path(&buffered), b"lease").unwrap();
+
+        // A stopped recorder's lease went stale along with its media
+        let abandoned = staging.join("segment_b_camera-01.mp4.partial");
+        std::fs::write(&abandoned, b"x").unwrap();
+        std::fs::write(lease_path(&abandoned), b"lease").unwrap();
+        set_file_mtime(&abandoned, old_time(idle_for)).unwrap();
+        set_file_mtime(lease_path(&abandoned), old_time(idle_for)).unwrap();
+
+        // A partial written before leases existed is judged by its own age
+        let legacy_idle = staging.join("segment_c_camera-01.mkv.partial");
+        let legacy_recent = staging.join("segment_d_camera-01.mkv.partial");
+        std::fs::write(&legacy_idle, b"x").unwrap();
+        std::fs::write(&legacy_recent, b"x").unwrap();
+        set_file_mtime(&legacy_idle, old_time(idle_for)).unwrap();
+
+        // A stale lease whose segment already finished
+        let orphan_lease = lease_path(&staging.join("segment_e_camera-01.mp4.partial"));
+        std::fs::write(&orphan_lease, b"lease").unwrap();
+        set_file_mtime(&orphan_lease, old_time(idle_for)).unwrap();
+
+        let removed = remove_stale_partial_segments(&staging, PARTIAL_IDLE_LIMIT, None)
+            .await
             .unwrap();
-        std::io::Write::write_all(&mut writer, b"more frames").unwrap();
+
+        assert_eq!(removed, 2);
+        assert!(buffered.exists(), "a refreshed lease protects idle media");
+        assert!(lease_path(&buffered).exists());
+        assert!(!abandoned.exists());
+        assert!(!lease_path(&abandoned).exists());
+        assert!(!legacy_idle.exists());
+        assert!(legacy_recent.exists());
+        assert!(!orphan_lease.exists());
+    }
+
+    #[tokio::test]
+    async fn stale_cleanup_never_removes_the_recorders_own_active_segment() {
+        let dir = tempfile::tempdir().unwrap();
+        let staging = dir.path().join("camera-01");
+        std::fs::create_dir_all(&staging).unwrap();
+        let active = staging.join("segment_a_camera-01.mp4.partial");
+        std::fs::write(&active, b"ftyp").unwrap();
+        std::fs::write(lease_path(&active), b"lease").unwrap();
+        let idle_for = PARTIAL_IDLE_LIMIT.as_secs() + 60;
+        set_file_mtime(&active, old_time(idle_for)).unwrap();
+        set_file_mtime(lease_path(&active), old_time(idle_for)).unwrap();
 
         let removed =
-            remove_stale_partial_segments(&dir.path().join("camera-01"), PARTIAL_IDLE_LIMIT)
+            remove_stale_partial_segments(&staging, PARTIAL_IDLE_LIMIT, Some(active.as_path()))
                 .await
                 .unwrap();
 
-        assert_eq!(removed, 1);
-        assert!(!abandoned.exists());
-        assert!(active.exists(), "an active recorder's segment must survive");
-        assert!(complete.exists());
-        std::io::Write::write_all(&mut writer, b"final frames").unwrap();
-        std::fs::rename(&active, hour.join("segment_c_camera-01.mp4")).unwrap();
+        assert_eq!(removed, 0);
+        assert!(active.exists());
+    }
+
+    #[tokio::test]
+    async fn lease_is_refreshed_while_held_and_removed_when_dropped() {
+        let dir = tempfile::tempdir().unwrap();
+        let partial = dir.path().join("segment_a_camera-01.mp4.partial");
+        let lease = Lease::acquire(&partial, Duration::from_millis(50))
+            .await
+            .unwrap();
+        let lease_file = lease_path(&partial);
+        set_file_mtime(&lease_file, old_time(600)).unwrap();
+
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        let refreshed: DateTime<Utc> = std::fs::metadata(&lease_file)
+            .unwrap()
+            .modified()
+            .unwrap()
+            .into();
+        assert!(Utc::now() - refreshed < chrono::Duration::seconds(5));
+
+        drop(lease);
+        assert!(!lease_file.exists());
+    }
+
+    #[test]
+    fn active_segment_marker_clears_on_drop() {
+        let slot = Mutex::new(None);
+        {
+            let _active = ActiveSegment::mark(&slot, Path::new("/s/segment_a.mp4.partial"));
+            assert_eq!(
+                slot.lock().unwrap().as_deref(),
+                Some(Path::new("/s/segment_a.mp4.partial"))
+            );
+        }
+        assert!(slot.lock().unwrap().is_none());
+    }
+
+    fn ffmpeg_available() -> bool {
+        std::process::Command::new("ffmpeg")
+            .arg("-version")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|status| status.success())
+    }
+
+    #[tokio::test]
+    async fn low_bitrate_recording_survives_cleanup_beyond_the_idle_limit() {
+        if !ffmpeg_available() {
+            eprintln!("skipping: ffmpeg isn't installed");
+            return;
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let staging = dir.path().join("camera-01");
+        std::fs::create_dir_all(&staging).unwrap();
+        let partial = staging.join("segment_a_camera-01.mp4.partial");
+        let idle_limit = Duration::from_secs(1);
+
+        let lease = Lease::acquire(&partial, Duration::from_millis(200))
+            .await
+            .unwrap();
+        let input: Vec<String> = [
+            "-re",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=black:size=320x240:rate=5",
+        ]
+        .iter()
+        .map(|arg| arg.to_string())
+        .collect();
+        let output = partial.clone();
+        let capture = tokio::spawn(async move {
+            run_ffmpeg_capture(&input, Duration::from_secs(4), OutputFormat::Mp4, &output)
+                .await
+                .map_err(|e| e.to_string())
+        });
+
+        // MP4 output is buffered, so the partial file stops changing while
+        // ffmpeg keeps recording; cleanup runs past the idle limit throughout
+        for _ in 0..6 {
+            tokio::time::sleep(Duration::from_millis(500)).await;
+            remove_stale_partial_segments(&staging, idle_limit, None)
+                .await
+                .unwrap();
+        }
+        let footage_start = capture
+            .await
+            .unwrap()
+            .expect("ffmpeg should finish the segment");
+        drop(lease);
+
+        assert!(partial.exists(), "the active segment must not be deleted");
+        assert!(footage_start.is_some());
+        let recorded = probe_duration(&partial).await.unwrap();
+        assert!(
+            (recorded.as_secs_f64() - 4.0).abs() < 0.5,
+            "measured {recorded:?}"
+        );
+    }
+
+    #[test]
+    fn progress_estimate_ignores_stall_reports_and_the_final_flush() {
+        let mut tracker = ProgressTracker::default();
+        for (line, time) in [
+            ("frame=0", "2026-01-30T19:00:00Z"),
+            ("out_time_us=N/A", "2026-01-30T19:00:00.500Z"),
+            ("out_time_us=0", "2026-01-30T19:00:01Z"),
+            ("out_time_us=1000000", "2026-01-30T19:00:02.300Z"),
+            ("out_time_us=14200000", "2026-01-30T19:00:15.200Z"),
+            // The stream stalled: ffmpeg repeats the same output time until its timeout
+            ("out_time_us=14200000", "2026-01-30T19:00:20Z"),
+            // Buffered frames are flushed when ffmpeg exits
+            ("out_time_us=14800000", "2026-01-30T19:00:25.817Z"),
+            ("progress=end", "2026-01-30T19:00:25.817Z"),
+        ] {
+            tracker.observe(line, at(time));
+        }
+
+        assert_eq!(tracker.footage_start(), Some(at("2026-01-30T19:00:01Z")));
+    }
+
+    #[test]
+    fn stalled_stream_window_excludes_the_timeout_after_the_last_frame() {
+        // The publisher paused at 19:00:15.2; ffmpeg exited successfully 10.6s
+        // later with 14.2s of media
+        let window = capture_window(
+            Some(at("2026-01-30T19:00:01Z")),
+            at("2026-01-30T19:00:25.817Z"),
+            Duration::from_millis(14_200),
+            Duration::from_secs(300),
+        )
+        .unwrap();
+
+        assert_eq!(window.start, at("2026-01-30T19:00:01Z"));
+        assert_eq!(window.end, at("2026-01-30T19:00:15.200Z"));
+        assert!(window.short);
+    }
+
+    #[test]
+    fn window_never_ends_after_ffmpeg_finished() {
+        let window = capture_window(
+            Some(at("2026-01-30T19:00:01Z")),
+            at("2026-01-30T19:05:00.200Z"),
+            Duration::from_secs(300),
+            Duration::from_secs(300),
+        )
+        .unwrap();
+        assert_eq!(window.end, at("2026-01-30T19:05:00.200Z"));
+    }
+
+    #[tokio::test]
+    async fn stalled_input_that_exits_successfully_reports_only_its_footage() {
+        if !ffmpeg_available() {
+            eprintln!("skipping: ffmpeg isn't installed");
+            return;
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let fifo = dir.path().join("stream.ts");
+        assert!(std::process::Command::new("mkfifo")
+            .arg(&fifo)
+            .status()
+            .unwrap()
+            .success());
+        let partial = dir.path().join("segment_a_camera-01.mkv.partial");
+
+        // Feed 3s of low-latency video in real time, then stall for 4s before
+        // closing the input
+        let writer_fifo = fifo.clone();
+        let feeder = std::thread::spawn(move || {
+            let mut source = std::process::Command::new("ffmpeg")
+                .args(["-hide_banner", "-loglevel", "error", "-re", "-f", "lavfi"])
+                .args(["-i", "testsrc=size=160x120:rate=25:duration=3"])
+                .args(["-c:v", "libx264", "-preset", "ultrafast"])
+                .args(["-tune", "zerolatency", "-f", "mpegts", "pipe:1"])
+                .stdout(Stdio::piped())
+                .spawn()
+                .unwrap();
+            let mut sink = std::fs::OpenOptions::new()
+                .write(true)
+                .open(&writer_fifo)
+                .unwrap();
+            std::io::copy(source.stdout.as_mut().unwrap(), &mut sink).unwrap();
+            assert!(source.wait().unwrap().success());
+            let last_data_at = Utc::now();
+            std::thread::sleep(Duration::from_secs(4));
+            drop(sink);
+            last_data_at
+        });
+
+        // Short probing so encoding starts while data flows, as with a live camera
+        let input = vec![
+            "-probesize".to_string(),
+            "32768".to_string(),
+            "-analyzeduration".to_string(),
+            "500000".to_string(),
+            "-f".to_string(),
+            "mpegts".to_string(),
+            "-i".to_string(),
+            fifo.to_string_lossy().into_owned(),
+        ];
+        let footage_start =
+            run_ffmpeg_capture(&input, Duration::from_secs(30), OutputFormat::Mkv, &partial)
+                .await
+                .unwrap();
+        let finished_at = Utc::now();
+        let last_data_at = feeder.join().unwrap();
+        let recorded = probe_duration(&partial).await.unwrap();
+        let window = capture_window(
+            footage_start,
+            finished_at,
+            recorded,
+            Duration::from_secs(30),
+        )
+        .unwrap();
+
+        assert!(finished_at - last_data_at >= chrono::Duration::milliseconds(3_500));
+        assert!(
+            window.end <= last_data_at + chrono::Duration::milliseconds(1_000),
+            "window ends {} but the last frame arrived by {}",
+            window.end,
+            last_data_at
+        );
+        assert!(window.short);
     }
 
     #[tokio::test]
@@ -811,6 +1296,7 @@ mod tests {
         // Recording was requested at 19:00:00, connecting took 8s, and 300s were captured
         let finished_at = at("2026-01-30T19:05:08Z");
         let window = capture_window(
+            None,
             finished_at,
             Duration::from_secs(300),
             Duration::from_secs(300),
@@ -827,6 +1313,7 @@ mod tests {
         // ffmpeg exited successfully after the stream ended 42.5s into a 300s segment
         let finished_at = at("2026-01-30T19:00:45Z");
         let window = capture_window(
+            None,
             finished_at,
             Duration::from_millis(42_500),
             Duration::from_secs(300),
@@ -844,13 +1331,14 @@ mod tests {
     fn empty_or_near_empty_recording_is_rejected() {
         let finished_at = at("2026-01-30T19:00:00Z");
         for recorded in [Duration::ZERO, Duration::from_millis(400)] {
-            assert!(capture_window(finished_at, recorded, Duration::from_secs(300)).is_err());
+            assert!(capture_window(None, finished_at, recorded, Duration::from_secs(300)).is_err());
         }
     }
 
     #[test]
     fn recording_within_tolerance_is_not_short() {
         let window = capture_window(
+            None,
             at("2026-01-30T19:05:00Z"),
             Duration::from_millis(299_400),
             Duration::from_secs(300),
