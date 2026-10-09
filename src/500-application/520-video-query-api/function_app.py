@@ -4,6 +4,10 @@ Video Query API - Azure Function for time-based video queries.
 Provides REST endpoint for querying and retrieving video segments from
 continuous camera recordings stored in Azure Blob Storage.
 
+Recordings follow the 503 media capture service layout,
+`{camera}/{YYYY}/{MM}/{DD}/{HH}/{file}`, with an optional JSON sidecar that
+holds the footage interval (`segment_start`, `segment_end`).
+
 Supports filtering by event_type:
 - continuous: Regular continuous recording segments
 - triggered: MQTT-triggered capture segments (alerts, analytics events)
@@ -14,11 +18,13 @@ import json
 import logging
 import os
 import re
+import shutil
 import ssl
 import subprocess
 import tempfile
 import threading
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -26,6 +32,7 @@ from typing import Literal
 
 import azure.functions as func
 import paho.mqtt.client as mqtt
+from azure.core.exceptions import AzureError, ResourceNotFoundError
 from azure.identity import ManagedIdentityCredential
 from azure.storage.blob import (
     BlobSasPermissions,
@@ -52,13 +59,94 @@ EVENT_GRID_MQTT_SCOPE = "https://eventgrid.azure.net/.default"
 MQTT_TIMEOUT_SECONDS = 10
 
 # Stitching runs inside the HTTP request, which the Azure load balancer ends
-# after 230 seconds, so the stitched window is capped.
+# after 230 seconds, so stitch jobs are bounded before any data is staged.
 DEFAULT_STITCH_MAX_SECONDS = 3600
+DEFAULT_STITCH_MAX_SEGMENTS = 120
+DEFAULT_STITCH_MAX_BYTES = 2 * 1024**3
+DEFAULT_STITCH_DEADLINE_SECONDS = 200
+DEFAULT_STITCH_MAX_CONCURRENT = 1
+STITCH_DISK_HEADROOM_BYTES = 64 * 1024**2
+STITCH_RETRY_AFTER_SECONDS = 30
 METADATA_FETCH_WORKERS = 8
+METADATA_MAX_BYTES = 64 * 1024
 
-# Allowed camera_id format: alphanumeric, underscore, hyphen. Prevents injection
-# into Azure Blob Storage index tag filter expressions (single-quote breakout).
+# A recording can start before the query window and still overlap it, so
+# discovery also lists earlier hours. The default covers the longest 503
+# segment (1 hour) plus its capture grace period.
+DEFAULT_SEGMENT_LOOKBACK_SECONDS = 3900
+
+VIDEO_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov")
+
+# Allowed camera_id format: alphanumeric, underscore, hyphen. Keeps camera IDs
+# from escaping their blob prefix or MQTT topic level.
 CAMERA_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-]+$")
+
+
+class DiscoveryError(Exception):
+    """Listing or metadata retrieval failed, so results would be incomplete."""
+
+
+class StorageConfigError(Exception):
+    """Storage settings are missing or can't sign SAS URLs."""
+
+
+class StitchDeadlineError(Exception):
+    """A stitch job ran past its request deadline."""
+
+
+def _positive_int_env(name: str, default: int) -> int:
+    """Return a positive integer setting, or `default` when unset or invalid."""
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+# Per-instance limit; each instance stages stitch jobs on its own disk.
+_stitch_slots = threading.BoundedSemaphore(_positive_int_env("STITCH_MAX_CONCURRENT", DEFAULT_STITCH_MAX_CONCURRENT))
+
+
+def as_utc(value: object) -> datetime | None:
+    """Normalize a timestamp to an aware UTC datetime.
+
+    Strings are parsed as ISO 8601. Values without an offset are treated as
+    UTC. Anything else, including unparseable strings, returns None.
+    """
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value)
+        except ValueError:
+            return None
+    if not isinstance(value, datetime):
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
+
+def _storage_client() -> tuple[BlobServiceClient, str | None]:
+    """Return a blob service client and, for connection strings, the account key.
+
+    STORAGE_CONNECTION_STRING takes precedence and must carry an account key
+    (AccountKey, or UseDevelopmentStorage=true for Azurite), which signs the
+    SAS URLs; SAS-token connection strings are rejected. Otherwise
+    STORAGE_ACCOUNT_NAME selects the account, accessed with the managed
+    identity and user delegation SAS.
+    """
+    connection_string = os.getenv("STORAGE_CONNECTION_STRING")
+    if connection_string:
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        account_key = getattr(blob_service_client.credential, "account_key", None)
+        if not account_key:
+            raise StorageConfigError("STORAGE_CONNECTION_STRING must include an account key to sign SAS URLs")
+        return blob_service_client, account_key
+
+    storage_account_name = os.getenv("STORAGE_ACCOUNT_NAME")
+    if not storage_account_name:
+        raise StorageConfigError("Set STORAGE_ACCOUNT_NAME or STORAGE_CONNECTION_STRING")
+    account_url = f"https://{storage_account_name}.blob.core.windows.net"
+    return BlobServiceClient(account_url=account_url, credential=_managed_identity_credential()), None
 
 
 def _allowed_trigger_cameras() -> set[str]:
@@ -89,14 +177,18 @@ def _publish_mqtt_trigger(hostname: str, topic: str, payload: str) -> None:
     """Publish a QoS 1 message to an Event Grid namespace over MQTT v5.
 
     Authenticates with a Microsoft Entra token through the MQTT v5 enhanced
-    authentication fields (OAUTH2-JWT). Raises when the connection is refused
-    or the broker doesn't acknowledge the publish within the timeout.
+    authentication fields (OAUTH2-JWT). Each call connects with a unique
+    client ID, so concurrent requests and scaled-out instances don't replace
+    each other's sessions. Raises when the connection is refused, the broker
+    doesn't acknowledge the publish within the timeout, or the PUBACK carries
+    a failure reason code such as Not authorized.
     """
     token = _managed_identity_credential().get_token(EVENT_GRID_MQTT_SCOPE).token
+    client_id = f"{os.environ.get('MQTT_CLIENT_ID', 'video-query-trigger')}-{uuid.uuid4().hex[:12]}"
 
     client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-        client_id=os.environ.get("MQTT_CLIENT_ID", "video-query-trigger"),
+        client_id=client_id,
         protocol=mqtt.MQTTv5,
     )
     client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
@@ -107,13 +199,23 @@ def _publish_mqtt_trigger(hostname: str, topic: str, payload: str) -> None:
 
     connected = threading.Event()
     connect_failure: list[str] = []
+    # PUBACK reason codes keyed by message ID. The callback can run before
+    # publish() returns, so acknowledgments are recorded for any ID.
+    acknowledgments: dict[int, object] = {}
+    acknowledged = threading.Condition()
 
     def on_connect(_client, _userdata, _flags, reason_code, _properties):
         if reason_code.is_failure:
             connect_failure.append(str(reason_code))
         connected.set()
 
+    def on_publish(_client, _userdata, mid, reason_code, _properties):
+        with acknowledged:
+            acknowledgments[mid] = reason_code
+            acknowledged.notify_all()
+
     client.on_connect = on_connect
+    client.on_publish = on_publish
     client.connect(hostname, port=8883, properties=connect_properties)
     client.loop_start()
     try:
@@ -123,9 +225,14 @@ def _publish_mqtt_trigger(hostname: str, topic: str, payload: str) -> None:
             raise ConnectionError(f"MQTT connection refused: {connect_failure[0]}")
 
         result = client.publish(topic, payload, qos=1)
-        result.wait_for_publish(timeout=MQTT_TIMEOUT_SECONDS)
-        if not result.is_published():
-            raise TimeoutError("MQTT publish wasn't acknowledged")
+        if result.rc != mqtt.MQTT_ERR_SUCCESS:
+            raise ConnectionError(f"MQTT publish failed: {mqtt.error_string(result.rc)}")
+        with acknowledged:
+            if not acknowledged.wait_for(lambda: result.mid in acknowledgments, timeout=MQTT_TIMEOUT_SECONDS):
+                raise TimeoutError("MQTT publish wasn't acknowledged")
+            reason_code = acknowledgments[result.mid]
+        if reason_code.is_failure:
+            raise PermissionError(f"MQTT publish rejected: {reason_code}")
     finally:
         client.disconnect()
         client.loop_stop()
@@ -144,18 +251,10 @@ def readiness_check(req: func.HttpRequest) -> func.HttpResponse:
     Requires a function key. The response reports only the readiness state;
     failure details are logged server-side and never returned to the caller.
     """
-    storage_account_name = os.getenv("STORAGE_ACCOUNT_NAME")
     container_name = os.getenv("VIDEO_RECORDINGS_CONTAINER", "video-recordings")
-    connection_string = os.getenv("STORAGE_CONNECTION_STRING")
 
     try:
-        if connection_string:
-            blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-        else:
-            if not storage_account_name:
-                raise ValueError("STORAGE_ACCOUNT_NAME not configured")
-            account_url = f"https://{storage_account_name}.blob.core.windows.net"
-            blob_service_client = BlobServiceClient(account_url=account_url, credential=_managed_identity_credential())
+        blob_service_client, _account_key = _storage_client()
         container = blob_service_client.get_container_client(container_name)
         container.get_container_properties()
     except Exception:
@@ -184,9 +283,6 @@ def parse_timestamp_from_blob_name(blob_name: str) -> datetime | None:
     """
     try:
         parts = blob_name.split("/")
-        if len(parts) < 6:
-            return None
-
         filename = parts[-1]
 
         # Try continuous format: segment_{ISO8601_timestamp}_{camera}.mp4
@@ -210,7 +306,7 @@ def parse_timestamp_from_blob_name(blob_name: str) -> datetime | None:
 
         # Fallback: try to extract timestamp from path hierarchy
         # Path format: {camera}/{YYYY}/{MM}/{DD}/{HH}/...
-        if len(parts) >= 5:
+        if len(parts) >= 6:
             try:
                 year = int(parts[-5])
                 month = int(parts[-4])
@@ -230,25 +326,35 @@ def fetch_segment_metadata(container: ContainerClient, video_blob_name: str) -> 
     """
     Fetch companion JSON metadata for a video segment.
 
+    A missing, oversized, or malformed sidecar returns None. Authorization and
+    transport failures raise DiscoveryError, so they aren't mistaken for a
+    segment without metadata.
+
     Args:
         container: Blob container client
         video_blob_name: Path to the video blob (e.g., "camera/2026/02/04/18/segment_xxx.mp4")
 
     Returns:
-        Dictionary with metadata fields or None if not found
+        Dictionary with metadata fields or None if not available
     """
-    # Derive JSON metadata path from video path
     json_blob_name = video_blob_name.rsplit(".", 1)[0] + ".json"
 
     try:
-        blob_client = container.get_blob_client(json_blob_name)
-        blob_data = blob_client.download_blob()
-        metadata = json.loads(blob_data.readall().decode("utf-8"))
-        logger.debug(f"Fetched metadata for {video_blob_name}: {metadata}")
-        return metadata
-    except Exception as e:
-        logger.debug(f"No metadata found for {video_blob_name}: {e}")
+        downloader = container.get_blob_client(json_blob_name).download_blob()
+        if downloader.size > METADATA_MAX_BYTES:
+            logger.warning(f"Ignoring metadata for {video_blob_name}: {downloader.size} bytes exceeds the limit")
+            return None
+        metadata = json.loads(downloader.readall().decode("utf-8"))
+    except ResourceNotFoundError:
+        logger.debug(f"No metadata found for {video_blob_name}")
         return None
+    except ValueError:
+        logger.warning(f"Ignoring malformed metadata for {video_blob_name}")
+        return None
+    except AzureError as e:
+        raise DiscoveryError(f"Metadata retrieval failed for {video_blob_name}") from e
+
+    return metadata if isinstance(metadata, dict) else None
 
 
 def fetch_metadata_for_segments(container: ContainerClient, segments: list[dict]) -> list[dict | None]:
@@ -361,146 +467,129 @@ def filter_segments_by_event_type(segments: list[dict], event_type_filter: str |
     return filtered
 
 
+def segment_lookback_seconds() -> int:
+    """How far before the query window discovery looks, from SEGMENT_LOOKBACK_SECONDS."""
+    return _positive_int_env("SEGMENT_LOOKBACK_SECONDS", DEFAULT_SEGMENT_LOOKBACK_SECONDS)
+
+
 def query_blobs_by_prefix(
-    container: ContainerClient, camera_id: str, start_time: datetime, end_time: datetime, blob_prefix: str = ""
+    container: ContainerClient,
+    camera_id: str,
+    start_time: datetime,
+    end_time: datetime,
+    blob_prefix: str = "",
+    lookback_seconds: int = 0,
 ) -> list[dict]:
     """
-    Query blobs using prefix-based list (optimized for < 1 hour queries).
+    List candidate recordings from the hourly prefixes covering a window.
+
+    Candidates are video blobs whose filename time falls in
+    `[start_time - lookback_seconds, end_time)`. Use select_overlapping_segments
+    to keep only those whose footage overlaps the window. Listing failures
+    raise DiscoveryError instead of returning partial results.
 
     Args:
         container: Blob container client
         camera_id: Camera identifier
-        start_time: Query start time
-        end_time: Query end time
+        start_time: Query start time (naive UTC)
+        end_time: Query end time (naive UTC)
         blob_prefix: Optional prefix for blob path (e.g., 'video-recordings')
+        lookback_seconds: How far before start_time a recording may begin
 
     Returns:
-        List of blob metadata dictionaries
+        Candidate segments sorted by filename time
     """
+    earliest = start_time - timedelta(seconds=lookback_seconds)
     segments = []
 
-    hours_to_check = set()
-    current = start_time.replace(minute=0, second=0, microsecond=0)
-    while current <= end_time:
-        hours_to_check.add(current)
+    hours_to_check = []
+    current = earliest.replace(minute=0, second=0, microsecond=0)
+    while current < end_time:
+        hours_to_check.append(current)
         current += timedelta(hours=1)
 
     for hour in hours_to_check:
+        prefix = f"{camera_id}/{hour.strftime('%Y/%m/%d/%H')}/"
         if blob_prefix:
-            prefix = f"{blob_prefix}/{camera_id}/{hour.strftime('%Y/%m/%d/%H')}"
-        else:
-            prefix = f"{camera_id}/{hour.strftime('%Y/%m/%d/%H')}"
+            prefix = f"{blob_prefix}/{prefix}"
         logger.info(f"Querying prefix: {prefix}")
 
         try:
-            blob_count = 0
-            video_extensions = (".mp4", ".mkv", ".avi", ".mov")
             for blob in container.list_blobs(name_starts_with=prefix):
-                blob_count += 1
-                if not blob.name.lower().endswith(video_extensions):
-                    logger.debug(f"Skipping non-video blob: {blob.name}")
+                if not blob.name.lower().endswith(VIDEO_EXTENSIONS):
                     continue
-                logger.info(f"Found blob: {blob.name}")
                 blob_time = parse_timestamp_from_blob_name(blob.name)
-                logger.info(f"Parsed timestamp: {blob_time}, start: {start_time}, end: {end_time}")
-                if blob_time and start_time <= blob_time < end_time:
+                if blob_time and earliest <= blob_time < end_time:
                     segments.append({"name": blob.name, "timestamp": blob_time, "size": blob.size})
-            logger.info(f"Found {blob_count} blobs with prefix {prefix}")
-        except Exception as e:
-            logger.error(f"Error listing blobs with prefix {prefix}: {e}", exc_info=True)
+        except AzureError as e:
+            raise DiscoveryError(f"Listing failed for prefix {prefix}") from e
 
     segments.sort(key=lambda x: x["timestamp"])
     return segments
 
 
-def query_blobs_by_tags(
-    container: ContainerClient, camera_id: str, start_time: datetime, end_time: datetime
+def select_overlapping_segments(
+    container: ContainerClient, candidates: list[dict], start_time: datetime, end_time: datetime
 ) -> list[dict]:
     """
-    Query blobs using blob index tags (optimized for 1-24 hour queries).
+    Keep candidates whose footage overlaps `[start_time, end_time)`.
 
-    Args:
-        container: Blob container client
-        camera_id: Camera identifier
-        start_time: Query start time
-        end_time: Query end time
+    The interval comes from the JSON sidecar when it holds a valid
+    `segment_start` and `segment_end`, and a segment is kept when
+    `segment_start < end_time and segment_end > start_time`. Without one, the
+    filename time stands in for the footage and must fall inside the window;
+    such segments are marked `timing: "filename"`.
 
     Returns:
-        List of blob metadata dictionaries
+        Selected segments with normalized `start`/`end` (aware UTC) and
+        metadata fields, sorted by start
     """
-    if not CAMERA_ID_PATTERN.fullmatch(camera_id):
-        raise ValueError("Invalid camera_id format")
+    window_start = as_utc(start_time)
+    window_end = as_utc(end_time)
+    selected = []
 
-    query = f"camera_id='{camera_id}' AND start_time>='{start_time.isoformat()}' AND end_time<='{end_time.isoformat()}'"
+    for segment, metadata in zip(candidates, fetch_metadata_for_segments(container, candidates), strict=True):
+        enriched = segment.copy()
+        footage_start = as_utc(metadata.get("segment_start")) if metadata else None
+        footage_end = as_utc(metadata.get("segment_end")) if metadata else None
 
-    logger.info(f"Querying blobs by tags: {query}")
-
-    segments = []
-    video_extensions = (".mp4", ".mkv", ".avi", ".mov")
-    try:
-        for blob in container.find_blobs_by_tags(filter_expression=query):
-            if not blob.name.lower().endswith(video_extensions):
-                logger.debug(f"Skipping non-video blob: {blob.name}")
+        if footage_start and footage_end and footage_end > footage_start:
+            if not (footage_start < window_end and footage_end > window_start):
                 continue
-            blob_time = parse_timestamp_from_blob_name(blob.name)
-            if blob_time:
-                segments.append({"name": blob.name, "timestamp": blob_time, "size": getattr(blob, "size", 0)})
-    except Exception as e:
-        logger.error(f"Error querying blobs by tags: {e}")
+            enriched["timing"] = "metadata"
+        else:
+            footage_start = footage_end = as_utc(segment.get("timestamp"))
+            if footage_start is None or not window_start <= footage_start < window_end:
+                continue
+            enriched["timing"] = "filename"
 
-    segments.sort(key=lambda x: x["timestamp"])
-    return segments
-
-
-def enrich_segments_with_metadata(container: ContainerClient, segments: list[dict]) -> list[dict]:
-    """
-    Fetch and attach JSON metadata to each video segment.
-
-    Args:
-        container: Blob container client
-        segments: List of segment metadata dictionaries
-
-    Returns:
-        Segments enriched with metadata fields (segment_start, segment_end, duration_seconds, location)
-    """
-    enriched = []
-    for segment, metadata in zip(segments, fetch_metadata_for_segments(container, segments), strict=True):
-        enriched_segment = segment.copy()
+        enriched["start"] = footage_start
+        enriched["end"] = footage_end
         if metadata:
-            enriched_segment["metadata"] = metadata
-            enriched_segment["segment_start"] = metadata.get("segment_start")
-            enriched_segment["segment_end"] = metadata.get("segment_end")
-            enriched_segment["duration_seconds"] = metadata.get("duration_seconds")
-            enriched_segment["location"] = metadata.get("location")
-        enriched.append(enriched_segment)
-    return enriched
+            enriched["metadata"] = metadata
+            enriched["segment_start"] = footage_start.isoformat() if enriched["timing"] == "metadata" else None
+            enriched["segment_end"] = footage_end.isoformat() if enriched["timing"] == "metadata" else None
+            enriched["duration_seconds"] = metadata.get("duration_seconds")
+            enriched["location"] = metadata.get("location")
+        selected.append(enriched)
+
+    return sort_segments_by_metadata(selected)
 
 
 def sort_segments_by_metadata(segments: list[dict]) -> list[dict]:
     """
-    Sort segments by precise segment_start timestamp from metadata.
-    Falls back to filename-parsed timestamp if metadata unavailable.
+    Sort segments by footage start.
 
-    Args:
-        segments: List of enriched segment dictionaries
-
-    Returns:
-        Segments sorted by segment_start (most precise) or timestamp (fallback)
+    Uses the normalized `start`, then the sidecar `segment_start`, then the
+    filename time, all compared as aware UTC. Segments without any valid time
+    sort first.
     """
 
     def sort_key(seg):
-        # Prefer segment_start from metadata for precise ordering
-        if seg.get("segment_start"):
-            try:
-                return datetime.fromisoformat(seg["segment_start"].replace("Z", "+00:00"))
-            except (ValueError, TypeError):
-                pass
-        # Fall back to filename-parsed timestamp (convert naive to UTC-aware for comparison)
-        ts = seg.get("timestamp")
-        if ts:
-            if ts.tzinfo is None:
-                return ts.replace(tzinfo=UTC)
-            return ts
+        for value in (seg.get("start"), seg.get("segment_start"), seg.get("timestamp")):
+            normalized = as_utc(value)
+            if normalized is not None:
+                return normalized
         return datetime.min.replace(tzinfo=UTC)
 
     return sorted(segments, key=sort_key)
@@ -508,41 +597,33 @@ def sort_segments_by_metadata(segments: list[dict]) -> list[dict]:
 
 def detect_segment_gaps(segments: list[dict], threshold_seconds: float = 5.0) -> list[dict]:
     """
-    Detect gaps between consecutive segments using metadata timestamps.
+    Detect gaps between consecutive segments using sidecar footage intervals.
 
     Args:
-        segments: Sorted list of enriched segments
+        segments: Sorted list of selected segments
         threshold_seconds: Minimum gap duration to report (default 5s)
 
     Returns:
         List of gap records with start, end, and duration
     """
     gaps = []
-    for i in range(len(segments) - 1):
-        current = segments[i]
-        next_seg = segments[i + 1]
+    for current, next_seg in zip(segments, segments[1:], strict=False):
+        current_end = as_utc(current.get("segment_end"))
+        next_start = as_utc(next_seg.get("segment_start"))
+        if current_end is None or next_start is None:
+            continue
 
-        current_end = current.get("segment_end")
-        next_start = next_seg.get("segment_start")
-
-        if current_end and next_start:
-            try:
-                end_time = datetime.fromisoformat(current_end.replace("Z", "+00:00"))
-                start_time = datetime.fromisoformat(next_start.replace("Z", "+00:00"))
-                gap_seconds = (start_time - end_time).total_seconds()
-
-                if gap_seconds > threshold_seconds:
-                    gaps.append(
-                        {
-                            "after_segment": current["name"],
-                            "before_segment": next_seg["name"],
-                            "gap_start": current_end,
-                            "gap_end": next_start,
-                            "gap_seconds": round(gap_seconds, 2),
-                        }
-                    )
-            except (ValueError, TypeError):
-                pass
+        gap_seconds = (next_start - current_end).total_seconds()
+        if gap_seconds > threshold_seconds:
+            gaps.append(
+                {
+                    "after_segment": current["name"],
+                    "before_segment": next_seg["name"],
+                    "gap_start": current_end.isoformat(),
+                    "gap_end": next_start.isoformat(),
+                    "gap_seconds": round(gap_seconds, 2),
+                }
+            )
 
     return gaps
 
@@ -552,7 +633,7 @@ def calculate_stitch_metrics(segments: list[dict]) -> dict:
     Calculate stitching metrics from segment metadata.
 
     Args:
-        segments: List of enriched segments
+        segments: List of selected segments
 
     Returns:
         Dictionary with total_duration, earliest_start, latest_end, locations
@@ -563,28 +644,18 @@ def calculate_stitch_metrics(segments: list[dict]) -> dict:
     locations = set()
 
     for seg in segments:
-        # Sum actual durations from metadata
-        if seg.get("duration_seconds"):
-            total_duration += seg["duration_seconds"]
+        duration = seg.get("duration_seconds")
+        if isinstance(duration, int | float):
+            total_duration += duration
 
-        # Track time range
-        if seg.get("segment_start"):
-            try:
-                start = datetime.fromisoformat(seg["segment_start"].replace("Z", "+00:00"))
-                if earliest_start is None or start < earliest_start:
-                    earliest_start = start
-            except (ValueError, TypeError):
-                pass
+        start = as_utc(seg.get("segment_start"))
+        if start is not None and (earliest_start is None or start < earliest_start):
+            earliest_start = start
 
-        if seg.get("segment_end"):
-            try:
-                end = datetime.fromisoformat(seg["segment_end"].replace("Z", "+00:00"))
-                if latest_end is None or end > latest_end:
-                    latest_end = end
-            except (ValueError, TypeError):
-                pass
+        end = as_utc(seg.get("segment_end"))
+        if end is not None and (latest_end is None or end > latest_end):
+            latest_end = end
 
-        # Collect locations
         if seg.get("location"):
             locations.add(seg["location"])
 
@@ -592,12 +663,14 @@ def calculate_stitch_metrics(segments: list[dict]) -> dict:
         "total_duration_seconds": round(total_duration, 2) if total_duration > 0 else None,
         "earliest_segment_start": earliest_start.isoformat() if earliest_start else None,
         "latest_segment_end": latest_end.isoformat() if latest_end else None,
-        "locations": list(locations) if locations else None,
+        "locations": sorted(locations) if locations else None,
         "metadata_coverage": sum(1 for s in segments if s.get("metadata")) / len(segments) if segments else 0,
     }
 
 
-def download_segments(container: ContainerClient, segments: list[dict], temp_dir: Path) -> list[Path]:
+def download_segments(
+    container: ContainerClient, segments: list[dict], temp_dir: Path, deadline: float | None = None
+) -> list[Path]:
     """
     Download blob segments to temporary directory.
 
@@ -605,6 +678,7 @@ def download_segments(container: ContainerClient, segments: list[dict], temp_dir
         container: Blob container client
         segments: List of segment metadata
         temp_dir: Temporary directory path
+        deadline: time.monotonic() value after which no further segment starts
 
     Returns:
         List of downloaded file paths
@@ -612,8 +686,10 @@ def download_segments(container: ContainerClient, segments: list[dict], temp_dir
     downloaded_files = []
 
     for i, segment in enumerate(segments):
+        if deadline is not None and time.monotonic() >= deadline:
+            raise StitchDeadlineError("Deadline reached while downloading segments")
         blob_name = segment["name"]
-        local_path = temp_dir / f"segment_{i:03d}.mp4"
+        local_path = temp_dir / f"segment_{i:03d}{Path(blob_name).suffix.lower() or '.mp4'}"
 
         logger.info(f"Downloading segment {i + 1}/{len(segments)}: {blob_name}")
 
@@ -630,7 +706,7 @@ def download_segments(container: ContainerClient, segments: list[dict], temp_dir
     return downloaded_files
 
 
-def concat_segments(input_files: list[Path], output_file: Path) -> None:
+def concat_segments(input_files: list[Path], output_file: Path, timeout: float = 300) -> None:
     """
     Concatenate video segments using FFmpeg concat demuxer with copy codec.
 
@@ -642,9 +718,11 @@ def concat_segments(input_files: list[Path], output_file: Path) -> None:
     Args:
         input_files: List of input video file paths
         output_file: Output merged video file path
+        timeout: Seconds FFmpeg may run
 
     Raises:
         subprocess.CalledProcessError: If FFmpeg fails
+        subprocess.TimeoutExpired: If FFmpeg runs past the timeout
     """
     concat_file = output_file.parent / "concat.txt"
 
@@ -666,7 +744,7 @@ def concat_segments(input_files: list[Path], output_file: Path) -> None:
 
     try:
         result = subprocess.run(  # noqa: S603
-            cmd, check=True, capture_output=True, text=True, timeout=300
+            cmd, check=True, capture_output=True, text=True, timeout=timeout
         )
         logger.info("FFmpeg completed successfully")
         if result.stderr:
@@ -676,7 +754,7 @@ def concat_segments(input_files: list[Path], output_file: Path) -> None:
         logger.error(f"FFmpeg stderr: {e.stderr}")
         raise
     except subprocess.TimeoutExpired:
-        logger.error("FFmpeg timed out after 300 seconds")
+        logger.error(f"FFmpeg timed out after {timeout:.0f} seconds")
         raise
 
 
@@ -757,17 +835,93 @@ def parse_query_time(value: str) -> datetime:
 
 def stitch_max_seconds() -> int:
     """Longest window that stitch=true accepts, from STITCH_MAX_DURATION_SECONDS."""
+    return _positive_int_env("STITCH_MAX_DURATION_SECONDS", DEFAULT_STITCH_MAX_SECONDS)
+
+
+def _json_response(body: dict, status_code: int, headers: dict | None = None) -> func.HttpResponse:
+    return func.HttpResponse(json.dumps(body), status_code=status_code, mimetype="application/json", headers=headers)
+
+
+def check_stitch_budget(segments: list[dict], staging_dir: str) -> func.HttpResponse | None:
+    """Reject a stitch job that exceeds its segment, byte, or disk budget.
+
+    Runs before anything is downloaded. Inputs and the merged output coexist
+    on disk, so staging needs about twice the input size.
+    """
+    max_segments = _positive_int_env("STITCH_MAX_SEGMENTS", DEFAULT_STITCH_MAX_SEGMENTS)
+    if len(segments) > max_segments:
+        return _json_response(
+            {"error": "Too many segments to stitch", "segment_count": len(segments), "max_segments": max_segments}, 400
+        )
+
+    total_bytes = sum(segment.get("size") or 0 for segment in segments)
+    max_bytes = _positive_int_env("STITCH_MAX_BYTES", DEFAULT_STITCH_MAX_BYTES)
+    if total_bytes > max_bytes:
+        return _json_response(
+            {"error": "Too much video to stitch", "total_bytes": total_bytes, "max_bytes": max_bytes}, 400
+        )
+
+    if shutil.disk_usage(staging_dir).free < 2 * total_bytes + STITCH_DISK_HEADROOM_BYTES:
+        logger.warning(f"Not enough temporary storage to stitch {total_bytes} bytes")
+        return _json_response(
+            {"error": "Not enough temporary storage to stitch", "retry_after_seconds": STITCH_RETRY_AFTER_SECONDS},
+            503,
+            {"Retry-After": str(STITCH_RETRY_AFTER_SECONDS)},
+        )
+    return None
+
+
+def stitch_segments(
+    blob_service_client: BlobServiceClient,
+    video_container: ContainerClient,
+    segments: list[dict],
+    camera_id: str,
+    start_time: datetime,
+    end_time: datetime,
+    deadline: float,
+) -> str:
+    """Download, concatenate, and upload segments; return the stitched blob name.
+
+    Each result gets a unique, create-only blob name, so a SAS URL that's
+    already been shared always returns the footage it was issued for.
+    """
+    temp_container_name = os.getenv("TEMP_VIDEOS_CONTAINER", "temp-videos")
+    temp_dir = Path(tempfile.mkdtemp(prefix="video_query_"))
     try:
-        value = int(os.getenv("STITCH_MAX_DURATION_SECONDS", str(DEFAULT_STITCH_MAX_SECONDS)))
-    except ValueError:
-        return DEFAULT_STITCH_MAX_SECONDS
-    return value if value > 0 else DEFAULT_STITCH_MAX_SECONDS
+        downloaded_files = download_segments(video_container, segments, temp_dir, deadline)
+
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise StitchDeadlineError("Deadline reached before concatenation")
+        output_file = temp_dir / "merged.mp4"
+        concat_segments(downloaded_files, output_file, timeout=remaining)
+
+        if time.monotonic() >= deadline:
+            raise StitchDeadlineError("Deadline reached before upload")
+        merged_blob_name = (
+            f"temp/{camera_id}/{start_time.strftime('%Y%m%dT%H%M%S')}_{end_time.strftime('%Y%m%dT%H%M%S')}"
+            f"_{uuid.uuid4().hex}.mp4"
+        )
+        temp_container = blob_service_client.get_container_client(temp_container_name)
+        logger.info(f"Uploading merged video to {merged_blob_name}")
+        with open(output_file, "rb") as data:
+            temp_container.upload_blob(name=merged_blob_name, data=data, overwrite=False)
+        return merged_blob_name
+    finally:
+        try:
+            shutil.rmtree(temp_dir)
+        except OSError as e:
+            logger.warning(f"Failed to clean up temporary directory {temp_dir}: {e}")
 
 
 @app.route(route="video", methods=["GET"], auth_level=func.AuthLevel.FUNCTION)
 def get_video(req: func.HttpRequest) -> func.HttpResponse:
     """
     Query and retrieve video for specific camera and timeframe.
+
+    Returns recordings whose footage overlaps the window. Recordings are
+    returned whole; stitched output isn't trimmed to the window, and the
+    response reports the actual footage range.
 
     Query Parameters:
         camera: Camera ID (required)
@@ -780,8 +934,9 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
         stitch: Whether to stitch segments server-side (optional, default: false)
 
     Returns:
-        JSON response with video_url, duration, segments count
+        JSON response with segment URLs or a stitched video_url
     """
+    request_started = time.monotonic()
     logger.info("Video query request received")
 
     try:
@@ -792,292 +947,208 @@ def get_video(req: func.HttpRequest) -> func.HttpResponse:
         event_type_filter = req.params.get("event_type")
 
         if not camera_id:
-            return func.HttpResponse(
-                json.dumps({"error": "Missing required parameter: camera"}),
-                status_code=400,
-                mimetype="application/json",
-            )
+            return _json_response({"error": "Missing required parameter: camera"}, 400)
 
         if not CAMERA_ID_PATTERN.fullmatch(camera_id):
-            return func.HttpResponse(
-                json.dumps({"error": "Invalid camera_id format"}), status_code=400, mimetype="application/json"
-            )
+            return _json_response({"error": "Invalid camera_id format"}, 400)
 
         if not start_str or not end_str:
-            return func.HttpResponse(
-                json.dumps({"error": "Missing required parameters: start and end"}),
-                status_code=400,
-                mimetype="application/json",
-            )
+            return _json_response({"error": "Missing required parameters: start and end"}, 400)
 
         try:
             start_time = parse_query_time(start_str)
             end_time = parse_query_time(end_str)
         except ValueError:
-            return func.HttpResponse(
-                json.dumps({"error": "Invalid timestamp format; use ISO 8601"}),
-                status_code=400,
-                mimetype="application/json",
-            )
+            return _json_response({"error": "Invalid timestamp format; use ISO 8601"}, 400)
 
         if end_time <= start_time:
-            return func.HttpResponse(
-                json.dumps({"error": "end time must be after start time"}), status_code=400, mimetype="application/json"
-            )
+            return _json_response({"error": "end time must be after start time"}, 400)
 
         duration_seconds = (end_time - start_time).total_seconds()
 
         if duration_seconds > 86400:
-            return func.HttpResponse(
-                json.dumps({"error": "Maximum query duration is 24 hours"}),
-                status_code=400,
-                mimetype="application/json",
-            )
+            return _json_response({"error": "Maximum query duration is 24 hours"}, 400)
 
         if stitch and duration_seconds > stitch_max_seconds():
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "error": "Stitched query window too long",
-                        "max_stitch_duration_seconds": stitch_max_seconds(),
-                    }
-                ),
-                status_code=400,
-                mimetype="application/json",
+            return _json_response(
+                {"error": "Stitched query window too long", "max_stitch_duration_seconds": stitch_max_seconds()}, 400
             )
 
-        storage_account_name = os.getenv("STORAGE_ACCOUNT_NAME")
-        if not storage_account_name:
-            logger.error("STORAGE_ACCOUNT_NAME not configured")
-            return func.HttpResponse(
-                json.dumps({"error": "Storage connection not configured"}), status_code=500, mimetype="application/json"
-            )
+        try:
+            blob_service_client, account_key = _storage_client()
+        except StorageConfigError:
+            logger.exception("Storage connection not configured")
+            return _json_response({"error": "Storage connection not configured"}, 500)
 
         video_container_name = os.getenv("VIDEO_RECORDINGS_CONTAINER", "video-recordings")
-        temp_container_name = os.getenv("TEMP_VIDEOS_CONTAINER", "temp-videos")
         sas_expiry_hours = int(os.getenv("SAS_EXPIRY_HOURS", "24"))
-
-        # Use connection string if available, otherwise fall back to managed identity
-        connection_string = os.getenv("STORAGE_CONNECTION_STRING")
-        account_key = None
-        if connection_string:
-            blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-            # Extract account key from connection string for SAS generation
-            for part in connection_string.split(";"):
-                if part.startswith("AccountKey="):
-                    account_key = part.split("=", 1)[1]
-                    break
-        else:
-            account_url = f"https://{storage_account_name}.blob.core.windows.net"
-            blob_service_client = BlobServiceClient(account_url=account_url, credential=_managed_identity_credential())
         video_container = blob_service_client.get_container_client(video_container_name)
 
         # Optional blob prefix for subvolume path (e.g., 'video-recordings')
         blob_prefix = os.getenv("VIDEO_BLOB_PREFIX", "")
 
-        # Prefix-based query works for all durations up to 24 hours
-        # (max 25 hourly list operations). Tag-based query requires blob
-        # index tags that may not be present on all recordings.
-        logger.info(f"Using prefix-based query for {duration_seconds}s duration")
-        segments = query_blobs_by_prefix(video_container, camera_id, start_time, end_time, blob_prefix)
+        try:
+            candidates = query_blobs_by_prefix(
+                video_container, camera_id, start_time, end_time, blob_prefix, segment_lookback_seconds()
+            )
+            if event_type_filter:
+                candidates = filter_segments_by_event_type(candidates, event_type_filter)
+            segments = select_overlapping_segments(video_container, candidates, start_time, end_time)
+        except DiscoveryError:
+            logger.exception("Recording discovery failed")
+            return _json_response({"error": "Recording discovery failed"}, 502)
 
-        if not segments and duration_seconds > 3600:
-            logger.info("Prefix query returned no results, trying tag-based query")
-            segments = query_blobs_by_tags(video_container, camera_id, start_time, end_time)
-
-        # Apply event type filtering if specified
-        if event_type_filter:
-            original_count = len(segments)
-            segments = filter_segments_by_event_type(segments, event_type_filter)
-            logger.info(f"Filtered segments by event_type='{event_type_filter}': {original_count} -> {len(segments)}")
+        base_response = {
+            "camera_id": camera_id,
+            "start_time": start_str,
+            "end_time": end_str,
+            "event_type_filter": event_type_filter,
+        }
 
         if not segments:
             # Return 200 with empty results - 404 should only be for missing resources
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "segments": [],
-                        "total_segments": 0,
-                        "camera_id": camera_id,
-                        "start_time": start_str,
-                        "end_time": end_str,
-                        "event_type_filter": event_type_filter,
-                        "message": "No video segments found for requested timeframe",
-                    }
-                ),
-                status_code=200,
-                mimetype="application/json",
+            return _json_response(
+                {
+                    "segments": [],
+                    "total_segments": 0,
+                    **base_response,
+                    "message": "No video segments found for requested timeframe",
+                },
+                200,
             )
 
         logger.info(f"Found {len(segments)} segments for camera {camera_id}")
 
-        # One user delegation key signs every SAS URL in this response
-        user_delegation_key = None if account_key else get_user_delegation_key(blob_service_client, sas_expiry_hours)
-
         if stitch:
-            # Server-side stitching requested
-            logger.info("Stitching segments on server")
+            recording_types = sorted({detect_recording_type(s["name"])[0] for s in segments})
+            if len(recording_types) > 1:
+                return _json_response(
+                    {
+                        "error": "Stitching needs a single recording type; set event_type",
+                        "recording_types": recording_types,
+                    },
+                    400,
+                )
 
-            # Filter to only video files (exclude .json metadata files)
-            video_extensions = (".mp4", ".mkv", ".avi", ".mov")
-            video_segments = [s for s in segments if s["name"].lower().endswith(video_extensions)]
-            logger.info(
-                f"Filtered to {len(video_segments)} video files "
-                f"(excluded {len(segments) - len(video_segments)} non-video files)"
+            rejection = check_stitch_budget(segments, tempfile.gettempdir())
+            if rejection is not None:
+                return rejection
+
+            if not _stitch_slots.acquire(blocking=False):
+                return _json_response(
+                    {"error": "Stitching is busy; retry later", "retry_after_seconds": STITCH_RETRY_AFTER_SECONDS},
+                    429,
+                    {"Retry-After": str(STITCH_RETRY_AFTER_SECONDS)},
+                )
+            deadline_seconds = _positive_int_env("STITCH_DEADLINE_SECONDS", DEFAULT_STITCH_DEADLINE_SECONDS)
+            try:
+                user_delegation_key = (
+                    None if account_key else get_user_delegation_key(blob_service_client, sas_expiry_hours)
+                )
+                gaps = detect_segment_gaps(segments)
+                stitch_metrics = calculate_stitch_metrics(segments)
+                merged_blob_name = stitch_segments(
+                    blob_service_client,
+                    video_container,
+                    segments,
+                    camera_id,
+                    start_time,
+                    end_time,
+                    request_started + deadline_seconds,
+                )
+            except (StitchDeadlineError, subprocess.TimeoutExpired):
+                logger.exception("Stitching exceeded the request deadline")
+                return _json_response(
+                    {
+                        "error": "Stitching didn't finish within the request deadline",
+                        "deadline_seconds": deadline_seconds,
+                    },
+                    504,
+                )
+            except AzureError:
+                logger.exception("Recording retrieval for stitching failed")
+                return _json_response({"error": "Recording retrieval failed"}, 502)
+            finally:
+                _stitch_slots.release()
+
+            sas_url = generate_sas_url(
+                blob_service_client,
+                os.getenv("TEMP_VIDEOS_CONTAINER", "temp-videos"),
+                merged_blob_name,
+                sas_expiry_hours,
+                account_key,
+                user_delegation_key,
             )
 
-            if not video_segments:
-                return func.HttpResponse(
-                    json.dumps(
-                        {
-                            "error": "No video files found for stitching",
-                            "camera_id": camera_id,
-                            "start_time": start_str,
-                            "end_time": end_str,
-                        }
-                    ),
-                    status_code=404,
-                    mimetype="application/json",
-                )
-
-            # Enrich segments with JSON metadata for precise ordering and metrics
-            logger.info("Enriching segments with JSON metadata")
-            enriched_segments = enrich_segments_with_metadata(video_container, video_segments)
-
-            # Sort by precise segment_start from metadata (falls back to filename timestamp)
-            sorted_segments = sort_segments_by_metadata(enriched_segments)
-            logger.info(f"Sorted {len(sorted_segments)} segments by metadata timestamps")
-
-            # Detect gaps between segments
-            gaps = detect_segment_gaps(sorted_segments)
+            response_data = {
+                "video_url": sas_url,
+                "query_duration_seconds": duration_seconds,
+                "segment_count": len(segments),
+                **base_response,
+                "expires_at": (datetime.now(UTC) + timedelta(hours=sas_expiry_hours)).isoformat(),
+                "stitched": True,
+                "trimmed": False,
+            }
+            if stitch_metrics.get("total_duration_seconds"):
+                response_data["actual_duration_seconds"] = stitch_metrics["total_duration_seconds"]
+            if stitch_metrics.get("earliest_segment_start"):
+                response_data["earliest_segment_start"] = stitch_metrics["earliest_segment_start"]
+            if stitch_metrics.get("latest_segment_end"):
+                response_data["latest_segment_end"] = stitch_metrics["latest_segment_end"]
+            if stitch_metrics.get("locations"):
+                response_data["locations"] = stitch_metrics["locations"]
+            response_data["metadata_coverage"] = round(stitch_metrics.get("metadata_coverage", 0) * 100, 1)
             if gaps:
-                logger.warning(f"Detected {len(gaps)} gaps between segments: {gaps}")
+                response_data["gaps"] = gaps
+                response_data["gap_count"] = len(gaps)
+                response_data["total_gap_seconds"] = round(sum(g["gap_seconds"] for g in gaps), 2)
 
-            # Calculate stitch metrics from metadata
-            stitch_metrics = calculate_stitch_metrics(sorted_segments)
-            logger.info(f"Stitch metrics: {stitch_metrics}")
+            logger.info(f"Video query completed successfully for camera {camera_id}")
+            return _json_response(response_data, 200)
 
-            temp_dir = Path(tempfile.mkdtemp(prefix="video_query_"))
-            try:
-                downloaded_files = download_segments(video_container, sorted_segments, temp_dir)
-
-                output_file = temp_dir / "merged.mp4"
-                concat_segments(downloaded_files, output_file)
-
-                merged_blob_name = (
-                    f"temp/{camera_id}/{start_time.strftime('%Y%m%d_%H%M%S')}_{end_time.strftime('%Y%m%d_%H%M%S')}.mp4"
-                )
-
-                temp_container = blob_service_client.get_container_client(temp_container_name)
-
-                logger.info(f"Uploading merged video to {merged_blob_name}")
-                with open(output_file, "rb") as data:
-                    temp_container.upload_blob(name=merged_blob_name, data=data, overwrite=True)
-
-                sas_url = generate_sas_url(
-                    blob_service_client,
-                    temp_container_name,
-                    merged_blob_name,
-                    sas_expiry_hours,
-                    account_key,
-                    user_delegation_key,
-                )
-
-                # Build enhanced response with metadata-derived metrics
-                response_data = {
-                    "video_url": sas_url,
-                    "query_duration_seconds": duration_seconds,
-                    "segment_count": len(sorted_segments),
-                    "camera_id": camera_id,
-                    "start_time": start_str,
-                    "end_time": end_str,
-                    "event_type_filter": event_type_filter,
-                    "expires_at": (datetime.now(UTC) + timedelta(hours=sas_expiry_hours)).isoformat(),
-                    "stitched": True,
-                }
-
-                # Add metadata-derived stitch metrics
-                if stitch_metrics.get("total_duration_seconds"):
-                    response_data["actual_duration_seconds"] = stitch_metrics["total_duration_seconds"]
-                if stitch_metrics.get("earliest_segment_start"):
-                    response_data["earliest_segment_start"] = stitch_metrics["earliest_segment_start"]
-                if stitch_metrics.get("latest_segment_end"):
-                    response_data["latest_segment_end"] = stitch_metrics["latest_segment_end"]
-                if stitch_metrics.get("locations"):
-                    response_data["locations"] = stitch_metrics["locations"]
-                response_data["metadata_coverage"] = round(stitch_metrics.get("metadata_coverage", 0) * 100, 1)
-
-                # Include gap warnings if any detected
-                if gaps:
-                    response_data["gaps"] = gaps
-                    response_data["gap_count"] = len(gaps)
-                    response_data["total_gap_seconds"] = round(sum(g["gap_seconds"] for g in gaps), 2)
-
-                logger.info(f"Video query completed successfully for camera {camera_id}")
-
-                return func.HttpResponse(json.dumps(response_data), status_code=200, mimetype="application/json")
-
-            finally:
-                import shutil
-
-                try:
-                    shutil.rmtree(temp_dir)
-                    logger.info(f"Cleaned up temporary directory: {temp_dir}")
-                except Exception as e:
-                    logger.warning(f"Failed to cleanup temporary directory {temp_dir}: {e}")
-        else:
-            # Return individual segments (default)
-            segment_urls = []
-            metadata_by_segment = fetch_metadata_for_segments(video_container, segments)
-            for segment, metadata in zip(segments, metadata_by_segment, strict=True):
-                sas_url = generate_sas_url(
+        # One user delegation key signs every SAS URL in this response
+        user_delegation_key = None if account_key else get_user_delegation_key(blob_service_client, sas_expiry_hours)
+        segment_urls = []
+        for segment in segments:
+            recording_type, specific_event = detect_recording_type(segment["name"])
+            segment_data = {
+                "url": generate_sas_url(
                     blob_service_client,
                     video_container_name,
                     segment["name"],
                     sas_expiry_hours,
                     account_key,
                     user_delegation_key,
-                )
-                recording_type, specific_event = detect_recording_type(segment["name"])
+                ),
+                "name": segment["name"],
+                "timestamp": segment["timestamp"].isoformat() if segment.get("timestamp") else None,
+                "size_bytes": segment.get("size"),
+                "recording_type": recording_type,
+                "event_type": specific_event,
+                "timing": segment["timing"],
+            }
+            if segment.get("metadata"):
+                segment_data["duration_seconds"] = segment.get("duration_seconds")
+                segment_data["location"] = segment.get("location")
+                segment_data["segment_start"] = segment.get("segment_start")
+                segment_data["segment_end"] = segment.get("segment_end")
+            segment_urls.append(segment_data)
 
-                segment_data = {
-                    "url": sas_url,
-                    "name": segment["name"],
-                    "timestamp": segment["timestamp"].isoformat() if segment["timestamp"] else None,
-                    "size_bytes": segment.get("size"),
-                    "recording_type": recording_type,
-                    "event_type": specific_event,
-                }
-
-                # Enrich with metadata fields if available
-                if metadata:
-                    segment_data["duration_seconds"] = metadata.get("duration_seconds")
-                    segment_data["location"] = metadata.get("location")
-                    segment_data["segment_start"] = metadata.get("segment_start")
-                    segment_data["segment_end"] = metadata.get("segment_end")
-
-                segment_urls.append(segment_data)
-
-            response_data = {
+        logger.info(f"Video query completed successfully for camera {camera_id}")
+        return _json_response(
+            {
                 "segments": segment_urls,
                 "total_segments": len(segments),
-                "camera_id": camera_id,
-                "start_time": start_str,
-                "end_time": end_str,
-                "event_type_filter": event_type_filter,
+                **base_response,
                 "expires_at": (datetime.now(UTC) + timedelta(hours=sas_expiry_hours)).isoformat(),
                 "stitched": False,
-            }
-
-            logger.info(f"Video query completed successfully for camera {camera_id}")
-
-            return func.HttpResponse(json.dumps(response_data), status_code=200, mimetype="application/json")
+            },
+            200,
+        )
 
     except Exception:
         logger.exception("Unexpected error processing video query")
-        return func.HttpResponse(
-            json.dumps({"error": "Internal server error"}), status_code=500, mimetype="application/json"
-        )
+        return _json_response({"error": "Internal server error"}, 500)
 
 
 @app.route(route="trigger", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)

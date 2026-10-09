@@ -24,9 +24,7 @@ The Video Query API provides a REST endpoint for querying video recordings store
 ## Features
 
 * **Time-Based Video Queries**: Query videos by camera ID and timestamp range (start/end)
-* **Optimized Blob Filtering**: Prefix-based list queries for windows up to 24 hours
-  * Falls back to blob index tag queries when a window over 1 hour returns no prefix matches
-  * See `query_blobs_by_prefix` and `query_blobs_by_tags` in `function_app.py`
+* **Overlap-Based Discovery**: Lists the hourly prefixes the 503 media capture service writes and returns every recording whose footage overlaps the window, including recordings that started before it. See [Discovery](#discovery)
 * **Individual Segment Access**: Returns array of video segments with metadata
 * **MQTT-Triggered Capture**: Trigger on-demand video capture via Event Grid MQTT
 * **Health Monitoring**: Anonymous liveness endpoint and key-protected storage readiness endpoint
@@ -68,7 +66,8 @@ The Video Query API provides a REST endpoint for querying video recordings store
   * `temp-videos`: Temporary merged video storage (required only for stitch=true)
 * Azure Functions Core Tools 4.x
 * Python 3.11 or later
-* Managed Identity with Storage Blob Data Contributor role
+* Managed identity with the storage roles in [Deploy to Azure Functions](#deploy-to-azure-functions)
+* Recordings written by the `503-media-capture-service` continuous recording mode, or in the same layout
 * FFmpeg 4.4 or later (required only for stitch=true)
 
 ## API Reference
@@ -134,7 +133,8 @@ Query and retrieve video for a specific camera and timeframe.
       "duration_seconds": 300,
       "location": "plant-a",
       "segment_start": "2026-01-13T21:42:09.123456+00:00",
-      "segment_end": "2026-01-13T21:47:09.123456+00:00"
+      "segment_end": "2026-01-13T21:47:09.123456+00:00",
+      "timing": "metadata"
     }
   ],
   "total_segments": 1,
@@ -146,7 +146,7 @@ Query and retrieve video for a specific camera and timeframe.
 }
 ```
 
-> **Note**: The `duration_seconds`, `location`, `segment_start`, and `segment_end` fields are populated from companion JSON metadata files when available. These fields provide precise timing information from the recording service.
+> **Note**: The `duration_seconds`, `location`, `segment_start`, and `segment_end` fields come from the companion JSON metadata file when it's available. `timing` is `metadata` when the footage interval came from that file and `filename` when only the time in the file name was available, such as for triggered clips.
 
 **Response (with stitch=true):**
 
@@ -164,9 +164,12 @@ Query and retrieve video for a specific camera and timeframe.
   "locations": ["plant-a"],
   "metadata_coverage": 100.0,
   "expires_at": "2026-01-15T06:10:04.068612",
-  "stitched": true
+  "stitched": true,
+  "trimmed": false
 }
 ```
+
+Recordings are returned whole, so stitched video isn't trimmed to the window. `earliest_segment_start` and `latest_segment_end` report the footage it actually covers. Each stitched result is written once under a unique name, so a SAS URL that's already been shared keeps returning the same video.
 
 **Stitch Response with Gaps Detected:**
 
@@ -205,12 +208,14 @@ When gaps between video segments exceed 5 seconds, the response includes gap det
 |--------|----------------------------------------------------------------------------------|
 | 200    | Success — segments found or empty result with message                            |
 | 202    | Accepted — trigger capture request accepted (POST /api/trigger)                  |
-| 400    | Bad Request — missing/invalid parameters or disallowed camera                    |
-| 404    | Not Found — stitch requested but no video files found                            |
-| 429    | Too Many Requests — trigger rate limited (30-second per-camera)                  |
-| 500    | Internal Server Error — storage connection or processing failure                 |
-| 502    | Bad Gateway — MQTT trigger delivery failed                                       |
-| 503    | Service Unavailable — trigger or Event Grid not configured, or storage not ready |
+| 400    | Bad Request — invalid parameters, disallowed camera, or stitch job over a limit  |
+| 429    | Too Many Requests — trigger rate limited, or every stitch slot is busy           |
+| 500    | Internal Server Error — storage not configured or processing failure             |
+| 502    | Bad Gateway — recording discovery or retrieval failed, or MQTT delivery failed   |
+| 503    | Service Unavailable — not configured, storage not ready, or short on disk space  |
+| 504    | Gateway Timeout — stitching didn't finish within `STITCH_DEADLINE_SECONDS`       |
+
+A failed or interrupted blob listing returns `502` instead of an empty or partial result. A missing metadata file isn't an error; the segment is returned with `timing: "filename"`.
 
 **Empty Results Response (HTTP 200):**
 
@@ -255,7 +260,9 @@ Trigger an on-demand video capture event via Event Grid MQTT.
 
 The trigger endpoint is disabled until `TRIGGER_ALLOWED_CAMERAS` lists at least one camera ID.
 
-**Behavior:** Publishes an `ALERT_DLQC` event with the camera ID to the Event Grid Namespace MQTT broker (port 8883, MQTTv5, TLS) on topic `alerts/trigger/{camera}`. Authenticates with a managed identity token through MQTT v5 enhanced authentication (`OAUTH2-JWT`) and returns `502` when the connection is refused or the publish isn't acknowledged. Enforces a 30-second per-camera rate limit.
+**Behavior:** Publishes an `ALERT_DLQC` event with the camera ID to the Event Grid Namespace MQTT broker (port 8883, MQTTv5, TLS) on topic `alerts/trigger/{camera}`. Authenticates with a managed identity token through MQTT v5 enhanced authentication (`OAUTH2-JWT`). Returns `502` when the connection is refused, the publish isn't acknowledged, or the PUBACK carries a failure reason code such as Not authorized; a failed trigger doesn't start the rate limit. Enforces a 30-second per-camera rate limit.
+
+Each request connects with a unique client ID, `{MQTT_CLIENT_ID}-{random suffix}`, so concurrent requests and scaled-out instances don't replace each other's sessions. Event Grid allows one session per authentication name by default, so set **Maximum client sessions per authentication name** on the namespace to the number of concurrent triggers you expect.
 
 Configure each `503-media-capture-service` instance to subscribe to its own camera's topic, for example `TRIGGER_TOPICS=["alerts/trigger/camera-01"]`. The function identity needs the **EventGrid TopicSpaces Publisher** role on a topic space that includes `alerts/trigger/#`.
 
@@ -340,16 +347,23 @@ curl -X POST "https://<function-app-name>.azurewebsites.net/api/trigger?camera=c
 
 Required environment variables:
 
-* `STORAGE_ACCOUNT_NAME`: Azure Storage account name
+* `STORAGE_ACCOUNT_NAME`: Azure Storage account name, accessed with the managed identity
+* `STORAGE_CONNECTION_STRING`: Alternative to `STORAGE_ACCOUNT_NAME` for local development. It must carry an account key (`AccountKey`, or `UseDevelopmentStorage=true` for Azurite) to sign SAS URLs; SAS-token connection strings aren't supported
+* `VIDEO_BLOB_PREFIX`: Path prefix in front of `{camera}/` in blob names (default: none)
+* `SEGMENT_LOOKBACK_SECONDS`: How far before the window discovery looks for recordings that started earlier (default: "3900", the longest 503 segment plus its grace period)
 * `VIDEO_RECORDINGS_CONTAINER`: Container name for video segments (default: "video-recordings")
 * `TEMP_VIDEOS_CONTAINER`: Container name for merged videos (default: "temp-videos", required only for stitch=true)
 * `SAS_EXPIRY_HOURS`: SAS token expiry in hours (default: "24")
 * `FFMPEG_PATH`: Path to an ffmpeg binary, used only when `bin/ffmpeg` isn't bundled with the app (default: "ffmpeg", required only for stitch=true)
 * `STITCH_MAX_DURATION_SECONDS`: Longest window that `stitch=true` accepts (default: "3600")
+* `STITCH_MAX_SEGMENTS`: Most segments one stitch job accepts (default: "120")
+* `STITCH_MAX_BYTES`: Most input bytes one stitch job accepts (default: "2147483648")
+* `STITCH_DEADLINE_SECONDS`: Time from request start after which a stitch job stops (default: "200", under the 230-second HTTP limit)
+* `STITCH_MAX_CONCURRENT`: Stitch jobs each instance runs at once (default: "1")
 * `EVENT_GRID_HOSTNAME`: Event Grid Namespace MQTT hostname (required for trigger endpoint)
 * `TRIGGER_ALLOWED_CAMERAS`: Comma-separated camera IDs the trigger endpoint accepts. Entries must contain only letters, digits, underscores, and hyphens. The trigger endpoint is disabled when this is empty
 * `AZURE_CLIENT_ID`: Client ID of a user-assigned managed identity. Omit it to use the system-assigned identity
-* `MQTT_CLIENT_ID`: MQTT client ID for trigger publishing (default: "video-query-trigger")
+* `MQTT_CLIENT_ID`: Prefix for the unique MQTT client ID of each trigger publish (default: "video-query-trigger")
 
 ## Production Deployment
 
@@ -376,12 +390,28 @@ Required environment variables:
      --name video-query-func \
      --resource-group rg-edge-ai
 
-   # Grant Storage Blob Data Contributor role
+   STORAGE_ID=/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.Storage/storageAccounts/<storage-account>
+
+   # Read recordings
+   az role assignment create \
+     --assignee <function-app-principal-id> \
+     --role "Storage Blob Data Reader" \
+     --scope "${STORAGE_ID}/blobServices/default/containers/video-recordings"
+
+   # Request user delegation keys to sign SAS URLs
+   az role assignment create \
+     --assignee <function-app-principal-id> \
+     --role "Storage Blob Delegator" \
+     --scope "${STORAGE_ID}"
+
+   # Write stitched videos (required only for stitch=true)
    az role assignment create \
      --assignee <function-app-principal-id> \
      --role "Storage Blob Data Contributor" \
-     --scope /subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.Storage/storageAccounts/<storage-account>
+     --scope "${STORAGE_ID}/blobServices/default/containers/temp-videos"
    ```
+
+   A user delegation SAS grants no more than its signer can do, so these roles also bound what the SAS URLs allow.
 
 3. Configure application settings:
 
@@ -437,9 +467,21 @@ Required environment variables:
 * **Stitching Time**: ~500ms for 30-minute video (no re-encoding)
 * **Storage Efficiency**: Hierarchical blob paths enable optimal distribution
 
-## Query Optimization
+## Discovery
 
-The handler lists blobs by the hourly path prefix `{camera_id}/{YYYY}/{MM}/{DD}/{HH}/` for every window up to 24 hours. When a window longer than 1 hour returns no prefix matches, it falls back to a blob index tag query on `camera_id`, `start_time`, and `end_time`, which needs recordings that carry those tags. See `query_blobs_by_prefix` and `query_blobs_by_tags` in `function_app.py`.
+The API reads the layout the `503-media-capture-service` writes:
+
+* Continuous segments: `{camera}/{YYYY}/{MM}/{DD}/{HH}/segment_{start}_{camera}.{ext}`, each with a JSON metadata file holding `segment_start` and `segment_end`
+* Triggered clips: `{camera}/{YYYY}/{MM}/{DD}/{HH}/{YYYY-MM-DD}_{HHMMSS}_..._{event}_id_{id}.{ext}`, without a metadata file
+
+For each request, the handler:
+
+1. Lists the hourly prefixes from `SEGMENT_LOOKBACK_SECONDS` before the window up to its end, so recordings that started earlier are found.
+2. Applies the `event_type` filter.
+3. Reads each candidate's metadata file and keeps it when its footage overlaps the window: `segment_start < end` and `segment_end > start`.
+4. Keeps a recording without usable metadata only when the time in its file name falls inside the window, and marks it `timing: "filename"`. For triggered clips that time is when the clip was written, so it's approximate.
+
+See `query_blobs_by_prefix` and `select_overlapping_segments` in `function_app.py`.
 
 ## Stitching vs Segments
 
@@ -489,7 +531,15 @@ ffmpeg -f concat -safe 0 -i segments.txt -c copy merged.mp4
 * FFmpeg bundled with the Function App (see `install-ffmpeg.sh`)
 * `temp-videos` container for temporary storage, with a lifecycle management rule that deletes stitched videos
 * Slower response time (2-10 seconds)
-* A window no longer than `STITCH_MAX_DURATION_SECONDS` (default 1 hour)
+* Segments of one recording type with matching codec settings; set `event_type` when a window holds both continuous and triggered recordings
+* A job within the stitch limits:
+  * A window no longer than `STITCH_MAX_DURATION_SECONDS` (default 1 hour)
+  * At most `STITCH_MAX_SEGMENTS` segments and `STITCH_MAX_BYTES` of input, checked before anything is downloaded
+  * Free temporary storage for about twice the input size, because inputs and the merged output coexist
+  * A free slot out of `STITCH_MAX_CONCURRENT` per instance; otherwise the request returns `429`
+  * Completion within `STITCH_DEADLINE_SECONDS` of the request starting; otherwise it returns `504`
+
+For longer jobs, request segments and concatenate them on the client, or move stitching to an asynchronous pattern such as [Durable Functions](https://learn.microsoft.com/azure/azure-functions/durable/durable-functions-http-features#async-operation-tracking).
 
 **Example:**
 
@@ -507,17 +557,21 @@ curl "https://func.azurewebsites.net/api/video?camera=camera-01&start=2026-01-20
 * Check if timeframe is within ring buffer window (if using ring buffer only mode)
 * Verify blob storage connection and container exists
 
-### "Blob storage connection failed"
+### "Recording discovery failed" (HTTP 502)
 
-* Verify connection string is correct
-* Check firewall rules allow Function App to access Storage
+* Check the Function App logs for the listing or metadata error
+* Check firewall rules allow the Function App to access Storage
+* Verify the identity has **Storage Blob Data Reader** on the recordings container
+
+### "Storage connection not configured" (HTTP 500)
+
+* Set `STORAGE_ACCOUNT_NAME`, or a `STORAGE_CONNECTION_STRING` that includes an account key
 * Verify container names match configuration
 
 ### "Authentication failed"
 
 * Verify Azure credentials are configured
-* Check RBAC permissions for Storage account
-* Ensure Function App has Storage Blob Data Contributor role
+* Check the role assignments in [Deploy to Azure Functions](#deploy-to-azure-functions)
 
 ## Cost Considerations
 
@@ -529,7 +583,8 @@ curl "https://func.azurewebsites.net/api/video?camera=camera-01&start=2026-01-20
 ## Security
 
 * Function-level authentication is required for `/api/video`, `/api/ready`, and `/api/trigger`; only the `/api/health` liveness probe is anonymous, and it returns no configuration details
-* Camera IDs are validated against an allowlist pattern before they're used in blob paths or blob index tag filters
+* Trust model: callers authenticate with a Function key, not their own identity. Returned SAS URLs are authorized by the Function App's identity, so anyone with a key can read any camera's recordings in the configured container. Share keys accordingly, or put an API gateway with per-caller authorization in front of the API
+* Camera IDs are validated against an allowlist pattern before they're used in blob paths or MQTT topics
 * The trigger endpoint accepts only cameras listed in `TRIGGER_ALLOWED_CAMERAS`
 * Error responses don't include exception details
 * Python dependencies are pinned with hashes, and the ffmpeg download is pinned and SHA-256 verified
@@ -537,10 +592,28 @@ curl "https://func.azurewebsites.net/api/video?camera=camera-01&start=2026-01-20
 * SAS links expire after `SAS_EXPIRY_HOURS`; stitched videos in `TEMP_VIDEOS_CONTAINER` persist until removed, so configure a [lifecycle management rule](https://learn.microsoft.com/azure/storage/blobs/lifecycle-management-overview) to delete them
 * Connection strings stored in Key Vault (recommended)
 
+## Testing
+
+Unit tests need no Azure resources and run in CI through the `python-tests` workflow:
+
+```bash
+pip install --require-hashes -r requirements.txt -r requirements-test.txt
+pytest -m "not integration"
+```
+
+The deployed suite in `tests/test_video_query_api.py` seeds recordings in the 503 layout for a unique camera, queries a running API, downloads and inspects the stitched result, and deletes what it seeded. It runs when `VIDEO_QUERY_API_ENDPOINT` is set, and then fails, rather than skips, when the API, `VIDEO_QUERY_API_CODE`, seeding storage access, or ffmpeg is missing:
+
+```bash
+export VIDEO_QUERY_API_ENDPOINT="https://<function-app-name>.azurewebsites.net"
+export VIDEO_QUERY_API_CODE="<function-key>"
+export VIDEO_QUERY_TEST_STORAGE_ACCOUNT="<storage-account>"  # or VIDEO_QUERY_TEST_STORAGE_CONNECTION_STRING
+pytest -m integration
+```
+
 ## Contributing
 
 Follow repository contribution guidelines when modifying this component.
 
 ## Related Components
 
-* **503-media-capture-service**: Continuous recording service that produces segments
+* **503-media-capture-service**: Records the segments and triggered clips this API queries; see [Discovery](#discovery) for the layout

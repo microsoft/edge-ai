@@ -6,12 +6,10 @@ storage account, or Event Grid namespace.
 
 import json
 import sys
-from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import azure.functions as func
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -116,29 +114,6 @@ class TestTriggerAllowList:
         monkeypatch.setenv("TRIGGER_ALLOWED_CAMERAS", " camera-01 , bad'id, ,camera_02 ")
 
         assert function_app._allowed_trigger_cameras() == {"camera-01", "camera_02"}
-
-
-class TestTagQueryValidation:
-    @pytest.mark.parametrize(
-        "camera_id",
-        ["camera-01' OR camera_id='x", "camera 01", 'camera-01"', "", "../camera"],
-    )
-    def test_rejects_unsafe_camera_id(self, camera_id):
-        container = MagicMock()
-
-        with pytest.raises(ValueError):
-            function_app.query_blobs_by_tags(container, camera_id, datetime(2026, 1, 1, 0), datetime(2026, 1, 1, 1))
-
-        container.find_blobs_by_tags.assert_not_called()
-
-    def test_builds_filter_for_valid_camera_id(self):
-        container = MagicMock()
-        container.find_blobs_by_tags.return_value = []
-
-        function_app.query_blobs_by_tags(container, "camera-01", datetime(2026, 1, 1, 0), datetime(2026, 1, 1, 1))
-
-        expression = container.find_blobs_by_tags.call_args.kwargs["filter_expression"]
-        assert expression.startswith("camera_id='camera-01' AND ")
 
 
 class TestVideoQueryValidation:

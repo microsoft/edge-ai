@@ -2,6 +2,7 @@
 .vscode
 local.settings.json
 tests
+requirements-test.*
 .python_packages
 __pycache__
 *.pyc

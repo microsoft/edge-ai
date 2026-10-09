@@ -256,6 +256,13 @@ jobs:
     uses: ./.github/workflows/rust-tests.yml
     secrets: inherit
 
+  # Python unit tests for application components; each component runs only when it changes
+  python-tests:
+    name: Python Tests
+    permissions:
+      contents: read
+    uses: ./.github/workflows/python-tests.yml
+
   # Dependency advisory audit (cargo-audit + govulncheck) for PRs
   dep-audit:
     name: Dependency Audit
@@ -457,6 +464,7 @@ jobs:
       - aio-version-check
       - rust-clippy
       - rust-tests
+      - python-tests
       - dep-audit
       - fuzz
       - matrix-changes

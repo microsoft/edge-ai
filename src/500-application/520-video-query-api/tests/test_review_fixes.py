@@ -2,6 +2,7 @@
 
 import json
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -29,27 +30,29 @@ class FakeToken:
 
 
 class FakeMessageInfo:
-    def __init__(self, published: bool):
-        self._published = published
-
-    def wait_for_publish(self, timeout=None):
-        return None
-
-    def is_published(self):
-        return self._published
+    def __init__(self, mid: int):
+        self.mid = mid
+        self.rc = 0
 
 
 class FakeMqttClient:
-    """Records how the trigger connects and publishes, without a network."""
+    """Records how the trigger connects and publishes, without a network.
+
+    `puback_reason` is the PUBACK reason code, or None for no acknowledgment.
+    `ack_timing` delivers the PUBACK before publish() returns ("early") or
+    from another thread afterwards ("late").
+    """
 
     instances: list["FakeMqttClient"] = []
     connect_reason = 0
-    published = True
+    puback_reason: int | None = 0
+    ack_timing = "early"
 
     def __init__(self, callback_api_version, client_id, protocol):
         self.client_id = client_id
         self.protocol = protocol
         self.on_connect = None
+        self.on_publish = None
         self.connect_properties = None
         self.username = None
         self.publishes: list[tuple] = []
@@ -74,7 +77,14 @@ class FakeMqttClient:
 
     def publish(self, topic, payload, qos):
         self.publishes.append((topic, payload, qos))
-        return FakeMessageInfo(FakeMqttClient.published)
+        info = FakeMessageInfo(mid=len(self.publishes))
+        if FakeMqttClient.puback_reason is not None:
+            reason = ReasonCode(PacketTypes.PUBACK, identifier=FakeMqttClient.puback_reason)
+            if FakeMqttClient.ack_timing == "early":
+                self.on_publish(self, None, info.mid, reason, None)
+            else:
+                threading.Timer(0.05, self.on_publish, (self, None, info.mid, reason, None)).start()
+        return info
 
     def disconnect(self):
         self.disconnected = True
@@ -84,12 +94,14 @@ class FakeMqttClient:
 def fake_mqtt(monkeypatch):
     FakeMqttClient.instances = []
     FakeMqttClient.connect_reason = 0
-    FakeMqttClient.published = True
+    FakeMqttClient.puback_reason = 0
+    FakeMqttClient.ack_timing = "early"
     credential = MagicMock()
     credential.get_token.return_value = FakeToken()
     monkeypatch.setattr(function_app.mqtt, "Client", FakeMqttClient)
     monkeypatch.setattr(function_app, "ManagedIdentityCredential", MagicMock(return_value=credential))
     monkeypatch.setattr(function_app, "_trigger_rate_limits", {})
+    monkeypatch.setattr(function_app, "MQTT_TIMEOUT_SECONDS", 0.5)
     monkeypatch.setenv("TRIGGER_ALLOWED_CAMERAS", "camera-01")
     monkeypatch.setenv("EVENT_GRID_HOSTNAME", "ns.region-1.ts.eventgrid.azure.net")
     return FakeMqttClient
@@ -114,10 +126,38 @@ class TestMqttTrigger:
         assert fake_mqtt.instances[0].publishes == []
 
     def test_unacknowledged_publish_raises(self, fake_mqtt):
-        fake_mqtt.published = False
+        fake_mqtt.puback_reason = None
 
         with pytest.raises(TimeoutError):
             function_app._publish_mqtt_trigger("host", "alerts/trigger/camera-01", "{}")
+
+    @pytest.mark.parametrize("timing", ["early", "late"])
+    def test_successful_puback_is_accepted_whenever_it_arrives(self, fake_mqtt, timing):
+        fake_mqtt.ack_timing = timing
+
+        function_app._publish_mqtt_trigger("host", "alerts/trigger/camera-01", "{}")
+
+        assert fake_mqtt.instances[0].disconnected
+
+    @pytest.mark.parametrize("timing", ["early", "late"])
+    def test_negative_puback_raises(self, fake_mqtt, timing):
+        fake_mqtt.puback_reason = 0x87  # Not authorized
+        fake_mqtt.ack_timing = timing
+
+        with pytest.raises(PermissionError, match="Not authorized"):
+            function_app._publish_mqtt_trigger("host", "alerts/trigger/camera-01", "{}")
+
+    def test_negative_puback_returns_502_without_starting_the_cooldown(self, fake_mqtt):
+        fake_mqtt.puback_reason = 0x87
+
+        response = function_app.trigger_capture(_request("trigger", "POST", {"camera": "camera-01"}))
+
+        assert response.status_code == 502
+        assert _json(response) == {"error": "Trigger delivery failed"}
+        assert function_app._trigger_rate_limits == {}
+
+        fake_mqtt.puback_reason = 0
+        assert function_app.trigger_capture(_request("trigger", "POST", {"camera": "camera-01"})).status_code == 202
 
     def test_trigger_publishes_to_camera_topic_with_camera_in_payload(self, fake_mqtt):
         response = function_app.trigger_capture(_request("trigger", "POST", {"camera": "camera-01"}))
@@ -144,7 +184,15 @@ class TestMqttTrigger:
 
         function_app._publish_mqtt_trigger("host", "alerts/trigger/camera-01", "{}")
 
-        assert fake_mqtt.instances[0].client_id == "trigger-a"
+        assert fake_mqtt.instances[0].client_id.startswith("trigger-a-")
+
+    def test_each_publish_uses_a_unique_client_id(self, fake_mqtt):
+        for _ in range(3):
+            function_app._publish_mqtt_trigger("host", "alerts/trigger/camera-01", "{}")
+
+        client_ids = [client.client_id for client in fake_mqtt.instances]
+        assert len(set(client_ids)) == 3
+        assert all(client_id.startswith("video-query-trigger-") for client_id in client_ids)
 
 
 class TestManagedIdentity:
@@ -214,37 +262,7 @@ class TestStitchLimit:
         assert function_app.stitch_max_seconds() == function_app.DEFAULT_STITCH_MAX_SECONDS
 
 
-class TestSegmentResponse:
-    def test_requests_one_user_delegation_key_per_query(self, monkeypatch):
-        monkeypatch.setenv("STORAGE_ACCOUNT_NAME", "account")
-        monkeypatch.delenv("STORAGE_CONNECTION_STRING", raising=False)
-        service = MagicMock()
-        service.account_name = "account"
-        service.get_blob_client.return_value.url = "https://account.blob.core.windows.net/c/b"
-        service.get_user_delegation_key.return_value = MagicMock()
-        monkeypatch.setattr(function_app, "BlobServiceClient", MagicMock(return_value=service))
-        monkeypatch.setattr(function_app, "ManagedIdentityCredential", MagicMock())
-        monkeypatch.setattr(function_app, "generate_blob_sas", MagicMock(return_value="sig=x"))
-        segments = [
-            {"name": f"camera-01/2026/01/01/00/segment_2026-01-01T00:0{i}:00Z_camera-01.mp4", "timestamp": None}
-            for i in range(5)
-        ]
-        monkeypatch.setattr(function_app, "query_blobs_by_prefix", MagicMock(return_value=segments))
-        monkeypatch.setattr(function_app, "fetch_segment_metadata", MagicMock(return_value={"duration_seconds": 60}))
-
-        response = function_app.get_video(
-            _request(
-                "video",
-                params={"camera": "camera-01", "start": "2026-01-01T00:00:00Z", "end": "2026-01-01T00:30:00Z"},
-            )
-        )
-
-        assert response.status_code == 200
-        body = _json(response)
-        assert body["total_segments"] == 5
-        assert [s["duration_seconds"] for s in body["segments"]] == [60] * 5
-        assert service.get_user_delegation_key.call_count == 1
-
+class TestSegmentMetadata:
     def test_metadata_fetch_preserves_segment_order(self, monkeypatch):
         names = [f"segment_{i}.mp4" for i in range(20)]
         monkeypatch.setattr(function_app, "fetch_segment_metadata", lambda _container, name: {"name": name})
@@ -270,3 +288,4 @@ class TestRemovedHelpers:
     def test_unused_helpers_are_removed(self):
         assert not hasattr(function_app, "calculate_hash_prefix")
         assert not hasattr(function_app, "TRIGGERED_PATTERNS")
+        assert not hasattr(function_app, "query_blobs_by_tags")
