@@ -82,6 +82,7 @@ The following applications are currently available in this directory:
 - **[516-chat-with-your-factory](./516-chat-with-your-factory/README.md)** - Voice-enabled AI agent web application for industrial environments powered by Azure AI Foundry Agents or Copilot Studio
 - **[517-sensor-simulator](./517-sensor-simulator/README.md)** - Synthetic vibration, acoustic, and temperature MQTT publisher with versioned topics, CloudEvents attributes, and an anomaly toggle
 - **[518-mqtt-predict-adapter](./518-mqtt-predict-adapter/README.md)** - Bridges MQTT predict requests to HTTP predictive model endpoints such as Foundry Local, with versioned topics and service account token authentication
+- **[521-acoustic-anomaly-operators](./521-acoustic-anomaly-operators/README.md)** - WASM data flow graph operators that featurize audio into log-mel rows for an autoencoder served through the MQTT predict adapter and turn model scores into anomaly verdicts
 
 ## Service Implementation
 
