@@ -1,0 +1,153 @@
+{{- $a := .Values.adapter }}
+{{- if and .Values.backend.sat.enabled (not (hasPrefix "https://" $a.modelEndpointTemplate)) }}
+{{- fail "adapter.modelEndpointTemplate must use https:// while backend.sat.enabled is true" }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "predict-adapter.fullname" . }}
+  namespace: {{ include "predict-adapter.namespace" . }}
+  labels:
+    {{- include "predict-adapter.labels" . | nindent 4 }}
+spec:
+  # Requests use a non-shared subscription, so extra replicas would answer each request more than once.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "predict-adapter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "predict-adapter.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "predict-adapter.serviceAccountName" . }}
+      # Covers the longest request (attempts x timeout plus backoff) so in-flight results are published on shutdown.
+      terminationGracePeriodSeconds: {{ add (ceil (mulf $a.backendTimeoutSeconds $a.backendAttempts)) 20 }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "predict-adapter.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AIO_MQTT_CLIENT_ID
+              value: {{ printf "%s-$(POD_NAME)" (required "mqtt.clientIdPrefix is required" .Values.mqtt.clientIdPrefix) | quote }}
+            - name: AIO_BROKER_HOSTNAME
+              value: {{ .Values.mqtt.brokerHostname | quote }}
+            - name: AIO_BROKER_TCP_PORT
+              value: {{ .Values.mqtt.brokerTcpPort | quote }}
+            - name: AIO_MQTT_USE_TLS
+              value: "true"
+            - name: AIO_TLS_CA_FILE
+              value: {{ .Values.mqtt.tlsCaFile | quote }}
+            - name: AIO_SAT_FILE
+              value: {{ .Values.mqtt.satFile | quote }}
+            - name: ALLOWED_MODELS
+              value: {{ required "adapter.allowedModels must list at least one model ID" (join "," $a.allowedModels) | quote }}
+            - name: MODEL_ENDPOINT_TEMPLATE
+              value: {{ $a.modelEndpointTemplate | quote }}
+            - name: TOPIC_DOMAIN
+              value: {{ $a.topicDomain | quote }}
+            - name: REQUEST_KIND
+              value: {{ $a.requestKind | quote }}
+            - name: RESPONSE_KIND
+              value: {{ $a.responseKind | quote }}
+            - name: EVENT_SOURCE
+              value: {{ $a.eventSource | quote }}
+            - name: BACKEND_TIMEOUT_SECONDS
+              value: {{ $a.backendTimeoutSeconds | quote }}
+            - name: BACKEND_ATTEMPTS
+              value: {{ $a.backendAttempts | int64 | quote }}
+            - name: MAX_REQUEST_BYTES
+              value: {{ $a.maxRequestBytes | int64 | quote }}
+            - name: MAX_RESPONSE_BYTES
+              value: {{ $a.maxResponseBytes | int64 | quote }}
+            - name: MAX_CONCURRENCY
+              value: {{ $a.maxConcurrency | int64 | quote }}
+            - name: BACKEND_AUTH_FILE
+              value: {{ ternary "/var/run/secrets/foundry-local/token" "" .Values.backend.sat.enabled | quote }}
+            {{- with .Values.backend.caConfigMap.name }}
+            - name: BACKEND_CA_FILE
+              value: "/var/run/backend-ca/ca.crt"
+            {{- end }}
+          volumeMounts:
+            - name: mq-sat
+              mountPath: {{ dir .Values.mqtt.satFile }}
+              readOnly: true
+            - name: trust-bundle
+              mountPath: {{ dir .Values.mqtt.tlsCaFile }}
+              readOnly: true
+            {{- if .Values.backend.sat.enabled }}
+            - name: backend-sat
+              mountPath: /var/run/secrets/foundry-local
+              readOnly: true
+            {{- end }}
+            {{- if .Values.backend.caConfigMap.name }}
+            - name: backend-ca
+              mountPath: /var/run/backend-ca
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: {{ base .Values.mqtt.satFile }}
+                  audience: {{ .Values.volumes.mqSat.audience | quote }}
+                  expirationSeconds: {{ .Values.volumes.mqSat.expirationSeconds | int64 }}
+        - name: trust-bundle
+          configMap:
+            name: {{ .Values.volumes.trustBundle.configMapName }}
+        {{- if .Values.backend.sat.enabled }}
+        - name: backend-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  audience: {{ .Values.backend.sat.audience | quote }}
+                  expirationSeconds: {{ .Values.backend.sat.expirationSeconds | int64 }}
+        {{- end }}
+        {{- with .Values.backend.caConfigMap }}
+        {{- if .name }}
+        - name: backend-ca
+          configMap:
+            name: {{ .name }}
+            items:
+              - key: {{ .key }}
+                path: ca.crt
+        {{- end }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

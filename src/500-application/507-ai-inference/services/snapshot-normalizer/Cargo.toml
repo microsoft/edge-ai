@@ -1,0 +1,29 @@
+[package]
+name = "snapshot-normalizer"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+authors = ["Edge AI Team"]
+description = "MQTT adapter that publishes binary JPEG snapshots as image_snapshot v1 requests"
+license = "MIT"
+publish = false
+
+[dependencies]
+anyhow = "1.0"
+azure_iot_operations_mqtt = "1.2.3"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+serde_json = "1.0"
+snapshot-normalizer-core = { path = "../snapshot-normalizer-core" }
+tokio = { version = "1.44", features = ["macros", "rt-multi-thread", "signal", "time"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1.8", features = ["v4"] }
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"
+
+# Opt out of the parent workspace: independent crate with its own Cargo.lock
+[workspace]
