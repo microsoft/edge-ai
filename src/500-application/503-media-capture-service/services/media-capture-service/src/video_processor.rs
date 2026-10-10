@@ -68,6 +68,7 @@ pub struct VideoSegmentParams {
     pub time_param: TimeParams,
     pub event_id: Option<u64>,
     pub event_type: Option<String>,
+    pub camera_id: Option<String>,
 }
 
 const DEFAULT_BUFFER_SECONDS: usize = 30;
@@ -246,6 +247,7 @@ mod tests {
                 },
                 event_id: Some(42),
                 event_type: Some("test".to_string()),
+                camera_id: Some("test-camera".to_string()),
             })
         }
     }
