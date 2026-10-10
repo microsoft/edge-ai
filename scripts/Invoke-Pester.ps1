@@ -94,16 +94,18 @@ $summary = @"
 | Total | $($result.TotalCount) |
 | Passed | $($result.PassedCount) |
 | Failed | $($result.FailedCount) |
+| Failed Blocks | $($result.FailedBlocksCount) |
+| Failed Containers | $($result.FailedContainersCount) |
 | Skipped | $($result.SkippedCount) |
 | Duration | $($result.Duration) |
 "@
 
 Write-CIStepSummary $summary
 
-Set-CIOutput -Name 'test-result' -Value $(if ($result.FailedCount -eq 0) { 'passed' } else { 'failed' })
+Set-CIOutput -Name 'test-result' -Value $(if (($result.FailedCount + $result.FailedBlocksCount + $result.FailedContainersCount) -eq 0) { 'passed' } else { 'failed' })
 Set-CIOutput -Name 'test-count' -Value $result.TotalCount.ToString()
 Set-CIOutput -Name 'fail-count' -Value $result.FailedCount.ToString()
 
-if ($CI -and $result.FailedCount -gt 0) {
+if ($CI -and ($result.FailedCount + $result.FailedBlocksCount + $result.FailedContainersCount) -gt 0) {
     exit 1
 }
