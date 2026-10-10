@@ -748,6 +748,8 @@ pub async fn cleanup_segments(
 /// `idle_limit`, regardless of when ffmpeg last wrote media to it. A partial
 /// segment without a lease is judged by its own modification time. `active`
 /// is never removed. Leases whose segment is gone are removed once stale.
+/// Files that disappear during the scan, such as a segment the recorder just
+/// finished, are skipped.
 pub async fn remove_stale_partial_segments(
     staging_camera_path: &Path,
     idle_limit: Duration,
@@ -763,18 +765,23 @@ pub async fn remove_stale_partial_segments(
     let mut entries = fs::read_dir(staging_camera_path).await?;
     while let Some(entry) = entries.next_entry().await? {
         let path = entry.path();
-        if !entry.file_type().await?.is_file() {
-            continue;
+        match entry.file_type().await {
+            Ok(file_type) if file_type.is_file() => {}
+            Ok(_) => continue,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(e) => return Err(e),
         }
         if has_segment_extension(&path, &[PARTIAL_EXTENSION]) {
             if active == Some(path.as_path()) {
                 continue;
             }
             let lease = lease_path(&path);
-            let last_alive = match modified_at(&lease).await {
-                Ok(time) => time,
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => modified_at(&path).await?,
-                Err(e) => return Err(e),
+            let last_alive = match modified_if_exists(&lease).await? {
+                Some(time) => time,
+                None => match modified_if_exists(&path).await? {
+                    Some(time) => time,
+                    None => continue,
+                },
             };
             if last_alive < cutoff {
                 match fs::remove_file(&path).await {
@@ -785,7 +792,13 @@ pub async fn remove_stale_partial_segments(
             }
         } else if has_segment_extension(&path, &[LEASE_EXTENSION]) {
             let partial = path.with_extension("");
-            if !fs::try_exists(&partial).await? && modified_at(&path).await? < cutoff {
+            if fs::try_exists(&partial).await? {
+                continue;
+            }
+            if modified_if_exists(&path)
+                .await?
+                .is_some_and(|time| time < cutoff)
+            {
                 let _ = fs::remove_file(&path).await;
             }
         }
@@ -793,8 +806,13 @@ pub async fn remove_stale_partial_segments(
     Ok(removed)
 }
 
-async fn modified_at(path: &Path) -> Result<DateTime<Utc>, std::io::Error> {
-    Ok(fs::metadata(path).await?.modified()?.into())
+/// Returns the modification time of `path`, or None when it doesn't exist.
+async fn modified_if_exists(path: &Path) -> Result<Option<DateTime<Utc>>, std::io::Error> {
+    match fs::metadata(path).await {
+        Ok(metadata) => Ok(Some(metadata.modified()?.into())),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(e),
+    }
 }
 
 async fn cleanup_tree(
@@ -1001,6 +1019,30 @@ mod tests {
         assert!(!legacy_idle.exists());
         assert!(legacy_recent.exists());
         assert!(!orphan_lease.exists());
+    }
+
+    #[tokio::test]
+    async fn stale_cleanup_skips_files_removed_earlier_in_the_same_scan() {
+        // Removing a partial also removes its lease. With enough segments,
+        // some lease is listed after its partial in any directory order.
+        let dir = tempfile::tempdir().unwrap();
+        let staging = dir.path().join("camera-01");
+        std::fs::create_dir_all(&staging).unwrap();
+        let idle_for = PARTIAL_IDLE_LIMIT.as_secs() + 60;
+        for i in 0..50 {
+            let partial = staging.join(format!("segment_{i:02}_camera-01.mp4.partial"));
+            std::fs::write(&partial, b"x").unwrap();
+            std::fs::write(lease_path(&partial), b"lease").unwrap();
+            set_file_mtime(&partial, old_time(idle_for)).unwrap();
+            set_file_mtime(lease_path(&partial), old_time(idle_for)).unwrap();
+        }
+
+        let removed = remove_stale_partial_segments(&staging, PARTIAL_IDLE_LIMIT, None)
+            .await
+            .unwrap();
+
+        assert_eq!(removed, 50);
+        assert_eq!(std::fs::read_dir(&staging).unwrap().count(), 0);
     }
 
     #[tokio::test]
