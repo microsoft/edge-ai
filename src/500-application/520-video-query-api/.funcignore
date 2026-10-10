@@ -1,0 +1,21 @@
+.git*
+.vscode
+local.settings.json
+tests
+requirements-test.*
+.python_packages
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.coverage
+htmlcov
+*.tmp
+tmp/
+temp/
+
+.venv
+
+# Ensure bin/ffmpeg is included in deployment
+!bin/
+!bin/ffmpeg
