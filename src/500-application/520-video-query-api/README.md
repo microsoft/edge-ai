@@ -204,16 +204,16 @@ When gaps between video segments exceed 5 seconds, the response includes gap det
 
 ### HTTP Response Codes
 
-| Status | Description                                                                      |
-|--------|----------------------------------------------------------------------------------|
-| 200    | Success — segments found or empty result with message                            |
-| 202    | Accepted — trigger capture request accepted (POST /api/trigger)                  |
-| 400    | Bad Request — invalid parameters, disallowed camera, or stitch job over a limit  |
-| 429    | Too Many Requests — trigger rate limited, or every stitch slot is busy           |
-| 500    | Internal Server Error — storage not configured or processing failure             |
-| 502    | Bad Gateway — recording discovery or retrieval failed, or MQTT delivery failed   |
-| 503    | Service Unavailable — not configured, storage not ready, or short on disk space  |
-| 504    | Gateway Timeout — stitching didn't finish within `STITCH_DEADLINE_SECONDS`       |
+| Status | Description                                                                     |
+|--------|---------------------------------------------------------------------------------|
+| 200    | Success — segments found or empty result with message                           |
+| 202    | Accepted — trigger capture request accepted (POST /api/trigger)                 |
+| 400    | Bad Request — invalid parameters, disallowed camera, or stitch job over a limit |
+| 429    | Too Many Requests — trigger rate limited, or every stitch slot is busy          |
+| 500    | Internal Server Error — storage not configured or processing failure            |
+| 502    | Bad Gateway — recording discovery or retrieval failed, or MQTT delivery failed  |
+| 503    | Service Unavailable — not configured, storage not ready, or short on disk space |
+| 504    | Gateway Timeout — stitching didn't finish within `STITCH_DEADLINE_SECONDS`      |
 
 A failed or interrupted blob listing returns `502` instead of an empty or partial result. A missing metadata file isn't an error; the segment is returned with `timing: "filename"`.
 
