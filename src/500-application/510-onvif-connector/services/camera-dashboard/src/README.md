@@ -22,16 +22,16 @@ Python source modules for the camera-dashboard service. Each module encapsulates
 
 ## Module Overview
 
-| Module               | Purpose                                                                            |
-|----------------------|------------------------------------------------------------------------------------|
-| `app.py`             | Application entry point — NiceGUI page definitions, camera registration, UI layout |
-| `camera_onboarding.py` | RTSP frame verification and deterministic Azure IoT Operations Terraform output   |
-| `camera_onboarding_ui.py` | Explicit-scope onboarding, selection, inspection, and output controls           |
-| `camera_manager.py`  | RTSP capture threads with auto-reconnection and frame registry                     |
-| `mjpeg_server.py`    | FastAPI MJPEG streaming endpoint and health check                                  |
-| `mqtt_handler.py`    | MQTT client for PTZ command publishing and event subscription                      |
-| `onvif_discovery.py` | WS-Discovery multicast probe, direct ONVIF device probing, stream URI retrieval    |
-| `ptz_controller.py`  | ONVIF PTZ operations (pan, tilt, zoom, home) with auto-stop scheduling             |
+| Module                    | Purpose                                                                            |
+|---------------------------|------------------------------------------------------------------------------------|
+| `app.py`                  | Application entry point — NiceGUI page definitions, camera registration, UI layout |
+| `camera_onboarding.py`    | RTSP frame verification and deterministic Azure IoT Operations Terraform output    |
+| `camera_onboarding_ui.py` | Explicit-scope onboarding, selection, inspection, and output controls              |
+| `camera_manager.py`       | RTSP capture threads with auto-reconnection and frame registry                     |
+| `mjpeg_server.py`         | FastAPI MJPEG streaming endpoint and health check                                  |
+| `mqtt_handler.py`         | MQTT client for PTZ command publishing and event subscription                      |
+| `onvif_discovery.py`      | WS-Discovery multicast probe, direct ONVIF device probing, stream URI retrieval    |
+| `ptz_controller.py`       | ONVIF PTZ operations (pan, tilt, zoom, home) with auto-stop scheduling             |
 
 ## Module Details
 
