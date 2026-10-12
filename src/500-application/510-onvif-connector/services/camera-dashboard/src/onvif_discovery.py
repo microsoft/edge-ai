@@ -55,32 +55,76 @@ class ONVIFDiscovery:
                         "ProfileToken": profile.token,
                     }
                 )
+                encoder = getattr(profile, "VideoEncoderConfiguration", None)
+                resolution = getattr(encoder, "Resolution", None)
+                rate_control = getattr(encoder, "RateControl", None)
                 cameras.append(
                     {
-                        "profile": profile.Name,
-                        "token": profile.token,
-                        "uri": uri.Uri,
+                        "name": str(profile.Name),
+                        "token": str(profile.token),
+                        "stream_uri": str(uri.Uri),
+                        "encoding": _string_value(encoder, "Encoding"),
+                        "resolution": _resolution_value(resolution),
+                        "frame_rate": _number_value(
+                            rate_control, "FrameRateLimit"
+                        ),
+                        "bitrate_kbps": _number_value(
+                            rate_control, "BitrateLimit"
+                        ),
+                        "supports_ptz": getattr(
+                            profile, "PTZConfiguration", None
+                        ) is not None,
                     }
                 )
-            return {"device": info, "cameras": cameras}
+            return {
+                "status": "capabilities_inspected",
+                "device": {
+                    "manufacturer": _string_value(info, "Manufacturer"),
+                    "model": _string_value(info, "Model"),
+                    "firmware_version": _string_value(
+                        info, "FirmwareVersion"
+                    ),
+                    "serial_number": _string_value(info, "SerialNumber"),
+                    "hardware_id": _string_value(info, "HardwareId"),
+                },
+                "profiles": cameras,
+            }
         finally:
             await cam.close()
 
     async def get_stream_uri(self, profile_token=None):
         """Return the RTSP stream URI for the given profile, or the first available."""
         result = await self.discover()
-        if not result["cameras"]:
+        if not result["profiles"]:
             return None
         if profile_token:
-            for cam in result["cameras"]:
+            for cam in result["profiles"]:
                 if cam["token"] == profile_token:
-                    return cam["uri"]
-        return result["cameras"][0]["uri"]
+                    return cam["stream_uri"]
+        return result["profiles"][0]["stream_uri"]
 
     async def get_profiles(self):
         """Return all available media profiles with their stream URIs."""
         result = await self.discover()
-        return result["cameras"]
+        return result["profiles"]
+
+
+def _string_value(value, attribute):
+    result = getattr(value, attribute, None)
+    return str(result) if result is not None else None
+
+
+def _number_value(value, attribute):
+    result = getattr(value, attribute, None)
+    return result if isinstance(result, (int, float)) else None
+
+
+def _resolution_value(value):
+    width = getattr(value, "Width", None)
+    height = getattr(value, "Height", None)
+    if isinstance(width, int) and isinstance(height, int):
+        return f"{width}x{height}"
+    return None
 
 
 _WS_DISCOVERY_MULTICAST = ("239.255.255.250", 3702)
@@ -158,7 +202,13 @@ def _parse_probe_match(data, devices):
         name = _name_from_scopes(scopes) or f"Camera ({host})"
         key = f"{host}:{port}"
         if key not in devices:
-            devices[key] = {"host": host, "port": port, "name": name}
+            devices[key] = {
+                "host": host,
+                "port": port,
+                "name": name,
+                "status": "candidate",
+                "evidence": ["ws_discovery_probe_match"],
+            }
 
 
 def _name_from_scopes(scopes):
@@ -173,38 +223,34 @@ def _name_from_scopes(scopes):
 
 
 async def probe_onvif_device(host, port=80, semaphore=None):
-    """Probe a single host via ONVIF GetDeviceInformation (TCP)."""
-    async def _probe():
+    """Collect bounded candidate evidence for one explicitly approved endpoint."""
+    def _probe():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
         try:
-            cam = ONVIFCamera(host, port, "admin", "admin", wsdl_dir=_WSDL_DIR)
-            try:
-                await cam.update_xaddrs()
-                device = await cam.create_devicemgmt_service()
-                info = await device.GetDeviceInformation()
-                name = getattr(info, "Model", None) or getattr(
-                    info, "Manufacturer", None) or f"Camera ({host})"
-                return {"host": host, "port": port, "name": str(name)}
-            finally:
-                try:
-                    await cam.close()
-                except Exception:
-                    logger.debug(
-                        "Failed to close ONVIF camera connection", exc_info=True)
-        except Exception:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(2)
-            try:
-                sock.connect((host, port))
-                sock.close()
-                return {"host": host, "port": port, "name": f"Camera ({host})"}
-            except (OSError, TimeoutError):
-                return None
-            finally:
-                sock.close()
+            sock.connect((host, port))
+            return {
+                "host": host,
+                "port": port,
+                "name": f"Candidate ({host})",
+                "status": "candidate",
+                "evidence": ["tcp_port_open"],
+            }
+        except (OSError, TimeoutError) as exc:
+            return {
+                "host": host,
+                "port": port,
+                "name": f"Unreachable ({host})",
+                "status": "unreachable",
+                "evidence": [],
+                "error": str(exc),
+            }
+        finally:
+            sock.close()
     if semaphore:
         async with semaphore:
-            return await _probe()
-    return await _probe()
+            return await asyncio.to_thread(_probe)
+    return await asyncio.to_thread(_probe)
 
 
 def _expand_targets(raw):
@@ -230,8 +276,11 @@ def _expand_targets(raw):
             if maybe_port.isdigit():
                 port = int(maybe_port)
                 token = base
+        if not 1 <= port <= 65535:
+            raise ValueError(f"Port is outside the approved range: {port}")
         if "/" in token:
-            for addr in ipaddress.IPv4Network(token, strict=False).hosts():
+            network = ipaddress.IPv4Network(token, strict=False)
+            for addr in network.hosts():
                 results.append((str(addr), port))
         elif "-" in token.split(".")[-1]:
             parts = token.split(".")
@@ -241,21 +290,25 @@ def _expand_targets(raw):
                 lo, hi = last.split("-", 1)
                 start = int(lo)
                 end = int(hi)
+                if not 0 <= start <= end <= 255:
+                    raise ValueError(f"Invalid IPv4 range: {token}")
                 for i in range(start, end + 1):
                     results.append((f"{prefix}.{i}", port))
         else:
-            results.append((token, port))
-    return results
+            results.append((str(ipaddress.IPv4Address(token)), port))
+        if len(results) > 4096:
+            raise ValueError("Approved discovery scope cannot exceed 4096 endpoints")
+    return list(dict.fromkeys(results))
 
 
-async def discover_onvif_devices(timeout=5, target_hosts=None):
-    """Discover ONVIF cameras via multicast or direct probe.
+async def discover_onvif_devices(timeout=5, target_hosts=None, multicast=False):
+    """Discover ONVIF candidates within an explicitly approved scope.
 
     Supported target_hosts formats (comma-separated):
       - Single IP or IP:port
       - CIDR subnet: 192.168.1.0/24 or 192.168.1.0/24:8000
       - IP range: 192.168.1.1-254 or 192.168.1.1-254:8000
-    Falls back to WS-Discovery multicast when target_hosts is empty.
+    Multicast is used only when multicast=True.
     """
     if target_hosts:
         pairs = _expand_targets(target_hosts)
@@ -264,5 +317,28 @@ async def discover_onvif_devices(timeout=5, target_hosts=None):
         sem = asyncio.Semaphore(50)
         tasks = [probe_onvif_device(h, p, semaphore=sem) for h, p in pairs]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        return [r for r in results if r and not isinstance(r, Exception)]
-    return await asyncio.get_event_loop().run_in_executor(None, _discover_sync, timeout)
+        candidates = []
+        for (host, port), result in zip(pairs, results, strict=True):
+            if isinstance(result, Exception):
+                logger.warning(
+                    "Candidate probe failed with %s",
+                    type(result).__name__,
+                )
+                candidates.append(
+                    {
+                        "host": host,
+                        "port": port,
+                        "name": f"Unknown ({host})",
+                        "status": "unknown",
+                        "evidence": [],
+                        "error": "Candidate probe failed for an unknown reason",
+                    }
+                )
+            elif result:
+                candidates.append(result)
+        return candidates
+    if multicast:
+        return await asyncio.get_event_loop().run_in_executor(
+            None, _discover_sync, timeout
+        )
+    raise ValueError("Provide an approved target scope or explicitly enable multicast")

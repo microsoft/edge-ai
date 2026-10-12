@@ -14,6 +14,8 @@ import os
 from urllib.parse import quote, urlparse
 
 from camera_manager import CameraManager
+from camera_onboarding import classify_inspection_error
+from camera_onboarding_ui import render_camera_onboarding
 from mjpeg_server import register_mjpeg_routes
 from mqtt_handler import MQTTHandler
 from nicegui import app, ui
@@ -201,20 +203,37 @@ def dashboard():
                     "Comma-separated for multiple addresses. "
                     "Append :port to set a custom ONVIF port."
                 )
+                multicast_input = ui.checkbox(
+                    "Explicitly approve WS-Discovery multicast"
+                )
 
                 discovery_dialog = ui.dialog()
                 with discovery_dialog, ui.card().classes("min-w-[500px]"):
                     discovery_container = ui.column().classes("w-full")
 
                 def populate_discovery_dialog(devices):
+                    unreachable_count = sum(
+                        device["status"] == "unreachable"
+                        for device in devices
+                    )
+                    visible_devices = [
+                        device
+                        for device in devices
+                        if device["status"] != "unreachable"
+                    ]
                     discovery_container.clear()
                     with discovery_container:
                         ui.label("Discovered Cameras").classes("text-h6")
-                        if not devices:
+                        if unreachable_count:
+                            ui.label(
+                                f"{unreachable_count} approved endpoints were "
+                                "unreachable and are hidden."
+                            ).classes("text-caption text-grey")
+                        if not visible_devices:
                             ui.label(
                                 "No cameras found on the network."
                             ).classes("text-body1 text-grey")
-                        for dev in devices:
+                        for dev in visible_devices:
                             with ui.card().classes("w-full q-mb-sm"):
                                 ui.label(dev["name"]).classes(
                                     "text-subtitle1 font-bold")
@@ -272,8 +291,11 @@ def dashboard():
                                                 f"Added: {cam_id}",
                                                 type="positive")
                                         except Exception as exc:
+                                            failure = classify_inspection_error(
+                                                exc
+                                            )
                                             ui.notify(
-                                                f"Failed: {exc}",
+                                                failure["error"],
                                                 type="negative")
 
                                     ui.button(
@@ -288,7 +310,10 @@ def dashboard():
                     try:
                         targets = probe_input.value.strip() or None
                         devices = await discover_onvif_devices(
-                            timeout=5, target_hosts=targets)
+                            timeout=5,
+                            target_hosts=targets,
+                            multicast=multicast_input.value,
+                        )
                         populate_discovery_dialog(devices)
                         discovery_dialog.open()
                     except Exception as exc:
@@ -313,6 +338,13 @@ def dashboard():
                     value=selected_camera["id"],
                     on_change=on_camera_select,
                 ).classes("w-full")
+
+            render_camera_onboarding(
+                camera_options=camera_options,
+                camera_select=camera_select,
+                register_camera_callback=register_camera,
+                rebuild_grid_callback=lambda: rebuild_grid(),
+            )
 
             # Video grid — all registered cameras
             with ui.card().classes("w-full"):

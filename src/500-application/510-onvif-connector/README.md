@@ -810,7 +810,10 @@ Web dashboard that displays live RTSP camera feeds via MJPEG proxy and provides 
 - Dynamic camera management — add cameras at runtime by RTSP URL
 - PTZ (pan/tilt/zoom) camera control via MQTT command publishing
 - MQTT event feed displaying motion and tampering alerts
-- Optional ONVIF auto-discovery for camera stream URIs
+- Explicit-scope ONVIF discovery for single IP, IP:port, CIDR, range, or approved multicast
+- Authenticated device inspection and media profile selection
+- RTSP live-feed verification by receiving a frame
+- Deterministic Azure IoT Operations Terraform proposal generation for selected cameras
 
 ### Dashboard Quick Start
 
@@ -836,6 +839,23 @@ The test RTSP camera streams a SMPTE pattern at `rtsp://admin:password@rtsp-came
 | `JPEG_QUALITY`   | JPEG encoding quality (0-100) | `75`                                               |
 
 The dashboard uses the shared `onvif-mosquitto-broker` service and the `MQTT_TOPIC_PREFIX` environment variable for MQTT communication.
+
+### Camera Onboarding Output
+
+Use **Camera Onboarding Preflight** in the dashboard to approve a discovery scope, inspect a
+selected camera, choose a media profile, and verify a live frame. Only verified selections can be
+included in the generated Terraform proposal.
+
+The dashboard writes two local files under the gitignored `.camera-onboarding/` directory:
+
+- `camera-discovery-results.json` contains confidential candidate evidence, inspected device data,
+  statuses, and errors.
+- `camera-onboarding.tfvars.example` contains credential-free media endpoints, Kubernetes secret
+  references, inspected profile metadata, and values matching the blueprint's
+  `namespaced_devices` and `namespaced_assets` variables.
+
+Review the proposal before copying it into deployment configuration. The dashboard does not run
+Terraform or maintain a persistent camera registry.
 
 ### Dashboard MQTT Integration
 
