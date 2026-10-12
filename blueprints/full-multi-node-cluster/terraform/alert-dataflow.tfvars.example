@@ -30,8 +30,8 @@ namespaced_devices = [
           authentication = {
             method = "UsernamePassword"
             usernamePasswordCredentials = {
-              usernameSecretName = "camera-credentials-username"
-              passwordSecretName = "camera-credentials-password"
+              usernameSecretName = "camera-credentials/username"
+              passwordSecretName = "camera-credentials/password"
             }
           }
         }
@@ -56,6 +56,16 @@ namespaced_devices = [
 ]
 
 // Media capture task assets
+/*
+ * Media connector tasks are configured as streams. Each streamConfiguration
+ * sets taskType and autostart plus task settings: format and snapshotsPerSecond
+ * for snapshots, format and duration (seconds) for clips.
+ *
+ * File system tasks write to a Storage destination path. The path must be the
+ * root of a volume mounted on the connector template or start with /tmp. The
+ * connector templates this blueprint deploys don't mount a volume, so these
+ * examples write to ephemeral /tmp paths.
+ */
 namespaced_assets = [
   {
     name         = "warehouse-camera-01-snapshots"
@@ -69,17 +79,17 @@ namespaced_assets = [
       assetType = "media-snapshots"
       location  = "Warehouse Main Entrance"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "snapshots"
-        data_source           = ""
-        dataset_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"intervalSeconds\":5,\"quality\":85}"
-        data_points           = []
+        name                 = "snapshots"
+        stream_configuration = "{\"taskType\":\"snapshot-to-mqtt\",\"autostart\":true,\"format\":\"jpeg\",\"snapshotsPerSecond\":0.2}"
         destinations = [
           {
             target = "Mqtt"
             configuration = {
-              topic = "warehouse/camera-01/snapshots"
+              topic  = "warehouse/camera-01/snapshots"
+              qos    = "Qos1"
+              retain = "Never"
             }
           }
         ]
@@ -98,13 +108,18 @@ namespaced_assets = [
       assetType = "media-clips"
       location  = "Warehouse Main Entrance"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "clips"
-        data_source           = ""
-        dataset_configuration = "{\"taskType\":\"clip-to-fs\",\"durationSeconds\":30,\"storagePath\":\"/clips\"}"
-        data_points           = []
-        destinations          = []
+        name                 = "clips"
+        stream_configuration = "{\"taskType\":\"clip-to-fs\",\"autostart\":true,\"format\":\"mkv\",\"duration\":30}"
+        destinations = [
+          {
+            target = "Storage"
+            configuration = {
+              path = "/tmp/clips"
+            }
+          }
+        ]
       }
     ]
   },
@@ -120,13 +135,18 @@ namespaced_assets = [
       assetType = "media-snapshots"
       location  = "Loading Dock"
     }
-    datasets = [
+    streams = [
       {
-        name                  = "snapshots"
-        data_source           = ""
-        dataset_configuration = "{\"taskType\":\"snapshot-to-fs\",\"intervalSeconds\":10,\"quality\":90,\"storagePath\":\"/snapshots\"}"
-        data_points           = []
-        destinations          = []
+        name                 = "snapshots"
+        stream_configuration = "{\"taskType\":\"snapshot-to-fs\",\"autostart\":true,\"format\":\"jpeg\",\"snapshotsPerSecond\":0.1}"
+        destinations = [
+          {
+            target = "Storage"
+            configuration = {
+              path = "/tmp/snapshots"
+            }
+          }
+        ]
       }
     ]
   }
