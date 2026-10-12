@@ -9,7 +9,7 @@ use serde_json;
 
 use crate::types::{InferenceRequest, InferenceResult};
 use crate::error::InferenceError;
-use crate::config::InferenceConfig;
+use crate::config::{resolve_model_path, InferenceConfig};
 use crate::backend::{Backend, BackendFactory, BackendConfig, BackendType, DeviceType, OptimizationLevel};
 use crate::{InferenceInput, ModelConfig};
 use crate::model_config::{ModelConfigManager, ModelConfiguration, ModelSummary};
@@ -126,8 +126,11 @@ impl InferenceEngine {
         // Load default models if specified
         if let Some(default_models) = &self.config.models.default_models {
             for (model_name, model_path) in default_models {
+                let model_path =
+                    resolve_model_path(&self.config.models.models_directory, model_path)
+                        .map_err(InferenceError::configuration)?;
                 let model_config = ModelConfig {
-                    model_path: model_path.clone(),
+                    model_path: model_path.to_string_lossy().to_string(),
                     model_type: "auto".to_string(),
                     confidence_threshold: Some(0.5),
                     preprocessing: None,
@@ -598,7 +601,7 @@ mod tests {
         config.models.models_directory = PathBuf::from(FIXTURES);
         config.models.default_models = Some(HashMap::from([(
             "identity".to_string(),
-            format!("{}/identity.onnx", FIXTURES),
+            "identity.onnx".to_string(),
         )]));
 
         let mut engine = InferenceEngine::new(config).await.unwrap();
@@ -617,5 +620,21 @@ mod tests {
         assert_eq!(status.session_settings["parallel execution"], "false");
         assert_eq!(status.session_settings["intra-op thread count"], "default");
         assert_eq!(status.session_settings["inter-op thread count"], "default");
+    }
+
+    #[tokio::test]
+    async fn startup_path_resolves_relative_default_models_in_models_directory() {
+        let mut config = InferenceConfig::default();
+        config.models.models_directory = PathBuf::from(FIXTURES);
+        config.models.default_models = Some(HashMap::from([(
+            "identity".to_string(),
+            "identity.onnx".to_string(),
+        )]));
+
+        let mut engine = InferenceEngine::new(config).await.unwrap();
+        engine.initialize().await.unwrap();
+
+        let status = engine.get_backend_status().await;
+        assert!(status.loaded_models.contains(&"identity".to_string()));
     }
 }
