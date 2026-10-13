@@ -2,9 +2,9 @@
 title: AI Inference Service
 description: Production-ready AI inference service with dual-backend machine learning capabilities for edge computing, supporting ONNX Runtime and Candle (pure Rust) inference engines with MQTT integration
 author: Edge AI Team
-ms.date: 2025-10-17
+ms.date: 2026-09-30
 ms.topic: how-to
-estimated_reading_time: 8
+estimated_reading_time: 10
 keywords:
   - ai inference
   - onnx runtime
@@ -16,6 +16,7 @@ keywords:
   - machine learning
   - docker compose
   - kubernetes
+  - image snapshot schema
 ---
 
 A production-ready AI inference service that provides dual-backend machine learning capabilities for edge computing environments. Supports both ONNX Runtime and Candle (pure Rust) inference engines with MQTT integration for real-time processing.
@@ -63,15 +64,91 @@ This component implements a scalable AI inference service designed for industria
 ├── docker-compose.yaml          # Local development environment
 ├── services/                    # Service implementations
 │   ├── ai-edge-inference/       # Main inference service (Rust)
-│   └── ai-edge-inference-crate/ # Shared Rust crate
+│   ├── ai-edge-inference-crate/ # Shared Rust crate
+│   ├── snapshot-normalizer/     # MQTT snapshot adapter (Rust)
+│   └── snapshot-normalizer-core/ # Snapshot normalization library (Rust)
 ├── charts/                      # Kubernetes deployment manifests
 │   ├── base/                    # Base Kubernetes resources
+│   ├── snapshot-normalizer/     # Helm chart for the snapshot adapter
 │   └── model-downloader-job.yaml
 └── resources/                   # Configuration and model files
     ├── model_configs/           # Model configuration files
     ├── models/                  # ML model files (if present)
+    ├── schemas/                 # Published message contracts
     └── mosquitto.conf           # MQTT broker configuration
 ```
+
+## Snapshot Normalizer Core
+
+`services/snapshot-normalizer-core/` is a standalone Rust **library crate**. It
+is not a service, not a container, and not a deployable unit. It builds the
+canonical `image_snapshot` v1 request value from raw JPEG bytes and does
+nothing else.
+
+### What the library does
+
+- Classifies a byte slice as JPEG by its start-of-image marker prefix
+- Applies caller-supplied maxima to the raw payload and to the serialized envelope
+- Base64-encodes the payload with the standard, padded alphabet
+- Builds and serializes the canonical envelope value
+- Offers a fixed-capacity recent-hash duplicate detector, a byte-free FNV-1a 64-bit payload digest, and a fixed-cardinality counter set
+
+Envelope construction is pure: it reads no clock, draws no randomness, performs
+no input or output, and depends on no transport. The same input always yields
+the same envelope.
+
+### Non-goals and limits
+
+- **MQTT and any other transport are out of scope.** The crate publishes nothing, subscribes to nothing, and links no transport client.
+- **Topic-derived identity is out of scope.** `camera_id` and `device_name` are opaque caller-supplied strings. Nothing is parsed out of a topic, and the envelope carries no `source_topic`.
+- No camera is acquired, opened, or driven by this crate; the caller supplies bytes that are already in memory.
+- No character-set check and no length bound are applied to identifiers.
+- No size bound is baked in. `SizeLimits` holds caller-supplied maxima, so the crate stays deployment-neutral. A length equal to a maximum is accepted; only a greater length is rejected.
+- Payload digests are not a cryptographic commitment and payload bytes are never stored or logged.
+
+### Published contract
+
+The emitted value is defined by
+[`resources/schemas/image-snapshot-v1.schema.json`](resources/schemas/image-snapshot-v1.schema.json).
+
+Required: `message_type` (constant `image_snapshot`), `schema_version`,
+`camera_id`, `timestamp` (integer epoch seconds), `image_data` (standard-alphabet
+Base64), `device_name`.
+
+Optional and emitted when supplied: `metadata` (free-form object) and
+`correlation_id` (string). Both are omitted when absent rather than emitted as
+`null`.
+
+Optional and never emitted by this producer: `location`, a
+`[latitude, longitude]` pair reserved in the contract so consumers keep
+accepting envelopes from other producers.
+
+The schema sets `additionalProperties: true`. Readers are tolerant: unknown
+members are accepted and discarded rather than rejected, so a later field
+addition stays non-breaking. The schema documents recommended bounds of 4 MiB
+maximum raw JPEG and 8 MiB maximum serialized envelope; those are caller-configured
+defaults, not schema-enforced limits.
+
+See [`services/snapshot-normalizer-core/README.md`](services/snapshot-normalizer-core/README.md)
+for the full public surface.
+
+## Snapshot Normalizer
+
+`services/snapshot-normalizer/` is the MQTT adapter built on the core library.
+It subscribes to a binary JPEG snapshot topic, such as a media connector
+`snapshot-to-mqtt` stream, and publishes each accepted snapshot as an
+`image_snapshot` v1 request to
+`edge-ai/v1/snapshot-normalizer/camera/{camera-id}/snapshots`, which the
+inference service receives through its pinned `edge-ai/v1/+/camera/+/snapshots`
+input filter.
+
+- Carries CloudEvents attributes as MQTTv5 user properties
+- Deduplicates on the producer-supplied CloudEvents `id`, never on content
+- Refuses to start when its output topic matches its own input filter
+- Deploys with the [`charts/snapshot-normalizer`](charts/snapshot-normalizer/) Helm chart as a single-replica StatefulSet per camera, with a stable, unique client ID
+
+See [`services/snapshot-normalizer/README.md`](services/snapshot-normalizer/README.md)
+for configuration, delivery semantics, and an authorization example.
 
 ## Quick Start
 
@@ -113,45 +190,107 @@ This component implements a scalable AI inference service designed for industria
 4. **Monitor results:**
 
    ```bash
-   # Subscribe to inference results
-   mosquitto_sub -h localhost -p 1883 -t "edge-ai/+/+/ai/inference/+"
+   # Subscribe to inference results under the compose TOPIC_PREFIX
+   mosquitto_sub -h localhost -p 1883 -t "edge-ai/business_unit/facility/gateway_id/inference/#"
    ```
 
 ### Production Deployment
 
-Deploy to Kubernetes using the provided manifests:
+Download the models before the inference Deployment starts. The downloader Job
+writes to the `ai-models-pvc` claim, so create the claim first, wait for the
+Job, then apply the manifests:
 
 ```bash
-kubectl apply -k charts/base/
+kubectl apply -n azure-iot-operations -f charts/base/pvc-models.yaml
+kubectl apply -f charts/model-downloader-job.yaml
+kubectl wait -n azure-iot-operations --for=condition=complete job/model-downloader --timeout=15m
+kubectl apply -k charts/
 ```
+
+A pod that starts before its model file exists fails `/startup` and the kubelet
+restarts it after the 5-minute startup window, so it recovers once the download
+completes.
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable              | Description               | Default                                               |
-|-----------------------|---------------------------|-------------------------------------------------------|
-| `AIO_BROKER_HOSTNAME` | MQTT broker hostname      | `host.docker.internal`                                |
-| `AIO_BROKER_TCP_PORT` | MQTT broker port          | `1883`                                                |
-| `MQTT_INPUT_TOPICS`   | Input topic patterns      | `edge-ai/+/+/camera/snapshots`                        |
-| `TOPIC_PREFIX`        | Output topic prefix       | `edge-ai/business_unit/facility/gateway_id`           |
-| `DEFAULT_BACKEND`     | Default inference backend | `onnx`                                                |
-| `ENABLE_DUAL_BACKEND` | Enable backend comparison | `true`                                                |
-| `MODEL_CONFIG_PATH`   | Model configuration file  | `/app/resources/model_configs/industrial-safety.yaml` |
-| `RUST_LOG`            | Logging level             | `info,ai_edge_inference=debug`                        |
+Defaults are the values the service binary uses when a variable is unset. The
+Kubernetes manifests and `docker-compose.yaml` override several of them.
+
+| Variable                | Description                                                                | Default                                                        |
+|-------------------------|----------------------------------------------------------------------------|----------------------------------------------------------------|
+| `AIO_BROKER_HOSTNAME`   | MQTT broker hostname                                                       | `aio-broker.azure-iot-operations`                              |
+| `AIO_BROKER_TCP_PORT`   | MQTT broker port                                                           | `18883`                                                        |
+| `MQTT_INPUT_TOPICS`     | Comma-separated input topic filters; the service subscribes to each        | `edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots` |
+| `MODELS_DIRECTORY`      | Base directory for relative model paths                                    | `/models`                                                      |
+| `DEFAULT_MODELS`        | Models loaded at startup, relative to `MODELS_DIRECTORY`                   | unset: `default.onnx` (manifests set `tiny-yolov2`)            |
+| `HEALTH_PORT`           | Probe listener port                                                        | `8080` (the image and manifests set `8081`)                    |
+| `ENABLE_TEST_ENDPOINTS` | Mount the unauthenticated `/test/inference` and `/process-files` endpoints | `false`                                                        |
+| `TOPIC_PREFIX`          | Output topic prefix                                                        | `edge-ai/business_unit/facility/gateway_id`                    |
+| `MODEL_CONFIG_PATH`     | Optional YAML model configuration loaded at startup                        | unset                                                          |
+| `RUST_LOG`              | Logging filter                                                             | unset (the image sets `info`)                                  |
+
+The inference backend is chosen at build time with the `BACKEND` build argument
+(`AI_BACKEND` in compose); the service reads no backend selection variable.
+
+### Health, Readiness, and Test Endpoints
+
+The service runs one HTTP listener on `HEALTH_PORT` for Kubernetes probes:
+
+- `/startup` returns 200 once the inference backend initializes and at least one model has loaded. A pod with no loaded model fails startup and is restarted by the kubelet.
+- `/readyz` returns 200 only after at least one model has loaded, so a missing or invalid model keeps the pod out of service.
+- `/healthz` reports liveness.
+
+Every endpoint on the listener is unauthenticated. These are always mounted:
+
+- `/healthz`, `/readyz`, `/startup`
+- `/health` and `/health/detailed` (backend state and loaded model count)
+- `/models` and `/models/{name}` (loaded model names and metadata)
+
+`/test/inference` and `/process-files` run inference on request bodies and on
+files in the models volume. They respond 404 unless `ENABLE_TEST_ENDPOINTS` is
+`true`, which is intended for local development only. Keep the listener on the
+pod network; the base manifests expose it only through a ClusterIP Service. The
+service starts no metrics listener, so the manifests advertise no metrics port.
+
+`DEFAULT_MODELS` names resolve inside `MODELS_DIRECTORY`: `tiny-yolov2` maps
+to `tiny-yolov2/tinyyolov2-8.onnx` (model name `default`), `yolov4` to
+`yolov4/yolov4.onnx`, and `mobilenet` to `mobilenet.onnx`, the files written by
+[`charts/model-downloader-job.yaml`](charts/model-downloader-job.yaml). Any
+other value is a relative model file path, gets `.onnx` appended when it has no
+extension, and is named by its file stem. Startup fails when a path is absolute
+or contains `..`, or when two entries resolve to the same model name.
 
 ### Topic Structure
 
-```bash
-# Input Topics
-edge-ai/business_unit/facility/gateway_id/device_id/camera/snapshots
-edge-ai/business_unit/facility/gateway_id/device_id/sensors/temperature
+The service subscribes to two snapshot filters by default:
 
-# Output Topics
-edge-ai/business_unit/facility/gateway_id/device_id/ai/inference/vision
-edge-ai/business_unit/facility/gateway_id/device_id/ai/inference/sensor
-edge-ai/business_unit/facility/gateway_id/device_id/ai/status
+```text
+# Legacy producers: edge-ai/{site}/{gateway}/camera/snapshots
+edge-ai/+/+/camera/snapshots
+
+# Pinned v1 contract: edge-ai/v1/{producer}/camera/{camera-id}/snapshots
+edge-ai/v1/+/camera/+/snapshots
 ```
+
+The v1 filter follows the `{domain}/{version}/{producer}/{resource-kind}/{resource-id}/{message-kind}`
+grammar in the [AIO messaging design](../../../docs/solution-technology-paper-library/aio-messaging-design.md).
+A payload is dropped with a bounded reason, and without logging its content,
+when it is not valid UTF-8, is not JSON, or carries a `schema_version` whose
+major component is not `1`. Payloads without `schema_version` are accepted for
+legacy producers.
+
+Inference results are published to:
+
+```text
+{TOPIC_PREFIX}/inference/{model_type}/{model_name}[/{priority}]
+```
+
+`model_type` is the backend-reported type (for example `onnx`), `model_name`
+has `-` replaced by `_`, and `priority` is `high`, `medium`, or `low` from the
+highest prediction confidence, omitted when there are no predictions. Without a
+topic router the service falls back to `{TOPIC_PREFIX}ai/results/{camera_id}`.
 
 ## Model Support
 
@@ -292,7 +431,7 @@ docker-compose exec ai-edge-inference cat /app/resources/model_configs/industria
 
 ## Contributing
 
-See the main repository [CONTRIBUTING.md](/CONTRIBUTING.md) for development guidelines and contribution process.
+See the main repository [CONTRIBUTING.md](../../../CONTRIBUTING.md) for development guidelines and contribution process.
 
 ## License
 

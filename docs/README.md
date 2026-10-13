@@ -165,8 +165,8 @@ flowchart TD
 
 1. **Choose your path** from our [Getting Started Guides](getting-started/)
 2. **Set up your environment** with our [Dev Container](contributing/development-environment.md)
-3. **Deploy a blueprint** from our [Blueprint Catalog](blueprints/)
-4. **Explore components** in our [Component Library](src/)
+3. **Deploy a blueprint** from our [Blueprint Catalog](https://github.com/microsoft/edge-ai/tree/main/blueprints)
+4. **Explore components** in our [Component Library](https://github.com/microsoft/edge-ai/tree/main/src)
 
 > **Note on Telemetry:** If you wish to opt-out of sending telemetry data to Microsoft when deploying Azure resources with Terraform, you can set the environment variable `ARM_DISABLE_TERRAFORM_PARTNER_ID=true` before running any `terraform` commands.
 

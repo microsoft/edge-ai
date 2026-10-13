@@ -1,0 +1,11 @@
+apiVersion: v2
+name: sensor-simulator
+description: Publishes synthetic vibration, acoustic, and temperature readings to the Azure IoT Operations MQTT broker
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/microsoft/edge-ai
+sources:
+  - https://github.com/microsoft/edge-ai
+maintainers:
+  - name: Edge AI Team

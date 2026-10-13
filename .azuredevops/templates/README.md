@@ -20,7 +20,7 @@ This directory contains reusable Azure DevOps pipeline templates for release aut
 
 All release automation pipelines now use these templates for consistent, maintainable operations:
 
-### GitHub Authentication ([github-auth.yml](./github-auth.md))
+### GitHub Authentication ([github-auth.yml](../docs/github-auth.md))
 
 Provides standardized GitHub App authentication for all pipelines requiring GitHub API access.
 
@@ -44,7 +44,7 @@ Provides standardized GitHub App authentication for all pipelines requiring GitH
     displayName: 'Authenticate with GitHub'
 ```
 
-### GitHub Branch Operations ([github-branch-operations.yml](./github-branch-operations.md))
+### GitHub Branch Operations ([github-branch-operations.yml](../docs/github-branch-operations.md))
 
 Manages GitHub branch operations via REST API with 4 operation modes.
 
@@ -81,7 +81,7 @@ Manages GitHub branch operations via REST API with 4 operation modes.
     failOnExists: true
 ```
 
-### Pull Request Operations ([pr-creation.yml](./pr-creation.md))
+### Pull Request Operations ([pr-creation.yml](../docs/pr-creation.md))
 
 Comprehensive pull request management with 4 operation modes.
 
@@ -128,7 +128,7 @@ Comprehensive pull request management with 4 operation modes.
     isDraft: false
 ```
 
-### Git Synchronization Operations ([git-sync-operations.yml](./git-sync-operations.md))
+### Git Synchronization Operations ([git-sync-operations.yml](../docs/git-sync-operations.md))
 
 Git operations for repository synchronization with 4 operation modes.
 
@@ -161,7 +161,7 @@ Git operations for repository synchronization with 4 operation modes.
     conflictResolution: 'fail'
 ```
 
-### Release Validation ([release-validation.yml](./release-validation.md))
+### Release Validation ([release-validation.yml](../docs/release-validation.md))
 
 Comprehensive release validation with 4 operation modes.
 

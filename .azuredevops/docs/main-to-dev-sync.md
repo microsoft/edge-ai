@@ -438,7 +438,7 @@ See [Common Troubleshooting](../pipelines/README.md#common-troubleshooting) for 
 
 * **[Branch Strategy Overview](../../docs/build-cicd/branch-strategy.md)**: Dual-branch architecture and workflows
 * **[Release Workflow](../../docs/build-cicd/release-workflow.md)**: Complete release process documentation
-* **[GitHub Pull Pipeline](./github-pull.yml.md)**: GitHub→AzDO main sync pipeline
+* **[GitHub Pull Pipeline](../../docs/build-cicd/azure-pipelines/github-pull.md)**: GitHub→AzDO main sync pipeline
 
 ---
 

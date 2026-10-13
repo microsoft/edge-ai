@@ -111,7 +111,7 @@ Configure storage capabilities:
 - **Fault tolerance mode**: Enable fault-tolerant storage pools for multi-node clusters (default: disabled)
 - **Disk mount point**: Host path for storage pool data (default: /mnt)
 - **Release train**: Stable, preview, or custom channels (default: stable)
-- **Version**: Specific extension version (default: 2.6.0)
+- **Version**: Specific extension version (default: 2.12.0)
 
 **Note**: Fault tolerance requires multi-node clusters and consumes additional disk space for replication.
 
@@ -138,7 +138,7 @@ arc_extensions = {
 
   container_storage_extension = {
     enabled                 = true
-    version                 = "2.6.0"
+    version                 = "2.12.0"
     train                   = "stable"
     disk_storage_class      = ""  # Auto-detect
     fault_tolerance_enabled = false
@@ -163,7 +163,7 @@ arc_extensions = {
 
   container_storage_extension = {
     enabled                 = false
-    version                 = "2.6.0"
+    version                 = "2.12.0"
     train                   = "stable"
     disk_storage_class      = ""
     fault_tolerance_enabled = false
