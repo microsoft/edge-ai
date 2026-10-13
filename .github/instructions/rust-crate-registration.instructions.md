@@ -5,7 +5,7 @@ applyTo: '**/src/500-application/**/Cargo.toml,**/.github/workflows/rust-tests.y
 
 # Rust Crate Registration Instructions
 
-These rules govern how Rust application crates under `src/500-application/**` are registered with CI and Codecov. They complement the broader Rust guidance in [.github/instructions/rust.instructions.md](.github/instructions/rust.instructions.md) ("Workspace Architecture" section) and are enforced by an automated CI gate (see "CI Gate" below).
+These rules govern how Rust application crates under `src/500-application/**` are registered with CI and Codecov. They are enforced by an automated CI gate (see "CI Gate" below).
 
 Every Rust crate under `src/500-application/**` MUST be either:
 

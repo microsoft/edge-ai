@@ -19,7 +19,7 @@ locals {
       image_name          = "azureiotoperations/akri-connectors/rest"
       metadata_image_name = "azureiotoperations/akri-connectors/rest-metadata"
       version             = "1.0"
-      default_tag         = "1.0.6"
+      default_tag         = "1.3.2"
       default_registry    = "mcr.microsoft.com"
       default_min_version = "1.2.37"
     }
@@ -37,16 +37,16 @@ locals {
       image_name          = "azureiotoperations/akri-connectors/onvif"
       metadata_image_name = "azureiotoperations/akri-connectors/onvif-metadata"
       version             = "1.0"
-      default_tag         = "1.2.39"
+      default_tag         = "1.4.0"
       default_registry    = "mcr.microsoft.com"
-      default_min_version = "1.2.37"
+      default_min_version = "1.3.38"
     }
     sse = {
       endpoint_type       = "Microsoft.Sse"
       image_name          = "azureiotoperations/akri-connectors/sse"
       metadata_image_name = "azureiotoperations/akri-connectors/sse-metadata"
       version             = "1.0"
-      default_tag         = "1.0.5"
+      default_tag         = "1.3.2"
       default_registry    = "mcr.microsoft.com"
       default_min_version = "1.2.37"
     }

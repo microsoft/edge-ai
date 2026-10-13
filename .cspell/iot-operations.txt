@@ -31,6 +31,7 @@ datasource
 datasources
 deadband
 deviceregistry
+dtmi
 ectd
 edgeingestpolicy
 edgevolume
@@ -73,6 +74,7 @@ Outfeed
 Profinet
 psnet
 PUBACK
+SUBACK
 pymodbus
 resedge
 rosbag

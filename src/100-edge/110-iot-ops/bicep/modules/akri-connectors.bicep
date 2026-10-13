@@ -29,7 +29,7 @@ var connectorTypeMetadata = {
     imageName: 'azureiotoperations/akri-connectors/rest'
     metadataImageName: 'azureiotoperations/akri-connectors/rest-metadata'
     version: '1.0'
-    defaultTag: '1.0.6'
+    defaultTag: '1.3.2'
     defaultRegistry: 'mcr.microsoft.com'
     defaultMinVersion: '1.2.37'
   }
@@ -47,16 +47,16 @@ var connectorTypeMetadata = {
     imageName: 'azureiotoperations/akri-connectors/onvif'
     metadataImageName: 'azureiotoperations/akri-connectors/onvif-metadata'
     version: '1.0'
-    defaultTag: '1.2.39'
+    defaultTag: '1.4.0'
     defaultRegistry: 'mcr.microsoft.com'
-    defaultMinVersion: '1.2.37'
+    defaultMinVersion: '1.3.38'
   }
   sse: {
     endpointType: 'Microsoft.Sse'
     imageName: 'azureiotoperations/akri-connectors/sse'
     metadataImageName: 'azureiotoperations/akri-connectors/sse-metadata'
     version: '1.0'
-    defaultTag: '1.0.5'
+    defaultTag: '1.3.2'
     defaultRegistry: 'mcr.microsoft.com'
     defaultMinVersion: '1.2.37'
   }

@@ -103,7 +103,7 @@ Verifies that Terraform documentation is up-to-date.
 
 - **Usage**: `./tf-docs-check.sh`
 - **Returns**: Boolean indicating if documentation needs updates
-- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/templates/docs-check-terraform-template.yml) in the DocsCheckTerraform job
 - **When to Use**: Before submitting PRs to ensure documentation matches code
 
 ### tf-vars-compliance-check.py
@@ -114,7 +114,7 @@ Validates Terraform variable definitions across modules for consistency.
   - Ensure `terraform-docs` is installed and available in PATH
   - Run `./tf-vars-compliance-check.py`
 - **Returns**: JSON array of inconsistencies found in variable definitions
-- **Build Integration**: Used by the [variable-compliance-terraform-template.yml](../.azdo/variable-compliance-terraform-template.yml) job
+- **Build Integration**: Used by the [variable-compliance-terraform-template.yml](../.azdo/templates/variable-compliance-terraform-template.yml) job
 - **When to Use**: Run before submitting PRs to ensure variable consistency
 
 ### tf-provider-version-check.sh
@@ -126,7 +126,7 @@ Checks Terraform provider versions against latest available versions.
   - `-a`: Run check on all Terraform folders under src/
   - `-f <folder_path>`: Run check on a specific folder path
 - **Returns**: JSON array of provider version mismatches
-- **Build Integration**: Used by the [cluster-test-terraform-template.yml](../.azdo/cluster-test-terraform-template.yml) job
+- **Build Integration**: Used by the [cluster-test-terraform-template.yml](../.azdo/templates/cluster-test-terraform-template.yml) job
 - **When to Use**: Run periodically to check if your modules use current provider versions
 
 ### install-terraform-docs.sh
@@ -137,7 +137,7 @@ Installs the terraform-docs tool at a specific version.
 - **Flags**:
   - `-v version`: Specify terraform-docs version (default: v0.20.0)
   - `-h`: Display help message
-- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/docs-check-terraform-template.yml) in the DocsCheckTerraform job
+- **Build Integration**: Used by the [docs-check-terraform-template.yml](../.azdo/templates/docs-check-terraform-template.yml) in the DocsCheckTerraform job
 - **When to Use**: When setting up a new development environment or updating the terraform-docs version
 
 ## Bicep Documentation and Validation Scripts
@@ -197,7 +197,7 @@ Verifies that Bicep documentation is up-to-date by comparing the current documen
   - Azure CLI with Bicep extension
   - Python 3.x with dependencies installed for generate-bicep-docs.py
 - **Returns**: Exit code 0 if documentation is up-to-date, non-zero otherwise
-- **Build Integration**: Used by the [docs-check-bicep-template.yml](../.azdo/docs-check-bicep-template.yml) in the DocsCheckBicep job
+- **Build Integration**: Used by the [docs-check-bicep-template.yml](../.azdo/templates/docs-check-bicep-template.yml) in the DocsCheckBicep job
 - **When to Use**: Before submitting PRs to ensure Bicep documentation matches the current state of Bicep modules
 - **Best Practice**:
   - Run this script as part of your pre-commit workflow when changing Bicep files
@@ -304,7 +304,7 @@ Validates Azure IoT Operations component versions against latest available.
 - `--strict-latest`: Fail if the GitHub API call fails (no legacy fallback)
 - `--require-asset-files`: Require JSONs to be present as release assets (no branch fallback)
 - **Returns**: Compare mode outputs a JSON array of version differences; URL resolution mode outputs a JSON object with `enablement_url`, `instance_url`, and `meta`
-- **Build Integration**: Used by the [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md) job
+- **Build Integration**: Used by the [aio-version-checker-template.yml](../docs/build-cicd/azure-pipelines/templates/aio-version-checker-template.md) job
 - **When to Use**: Periodically check that AIO components use the currently released versions, or resolve manifest URLs for other tooling
 - **Dependencies**: Python packages `hcl2`, `requests`
 - **Notes**:
@@ -362,7 +362,7 @@ from all documentation folders throughout the repository.
   - GitHub resources including prompts, custom agents, and instructions
   - AI Assistant guides from copilot/ folder
   - Learning platform materials from learning/ folder
-- **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/wiki-update-template.yml) job to rebuild the Azure DevOps wiki
+- **Build Integration**: Used by the [wiki-update-template.yml](../.azdo/templates/wiki-update-template.yml) job to rebuild the Azure DevOps wiki
 - **When to Use**: Generally only used by the build system after merges to main
 - **Notes**: Creates a .wiki directory and organizes documentation to match the sidebar navigation exactly, with additional sections for comprehensive content coverage
 
@@ -448,7 +448,7 @@ PowerShell script for running Pester tests on PowerShell code.
 - **Arguments**:
   - `-Path`: Path to the directory containing tests
   - `-OutputFile`: Path to output test results in NUnit XML format
-- **Build Integration**: Used by the [resource-provider-pwsh-tests-template.yml](../.azdo/resource-provider-pwsh-tests-template.yml) for testing PowerShell scripts
+- **Build Integration**: Used by the [resource-provider-pwsh-tests-template.yml](../.azdo/templates/resource-provider-pwsh-tests-template.yml) for testing PowerShell scripts
 - **When to Use**: When developing or testing PowerShell modules, particularly for resource provider scripts
 
 ## Error Handling
@@ -464,14 +464,14 @@ Most scripts follow these error handling practices:
 
 The following Azure DevOps pipeline templates depend on these scripts:
 
-| Azure DevOps Template                                                                                                                       | Script Dependencies                                             |
-|---------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| [docs-check-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
-| [aio-version-checker-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
-| [variable-compliance-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
-| [cluster-test-terraform-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
-| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
-| [wiki-update-template.yml](../docs/build-cicd/pipelines/azure-devops/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |
+| Azure DevOps Template                                                                                                                | Script Dependencies                                             |
+|--------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
+| [docs-check-terraform-template.yml](../docs/build-cicd/azure-pipelines/templates/docs-check-terraform-template.md)                   | install-terraform-docs.sh, tf-docs-check.sh, link-lang-check.py |
+| [aio-version-checker-template.yml](../docs/build-cicd/azure-pipelines/templates/aio-version-checker-template.md)                     | aio-version-checker.py                                          |
+| [variable-compliance-terraform-template.yml](../docs/build-cicd/azure-pipelines/templates/variable-compliance-terraform-template.md) | tf-vars-compliance-check.py                                     |
+| [cluster-test-terraform-template.yml](../docs/build-cicd/azure-pipelines/templates/cluster-test-terraform-template.md)               | tf-provider-version-check.sh                                    |
+| [resource-provider-pwsh-tests-template.yml](../docs/build-cicd/azure-pipelines/templates/resource-provider-pwsh-tests-template.md)   | Invoke-Pester.ps1                                               |
+| [wiki-update-template.yml](../docs/build-cicd/azure-pipelines/templates/wiki-update-template.md)                                     | Build-Wiki.ps1                                                  |
 
 <!-- markdownlint-disable MD036 -->
 *🤖 Crafted with precision by ✨Copilot following brilliant human instruction,

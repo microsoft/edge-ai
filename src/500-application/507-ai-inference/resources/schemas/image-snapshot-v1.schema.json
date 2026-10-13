@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Image Snapshot v1",
+  "description": "Canonical image_snapshot v1 request envelope carrying a Base64-encoded JPEG frame and its caller-supplied identifiers. Readers are tolerant: unknown members are accepted and discarded so a later field addition stays non-breaking.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["message_type", "schema_version", "camera_id", "timestamp", "image_data", "device_name"],
+  "properties": {
+    "message_type": {
+      "description": "Constant discriminator identifying this envelope shape.",
+      "type": "string",
+      "const": "image_snapshot"
+    },
+    "schema_version": {
+      "description": "Envelope schema version. Emitted as the string \"1.0\" by the v1 producer.",
+      "type": "string",
+      "examples": ["1.0"]
+    },
+    "camera_id": {
+      "description": "Opaque caller-supplied camera identifier. No character set or length bound is applied.",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "Capture time as epoch seconds. Integer, not an RFC 3339 string.",
+      "type": "integer"
+    },
+    "image_data": {
+      "description": "Standard-alphabet Base64 encoding of the raw JPEG payload. Padded, not URL-safe.",
+      "type": "string",
+      "contentEncoding": "base64",
+      "contentMediaType": "image/jpeg",
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?(?![\\s\\S])"
+    },
+    "device_name": {
+      "description": "Opaque caller-supplied device identifier. No character set or length bound is applied.",
+      "type": "string"
+    },
+    "location": {
+      "description": "Optional [latitude, longitude] pair. Contract-only: accepted by consumers for compatibility with other producers, and never emitted by this v1 producer.",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "examples": [[0, 0]]
+    },
+    "metadata": {
+      "description": "Optional free-form caller-supplied metadata. Defaults to empty and is omitted rather than emitted as null when empty. Carries no sequence_number and no source_topic; this producer derives nothing from a transport topic.",
+      "type": "object",
+      "additionalProperties": true,
+      "default": {}
+    },
+    "correlation_id": {
+      "description": "Optional caller-supplied correlation identifier. Omitted rather than emitted as null when unset.",
+      "type": "string"
+    }
+  },
+  "examples": [
+    {
+      "message_type": "image_snapshot",
+      "schema_version": "1.0",
+      "camera_id": "camera-01",
+      "timestamp": 1700000000,
+      "image_data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+      "device_name": "device-01"
+    },
+    {
+      "message_type": "image_snapshot",
+      "schema_version": "1.0",
+      "camera_id": "camera-01",
+      "timestamp": 1700000060,
+      "image_data": "/9j/4AAQSkZJRgABAQAAAQABAAD/2Q==",
+      "device_name": "device-01",
+      "metadata": {
+        "site": "site-01",
+        "asset": "asset-01"
+      },
+      "correlation_id": "00000000-0000-4000-8000-000000000001"
+    }
+  ],
+  "$comment": "Recommended size bounds are 4 MiB maximum raw JPEG and 8 MiB maximum serialized envelope. Both are caller-configured defaults applied by the producer before and after normalization; neither is enforced by this schema, which declares no maxLength. additionalProperties is intentionally true (tolerant reader): strict rejection of unknown members belongs in tests, not in the runtime parser."
+}
