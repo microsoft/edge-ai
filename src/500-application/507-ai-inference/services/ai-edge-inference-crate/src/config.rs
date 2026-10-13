@@ -1,7 +1,25 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Component, Path, PathBuf};
 use crate::types::ModelType;
+
+/// Resolves a default-model path inside `models_directory`.
+///
+/// Rejects empty and absolute paths and any `..`, root, or prefix component so
+/// a configured model can't escape the models directory.
+pub fn resolve_model_path(models_directory: &Path, model_path: &str) -> Result<PathBuf, String> {
+    let relative = Path::new(model_path);
+    let is_contained = !model_path.is_empty()
+        && relative
+            .components()
+            .all(|component| matches!(component, Component::Normal(_) | Component::CurDir));
+    if !is_contained {
+        return Err(format!(
+            "Model path {model_path:?} must be relative to the models directory and must not contain '..'"
+        ));
+    }
+    Ok(models_directory.join(relative))
+}
 
 /// Configuration for the AI inference engine
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -243,7 +261,8 @@ impl InferenceConfig {
         // Validate model files exist if default_models is provided
         if let Some(default_models) = &self.models.default_models {
             for (model_name, model_path) in default_models {
-                let full_model_path = self.models.models_directory.join(model_path);
+                let full_model_path = resolve_model_path(&self.models.models_directory, model_path)
+                    .map_err(|e| format!("{e} for model {model_name}"))?;
                 if !full_model_path.exists() {
                     return Err(format!(
                         "Model file does not exist: {:?} for model {}",
@@ -259,5 +278,51 @@ impl InferenceConfig {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_model_path_keeps_relative_paths_inside_models_directory() {
+        let base = Path::new("/models");
+        assert_eq!(
+            resolve_model_path(base, "tiny-yolov2/tinyyolov2-8.onnx").unwrap(),
+            PathBuf::from("/models/tiny-yolov2/tinyyolov2-8.onnx")
+        );
+        assert_eq!(
+            resolve_model_path(base, "./default.onnx").unwrap(),
+            PathBuf::from("/models/default.onnx")
+        );
+    }
+
+    #[test]
+    fn resolve_model_path_rejects_absolute_parent_and_empty_paths() {
+        let base = Path::new("/models");
+        for path in [
+            "/etc/passwd",
+            "../secret.onnx",
+            "a/../../b.onnx",
+            "a/..",
+            "",
+        ] {
+            assert!(
+                resolve_model_path(base, path).is_err(),
+                "{path} should be rejected"
+            );
+        }
+    }
+
+    #[test]
+    fn validate_rejects_default_model_outside_models_directory() {
+        let mut config = InferenceConfig::default();
+        config.models.models_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        config.models.default_models = Some(HashMap::from([(
+            "escape".to_string(),
+            "../escape.onnx".to_string(),
+        )]));
+        assert!(config.validate().unwrap_err().contains("escape"));
     }
 }
