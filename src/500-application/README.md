@@ -83,6 +83,7 @@ The following applications are currently available in this directory:
 - **[517-sensor-simulator](./517-sensor-simulator/README.md)** - Synthetic vibration, acoustic, and temperature MQTT publisher with versioned topics, CloudEvents attributes, and an anomaly toggle
 - **[518-mqtt-predict-adapter](./518-mqtt-predict-adapter/README.md)** - Bridges MQTT predict requests to HTTP predictive model endpoints such as Foundry Local, with versioned topics and service account token authentication
 - **[519-model-orchestrator](./519-model-orchestrator/README.md)** - Fans requests out to an ensemble of models through the MQTT predict adapter and publishes one aggregate decision with explicit partial and timeout semantics
+- **[520-video-query-api](./520-video-query-api/README.md)** - Azure Function that queries time-ranged camera recordings from Blob Storage, returns read-only SAS URLs, and can trigger on-demand captures through Event Grid MQTT
 - **[521-acoustic-anomaly-operators](./521-acoustic-anomaly-operators/README.md)** - WASM data flow graph operators that featurize audio into log-mel rows for an autoencoder served through the MQTT predict adapter and turn model scores into anomaly verdicts
 
 ## Service Implementation

@@ -1,0 +1,73 @@
+# Python Tests Workflow
+#
+# Purpose:
+# Reusable workflow that runs the offline unit tests of Python application
+# components. Each matrix entry runs only when the pull request changes that
+# component or this workflow; pushes and manual runs always test.
+#
+# Adding a component:
+# Add a matrix entry with the component path. The component needs a hashed
+# requirements.txt, a requirements-test.txt with pytest, and deployed tests
+# marked `integration`, which are excluded here.
+---
+name: python-tests
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  unit-tests:
+    name: Python Unit Tests (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: 520-video-query-api
+            path: src/500-application/520-video-query-api
+            python: '3.11'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect component changes
+        id: changes
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          COMPONENT_PATH: ${{ matrix.path }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${BASE_REF}" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "origin/${BASE_REF}...HEAD" -- "${COMPONENT_PATH}" .github/workflows/python-tests.yml; then
+            echo "No changes in ${COMPONENT_PATH}; skipping"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Python ${{ matrix.python }}
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        working-directory: ${{ matrix.path }}
+        run: pip install --require-hashes -r requirements.txt -r requirements-test.txt
+
+      - name: Run unit tests
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        working-directory: ${{ matrix.path }}
+        run: python -m pytest -m "not integration"
