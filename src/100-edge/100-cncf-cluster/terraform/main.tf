@@ -67,7 +67,7 @@ module "role_assignments" {
  */
 
 locals {
-  arc_cluster_id               = try(data.azapi_resource.arc_connected_cluster[0].id, null)
+  arc_cluster_id               = local.has_arc_cluster ? "${var.resource_group.id}/providers/Microsoft.Kubernetes/connectedClusters/${local.arc_resource_name}" : null
   cluster_admin_oid            = try(coalesce(var.cluster_admin_oid, local.current_user_oid), null)
   has_arc_cluster              = var.should_deploy_script_to_vm && !var.should_deploy_arc_agents
   has_cluster_admin            = var.cluster_admin_oid != null || var.should_add_current_user_cluster_admin
@@ -78,6 +78,8 @@ locals {
 resource "azurerm_role_assignment" "arc_kubernetes_viewer_user" {
   count = local.should_assign_arc_rbac_user ? 1 : 0
 
+  depends_on = [data.azapi_resource.arc_connected_cluster]
+
   scope                = local.arc_cluster_id
   role_definition_name = "Azure Arc Kubernetes Viewer"
   principal_id         = local.cluster_admin_oid
@@ -86,6 +88,8 @@ resource "azurerm_role_assignment" "arc_kubernetes_viewer_user" {
 
 resource "azurerm_role_assignment" "arc_cluster_user_user" {
   count = local.should_assign_arc_rbac_user ? 1 : 0
+
+  depends_on = [data.azapi_resource.arc_connected_cluster]
 
   scope                = local.arc_cluster_id
   role_definition_name = "Azure Arc Enabled Kubernetes Cluster User Role"
@@ -96,6 +100,8 @@ resource "azurerm_role_assignment" "arc_cluster_user_user" {
 resource "azurerm_role_assignment" "arc_kubernetes_viewer_group" {
   count = local.should_assign_arc_rbac_group ? 1 : 0
 
+  depends_on = [data.azapi_resource.arc_connected_cluster]
+
   scope                = local.arc_cluster_id
   role_definition_name = "Azure Arc Kubernetes Viewer"
   principal_id         = var.cluster_admin_group_oid
@@ -104,6 +110,8 @@ resource "azurerm_role_assignment" "arc_kubernetes_viewer_group" {
 
 resource "azurerm_role_assignment" "arc_cluster_user_group" {
   count = local.should_assign_arc_rbac_group ? 1 : 0
+
+  depends_on = [data.azapi_resource.arc_connected_cluster]
 
   scope                = local.arc_cluster_id
   role_definition_name = "Azure Arc Enabled Kubernetes Cluster User Role"
