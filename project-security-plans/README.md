@@ -73,7 +73,7 @@ Links:
 
 - Security Plan Templates: [MD](https://aka.ms/isesecurityplan) and [Doc](https://github.com/commercial-software-engineering/ISE-Security-Plan/blob/main/Templates/Security%20Plan%20Template.docx)
 - About the [SecureDev Program](https://github.com/commercial-software-engineering/ISE-Security-Plan/blob/main/SecureDevProgram.md)
-- [Security Checklist Instructions](ISE%20Security%20Checklist%20Instructions.md)
+- [Security Checklist Instructions](ise-security-checklist-instructions.md)
 
 -----------------------------------------------------------------
 <!-----------------------[  License  ]----------------------<optional> section below--------------------->
