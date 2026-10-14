@@ -261,6 +261,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Generate unique build ID
         id: generate-id
@@ -311,15 +313,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
-      id-token: write
-      security-events: write
     strategy:
       matrix: ${{ fromJson(needs.prepare-builds.outputs.matrix) }}
       fail-fast: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Log in to Container Registry
         if: ${{ needs.parse-configuration.outputs.pushImages == 'true' }}
@@ -589,13 +590,6 @@ jobs:
           retention-days: 90
           compression-level: 1
           if-no-files-found: ignore
-
-      - name: Upload SARIF security results
-        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
-        if: always() && needs.parse-configuration.outputs.enableSecurityScan == 'true'
-        with:
-          sarif_file: ${{ github.workspace }}/security-reports
-        continue-on-error: true
 
   # Summarize all build results and security scan findings
   # Uses parsed security configuration (enableSecurityScan, securityThreshold) from parse-configuration job

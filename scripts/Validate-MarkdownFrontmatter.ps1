@@ -23,7 +23,82 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch = "origin/main"
+
+    ,[Parameter(Mandatory = $false)]
+    [ValidateSet('branch', 'range', 'full')]
+    [string]$ChangeMode = 'full'
+
+    ,[Parameter(Mandatory = $false)]
+    [AllowEmptyString()]
+    [string]$BaseSha = ''
+
+    ,[Parameter(Mandatory = $false)]
+    [AllowEmptyString()]
+    [string]$HeadSha = ''
 )
+
+function Resolve-FrontmatterValidationSelection {
+    <#
+    .SYNOPSIS
+    Resolves full, immutable range, or branch-based frontmatter selection.
+
+    .OUTPUTS
+    Returns parameters for Test-FrontmatterValidation and whether validation can be skipped.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('branch', 'range', 'full')]
+        [string]$ChangeMode,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Paths,
+
+        [Parameter(Mandatory = $false)]
+        [string]$BaseBranch = 'origin/main',
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [string]$BaseSha = '',
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyString()]
+        [string]$HeadSha = ''
+    )
+
+    if ($ChangeMode -eq 'full') {
+        return @{
+            Parameters = @{ Paths = $Paths }
+            Skip       = $false
+        }
+    }
+
+    if ($ChangeMode -eq 'branch') {
+        return @{
+            Parameters = @{ ChangedFilesOnly = $true; BaseBranch = $BaseBranch }
+            Skip       = $false
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($BaseSha) -or
+        [string]::IsNullOrWhiteSpace($HeadSha)) {
+        throw 'Range mode requires immutable base and head SHAs.'
+    }
+
+    $changedFiles = @(& git diff --name-only --diff-filter=ACMRT $BaseSha $HeadSha -- $Paths)
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Git could not determine changed documentation files.'
+    }
+    $markdownFiles = @($changedFiles | Where-Object {
+            $_ -match '\.md$' -and (Test-Path $_ -PathType Leaf)
+        })
+
+    return @{
+        Parameters = @{ Files = $markdownFiles }
+        Skip       = $markdownFiles.Count -eq 0
+    }
+}
 
 function Get-MarkdownFrontmatter {
     <#
@@ -498,14 +573,29 @@ function Get-ChangedMarkdownFileGroup {
 # Main execution
 if ($MyInvocation.InvocationName -ne '.') {
     if ($ChangedFilesOnly) {
-        $result = Test-FrontmatterValidation -ChangedFilesOnly -BaseBranch $BaseBranch -WarningsAsErrors:$WarningsAsErrors
+        $ChangeMode = 'branch'
     }
-    elseif ($Files.Count -gt 0) {
-        $result = Test-FrontmatterValidation -Files $Files -WarningsAsErrors:$WarningsAsErrors
+
+    if ($Files.Count -gt 0) {
+        $Selection = @{ Parameters = @{ Files = $Files }; Skip = $false }
     }
     else {
-        $result = Test-FrontmatterValidation -Paths $Paths -WarningsAsErrors:$WarningsAsErrors
+        $Selection = Resolve-FrontmatterValidationSelection `
+            -ChangeMode $ChangeMode `
+            -Paths $Paths `
+            -BaseBranch $BaseBranch `
+            -BaseSha $BaseSha `
+            -HeadSha $HeadSha
     }
+
+    if ($Selection.Skip) {
+        Write-Host 'No changed markdown files found - validation complete' -ForegroundColor Green
+        exit 0
+    }
+
+    $ValidationParameters = $Selection.Parameters
+    $ValidationParameters['WarningsAsErrors'] = $WarningsAsErrors
+    $result = Test-FrontmatterValidation @ValidationParameters
 
     if ($result.HasIssues) {
         exit 1

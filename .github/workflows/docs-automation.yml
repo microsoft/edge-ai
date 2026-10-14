@@ -36,6 +36,21 @@ on:  # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
+      changeMode:
+        description: 'Change selection mode: branch, range, or full'
+        required: false
+        default: 'branch'
+        type: string
+      baseSha:
+        description: 'Immutable base commit for range mode'
+        required: false
+        default: ''
+        type: string
+      headSha:
+        description: 'Immutable head commit for range mode'
+        required: false
+        default: ''
+        type: string
   push:
     branches: [main, develop]
     paths:
@@ -70,9 +85,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.headSha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Fetch base ref for changed-files scoping
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && inputs.changeMode != 'range' && inputs.changeMode != 'full'
         shell: bash
         run: |
           set -euo pipefail
@@ -80,6 +99,11 @@ jobs:
 
       - name: Validate frontmatter consistency
         shell: pwsh
+        env:
+          CHANGE_MODE: ${{ inputs.changeMode || 'branch' }}
+          BASE_SHA: ${{ inputs.baseSha }}
+          HEAD_SHA: ${{ inputs.headSha }}
+          FORCE_REGENERATE: ${{ inputs.force_regenerate }}
         run: |
           Write-Host "🔍 Validating frontmatter across all markdown files..."
 
@@ -87,10 +111,19 @@ jobs:
             Paths   = @('docs', 'src', 'blueprints')
             Verbose = $true
           }
-          if ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
-            $frontmatterArgs['ChangedFilesOnly'] = $true
-            $frontmatterArgs['BaseBranch']       = "origin/$($env:GITHUB_BASE_REF)"
+          $frontmatterArgs['ChangeMode'] = if (
+            $env:FORCE_REGENERATE -eq 'true' -or $env:CHANGE_MODE -eq 'full') {
+            'full'
+          } elseif ($env:CHANGE_MODE -eq 'range') {
+            'range'
+          } elseif ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
+            'branch'
+          } else {
+            'full'
           }
+          $frontmatterArgs['BaseBranch'] = "origin/$($env:GITHUB_BASE_REF)"
+          $frontmatterArgs['BaseSha'] = $env:BASE_SHA
+          $frontmatterArgs['HeadSha'] = $env:HEAD_SHA
 
           & "./scripts/Validate-MarkdownFrontmatter.ps1" @frontmatterArgs
 
@@ -109,6 +142,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -164,10 +199,12 @@ jobs:
       - validate-links
     if: always()
     permissions:
-      issues: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Generate documentation metrics
         shell: pwsh

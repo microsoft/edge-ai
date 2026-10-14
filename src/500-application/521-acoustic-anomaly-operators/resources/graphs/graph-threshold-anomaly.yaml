@@ -1,0 +1,47 @@
+metadata:
+  $schema: "https://www.schemastore.org/aio-wasm-graph-config-1.0.0.json"
+  name: "graph-threshold-anomaly"
+  description: "Scores MQTT predict adapter responses against a threshold and emits anomaly verdicts"
+  version: "${VERSION}"
+  vendor: "Microsoft"
+
+moduleRequirements:
+  apiVersion: "1.1.0"
+  runtimeVersion: "1.1.0"
+
+moduleConfigurations:
+  - name: module-threshold-anomaly/map
+    parameters:
+      threshold:
+        name: threshold
+        required: true
+        description: "REQUIRED. Scores greater than this value are anomalies. Calibrate it for the model and the equipment."
+      score_field:
+        name: score_field
+        default: "score"
+        description: "Up to four dot-separated keys locating the score in the model outputs. The value can be a number, a list of per-window numbers, or a list of single-value rows."
+      aggregation:
+        name: aggregation
+        default: "mean"
+        description: "How per-window scores combine: mean or max."
+
+operations:
+  - operationType: "source"
+    name: "source"
+
+  - operationType: "map"
+    name: "module-threshold-anomaly/map"
+    module: "threshold-anomaly:${VERSION}"
+
+  - operationType: "sink"
+    name: "sink"
+
+connections:
+  - from:
+      name: "source"
+    to:
+      name: "module-threshold-anomaly/map"
+  - from:
+      name: "module-threshold-anomaly/map"
+    to:
+      name: "sink"

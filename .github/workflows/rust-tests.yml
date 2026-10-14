@@ -3,6 +3,12 @@ name: rust-tests
 
 on:
   workflow_call:
+    inputs:
+      upload-coverage:
+        description: 'Upload coverage to Codecov using OIDC'
+        required: false
+        default: true
+        type: boolean
 
 permissions: {}
 
@@ -35,6 +41,8 @@ jobs:
             crate: src/500-application/507-ai-inference/services/ai-edge-inference
           - name: 507-ai-edge-inference-crate
             crate: src/500-application/507-ai-inference/services/ai-edge-inference-crate
+          - name: 507-snapshot-normalizer
+            crate: src/500-application/507-ai-inference/services/snapshot-normalizer
           - name: 507-snapshot-normalizer-core
             crate: src/500-application/507-ai-inference/services/snapshot-normalizer-core
           - name: 901-video-to-gif
@@ -42,6 +50,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install base system build dependencies
         shell: bash
@@ -173,7 +183,7 @@ jobs:
         run: cargo llvm-cov --locked --cobertura --output-path coverage.xml
 
       - name: Upload to Codecov
-        if: success()
+        if: success() && inputs.upload-coverage
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ${{ matrix.crate }}/coverage.xml
@@ -200,12 +210,14 @@ jobs:
           - name: 504-mqtt-otel-trace-exporter
           - name: 507-ai-edge-inference
           - name: 507-ai-edge-inference-crate
+          - name: 507-snapshot-normalizer
           - name: 507-snapshot-normalizer-core
           - name: 901-video-to-gif
     steps:
       - name: Checkout (sparse, for .grype.yaml)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           sparse-checkout: |
             .grype.yaml
           sparse-checkout-cone-mode: false
