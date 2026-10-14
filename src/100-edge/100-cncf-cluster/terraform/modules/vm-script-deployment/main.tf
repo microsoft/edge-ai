@@ -47,4 +47,8 @@ resource "azurerm_virtual_machine_extension" "linux_script_deployment" {
   "script": "${base64encode(local.rendered_script_to_deploy)}"
 }
 SETTINGS
+
+  lifecycle {
+    ignore_changes = [protected_settings]
+  }
 }

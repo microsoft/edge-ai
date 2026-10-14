@@ -41,14 +41,14 @@ This component now supports two methods for deploying scripts to VMs:
 
 The Key Vault Script Retrieval method offers the following advantages:
 
-- Scripts can be updated in Key Vault without redeploying infrastructure
+- Stored scripts can be updated through an explicit maintenance operation
 - Script content is securely stored and retrieved only when needed
 - Different scripts can be deployed based on OS type and node type
 - Sensitive information in scripts is more secure
 
 To enable Key Vault Script Retrieval, set the variable `should_use_script_from_secrets_for_deploy` to `true` in your Terraform configuration. This is enabled by default.
 
-Both Terraform and Bicep store the scripts as gzip-compressed, base64-encoded secret values (content type `application/gzip;base64`) to stay within the Key Vault 25,600 character secret limit. To retrieve a script manually, decode and decompress the value:
+New Terraform deployments and Bicep deployments store the scripts as gzip-compressed, base64-encoded secret values (content type `application/gzip;base64`) to stay within the Key Vault 25,600 character secret limit. Existing Terraform-managed secrets retain their deployed format. To retrieve a compressed script manually, decode and decompress the value:
 
 ```bash
 az keyvault secret show --vault-name <key-vault-name> --name ubuntu-k3s-server-script --query value -o tsv | base64 -d | gunzip > ./cluster-server-setup.sh
@@ -66,6 +66,21 @@ Refer to [Terraform Components - Getting Started](../README.md#terraform-compone
 deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
+
+### Bootstrap Maintenance
+
+Terraform treats the Linux VM setup extension payload and the K3s script secrets as initial-bootstrap content:
+
+- The VM extension ignores changes to `protected_settings` after creation.
+- The server and node script secrets ignore changes to `value` and `content_type` after creation.
+- Other resource attributes remain managed. Removing resources or changing their identities can still destroy or replace them.
+
+Routine AIO upgrades do not upload changed bootstrap scripts or rerun VM setup because source files or template inputs changed. Bootstrap configuration changes, including in-cluster administrator bindings, require a separately reviewed maintenance operation. Refresh-only applies do not deploy those changes.
+
+Cluster IDs and names come from configuration. The Azure cluster lookup still waits for script deployment, and Arc RBAC assignments wait for that lookup, preserving first-deployment ordering.
+
+> [!WARNING]
+> Plan script-secret and loader changes together before explicitly rerunning or replacing a setup extension, rebuilding a VM, or adding nodes. Older deployments can retain plaintext secrets that the current compressed-script loader cannot read. Do not replace only the loader or only the secret format. These VM extension lifecycle rules do not apply to Arc-machine or SSH script delivery.
 
 ## Troubleshooting
 

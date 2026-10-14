@@ -19,7 +19,12 @@ output "azure_arc_proxy_command" {
 
 output "arc_connected_cluster" {
   description = "The Arc resource for the connected cluster."
-  value       = try(data.azapi_resource.arc_connected_cluster[0].output, null)
+  value = local.has_arc_cluster ? {
+    id         = local.arc_cluster_id
+    name       = local.arc_resource_name
+    location   = data.azapi_resource.arc_connected_cluster[0].location
+    properties = try(data.azapi_resource.arc_connected_cluster[0].output.properties, null)
+  } : null
 }
 
 /*
