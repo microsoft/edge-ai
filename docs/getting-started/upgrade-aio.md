@@ -98,7 +98,6 @@ Terraform compares configuration with refreshed resource state during a normal p
 > [!WARNING]
 > Bootstrap maintenance is separate from AIO reconciliation. Coordinate stored script formats and retrieval loaders before rebuilding VMs, adding nodes, or rerunning setup. See [Bootstrap Maintenance](../../src/100-edge/100-cncf-cluster/README.md#bootstrap-maintenance) for the lifecycle exclusions and the Arc-machine/SSH boundary.
 
-
 ## Reconcile with Bicep
 
 Bicep is stateless — there is no per-deployment record of previously applied versions to reconcile. After `az iot ops upgrade` no further ARM operations are required to "import" the new state. Subsequent Bicep deployments are idempotent against whatever exists in Azure.
