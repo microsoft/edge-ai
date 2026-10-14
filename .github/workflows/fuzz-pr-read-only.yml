@@ -1,0 +1,124 @@
+---
+name: Fuzz Read Only
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      changeMode:
+        description: 'Change selection mode: branch, range, or full'
+        required: false
+        default: 'branch'
+        type: string
+      baseSha:
+        description: 'Immutable base commit for range mode'
+        required: false
+        default: ''
+        type: string
+      headSha:
+        description: 'Immutable head commit for range mode'
+        required: false
+        default: ''
+        type: string
+
+permissions: {}
+
+jobs:
+  detect-changes:
+    name: Detect fuzz target changes
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/matrix-folder-check.yml
+    with:
+      includeFuzzTargets: true
+      displayName: 'Check for fuzz target changes'
+      changeMode: ${{ inputs.changeMode }}
+      baseSha: ${{ inputs.baseSha }}
+      headSha: ${{ inputs.headSha }}
+
+  fuzz-rust:
+    name: Fuzz Rust
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.changesInFuzzRust == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzRustFolders).folderName[0] != null
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzRustFolders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build fuzzers
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          language: rust
+          sanitizer: address
+      - name: Run fuzzers
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: address
+
+  fuzz-python:
+    name: Fuzz Python
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.changesInFuzzPython == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders).folderName[0] != null
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build fuzzers
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          language: python
+          sanitizer: address
+      - name: Run fuzzers
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: address
+
+  fuzz-js:
+    name: Fuzz JavaScript
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.changesInFuzzJs == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzJsFolders).folderName[0] != null
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changedFuzzJsFolders) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build fuzzers
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          language: javascript
+          sanitizer: coverage
+      - name: Run fuzzers
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1 # v1
+        with:
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: coverage
