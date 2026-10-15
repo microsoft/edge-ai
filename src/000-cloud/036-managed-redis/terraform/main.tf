@@ -10,12 +10,29 @@ locals {
 }
 
 /*
+ * Input Validation
+ */
+
+// Validates rules that span multiple input variables.
+resource "terraform_data" "validate_inputs" {
+  lifecycle {
+    precondition {
+      condition     = var.should_enable_private_endpoint ? var.private_endpoint_subnet != null : true
+      error_message = "private_endpoint_subnet is required when should_enable_private_endpoint is true."
+    }
+  }
+}
+
+/*
  * Azure Managed Redis Cache
  */
 
 module "managed_redis" {
   count  = var.should_deploy_redis ? 1 : 0
   source = "./modules/managed-redis"
+
+  // Keeps the input precondition in targeted plans. The module has no data sources, so this defers no reads.
+  depends_on = [terraform_data.validate_inputs]
 
   // Core Configuration
   location            = var.location
@@ -36,7 +53,7 @@ module "managed_redis" {
   private_endpoint_subnet_id     = try(var.private_endpoint_subnet.id, null)
   private_dns_zone_id            = var.private_dns_zone_id
   should_create_private_dns_zone = var.should_create_private_dns_zone
-  should_enable_private_endpoint = var.should_enable_private_endpoint
+  should_enable_private_endpoint = var.should_enable_private_endpoint && var.private_endpoint_subnet != null
   virtual_network_id             = try(var.virtual_network.id, null)
 }
 

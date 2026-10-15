@@ -17,11 +17,47 @@ locals {
 }
 
 /*
- * Data Sources
+ * Input Validation
  */
 
+// Validates rules that span multiple input variables.
+// On a data source rather than a managed resource, so it adds no planned changes.
 data "azurerm_client_config" "current" {
+  lifecycle {
+    precondition {
+      condition     = !var.should_assign_roles || anytrue([var.arc_onboarding_identity != null, var.arc_onboarding_sp != null, var.arc_onboarding_principal_ids != null])
+      error_message = "Either 'arc_onboarding_identity', 'arc_onboarding_sp', or 'arc_onboarding_principal_ids' required when should_assign_roles is 'true'"
+    }
+    precondition {
+      condition     = !var.should_assign_roles || (sum([var.arc_onboarding_identity != null ? 1 : 0, var.arc_onboarding_sp != null ? 1 : 0, var.arc_onboarding_principal_ids != null ? 1 : 0]) <= 1)
+      error_message = "Only one of 'arc_onboarding_identity', 'arc_onboarding_sp', or 'arc_onboarding_principal_ids' can be provided"
+    }
+    precondition {
+      condition     = !var.should_upload_to_key_vault || var.key_vault != null
+      error_message = "'key_vault' is required when 'should_upload_to_key_vault' is true"
+    }
+    precondition {
+      condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
+      error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
+    }
+    precondition {
+      condition     = var.should_upload_to_key_vault || !var.should_use_script_from_secrets_for_deploy
+      error_message = "'should_use_script_from_secrets_for_deploy' cannot be true when 'should_upload_to_key_vault' is false: no script would be present in Key Vault to fetch."
+    }
+    precondition {
+      condition     = !var.should_deploy_over_ssh || var.should_deploy_arc_machines
+      error_message = "'should_deploy_over_ssh' requires 'should_deploy_arc_machines' to be true"
+    }
+    precondition {
+      condition     = !var.should_deploy_over_ssh || (var.ssh_local_user != null && var.ssh_private_key_path != null)
+      error_message = "'ssh_local_user' and 'ssh_private_key_path' are required when 'should_deploy_over_ssh' is true"
+    }
+  }
 }
+
+/*
+ * Data Sources
+ */
 
 resource "terraform_data" "defer_azuread_user" {
   count = var.should_add_current_user_cluster_admin ? 1 : 0

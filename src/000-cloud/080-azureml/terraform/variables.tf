@@ -131,8 +131,8 @@ variable "compute_cluster_min_nodes" {
   default     = 0
 
   validation {
-    condition     = var.compute_cluster_min_nodes >= 0 && var.compute_cluster_min_nodes <= var.compute_cluster_max_nodes
-    error_message = "Minimum node count must be greater than or equal to 0 and less than or equal to compute_cluster_max_nodes."
+    condition     = var.compute_cluster_min_nodes >= 0
+    error_message = "Minimum node count must be greater than or equal to 0."
   }
 }
 

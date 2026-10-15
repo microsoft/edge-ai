@@ -18,11 +18,6 @@ variable "should_use_script_from_secrets_for_deploy" {
   type        = bool
   description = "Whether to use the deploy-script-secrets.sh script to fetch and execute deployment scripts from Key Vault"
   default     = true
-
-  validation {
-    condition     = var.should_upload_to_key_vault || !var.should_use_script_from_secrets_for_deploy
-    error_message = "'should_use_script_from_secrets_for_deploy' cannot be true when 'should_upload_to_key_vault' is false: no script would be present in Key Vault to fetch."
-  }
 }
 
 variable "key_vault_script_secret_prefix" {
@@ -71,16 +66,6 @@ variable "should_deploy_over_ssh" {
   type        = bool
   description = "Should deliver the setup script over 'az ssh arc' instead of a CustomScript extension. Requires Azure CLI with the 'ssh' extension where Terraform runs."
   default     = false
-
-  validation {
-    condition     = !var.should_deploy_over_ssh || var.should_deploy_arc_machines
-    error_message = "'should_deploy_over_ssh' requires 'should_deploy_arc_machines' to be true"
-  }
-
-  validation {
-    condition     = !var.should_deploy_over_ssh || (var.ssh_local_user != null && var.ssh_private_key_path != null)
-    error_message = "'ssh_local_user' and 'ssh_private_key_path' are required when 'should_deploy_over_ssh' is true"
-  }
 }
 
 variable "ssh_local_user" {
@@ -195,10 +180,6 @@ variable "should_generate_cluster_server_token" {
   type        = bool
   description = "Should generate token used by the server. ('cluster_server_token' must be null if this is 'true')"
   default     = false
-  validation {
-    condition     = var.cluster_server_token != null ? !var.should_generate_cluster_server_token : true
-    error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
-  }
 }
 
 variable "cluster_server_host_machine_username" {
