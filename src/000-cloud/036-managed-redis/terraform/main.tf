@@ -31,6 +31,9 @@ module "managed_redis" {
   count  = var.should_deploy_redis ? 1 : 0
   source = "./modules/managed-redis"
 
+  // Keeps the input precondition in targeted plans. The module has no data sources, so this defers no reads.
+  depends_on = [terraform_data.validate_inputs]
+
   // Core Configuration
   location            = var.location
   name                = local.redis_name
@@ -50,7 +53,7 @@ module "managed_redis" {
   private_endpoint_subnet_id     = try(var.private_endpoint_subnet.id, null)
   private_dns_zone_id            = var.private_dns_zone_id
   should_create_private_dns_zone = var.should_create_private_dns_zone
-  should_enable_private_endpoint = var.should_enable_private_endpoint
+  should_enable_private_endpoint = var.should_enable_private_endpoint && var.private_endpoint_subnet != null
   virtual_network_id             = try(var.virtual_network.id, null)
 }
 
