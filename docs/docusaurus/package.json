@@ -42,7 +42,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
-    "js-yaml": "^5.4.2",
+    "js-yaml": "^5.4.3",
     "ts-jest": "^29.4.14",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
