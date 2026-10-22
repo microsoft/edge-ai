@@ -1,0 +1,14 @@
+[build]
+target = "wasm32-wasip2"
+
+[registries]
+# Microsoft AIO SDK team preview feed. Dependabot and GitHub advisories cannot
+# scan this private Azure DevOps registry, so wasm_graph_sdk must be reviewed
+# and upgraded manually. Revisit when the feed leaves 'preview'.
+aio-sdks = { index = "sparse+https://pkgs.dev.azure.com/azure-iot-sdks/iot-operations/_packaging/preview/Cargo/index/" }
+
+[net]
+git-fetch-with-cli = true
+
+[target.wasm32-wasip2]
+rustflags = ["-C", "link-args=--export-table"]

@@ -3,6 +3,10 @@ param(
     [switch]$CI,
     [switch]$ChangedOnly,
     [switch]$CodeCoverage,
+    [ValidateSet('branch', 'range', 'full')]
+    [string]$ChangeMode = 'branch',
+    [string]$BaseSha = '',
+    [string]$HeadSha = '',
     [string]$ConfigPath = (Join-Path $PSScriptRoot 'tests/pester.config.ps1'),
     [string]$OutputPath = './test-results',
     [string[]]$Path
@@ -30,8 +34,9 @@ $configParams['OutputPath'] = $OutputPath
 
 $config = & $ConfigPath @configParams
 
-if ($ChangedOnly) {
-    $changedTests = & (Join-Path $PSScriptRoot 'tests/Get-ChangedTestFiles.ps1')
+if ($ChangedOnly -and $ChangeMode -ne 'full') {
+    $changedTests = & (Join-Path $PSScriptRoot 'tests/Get-ChangedTestFiles.ps1') `
+        -ChangeMode $ChangeMode -BaseSha $BaseSha -HeadSha $HeadSha
     if ($changedTests.Count -eq 0) {
         Write-Host 'No changed test files found.'
         Write-CIStepSummary "## Pester Test Results`n`nNo changed test files to run."

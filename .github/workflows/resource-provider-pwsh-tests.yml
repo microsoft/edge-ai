@@ -70,6 +70,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Run Pester tests for the resource provider scripts
       - name: Run Pester Tests
@@ -82,7 +84,7 @@ jobs:
       # Publish the Pester test results
       - name: Publish Test Results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: rp-pester-test-results
           path: ${{ inputs.working-directory }}/${{ inputs.test-results-output }}/

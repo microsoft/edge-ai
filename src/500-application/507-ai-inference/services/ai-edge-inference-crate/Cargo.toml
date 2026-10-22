@@ -51,10 +51,10 @@ lazy_static = "1.4"
 serde_yaml = "0.9"
 
 # Optional pure Rust ML fallback
-candle-core = { version = "0.9", optional = true }
-candle-nn = { version = "0.9", optional = true }
-candle-transformers = { version = "0.9", optional = true }
-candle-onnx = { version = "0.9", optional = true }
+candle-core = { version = "0.11", optional = true }
+candle-nn = { version = "0.11", optional = true }
+candle-transformers = { version = "0.11", optional = true }
+candle-onnx = { version = "0.11", optional = true }
 
 [dev-dependencies]
 serial_test = "3.0"
@@ -67,8 +67,9 @@ mockall = "0.11"
 [features]
 default = ["onnx"]
 minimal = []
-onnx = ["ort", "ndarray"]
-onnx-runtime = ["ort", "ndarray"]  # Legacy alias
+# The ONNX Runtime backend is compiled under `onnx-runtime`; `onnx` enables it
+onnx = ["onnx-runtime"]
+onnx-runtime = ["ort", "ndarray"]
 candle = ["candle-core", "candle-nn", "candle-transformers", "candle-onnx"]
 gpu = ["ort?/cuda", "ort?/tensorrt"]
 cpu-only = []

@@ -87,3 +87,7 @@ module "assets" {
 * Azure Arc-enabled Kubernetes cluster
 * Terraform >= 1.12.0
 * Azure CLI with `connectedk8s` extension
+
+## ONVIF Cameras
+
+The [ONVIF Camera Deployment Guide](../../../docs/getting-started/onvif-camera-quickstart.md) registers an ONVIF camera as a device with a pan-tilt-zoom control asset by using this component. [scripts/onvif-ptz-check.sh](./scripts/README.md) checks the camera's ONVIF services, media profiles, and PTZ control before registration.

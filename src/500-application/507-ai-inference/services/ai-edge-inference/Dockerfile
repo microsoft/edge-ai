@@ -135,7 +135,6 @@ RUN chown -R appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher /app && \
 # Set environment variables
 ENV RUST_LOG=info
 ENV MODEL_DIRECTORY=/models
-ENV METRICS_PORT=8080
 ENV HEALTH_PORT=8081
 
 # Set ONNX Runtime environment variables (will be ignored for Candle)
