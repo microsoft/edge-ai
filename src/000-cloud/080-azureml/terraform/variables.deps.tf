@@ -74,10 +74,6 @@ variable "ml_workload_identity" {
   })
   description = "AzureML workload managed identity object from security identity containing id and principal_id."
   default     = null
-  validation {
-    condition     = (!var.should_assign_ml_workload_identity_roles) || (var.ml_workload_identity != null)
-    error_message = "ml_workload_identity must be provided when should_assign_ml_workload_identity_roles is true."
-  }
 }
 
 variable "network_security_group" {
@@ -86,10 +82,6 @@ variable "network_security_group" {
   })
   description = "Network security group from 050-networking component."
   default     = null
-  validation {
-    condition     = (!var.should_associate_network_security_group) || (var.network_security_group != null)
-    error_message = "network_security_group must be provided when should_associate_network_security_group is true."
-  }
 }
 
 variable "virtual_network" {
@@ -108,8 +100,4 @@ variable "nat_gateway" {
   })
   description = "NAT gateway object from the networking component for managed outbound access."
   default     = null
-  validation {
-    condition     = (!var.should_enable_nat_gateway) || (var.nat_gateway != null)
-    error_message = "nat_gateway must be provided when should_enable_nat_gateway is true."
-  }
 }
