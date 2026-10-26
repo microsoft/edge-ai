@@ -99,6 +99,80 @@ Describe 'Test-RustHasChange' -Tag 'Unit' {
     }
 }
 
+Describe 'Test-IsGoContractTestChangeFile' -Tag 'Unit' {
+    Context 'when evaluating Go contract-test trigger paths' {
+        It 'Detects Go contract-test relevant files' {
+            Test-IsGoContractTestChangeFile -Path 'blueprints/full-single-node-cluster/tests/go.mod' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'blueprints/full-single-node-cluster/tests/output_contract_test.go' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'blueprints/full-single-node-cluster/terraform/outputs.tf' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'blueprints/full-single-node-cluster/bicep/main.bicep' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'scripts/linting/Invoke-GoTest.ps1' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'scripts/tests/linting/Invoke-GoTest.Tests.ps1' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'src/900-tools-utilities/904-test-utilities/contract.go' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'src/900-tools-utilities/904-test-utilities/go.mod' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'scripts/install-terraform-docs.sh' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'scripts/build/Detect-Folder-Changes.ps1' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path '.github/workflows/go-tests.yml' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path '.github/workflows/matrix-folder-check.yml' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path '.github/workflows/pr-validation.yml' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'package.json' | Should -BeTrue
+            Test-IsGoContractTestChangeFile -Path 'package-lock.json' | Should -BeTrue
+        }
+
+        It 'Ignores unrelated files' {
+            Test-IsGoContractTestChangeFile -Path 'docs/readme.md' | Should -BeFalse
+            Test-IsGoContractTestChangeFile -Path 'src/000-cloud/010-security-identity/terraform/main.tf' | Should -BeFalse
+            Test-IsGoContractTestChangeFile -Path '.github/workflows/rust-tests.yml' | Should -BeFalse
+            Test-IsGoContractTestChangeFile -Path 'Cargo.toml' | Should -BeFalse
+            Test-IsGoContractTestChangeFile -Path 'blueprints/full-single-node-cluster/tests/start.sh' | Should -BeFalse
+            Test-IsGoContractTestChangeFile -Path '' | Should -BeFalse
+        }
+    }
+}
+
+Describe 'Test-GoContractTestHasChange' -Tag 'Unit' {
+    Context 'when evaluating changed file collections' {
+        It 'Returns false for null or empty inputs' {
+            Test-GoContractTestHasChange -ChangedFiles $null | Should -BeFalse
+            Test-GoContractTestHasChange -ChangedFiles @() | Should -BeFalse
+        }
+
+        It 'Returns true when any file should trigger Go contract tests' {
+            Test-GoContractTestHasChange -ChangedFiles @('docs/readme.md', 'blueprints/full-single-node-cluster/tests/go.mod') | Should -BeTrue
+            Test-GoContractTestHasChange -ChangedFiles @('blueprints/full-single-node-cluster/terraform/outputs.tf') | Should -BeTrue
+            Test-GoContractTestHasChange -ChangedFiles @('.github/workflows/go-tests.yml') | Should -BeTrue
+            Test-GoContractTestHasChange -ChangedFiles @('docs/readme.md', 'src/900-tools-utilities/904-test-utilities/contract.go') | Should -BeTrue
+            Test-GoContractTestHasChange -ChangedFiles @('docs/readme.md', 'scripts/install-terraform-docs.sh') | Should -BeTrue
+        }
+
+        It 'Returns false when no files should trigger Go contract tests' {
+            Test-GoContractTestHasChange -ChangedFiles @('docs/readme.md', 'src/000-cloud/010-security-identity/terraform/main.tf') | Should -BeFalse
+        }
+    }
+}
+
+Describe 'Test-IsTerraformInstallChangeFile' -Tag 'Unit' {
+    Context 'when evaluating Terraform module-test trigger paths' {
+        It 'Detects Terraform source and variable files' {
+            Test-IsTerraformInstallChangeFile -Path 'blueprints/full-single-node-cluster/terraform/outputs.tf' | Should -BeTrue
+            Test-IsTerraformInstallChangeFile -Path 'src/000-cloud/010-security-identity/terraform/main.tf' | Should -BeTrue
+            Test-IsTerraformInstallChangeFile -Path 'blueprints/full-single-node-cluster/terraform/test.tfvars' | Should -BeTrue
+            Test-IsTerraformInstallChangeFile -Path 'blueprints/full-single-node-cluster/terraform/backend.hcl' | Should -BeTrue
+        }
+
+        It 'Ignores Go contract-test tooling and non-Terraform files' {
+            Test-IsTerraformInstallChangeFile -Path 'blueprints/full-single-node-cluster/tests/output_contract_test.go' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path 'blueprints/full-single-node-cluster/tests/go.mod' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path 'scripts/linting/Invoke-GoTest.ps1' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path 'src/900-tools-utilities/904-test-utilities/contract.go' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path 'scripts/install-terraform-docs.sh' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path '.github/workflows/go-tests.yml' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path 'package.json' | Should -BeFalse
+            Test-IsTerraformInstallChangeFile -Path '' | Should -BeFalse
+        }
+    }
+}
+
 Describe 'Get-BicepFullValidationReason' -Tag 'Unit' {
     It 'returns bicepconfig for root Bicep configuration changes' {
         @(Get-BicepFullValidationReason -Files @('bicepconfig.json')) | Should -Contain 'bicepconfig'
