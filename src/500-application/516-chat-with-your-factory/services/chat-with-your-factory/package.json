@@ -36,7 +36,7 @@
   "dependencies": {
     "@azure/ai-agents": "^1.1.0",
     "@azure/identity": "^4.13.1",
-    "@azure/msal-node": "^5.5.0",
+    "@azure/msal-node": "^7.1.1",
     "@fluentui/react-components": "^9.73.2",
     "@fluentui/react-icons": "^2.0.320",
     "@microsoft/agents-activity": "^1.4.2",
@@ -59,7 +59,7 @@
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@types/ws": "^8.18.1",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "esbuild": "^0.28.2",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.35.0",
@@ -67,12 +67,16 @@
     "globals": "^15.0.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "overrides": {
     "uuid@^11": "^11.1.1",
-    "ip-address": "^10.7.3",
+    "ip-address": "^10.7.4",
     "proxy-addr": "^2.0.8",
-    "source-map-js": "^1.2.2"
+    "source-map-js": "^1.2.2",
+    "body-parser": "^2.4.0",
+    "@azure/identity": {
+      "@azure/msal-node": "$@azure/msal-node"
+    }
   }
 }
