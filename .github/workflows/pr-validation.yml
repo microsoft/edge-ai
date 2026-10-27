@@ -451,6 +451,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Install-PSResource -Name Pester -Version '5.7.1' -Repository PSGallery -Scope CurrentUser -TrustRepository
+
       - name: Run Pester Tests
         id: pester
         shell: pwsh
