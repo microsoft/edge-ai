@@ -175,9 +175,9 @@ Creates an Azure Device Registry (ADR) Schema Registry for storing and managing 
 
 #### Resources for schemaRegistry
 
-| Name           | Type                                        | API Version        |
-|:---------------|:--------------------------------------------|:-------------------|
-| schemaRegistry | `Microsoft.DeviceRegistry/schemaRegistries` | 2024-09-01-preview |
+| Name           | Type                                        | API Version |
+|:---------------|:--------------------------------------------|:------------|
+| schemaRegistry | `Microsoft.DeviceRegistry/schemaRegistries` | 2026-04-01  |
 
 #### Outputs for schemaRegistry
 
