@@ -39,11 +39,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install validator dependencies
+      - name: Install powershell-yaml
         run: |
           $ErrorActionPreference = 'Stop'
-          Install-PSResource -Name powershell-yaml -Version '0.4.12' -Repository PSGallery -Scope CurrentUser -TrustRepository
-          Install-PSResource -Name Pester -Version '5.7.1' -Repository PSGallery -Scope CurrentUser -TrustRepository
+          Install-PSResource -Name powershell-yaml -Repository PSGallery -Scope CurrentUser -TrustRepository
 
       - name: Run Pester tests for validator
         run: |
