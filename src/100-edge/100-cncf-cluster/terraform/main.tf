@@ -171,7 +171,7 @@ module "arc_agents" {
 }
 
 data "azapi_resource" "arc_connected_cluster" {
-  count = var.should_deploy_script_to_vm && !var.should_deploy_arc_agents ? 1 : 0
+  count = local.has_arc_cluster ? 1 : 0
 
   type      = "Microsoft.Kubernetes/connectedClusters@2024-01-01"
   parent_id = var.resource_group.id
