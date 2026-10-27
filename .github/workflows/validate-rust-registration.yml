@@ -41,7 +41,8 @@ jobs:
 
       - name: Install powershell-yaml
         run: |
-          Install-Module -Name powershell-yaml -Scope CurrentUser -Force -AllowClobber
+          $ErrorActionPreference = 'Stop'
+          Install-PSResource -Name powershell-yaml -Repository PSGallery -Scope CurrentUser -TrustRepository
 
       - name: Run Pester tests for validator
         run: |
