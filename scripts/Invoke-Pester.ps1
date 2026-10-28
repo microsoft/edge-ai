@@ -21,7 +21,7 @@ $pesterModule = Get-Module -ListAvailable -Name Pester |
     Select-Object -First 1
 
 if (-not $pesterModule) {
-    Install-Module -Name Pester -RequiredVersion '5.7.1' -Force -Scope CurrentUser -SkipPublisherCheck
+    Install-PSResource -Name Pester -Version '5.7.1' -Repository PSGallery -Scope CurrentUser -TrustRepository
 }
 
 Import-Module Pester -RequiredVersion '5.7.1' -Force
