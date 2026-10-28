@@ -6,7 +6,32 @@
  * existing cloud infrastructure including Key Vault, Storage Account, Application Insights, and networking.
  */
 
-data "azurerm_client_config" "current" {}
+/*
+ * Input Validation
+ */
+
+// Validates rules that span multiple input variables.
+// On a data source rather than a managed resource, so it adds no planned changes.
+data "azurerm_client_config" "current" {
+  lifecycle {
+    precondition {
+      condition     = !var.should_assign_ml_workload_identity_roles || var.ml_workload_identity != null
+      error_message = "ml_workload_identity must be provided when should_assign_ml_workload_identity_roles is true."
+    }
+    precondition {
+      condition     = !var.should_associate_network_security_group || var.network_security_group != null
+      error_message = "network_security_group must be provided when should_associate_network_security_group is true."
+    }
+    precondition {
+      condition     = !var.should_enable_nat_gateway || var.nat_gateway != null
+      error_message = "nat_gateway must be provided when should_enable_nat_gateway is true."
+    }
+    precondition {
+      condition     = var.compute_cluster_min_nodes <= var.compute_cluster_max_nodes
+      error_message = "Minimum node count must be less than or equal to compute_cluster_max_nodes."
+    }
+  }
+}
 
 /*
  * Network Module for Azure ML Compute Cluster
@@ -16,6 +41,9 @@ module "network" {
   count = alltrue([var.should_create_compute_cluster, var.should_create_compute_cluster_snet]) ? 1 : 0
 
   source = "./modules/network"
+
+  // Keeps the input preconditions in targeted plans (workspace and inference integration inherit it).
+  depends_on = [data.azurerm_client_config.current]
 
   // Resource dependencies first
   resource_group         = var.resource_group
@@ -29,9 +57,9 @@ module "network" {
 
   // Optional parameters
   default_outbound_access_enabled         = var.default_outbound_access_enabled
-  should_associate_network_security_group = var.should_associate_network_security_group
-  should_enable_nat_gateway               = var.should_enable_nat_gateway
-  nat_gateway_id                          = var.should_enable_nat_gateway ? var.nat_gateway.id : null
+  should_associate_network_security_group = var.should_associate_network_security_group && var.network_security_group != null
+  should_enable_nat_gateway               = var.should_enable_nat_gateway && var.nat_gateway != null
+  nat_gateway_id                          = try(var.nat_gateway.id, null)
   subnet_address_prefixes_azureml         = var.subnet_address_prefixes_azureml
 }
 
@@ -57,7 +85,7 @@ module "workspace" {
   should_assign_current_user_workspace_roles = var.should_assign_current_user_workspace_roles
   current_user_object_id                     = var.should_assign_current_user_workspace_roles ? data.azurerm_client_config.current.object_id : null
   ml_workload_identity                       = var.ml_workload_identity
-  should_assign_ml_workload_identity_roles   = var.should_assign_ml_workload_identity_roles
+  should_assign_ml_workload_identity_roles   = var.should_assign_ml_workload_identity_roles && var.ml_workload_identity != null
 
   // Role assignment configuration
   should_assign_workspace_managed_identity_roles = var.should_assign_workspace_managed_identity_roles
@@ -171,7 +199,7 @@ module "inference_cluster_integration" {
 
   ml_workload_identity                  = var.ml_workload_identity
   ml_workload_subjects                  = var.ml_workload_subjects
-  should_configure_ml_workload_identity = var.should_assign_ml_workload_identity_roles
+  should_configure_ml_workload_identity = var.should_assign_ml_workload_identity_roles && var.ml_workload_identity != null
 
   // App Configuration integration for volcano scheduler
   volcano_scheduler_configmap_name = try(var.kubernetes.app_configuration_configmap_name, null)
