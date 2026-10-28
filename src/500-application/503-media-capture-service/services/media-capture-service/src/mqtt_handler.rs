@@ -93,6 +93,7 @@ async fn process_message<W: TimeParamWorker + Send + Sync + 'static>(
     let time_param = params_with_id.time_param;
     let event_id = params_with_id.event_id.clone();
     let event_type = params_with_id.event_type.clone();
+    let camera_id = params_with_id.camera_id.clone();
     let event_id_str = event_id.map(|id| id.to_string()).unwrap_or_else(|| "unknown".to_string());
 
     let start_range = time_param.start_time.with_timezone(&Local);
@@ -120,6 +121,7 @@ async fn process_message<W: TimeParamWorker + Send + Sync + 'static>(
         wait_seconds,
         event_id.clone(),
         event_type.as_deref(),
+        camera_id.as_deref(),
     )
     .await;
 
