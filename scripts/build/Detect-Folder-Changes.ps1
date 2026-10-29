@@ -221,6 +221,16 @@ function Get-ApplicationChange {
             # Normalize path separators for cross-platform compatibility
             $normalizedFile = $file -replace '\\', '/'
 
+            # The dashboard image and tests consume the asset-owned camera CLI.
+            if ($normalizedFile -match '^src/100-edge/111-assets/scripts/(camera_onboarding\.py$|tests/)') {
+                if ($ApplicationStructure.ContainsKey('onvif-connector')) {
+                    $changedApps['onvif-connector'] = @{
+                        appName   = 'onvif-connector'
+                        directory = "$ApplicationRelativePath/$($ApplicationStructure['onvif-connector'].directory)"
+                    }
+                }
+            }
+
             if ($normalizedFile -match $appPattern) {
                 # Extract application directory from path
                 $relativePath = $normalizedFile -replace $appPattern, ''

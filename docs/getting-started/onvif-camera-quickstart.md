@@ -2,7 +2,7 @@
 title: ONVIF Camera Deployment Guide
 description: Register an ONVIF camera with Azure IoT Operations as a device with credentials and a pan-tilt-zoom control asset by using the Azure CLI, Bicep, or Terraform
 author: Edge AI Team
-ms.date: 2026-10-05
+ms.date: 2026-10-28
 ms.topic: how-to
 estimated_reading_time: 15
 keywords:
@@ -54,6 +54,66 @@ PROFILE_TOKEN=<profile-token> ./onvif-ptz-check.sh move
 | Timeout                                                | Firewall or wrong address           | Check network connectivity from the cluster                                                                                                                                                                                     |
 | `HTTP 401`                                             | Credentials rejected                | Check the username, password, and ONVIF user permissions. If the credentials are correct, the camera might accept only WS-UsernameToken; set digest authentication on the camera or use the connector's username token fallback |
 | `HTTP 400` or `500` with `Data required for operation` | ONVIF turned off on the camera      | Turn on ONVIF in the camera settings                                                                                                                                                                                            |
+
+### Optional Bounded Discovery and Snapshot Preflight
+
+The [510 camera dashboard](../../src/500-application/510-onvif-connector/README.md)
+can find candidates in an approved scope, inspect ONVIF profiles with supplied
+credentials, and verify a selected RTSP profile by decoding a frame. These are
+three separate checks. An open TCP port is only a candidate, not an authenticated
+camera or a working media feed.
+
+Enter explicit hosts, host/port pairs, IPv4 ranges, or CIDRs. Discovery accepts at
+most 4096 expanded targets, counting repeated scope entries before deduplication.
+It rejects invalid or over-budget scopes before probing and uses at most 50
+concurrent probes with two-second socket timeouts. Multicast requires explicit
+selection; blank scope never authorizes a network scan. Discovery does not try
+default credentials.
+
+After authenticated inspection, select the profile, decode a frame, and supply
+both `secret-name/key` references. Select `snapshot-to-mqtt` with an explicit
+MQTT publish topic and a positive finite snapshot rate. No production topic or
+rate is inferred. Changing the endpoint, profile, stream URI, or credentials
+invalidates the frame evidence and requires verification again.
+
+The dashboard invokes the single
+[111-assets generator](../../src/100-edge/111-assets/scripts/README.md).
+You can also invoke its stdlib CLI directly with the documented sanitized
+selection contract:
+
+```bash
+python src/100-edge/111-assets/scripts/camera_onboarding.py \
+  --input <private-selection.json> \
+  --output-directory <new-private-output-directory>
+```
+
+The parent directory must already exist; the output directory must not exist.
+The CLI validates caller-supplied inspection and frame assertions but does not
+perform network discovery, authenticate a camera, or decode a frame itself.
+Never put passwords, usernames, tokenized URIs, or embedded URI credentials in
+the selection document. Keep input and output outside source control and build
+contexts. Output includes internal addresses and secret names and remains
+confidential even though it contains no credential values.
+
+The proposal enables both ONVIF and Media connectors, registers separate
+`Microsoft.Onvif` and `Microsoft.Media` devices, and configures a Media snapshot
+asset with an explicit `Mqtt` destination. An inspected PTZ-capable selection also
+produces an ONVIF management asset. It does not configure camera events.
+
+### Review Resource Ownership Before Deployment
+
+Azure Device Registry (ADR) and Azure IoT Operations (AIO) remain the operational
+source of truth. Network discovery identifies possible endpoints; the native
+ONVIF connector discovers capabilities from a registered endpoint, not by
+scanning the network. Registration, discovery review, and resource creation are
+separate operations.
+
+Review generated names against existing resources. Merge `namespaced_devices`
+and `namespaced_assets` into the deployment's existing lists: a tfvars list
+replaces a variable value rather than appending to it. Do not also import or
+promote discovered resources for the same endpoint/task under another name.
+Generation is review-only and never applies infrastructure or approves
+discovered assets.
 
 ## Step 2: Store the Camera Credentials
 
@@ -248,6 +308,20 @@ The connector logs `Asset Endpoint is not being observed` for an asset that has 
 
 ## Step 5: Verify the Deployment
 
+Provisioning success, an ONVIF profile listing, and a decoded preflight frame
+are not proof of MQTT snapshot delivery. For a generated snapshot asset, verify
+that both connector templates are enabled, check the Media connector logs, and
+use your approved authenticated MQTT client to observe the exact selected topic.
+Confirm that the payload decodes as JPEG and that repeated messages follow the
+selected snapshot rate. Record the camera/profile, topic, observation interval,
+and result without storing credentials.
+
+Track physical-camera decoding, native backend timeout measurements, actual AIO
+MQTT delivery, camera events, and private SE100 compatibility separately.
+Local simulator or unit-test success does not establish those checks; unavailable
+hardware or private evidence remains an explicit release blocker for the
+corresponding claim.
+
 ```bash
 az resource list --resource-group <resource-group> \
   --resource-type Microsoft.DeviceRegistry/namespaces/devices \
@@ -275,6 +349,29 @@ MQTT RPC requests need a correlation ID and a response topic, so a plain `mosqui
 
 ## Troubleshooting
 
+### Discovery or Frame Verification Fails
+
+* An unreachable candidate is not selectable; check the approved host and port.
+* Authentication rejection requires operator-supplied ONVIF credentials, not default-login probing.
+* Unsupported services or unknown inspection errors do not establish camera compatibility.
+* A profile listing without a decoded frame is not verified; check RTSP access, the selected profile, and the FFmpeg backend.
+* Endpoint, profile, URI, or credential changes require another inspection or verification as appropriate.
+* Native timeout support depends on the OpenCV backend; measure it with an approved local RTSP fixture before making a latency guarantee.
+
+### Proposal Generation Fails
+
+* A missing packaged CLI requires the dashboard image that includes the shared asset tool; do not substitute another renderer.
+* Fix invalid secret/key references, missing topics, invalid rates, or stale frame evidence before retrying.
+* CLI failure or malformed results are errors, not successful proposals.
+* Choose a new private output directory under an existing writable parent. Existing paths and symlink components are rejected.
+* Files are staged privately, but publishing two files is not one filesystem transaction. A crash or failed cleanup can leave private partial files; inspect them before retrying.
+
+### Events Are Not Configured
+
+PTZ support does not prove event support. Inspect the camera's event capabilities
+and configure supported topics and an explicit destination through the operational
+ADR/AIO workflow. The snapshot proposal does not invent event groups or topics.
+
 ### Device Missing in Kubernetes
 
 Query the namespaced Device Registry resource types:
@@ -295,6 +392,13 @@ kubectl get assets.namespaces.deviceregistry.microsoft.com --namespace azure-iot
 * Run `onvif-ptz-check.sh move` to confirm that the camera moves without Azure IoT Operations
 * Use a profile token whose `PTZ` column shows `yes`
 * Some cameras support only `ContinuousMove`; send `ContinuousMove` followed by `Stop`
+
+### Roll Back a Proposal
+
+Before deployment, roll back the tool or dashboard image and discard only its
+private proposal files. After an operator applies resources, review Terraform
+state and ADR ownership before changing or removing those resources. Deleting
+proposal files does not undo a deployment; do not destroy unrelated assets.
 
 ## Additional Resources
 
