@@ -14,6 +14,7 @@ import os
 from urllib.parse import quote, urlparse
 
 from camera_manager import CameraManager
+from camera_onboarding_ui import render_camera_onboarding, render_proposal_export
 from mjpeg_server import register_mjpeg_routes
 from mqtt_handler import MQTTHandler
 from nicegui import app, ui
@@ -197,10 +198,18 @@ def dashboard():
                     "Target IP(s)",
                     placeholder="192.168.1.100 or 192.168.1.100:8000",
                 ).classes("w-full").tooltip(
-                    "Single IP or IP:port. "
-                    "Comma-separated for multiple addresses. "
-                    "Append :port to set a custom ONVIF port."
+                    "IPv4, CIDR, or last-octet range (192.168.1.1-254). "
+                    "Comma-separated; append :port for a custom port. "
+                    "Maximum 4096 endpoints before deduplication."
                 )
+                multicast_input = ui.checkbox(
+                    "Allow WS-Discovery multicast on the local network",
+                    value=False,
+                )
+                ui.label(
+                    "Use targets or multicast, not both. Discovery sends no credentials "
+                    "and does not verify ONVIF support or video."
+                ).classes("text-caption text-grey")
 
                 discovery_dialog = ui.dialog()
                 with discovery_dialog, ui.card().classes("min-w-[500px]"):
@@ -208,11 +217,12 @@ def dashboard():
 
                 def populate_discovery_dialog(devices):
                     discovery_container.clear()
+                    proposals = []
                     with discovery_container:
-                        ui.label("Discovered Cameras").classes("text-h6")
+                        ui.label("Discovery Results").classes("text-h6")
                         if not devices:
                             ui.label(
-                                "No cameras found on the network."
+                                "No candidates responded in the approved scope."
                             ).classes("text-body1 text-grey")
                         for dev in devices:
                             with ui.card().classes("w-full q-mb-sm"):
@@ -221,10 +231,22 @@ def dashboard():
                                 ui.label(
                                     f'{dev["host"]}:{dev["port"]}'
                                 ).classes("text-caption text-grey")
+                                ui.label(
+                                    f'Status: {dev["status"]}'
+                                ).classes("text-caption")
+                                if dev["status"] != "candidate":
+                                    ui.label(
+                                        "Check the endpoint and retry discovery."
+                                    ).classes("text-caption text-grey")
+                                    continue
+                                ui.label(
+                                    "Candidate only. Enter credentials to inspect "
+                                    "ONVIF and add a stream."
+                                ).classes("text-caption text-grey")
                                 with ui.row().classes(
                                         "items-end gap-2 w-full"):
                                     u = ui.input(
-                                        "Username", value="admin",
+                                        "Username",
                                     ).classes("flex-grow")
                                     p = ui.input(
                                         "Password", password=True,
@@ -271,14 +293,17 @@ def dashboard():
                                             ui.notify(
                                                 f"Added: {cam_id}",
                                                 type="positive")
-                                        except Exception as exc:
+                                        except Exception:
                                             ui.notify(
-                                                f"Failed: {exc}",
+                                                "Preview connection failed; check camera credentials and endpoint.",
                                                 type="negative")
 
                                     ui.button(
                                         "Add", on_click=add_found,
                                     ).props("dense color=primary")
+                                proposals.append(render_camera_onboarding(dev, u, p))
+                        if proposals:
+                            render_proposal_export(proposals)
                         ui.button(
                             "Close", on_click=discovery_dialog.close,
                         ).classes("self-end q-mt-md")
@@ -288,7 +313,8 @@ def dashboard():
                     try:
                         targets = probe_input.value.strip() or None
                         devices = await discover_onvif_devices(
-                            timeout=5, target_hosts=targets)
+                            timeout=5, target_hosts=targets,
+                            multicast=multicast_input.value)
                         populate_discovery_dialog(devices)
                         discovery_dialog.open()
                     except Exception as exc:

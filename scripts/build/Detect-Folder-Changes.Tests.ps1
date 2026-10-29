@@ -15,6 +15,65 @@ BeforeAll {
     . ([scriptblock]::Create($functionScript))
 }
 
+Describe 'Camera onboarding application dependency' -Tag 'Unit' {
+    BeforeAll {
+        $script:CameraStructure = @{
+            'onvif-connector' = @{ directory = '510-onvif-connector' }
+            'media-connector' = @{ directory = '508-media-connector' }
+        }
+    }
+
+    It 'selects the dashboard application for a shared CLI-only change' {
+        $result = Get-ApplicationChange `
+            -ChangedFiles @('src/100-edge/111-assets/scripts/camera_onboarding.py') `
+            -ApplicationStructure $script:CameraStructure `
+            -ApplicationRelativePath 'src/500-application'
+
+        $result.Keys | Should -HaveCount 1
+        $result['onvif-connector'].directory | Should -Be 'src/500-application/510-onvif-connector'
+    }
+
+    It 'selects the dashboard for shared CLI tests and Windows separators' {
+        $result = Get-ApplicationChange `
+            -ChangedFiles @('src\100-edge\111-assets\scripts\tests\test_camera_onboarding.py') `
+            -ApplicationStructure $script:CameraStructure `
+            -ApplicationRelativePath 'src/500-application'
+
+        $result.Keys | Should -Contain 'onvif-connector'
+    }
+
+    It 'does not select applications for unrelated asset scripts' {
+        $result = Get-ApplicationChange `
+            -ChangedFiles @('src/100-edge/111-assets/scripts/onvif-ptz-check.sh') `
+            -ApplicationStructure $script:CameraStructure `
+            -ApplicationRelativePath 'src/500-application'
+
+        $result.Count | Should -Be 0
+    }
+
+    It 'preserves direct application changes and deduplicates dependencies' {
+        $result = Get-ApplicationChange `
+            -ChangedFiles @(
+                'src/100-edge/111-assets/scripts/camera_onboarding.py',
+                'src/500-application/510-onvif-connector/services/camera-dashboard/src/app.py',
+                'src/500-application/508-media-connector/README.md'
+            ) `
+            -ApplicationStructure $script:CameraStructure `
+            -ApplicationRelativePath 'src/500-application'
+
+        $result.Keys | Should -HaveCount 2
+        $result.Keys | Should -Contain 'media-connector'
+    }
+
+    It 'runs camera qualification in the selected application build job' {
+        $workflow = Get-Content -Raw (Join-Path $PSScriptRoot '../../.github/workflows/application-matrix-builds.yml')
+        $workflow | Should -Match "if: matrix.applicationName == 'onvif-connector'"
+        $workflow | Should -Match 'python -m pytest -q'
+        $workflow | Should -Match 'src/100-edge/111-assets/scripts/tests'
+        $workflow | Should -Match 'services/camera-dashboard/tests'
+    }
+}
+
 Describe 'Test-IsRustChangeFile' -Tag 'Unit' {
     It 'matches files under src/500-application/' {
         Test-IsRustChangeFile -Path 'src/500-application/503/media-capture-service/src/main.rs' | Should -BeTrue
