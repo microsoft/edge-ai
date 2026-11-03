@@ -10,8 +10,10 @@ URIs from a known ONVIF camera endpoint.
 import asyncio
 import ipaddress
 import logging
+import math
 import os
 import socket
+import threading
 import time
 import uuid
 from urllib.parse import urlparse
@@ -112,18 +114,22 @@ _PROBE_TEMPLATE = (
 )
 
 
-def _discover_sync(timeout):
+def _discover_sync(timeout, stop):
     """Send a WS-Discovery multicast probe and collect ONVIF device responses."""
+    if stop.is_set():
+        return []
     probe = _PROBE_TEMPLATE.format(message_id=uuid.uuid4()).encode("utf-8")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-    sock.settimeout(1.0)
     try:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        sock.settimeout(0.1)
+        if stop.is_set():
+            return []
         sock.sendto(probe, _WS_DISCOVERY_MULTICAST)
         devices = {}
         end = time.monotonic() + timeout
-        while time.monotonic() < end:
+        while not stop.is_set() and time.monotonic() < end:
             try:
                 data, _ = sock.recvfrom(65535)
                 _parse_probe_match(data, devices)
@@ -151,14 +157,22 @@ def _parse_probe_match(data, devices):
         if xaddrs_el is None or not xaddrs_el.text:
             continue
         xaddr = xaddrs_el.text.strip().split()[0]
-        parsed = urlparse(xaddr)
-        host = parsed.hostname
-        port = parsed.port or 80
+        try:
+            parsed = urlparse(xaddr)
+            host = str(ipaddress.IPv4Address(parsed.hostname))
+            port = parsed.port if parsed.port is not None else 80
+            if parsed.scheme not in ("http", "https") or not 1 <= port <= 65535:
+                continue
+        except ValueError:
+            continue
         scopes = scopes_el.text.strip() if scopes_el is not None and scopes_el.text else ""
         name = _name_from_scopes(scopes) or f"Camera ({host})"
         key = f"{host}:{port}"
         if key not in devices:
-            devices[key] = {"host": host, "port": port, "name": name}
+            devices[key] = {
+                "host": host, "port": port, "name": name,
+                "status": "candidate", "evidence": ["ws_discovery_probe_match"],
+            }
 
 
 def _name_from_scopes(scopes):
@@ -173,38 +187,55 @@ def _name_from_scopes(scopes):
 
 
 async def probe_onvif_device(host, port=80, semaphore=None):
-    """Probe a single host via ONVIF GetDeviceInformation (TCP)."""
-    async def _probe():
+    """Collect unauthenticated TCP candidate evidence, not ONVIF capabilities."""
+    host = str(ipaddress.IPv4Address(host))
+    if isinstance(port, bool) or not isinstance(port, int) or not 1 <= port <= 65535:
+        raise ValueError("Port must be an integer between 1 and 65535")
+    stop = threading.Event()
+
+    def _probe():
+        if stop.is_set():
+            return None
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            cam = ONVIFCamera(host, port, "admin", "admin", wsdl_dir=_WSDL_DIR)
-            try:
-                await cam.update_xaddrs()
-                device = await cam.create_devicemgmt_service()
-                info = await device.GetDeviceInformation()
-                name = getattr(info, "Model", None) or getattr(
-                    info, "Manufacturer", None) or f"Camera ({host})"
-                return {"host": host, "port": port, "name": str(name)}
-            finally:
-                try:
-                    await cam.close()
-                except Exception:
-                    logger.debug(
-                        "Failed to close ONVIF camera connection", exc_info=True)
-        except Exception:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(2)
-            try:
-                sock.connect((host, port))
-                sock.close()
-                return {"host": host, "port": port, "name": f"Camera ({host})"}
-            except (OSError, TimeoutError):
-                return None
-            finally:
-                sock.close()
+            sock.connect((host, port))
+            return {
+                "host": host, "port": port, "name": f"Candidate ({host})",
+                "status": "candidate", "evidence": ["tcp_port_open"],
+            }
+        except OSError:
+            return {
+                "host": host, "port": port, "name": f"Unreachable ({host})",
+                "status": "unreachable", "evidence": [],
+            }
+        finally:
+            sock.close()
+
     if semaphore:
         async with semaphore:
-            return await _probe()
-    return await _probe()
+            return await _run_worker(_probe, stop=stop)
+    return await _run_worker(_probe, stop=stop)
+
+
+async def _run_worker(function, *args, stop=None):
+    """Drain socket workers before cancellation releases their concurrency slot."""
+    worker = asyncio.create_task(asyncio.to_thread(function, *args))
+    try:
+        return await asyncio.shield(worker)
+    except asyncio.CancelledError:
+        if stop is not None:
+            stop.set()
+        while not worker.done():
+            try:
+                await asyncio.shield(worker)
+            except asyncio.CancelledError:
+                continue
+            except Exception:
+                break
+        if not worker.cancelled():
+            worker.exception()
+        raise
 
 
 def _expand_targets(raw):
@@ -218,51 +249,86 @@ def _expand_targets(raw):
       - Range: 192.168.1.1-254
       - Range:port: 192.168.1.1-254:8000
     """
-    results = []
+    plans = []
+    total = 0
     for token in raw.split(","):
         token = token.strip()
         if not token:
             continue
         port = 80
-        # Extract trailing :port if present and last segment is numeric
         if ":" in token:
-            base, maybe_port = token.rsplit(":", 1)
-            if maybe_port.isdigit():
-                port = int(maybe_port)
-                token = base
+            token, raw_port = token.rsplit(":", 1)
+            if not raw_port.isascii() or not raw_port.isdecimal():
+                raise ValueError("Port must be an integer between 1 and 65535")
+            port = int(raw_port)
+        if not 1 <= port <= 65535:
+            raise ValueError("Port must be an integer between 1 and 65535")
         if "/" in token:
-            for addr in ipaddress.IPv4Network(token, strict=False).hosts():
-                results.append((str(addr), port))
-        elif "-" in token.split(".")[-1]:
-            parts = token.split(".")
-            prefix = ".".join(parts[:3])
-            last = parts[3]
-            if "-" in last:
-                lo, hi = last.split("-", 1)
-                start = int(lo)
-                end = int(hi)
-                for i in range(start, end + 1):
-                    results.append((f"{prefix}.{i}", port))
+            network = ipaddress.IPv4Network(token, strict=False)
+            count = network.num_addresses
+            if network.prefixlen < 31:
+                count -= 2
+            plan = (network, None, port)
+        elif "-" in token:
+            start_text, end_text = token.split("-", 1)
+            start = ipaddress.IPv4Address(start_text)
+            if not end_text.isascii() or not end_text.isdecimal():
+                raise ValueError(f"Invalid IPv4 range: {token}")
+            end_octet = int(end_text)
+            if not int(start) % 256 <= end_octet <= 255:
+                raise ValueError(f"Invalid IPv4 range: {token}")
+            end = int(start) - int(start) % 256 + end_octet
+            count = end - int(start) + 1
+            plan = (int(start), end, port)
         else:
-            results.append((token, port))
-    return results
+            plan = (int(ipaddress.IPv4Address(token)), None, port)
+            count = 1
+        total += count
+        if total > 4096:
+            raise ValueError("Approved discovery scope cannot exceed 4096 endpoints")
+        plans.append(plan)
+
+    results = []
+    for start, end, port in plans:
+        if isinstance(start, ipaddress.IPv4Network):
+            addresses = start.hosts()
+        else:
+            addresses = (
+                ipaddress.IPv4Address(value)
+                for value in range(start, (end if end is not None else start) + 1)
+            )
+        results.extend((str(address), port) for address in addresses)
+    return list(dict.fromkeys(results))
 
 
-async def discover_onvif_devices(timeout=5, target_hosts=None):
-    """Discover ONVIF cameras via multicast or direct probe.
+async def discover_onvif_devices(timeout=5, target_hosts=None, multicast=False):
+    """Discover unauthenticated candidates within an explicitly approved scope.
 
     Supported target_hosts formats (comma-separated):
       - Single IP or IP:port
       - CIDR subnet: 192.168.1.0/24 or 192.168.1.0/24:8000
       - IP range: 192.168.1.1-254 or 192.168.1.1-254:8000
-    Falls back to WS-Discovery multicast when target_hosts is empty.
+    Multicast requires explicit consent and cannot be combined with targets.
     """
+    if target_hosts and multicast:
+        raise ValueError("Choose targeted probing or multicast, not both")
     if target_hosts:
         pairs = _expand_targets(target_hosts)
         if not pairs:
             return []
         sem = asyncio.Semaphore(50)
-        tasks = [probe_onvif_device(h, p, semaphore=sem) for h, p in pairs]
+        tasks = [asyncio.create_task(probe_onvif_device(h, p, semaphore=sem)) for h, p in pairs]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        return [r for r in results if r and not isinstance(r, Exception)]
-    return await asyncio.get_event_loop().run_in_executor(None, _discover_sync, timeout)
+        return [
+            {
+                "host": host, "port": port, "name": f"Unknown ({host})",
+                "status": "unknown", "evidence": [],
+            } if isinstance(result, Exception) else result
+            for (host, port), result in zip(pairs, results, strict=True)
+        ]
+    if multicast:
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError("Multicast timeout must be positive and finite")
+        stop = threading.Event()
+        return await _run_worker(_discover_sync, timeout, stop, stop=stop)
+    raise ValueError("Provide an approved target scope or explicitly enable multicast")
