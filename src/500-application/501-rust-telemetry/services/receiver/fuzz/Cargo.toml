@@ -19,3 +19,6 @@ test = false
 doc = false
 
 [workspace]
+
+[profile.release]
+strip = true
