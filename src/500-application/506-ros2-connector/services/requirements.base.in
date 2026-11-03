@@ -7,7 +7,7 @@ werkzeug==3.1.9
 
 # Data processing and utilities
 numpy>=2.5.3
-Pillow==12.3.0
+Pillow==13.0.0
 
 # System monitoring
 psutil==7.2.2

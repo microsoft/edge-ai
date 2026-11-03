@@ -49,6 +49,22 @@ ignore:
       type: npm
       name: http-cache-semantics
 
+  # Zod 3.25.75 - HIGH severity, fixed in 4.6.6
+  # The Copilot Studio Agents SDK requires Zod 3; forcing Zod 4 breaks its schemas.
+  # This compatibility exception retains the SDK and its delegated authentication.
+  # Denial-of-service risk from oversized validation input remains.
+  # Remove when the SDK supports a patched Zod release.
+  - vulnerability: GHSA-mrhx-c7xc-m3w5
+    reason: >-
+      Copilot Studio SDK compatibility exception, not a vulnerability fix.
+      Oversized validation input can still cause denial of service.
+      Remove when the SDK supports a patched Zod release.
+    package:
+      type: npm
+      name: zod
+      version: 3.25.75
+      location: "**/src/500-application/516-chat-with-your-factory/services/chat-with-your-factory/package-lock.json"
+
   # golang.org/x/crypto/openpgp - no fix available
   # Justification: The deprecated openpgp packages are not imported by the Go
   # modules in this repository, and govulncheck reports no reachable findings.

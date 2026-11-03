@@ -48,6 +48,9 @@ updates:
     directories:
       - "/"
       - "/docs/docusaurus"
+      - "/.github/scripts/markdown-link-check"
+      - "/src/500-application/513-tiered-notification-service"
+      - "/src/500-application/516-chat-with-your-factory/services/chat-with-your-factory"
     schedule:
       interval: "weekly"
       day: "monday"
