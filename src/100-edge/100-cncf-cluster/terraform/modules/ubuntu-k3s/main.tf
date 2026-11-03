@@ -125,6 +125,10 @@ resource "azurerm_key_vault_secret" "server_script" {
   value        = base64gzip(local.script_server_rendered)
   content_type = "application/gzip;base64"
   key_vault_id = var.key_vault.id
+
+  lifecycle {
+    ignore_changes = [value, content_type]
+  }
 }
 
 // Create Key Vault Secret for Node Script
@@ -135,4 +139,8 @@ resource "azurerm_key_vault_secret" "node_script" {
   value        = base64gzip(local.script_node_rendered)
   content_type = "application/gzip;base64"
   key_vault_id = var.key_vault.id
+
+  lifecycle {
+    ignore_changes = [value, content_type]
+  }
 }
