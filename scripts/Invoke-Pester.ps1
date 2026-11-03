@@ -17,14 +17,14 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'ci/Modules/CIHelpers.psm1') -Force
 
 $pesterModule = Get-Module -ListAvailable -Name Pester |
-    Where-Object { $_.Version -eq [version]'5.7.1' } |
+    Where-Object { $_.Version -eq [version]'5.9.1' } |
     Select-Object -First 1
 
 if (-not $pesterModule) {
-    Install-PSResource -Name Pester -Version '5.7.1' -Repository PSGallery -Scope CurrentUser -TrustRepository
+    Install-PSResource -Name Pester -Version '5.9.1' -Repository PSGallery -Scope CurrentUser -TrustRepository
 }
 
-Import-Module Pester -RequiredVersion '5.7.1' -Force
+Import-Module Pester -RequiredVersion '5.9.1' -Force
 
 $configParams = @{}
 if ($CI) { $configParams['CI'] = $true }
