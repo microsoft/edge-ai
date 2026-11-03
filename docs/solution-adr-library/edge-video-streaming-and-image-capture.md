@@ -86,7 +86,7 @@ Data flow:
 
 ### 2.2 Move files from unbacked to backed ACSA for confirmed events
 
-![scenario-2-2-diagram](./media//media-scenario-2-2.drawio.png)
+![scenario-2-2-diagram](./media/media-scenario-2-2.drawio.png)
 
 Data flow:
 
@@ -125,6 +125,8 @@ Based on the features available to securely interact and operate edge-attached c
 **Production Deployment**: The Media Connector is deployed via blueprints (e.g., `blueprints/full-multi-node-cluster`) by enabling the `should_enable_akri_media_connector` flag or using the `custom_akri_connectors` variable for advanced configuration.
 
 **Local Development**: A Docker Compose development environment is available in `src/500-application/508-media-connector` for testing without requiring a full Kubernetes cluster.
+
+> **Note**: Continuous recording with ACSA cloud synchronization is provided by the Media Capture Service rather than the Media Connector. See [Continuous Video Capture with ACSA Cloud Synchronization](./continuous-video-capture-acsa-sync.md).
 
 ## Decision Drivers (optional)
 
