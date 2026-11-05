@@ -7,9 +7,12 @@
 
 locals {
   sites_by_name = { for site in var.sites : site.name => site }
+  // replace() only treats the pattern as a regular expression when it is wrapped in
+  // forward slashes. Underscores and periods are valid in Azure resource names, so
+  // they are kept to leave names of already-deployed sites unchanged.
   site_name_slugs = {
     for name in keys(local.sites_by_name) :
-    name => trim(substr(replace(lower(name), "[^0-9a-z]", "-"), 0, 30), "-")
+    name => trim(substr(replace(lower(name), "/[^0-9a-z_.-]+/", "-"), 0, 30), "-")
   }
 }
 
