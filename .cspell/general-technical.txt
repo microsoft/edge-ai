@@ -1780,3 +1780,4 @@ selftest
 timepicker
 tobytes
 venv
+ffprobe
