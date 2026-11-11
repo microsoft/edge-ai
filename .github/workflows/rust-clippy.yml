@@ -63,21 +63,11 @@ jobs:
           export PATH="$HOME/.cargo/bin:$PATH"
           rustup target add wasm32-wasip2
 
-      - name: Install system dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3 4 5; do
-            if sudo apt-get update && \
-               sudo apt-get install -y --no-install-recommends \
-                 protobuf-compiler; then
-              exit 0
-            fi
-            echo "apt attempt ${attempt} failed; sleeping $((attempt * 10))s" >&2
-            sleep $((attempt * 10))
-          done
-          echo "apt failed after 5 attempts" >&2
-          exit 1
+      - name: Install Protobuf compiler
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
+        with:
+          version: '26.1'
+          repo-token: ${{ github.token }}
 
       - name: Run Clippy on all Rust crates
         shell: bash
