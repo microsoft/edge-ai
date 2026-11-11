@@ -1,5 +1,15 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Categories align with [`.github/release.yml`](.github/release.yml).
+GitHub Releases remain the canonical auto-generated notes.
+
+## [Unreleased]
+
 ## [4.0.3](https://github.com/microsoft/edge-ai/compare/v4.0.2...v4.0.3) (2026-05-21)
 
 
