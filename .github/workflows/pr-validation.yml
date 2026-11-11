@@ -206,7 +206,7 @@ jobs:
       security-events: write
     uses: ./.github/workflows/security-scan.yml
     with:
-      grype-soft-fail: false
+      grype-soft-fail: true
 
   # Workflow permissions deny-all scan
   permissions-scan:
