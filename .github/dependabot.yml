@@ -128,7 +128,7 @@ updates:
     ignore:
       - dependency-name: "checkov"
         versions:
-          - "3.4.3"
+          - ">=3.2.532"
     open-pull-requests-limit: 5
 
   # Docker
