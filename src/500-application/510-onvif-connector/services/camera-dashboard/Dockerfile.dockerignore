@@ -1,0 +1,13 @@
+**
+!src/
+!src/500-application/
+!src/500-application/510-onvif-connector/
+!src/500-application/510-onvif-connector/services/
+!src/500-application/510-onvif-connector/services/camera-dashboard/
+!src/500-application/510-onvif-connector/services/camera-dashboard/requirements.txt
+!src/500-application/510-onvif-connector/services/camera-dashboard/src/
+!src/500-application/510-onvif-connector/services/camera-dashboard/src/*.py
+!src/100-edge/
+!src/100-edge/111-assets/
+!src/100-edge/111-assets/scripts/
+!src/100-edge/111-assets/scripts/camera_onboarding.py

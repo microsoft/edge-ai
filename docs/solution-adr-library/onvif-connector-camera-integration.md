@@ -2,7 +2,7 @@
 title: ONVIF Connector for IP Camera Integration
 description: Architecture Decision Record for implementing ONVIF (Open Network Video Interface Forum) connector in Azure IoT Operations to enable standardized IP camera integration. Addresses device discovery, PTZ control, event monitoring, and media stream management for ONVIF-compliant cameras in edge computing environments.
 author: Edge AI Team
-ms.date: 2026-10-05
+ms.date: 2026-10-28
 ms.topic: architecture-decision-record
 estimated_reading_time: 10
 keywords:
@@ -52,7 +52,7 @@ for IP-based physical security products, providing standardized interfaces for:
 
 Implement an Akri ONVIF Connector for Azure IoT Operations that:
 
-1. Discovers ONVIF-compliant cameras and their capabilities
+1. Discovers camera capabilities from registered ONVIF endpoints, without network scanning
 2. Subscribes to camera events (motion, tampering) via SOAP PullMessages
 3. Controls PTZ operations via MQTT command topics
 4. Retrieves media profile configurations and stream URIs
@@ -144,6 +144,52 @@ Implement an Akri ONVIF Connector for Azure IoT Operations that:
 The ONVIF Connector was selected as the optimal solution for IP camera integration in
 Azure IoT Operations edge environments, providing standardized access to camera capabilities
 while maintaining vendor independence.
+
+### Review-Only Onboarding and Resource Ownership
+
+Use the [existing camera quickstart](../getting-started/onvif-camera-quickstart.md)
+for registration and operational guidance. ADR and AIO own operational devices
+and assets; preflight evidence is not a second registry.
+
+The 510 dashboard separates credential-free network candidate probing,
+authenticated ONVIF inspection, and decoded RTSP frame verification. Explicit
+scope or multicast consent is required, with a 4096-target pre-expansion budget,
+at most 50 concurrent two-second socket probes, and no default-credential probing.
+TCP reachability and discovered profiles do not establish a live feed.
+Frame evidence is bound to the current endpoint, profile token, stream URI,
+and opaque credential revision. Changes invalidate that evidence, including
+changes made during an asynchronous inspection or verification.
+
+The [111-assets stdlib CLI](../../src/100-edge/111-assets/scripts/README.md)
+owns validation, stable resource identities, literal HCL escaping, and private
+proposal output. The dashboard invokes this same CLI asynchronously with
+sanitized JSON on stdin; camera libraries remain in 510. Published dashboard
+images package the CLI, and shared-CLI changes select dashboard qualification
+and image builds. A second dashboard renderer or a custom onboarding agent
+would create competing ownership and is not part of this design.
+
+Initially, selections support only `snapshot-to-mqtt`, with an explicit publish
+topic and positive finite snapshot rate. Proposals enable both connectors and
+contain distinct ONVIF management/discovery and Media capture devices, a real
+snapshot task, and an `Mqtt` destination. Inspected PTZ support adds management
+actions, not event subscriptions. Event configuration requires inspected
+capabilities and a separately approved destination.
+
+Output is review-only, credential-free but confidential, and created with
+private directory/file permissions. Invalid input creates no output. Partial
+write, subprocess, missing-CLI, and malformed-result failures are explicit;
+failed cleanup or process interruption can leave private files for operator
+review. Merge proposed lists with existing variables rather than replacing
+unrelated assets, and do not also promote discovered resources for the same
+endpoint/task under another name.
+
+Decoded-frame evidence is a point-in-time assertion. Operational readiness
+requires actual snapshot delivery on the selected AIO MQTT topic. Physical
+camera access, native backend timeout measurements, events, and private SE100
+evidence remain separate checks; unit tests or the SOAP simulator cannot prove
+them. Before deployment, rollback is a code/image rollback and disposal of
+private proposals. After deployment, rollback must account for Terraform state
+and ADR ownership rather than deleting files or unrelated resources.
 
 ### Architecture
 
@@ -282,7 +328,9 @@ Profile T - H.265 4K Stream:
 
 ### Discovery Workflow
 
-The connector executes the following discovery sequence:
+The local development connector demonstrates the following sequence. Native AIO
+capability discovery begins from a registered ONVIF endpoint; event subscriptions
+and operational assets require explicit configuration and review.
 
 ```python
 1. Connect to ONVIF endpoint
@@ -317,7 +365,9 @@ The connector executes the following discovery sequence:
 
 ### Event Handling
 
-The connector uses the ONVIF PullMessages pattern for events:
+The local development connector illustrates the ONVIF PullMessages pattern for
+events. This example does not establish native AIO event configuration or camera
+compatibility:
 
 ```xml
 <!-- Request: Poll for events every 5 seconds -->
