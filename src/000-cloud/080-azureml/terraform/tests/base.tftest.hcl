@@ -294,3 +294,154 @@ run "reject_invalid_resource_prefix" {
     var.resource_prefix,
   ]
 }
+
+# Test 8: NAT gateway association requires a NAT gateway object
+run "reject_nat_gateway_enabled_without_nat_gateway" {
+  command = plan
+
+  variables {
+    resource_prefix      = run.setup_tests.resource_prefix
+    environment          = "test"
+    location             = run.setup_tests.location
+    resource_group       = run.setup_tests.resource_group
+    application_insights = run.setup_tests.application_insights
+    key_vault            = run.setup_tests.key_vault
+    storage_account      = run.setup_tests.storage_account
+    acr                  = run.setup_tests.acr
+    virtual_network      = run.setup_tests.virtual_network
+
+    should_enable_nat_gateway = true
+  }
+
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+}
+
+# Test 9: A plan targeting only the network module still enforces the NAT gateway rule
+run "reject_nat_gateway_enabled_without_nat_gateway_targeted" {
+  command = plan
+
+  plan_options {
+    target = [module.network]
+  }
+
+  variables {
+    resource_prefix      = run.setup_tests.resource_prefix
+    environment          = "test"
+    location             = run.setup_tests.location
+    resource_group       = run.setup_tests.resource_group
+    application_insights = run.setup_tests.application_insights
+    key_vault            = run.setup_tests.key_vault
+    storage_account      = run.setup_tests.storage_account
+    acr                  = run.setup_tests.acr
+    virtual_network      = run.setup_tests.virtual_network
+
+    should_enable_nat_gateway = true
+  }
+
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+}
+
+# Test 10: A plan targeting only the network module still enforces the NSG rule
+run "reject_nsg_association_without_nsg_targeted" {
+  command = plan
+
+  plan_options {
+    target = [module.network]
+  }
+
+  variables {
+    resource_prefix      = run.setup_tests.resource_prefix
+    environment          = "test"
+    location             = run.setup_tests.location
+    resource_group       = run.setup_tests.resource_group
+    application_insights = run.setup_tests.application_insights
+    key_vault            = run.setup_tests.key_vault
+    storage_account      = run.setup_tests.storage_account
+    acr                  = run.setup_tests.acr
+    virtual_network      = run.setup_tests.virtual_network
+
+    should_associate_network_security_group = true
+  }
+
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+}
+
+# Test 11: Workload identity role assignment requires a workload identity object
+run "reject_workload_identity_roles_without_identity" {
+  command = plan
+
+  variables {
+    resource_prefix      = run.setup_tests.resource_prefix
+    environment          = "test"
+    location             = run.setup_tests.location
+    resource_group       = run.setup_tests.resource_group
+    application_insights = run.setup_tests.application_insights
+    key_vault            = run.setup_tests.key_vault
+    storage_account      = run.setup_tests.storage_account
+    acr                  = run.setup_tests.acr
+    virtual_network      = run.setup_tests.virtual_network
+
+    should_assign_ml_workload_identity_roles = true
+  }
+
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+}
+
+# Test 12: A plan targeting only the workspace module still enforces the workload identity rule
+run "reject_workload_identity_roles_without_identity_targeted" {
+  command = plan
+
+  plan_options {
+    target = [module.workspace]
+  }
+
+  variables {
+    resource_prefix      = run.setup_tests.resource_prefix
+    environment          = "test"
+    location             = run.setup_tests.location
+    resource_group       = run.setup_tests.resource_group
+    application_insights = run.setup_tests.application_insights
+    key_vault            = run.setup_tests.key_vault
+    storage_account      = run.setup_tests.storage_account
+    acr                  = run.setup_tests.acr
+    virtual_network      = run.setup_tests.virtual_network
+
+    should_assign_ml_workload_identity_roles = true
+  }
+
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+}
+
+# Test 13: Minimum node count cannot exceed the maximum node count
+run "reject_min_nodes_above_max_nodes" {
+  command = plan
+
+  variables {
+    resource_prefix      = run.setup_tests.resource_prefix
+    environment          = "test"
+    location             = run.setup_tests.location
+    resource_group       = run.setup_tests.resource_group
+    application_insights = run.setup_tests.application_insights
+    key_vault            = run.setup_tests.key_vault
+    storage_account      = run.setup_tests.storage_account
+    acr                  = run.setup_tests.acr
+    virtual_network      = run.setup_tests.virtual_network
+
+    compute_cluster_min_nodes = 3
+    compute_cluster_max_nodes = 2
+  }
+
+  expect_failures = [
+    data.azurerm_client_config.current,
+  ]
+}
