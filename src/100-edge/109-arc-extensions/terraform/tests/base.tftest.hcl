@@ -36,7 +36,7 @@ run "create_default_configuration" {
   }
 
   assert {
-    condition     = module.cert_manager_extension[0].cert_manager.enabled && module.cert_manager_extension[0].cert_manager.version == "1.1.2" && module.cert_manager_extension[0].cert_manager.train == "stable"
+    condition     = module.cert_manager_extension[0].cert_manager.enabled && module.cert_manager_extension[0].cert_manager.version == "1.2.3" && module.cert_manager_extension[0].cert_manager.train == "stable"
     error_message = "cert-manager extension should use the default version and train"
   }
 
