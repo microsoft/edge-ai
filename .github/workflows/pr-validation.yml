@@ -198,15 +198,19 @@ jobs:
       contents: read
     uses: ./.github/workflows/powershell-lint.yml
 
-  # Security scanning
+  # Security scanning (Gitleaks scoped to the resolved validation range)
   security-scan:
     name: Security Scan
+    needs: [resolve-validation-range]
     permissions:
       contents: read
       security-events: write
     uses: ./.github/workflows/security-scan.yml
     with:
       grype-soft-fail: true
+      changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+      baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+      headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
 
   # Workflow permissions deny-all scan
   permissions-scan:
@@ -317,14 +321,20 @@ jobs:
       contents: read
     uses: ./.github/workflows/rust-tests-read-only.yml
 
-  # Dependency advisory audit (cargo-audit + govulncheck) for PRs
+  # Dependency advisory audit (cargo-audit + govulncheck) for PRs, scoped to
+  # crates and modules changed in the resolved validation range
   dep-audit:
     name: Dependency Audit
+    needs: [resolve-validation-range]
     permissions:
       contents: read
     uses: ./.github/workflows/dep-audit.yml
     with:
       break-build: true
+      changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+      baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+      headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
+      changedFilesOnly: true
 
   # ClusterFuzzLite fuzzing for changed Rust/Python/JS fuzz targets
   fuzz:
