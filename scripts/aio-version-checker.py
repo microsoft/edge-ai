@@ -219,8 +219,8 @@ def get_latest_manifest_urls(
     - Else if channel == 'preview', call releases and pick the latest prerelease.
     - Else call releases/latest to get tag_name and target_commitish.
     - If assets include the two JSON files, use their browser_download_url.
-    - Otherwise, fall back to raw.githubusercontent.com using target_commitish
-      (typically 'release/<tag>') and known paths under /release/.
+    - Otherwise, fall back to raw.githubusercontent.com using the release tag_name
+      (or target_commitish when no tag is available) and known paths under /release/.
     - If require_asset_files is True and assets are missing, raise.
     - If strict_latest is True and API call fails, raise.
 
@@ -314,11 +314,11 @@ def get_latest_manifest_urls(
             "Required manifest JSON files not found in release assets."
         )
 
-    # Fall back to branch path using target_commitish if present; otherwise, derive from tag
+    # Fall back to the immutable release tag; target_commitish is typically the mutable 'main' branch
     if not target_commitish and not tag_name:
         raise RuntimeError(
             "Cannot construct fallback URL: both target_commitish and tag_name are empty.")
-    ref = target_commitish or f"release/{tag_name}".lstrip("/")
+    ref = tag_name.lstrip("/") if tag_name else target_commitish.lstrip("/")
     # Build raw URLs to the files in the repository at the release branch/ref
     base_repo_raw = "https://raw.githubusercontent.com/Azure/azure-iot-operations"
     enablement_url = f"{base_repo_raw}/{ref}/release/azure-iot-operations-enablement.json"
@@ -1038,7 +1038,8 @@ def main() -> int:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
                 f"Manifest resolution: source={meta.get('source')}, tag={meta.get('tag_name')}, "
-                f"ref={meta.get('target_commitish')}, enablement_url={enablement_url}, instance_url={instance_url}"
+                f"target_commitish={meta.get('target_commitish')}, "
+                f"enablement_url={enablement_url}, instance_url={instance_url}"
             )
         manifests = download_manifests(enablement_url, instance_url)
     except Exception as e:
