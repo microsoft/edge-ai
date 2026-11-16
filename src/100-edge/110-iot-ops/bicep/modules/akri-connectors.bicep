@@ -120,7 +120,7 @@ var processedConnectors = [
 */
 
 @batchSize(1)
-resource connectorTemplate 'Microsoft.IoTOperations/instances/akriConnectorTemplates@2026-07-01' = [
+resource connectorTemplate 'Microsoft.IoTOperations/instances/akriConnectorTemplates@2026-10-01' = [
   for (conn, i) in processedConnectors: {
     name: '${last(split(aioInstanceId, '/'))!}/${conn.name}'
     extendedLocation: {
@@ -130,14 +130,17 @@ resource connectorTemplate 'Microsoft.IoTOperations/instances/akriConnectorTempl
     properties: union(
       {
         connectorMetadataRef: conn.connectorMetadataRef
-        deviceInboundEndpointTypes: [
-          union(
-            {
-              endpointType: conn.endpointType
-            },
-            conn.endpointVersion != null ? { version: conn.endpointVersion } : {}
-          )
-        ]
+        deviceInboundEndpointTypes: concat(
+          [
+            union(
+              {
+                endpointType: conn.endpointType
+              },
+              conn.endpointVersion != null ? { version: conn.endpointVersion } : {}
+            )
+          ],
+          conn.type == 'opcua' ? [{ endpointType: 'Microsoft.OpcUa.WoT' }] : []
+        )
         runtimeConfiguration: {
           runtimeConfigurationType: 'ManagedConfiguration'
           managedConfigurationSettings: union(

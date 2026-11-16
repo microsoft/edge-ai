@@ -112,7 +112,7 @@ locals {
 resource "azapi_resource" "connector_template" {
   for_each = local.processed_connectors
 
-  type      = "Microsoft.IoTOperations/instances/akriConnectorTemplates@2026-07-01"
+  type      = "Microsoft.IoTOperations/instances/akriConnectorTemplates@2026-10-01"
   name      = each.value.name
   parent_id = var.aio_instance_id
 
@@ -124,14 +124,17 @@ resource "azapi_resource" "connector_template" {
     properties = merge(
       {
         connectorMetadataRef = each.value.connector_metadata_ref
-        deviceInboundEndpointTypes = [
-          merge(
-            {
-              endpointType = each.value.endpoint_type
-            },
-            each.value.endpoint_version != null ? { version = each.value.endpoint_version } : {}
-          )
-        ]
+        deviceInboundEndpointTypes = concat(
+          [
+            merge(
+              {
+                endpointType = each.value.endpoint_type
+              },
+              each.value.endpoint_version != null ? { version = each.value.endpoint_version } : {}
+            )
+          ],
+          each.value.type == "opcua" ? [{ endpointType = "Microsoft.OpcUa.WoT" }] : []
+        )
         runtimeConfiguration = {
           runtimeConfigurationType = "ManagedConfiguration"
           managedConfigurationSettings = merge(

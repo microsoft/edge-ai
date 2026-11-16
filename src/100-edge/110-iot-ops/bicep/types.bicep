@@ -27,7 +27,7 @@ type SecretStoreExtension = {
 @export()
 var secretStoreExtensionDefaults = {
   release: {
-    version: '1.5.3'
+    version: '1.6.1'
     train: 'stable'
   }
 }
@@ -53,7 +53,7 @@ type AioExtension = {
 @export()
 var aioExtensionDefaults = {
   release: {
-    version: '1.4.112'
+    version: '1.5.45'
     train: 'stable'
   }
   settings: {
@@ -72,7 +72,7 @@ type ConnectorsConfig = {
 
 @export()
 var connectorsDefaults = {
-  version: '1.4.14'
+  version: '1.5.22'
 }
 
 @description('AIO Instance features.')
