@@ -45,7 +45,7 @@
   "dependencies": {
     "cspell": "^10.4.0",
     "eslint": "^10.13.0",
-    "glob": "^13.0.0",
+    "glob": "^14.0.3",
     "js-yaml": "^5.5.0",
     "markdown-table-formatter": "1.7.0",
     "markdownlint": "0.42.0",
@@ -61,12 +61,14 @@
     "tftest-to-junitxml": "0.2.0"
   },
   "resolutions": {
-    "minimatch": "^10.2.4",
-    "basic-ftp": "^6.2.2"
+    "glob": "^14.0.3",
+    "minimatch": "^11.0.2",
+    "basic-ftp": "^6.2.4"
   },
   "overrides": {
-    "minimatch": "^10.2.4",
-    "basic-ftp": "^6.2.2",
+    "glob": "^14.0.3",
+    "minimatch": "^11.0.2",
+    "basic-ftp": "^6.2.4",
     "js-yaml@^5": "$js-yaml",
     "smol-toml": "^1.9.0",
     "katex": "^0.18.2",
