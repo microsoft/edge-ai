@@ -90,16 +90,15 @@ jobs:
 
       - name: Run AIO Version Checker
         id: version-check
+        env:
+          IAC_TYPE: ${{ inputs.iac-type || 'all' }}
+          BREAK_BUILD: ${{ inputs.break-build || false }}
         run: |
-          # Determine the IaC type to check
-          IAC_TYPE="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.iac-type || 'all' }}"
-          BREAK_BUILD="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.break-build || 'false' }}"
-
           echo "Running version checker with iac-type=$IAC_TYPE and break-build=$BREAK_BUILD"
 
           # Run the version checker and save results to a temporary file
           python ./scripts/aio-version-checker.py \
-            --iac-type $IAC_TYPE \
+            --iac-type "$IAC_TYPE" \
             --verbose > version_mismatches.json
 
           # Check if we found any mismatches

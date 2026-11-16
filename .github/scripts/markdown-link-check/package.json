@@ -6,7 +6,7 @@
     "markdown-link-check": "3.14.2"
   },
   "overrides": {
-    "basic-ftp": "^6.2.2",
+    "basic-ftp": "^6.2.4",
     "ip-address": "^10.7.4",
     "undici": "^7.30.1"
   }
