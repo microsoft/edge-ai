@@ -54,7 +54,7 @@ variable "custom_locations_oid" {
   description = <<-EOF
   The object id of the Custom Locations Entra ID application for your tenant.
   If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-  
+
   ```sh
   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
   ```
@@ -121,4 +121,14 @@ variable "should_skip_az_cli_login" {
 variable "should_skip_installing_az_cli" {
   type        = bool
   description = "Should skip downloading and installing Azure CLI on the server. (Skipping assumes the server will already have the Azure CLI)"
+}
+
+variable "az_mode" {
+  type        = string
+  description = "How Azure CLI is provided on the host: 'auto' resolves to an existing host CLI, then a container runtime, then a package install; 'container' requires a container runtime; 'host' requires the CLI on the host."
+}
+
+variable "az_cli_image" {
+  type        = string
+  description = "The Azure CLI container image used when 'az_mode' resolves to 'container'. (Digest-pinned references are recommended for production)"
 }

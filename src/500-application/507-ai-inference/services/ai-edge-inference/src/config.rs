@@ -1,13 +1,18 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use anyhow::{Result, Context};
 use ai_edge_inference_crate::{
+    resolve_model_path,
     InferenceConfig as CrateInferenceConfig,
     ModelsConfig, HardwareConfig, PerformanceConfig,
     MonitoringConfig as CrateMonitoringConfig, SiteContext
 };
+
+/// Default `MQTT_INPUT_TOPICS`: the legacy 5-level snapshot filter and the pinned v1 filter.
+pub const DEFAULT_INPUT_TOPICS: &str =
+    "edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots";
 
 /// Main configuration for the AI Edge MQTT Publisher Service
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,18 +81,19 @@ pub struct MonitoringConfig {
     pub enable_memory_metrics: bool,
     pub metrics_export_interval_sec: u64,
     pub health_port: u16,
-    pub metrics_port: u16,
+    /// Mounts `/test/inference` and `/process-files` on the health listener.
+    pub enable_test_endpoints: bool,
 }
 
 impl ComponentConfig {
     /// Load configuration from environment variables
-    pub fn from_env() -> Self {
-        Self {
+    pub fn from_env() -> Result<Self> {
+        Ok(Self {
             mqtt: MqttConfig::from_env(),
-            inference: InferenceConfig::from_env(),
+            inference: InferenceConfig::from_env()?,
             monitoring: MonitoringConfig::from_env(),
             site: create_site_context_from_env(),
-        }
+        })
     }
 
     /// Validate the configuration
@@ -193,7 +199,7 @@ impl MqttConfig {
             tls_ca_file: get_env_or_default("AIO_TLS_CA_FILE", "/var/run/certs/ca.crt"),
             sat_file: get_env_or_default("AIO_SAT_FILE", "/var/run/secrets/tokens/mq-sat"),
             topic_prefix: get_env_or_default("TOPIC_PREFIX", "edge-ai/business_unit/facility/gateway_id"),
-            input_topics: get_env_or_default("MQTT_INPUT_TOPICS", "edge-ai/+/+/+/camera/snapshots,edge-ai/+/+/+/sensors/+")
+            input_topics: get_env_or_default("MQTT_INPUT_TOPICS", DEFAULT_INPUT_TOPICS)
                 .split(',')
                 .map(|s| s.trim().to_string())
                 .collect(),
@@ -207,10 +213,10 @@ impl MqttConfig {
 }
 
 impl InferenceConfig {
-    fn from_env() -> Self {
-        Self {
+    fn from_env() -> Result<Self> {
+        Ok(Self {
             models_directory: PathBuf::from(get_env_or_default("MODELS_DIRECTORY", "/models")),
-            default_models: parse_default_models(&get_env_or_default("DEFAULT_MODELS", "")),
+            default_models: parse_default_models(&get_env_or_default("DEFAULT_MODELS", ""))?,
             global_confidence_threshold: get_env_or_default("GLOBAL_CONFIDENCE_THRESHOLD", "0.5").parse().unwrap_or(0.5),
             max_predictions_per_model: get_env_or_default("MAX_PREDICTIONS_PER_MODEL", "10").parse().unwrap_or(10),
             enable_gpu: get_env_or_default("ENABLE_GPU", "true").parse().unwrap_or(true),
@@ -226,7 +232,7 @@ impl InferenceConfig {
             message_queue_capacity: get_env_or_default("MESSAGE_QUEUE_CAPACITY", "16").parse().unwrap_or(16),
             rate_limit_per_second: get_env_or_default("RATE_LIMIT_PER_SECOND", "5.0").parse().unwrap_or(5.0),
             is_drop_on_backpressure: get_env_or_default("DROP_ON_BACKPRESSURE", "true").parse().unwrap_or(true),
-        }
+        })
     }
 }
 
@@ -239,7 +245,7 @@ impl MonitoringConfig {
             enable_memory_metrics: get_env_or_default("ENABLE_MEMORY_METRICS", "true").parse().unwrap_or(true),
             metrics_export_interval_sec: get_env_or_default("METRICS_EXPORT_INTERVAL_SEC", "30").parse().unwrap_or(30),
             health_port: get_env_or_default("HEALTH_PORT", "8080").parse().unwrap_or(8080),
-            metrics_port: get_env_or_default("METRICS_PORT", "8081").parse().unwrap_or(8081),
+            enable_test_endpoints: get_env_or_default("ENABLE_TEST_ENDPOINTS", "false").parse().unwrap_or(false),
         }
     }
 }
@@ -263,62 +269,66 @@ fn get_env_or_default(key: &str, default: &str) -> String {
     })
 }
 
-/// Parse default models from environment variable
-fn parse_default_models(models_str: &str) -> Vec<DefaultModel> {
-    if models_str.is_empty() {
-        return vec![
-            DefaultModel {
-                name: "default".to_string(),
-                file_path: "default.onnx".to_string(),
-                model_type: "Vision".to_string(),
-                version: "1.0.0".to_string(),
-                auto_load: true,
-                description: "Default ONNX model for inference testing".to_string(),
-            },
-        ];
+/// Parse default models from environment variable.
+///
+/// File paths are relative to `MODELS_DIRECTORY`. Known names map to the files
+/// written by `charts/model-downloader-job.yaml`; any other value is treated as
+/// a relative model file path, with `.onnx` appended when no extension is given,
+/// and is named by its file stem. Absolute paths, `..` components, and duplicate
+/// model names are rejected.
+fn parse_default_models(models_str: &str) -> Result<Vec<DefaultModel>> {
+    if models_str.trim().is_empty() {
+        return Ok(vec![default_model(
+            "default",
+            "default.onnx",
+            "Default ONNX model for inference testing",
+        )]);
     }
 
-    // Parse comma-separated model names and map to actual model files
-    let model_names: Vec<&str> = models_str.split(',').map(|s| s.trim()).collect();
-    let mut models = Vec::new();
-
-    for model_name in model_names {
-        match model_name {
-            "tiny-yolov2" => {
-                models.push(DefaultModel {
-                    name: "default".to_string(),
-                    file_path: "default.onnx".to_string(),
-                    model_type: "Vision".to_string(),
-                    version: "1.0.0".to_string(),
-                    auto_load: true,
-                    description: "Tiny YOLOv2 object detection model".to_string(),
-                });
-            },
-            "mobilenet" => {
-                models.push(DefaultModel {
-                    name: "mobilenet".to_string(),
-                    file_path: "mobilenet.onnx".to_string(),
-                    model_type: "Vision".to_string(),
-                    version: "1.0.0".to_string(),
-                    auto_load: true,
-                    description: "MobileNet image classification model".to_string(),
-                });
-            },
-            _ => {
-                // For any other model name, assume it's the filename
-                models.push(DefaultModel {
-                    name: "default".to_string(),
-                    file_path: "default.onnx".to_string(),
-                    model_type: "Vision".to_string(),
-                    version: "1.0.0".to_string(),
-                    auto_load: true,
-                    description: format!("Model: {}", model_name),
-                });
+    let mut models: Vec<DefaultModel> = Vec::new();
+    for model_name in models_str
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+    {
+        let model = match model_name {
+            "tiny-yolov2" => default_model("default", "tiny-yolov2/tinyyolov2-8.onnx", "Tiny YOLOv2 object detection model"),
+            "yolov4" => default_model("yolov4", "yolov4/yolov4.onnx", "YOLOv4 object detection model"),
+            "mobilenet" => default_model("mobilenet", "mobilenet.onnx", "MobileNet image classification model"),
+            other => {
+                let file_path = if Path::new(other).extension().is_some() {
+                    other.to_string()
+                } else {
+                    format!("{other}.onnx")
+                };
+                resolve_model_path(Path::new(""), &file_path).map_err(anyhow::Error::msg)?;
+                let name = Path::new(&file_path)
+                    .file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .with_context(|| format!("Model path {file_path:?} has no file name"))?;
+                default_model(name, &file_path, &format!("Model: {other}"))
             }
+        };
+        if models.iter().any(|existing| existing.name == model.name) {
+            anyhow::bail!(
+                "DEFAULT_MODELS lists more than one model named {:?}",
+                model.name
+            );
         }
+        models.push(model);
     }
+    Ok(models)
+}
 
-    models
+fn default_model(name: &str, file_path: &str, description: &str) -> DefaultModel {
+    DefaultModel {
+        name: name.to_string(),
+        file_path: file_path.to_string(),
+        model_type: "Vision".to_string(),
+        version: "1.0.0".to_string(),
+        auto_load: true,
+        description: description.to_string(),
+    }
 }
 
 /// Parse environmental data from JSON string
@@ -348,4 +358,61 @@ fn parse_shape(shape_str: &str) -> Result<Vec<i64>> {
         .map(|s| s.trim().parse::<i64>())
         .collect::<Result<Vec<i64>, _>>()
         .context("Failed to parse shape")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn paths(models: &str) -> Vec<(String, String)> {
+        parse_default_models(models)
+            .unwrap()
+            .into_iter()
+            .map(|model| (model.name, model.file_path))
+            .collect()
+    }
+
+    #[test]
+    fn default_models_match_downloader_layout() {
+        assert_eq!(
+            paths("tiny-yolov2, yolov4"),
+            vec![
+                ("default".to_string(), "tiny-yolov2/tinyyolov2-8.onnx".to_string()),
+                ("yolov4".to_string(), "yolov4/yolov4.onnx".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn unknown_default_models_are_relative_file_paths_named_by_stem() {
+        assert_eq!(
+            paths("custom/detector.onnx, segmenter"),
+            vec![
+                ("detector".to_string(), "custom/detector.onnx".to_string()),
+                ("segmenter".to_string(), "segmenter.onnx".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn duplicate_default_model_names_are_rejected() {
+        assert!(parse_default_models("tiny-yolov2, default").is_err());
+        assert!(parse_default_models("a/detector.onnx, b/detector.onnx").is_err());
+        assert!(parse_default_models("mobilenet, mobilenet").is_err());
+    }
+
+    #[test]
+    fn default_models_outside_models_directory_are_rejected() {
+        for models in ["/etc/model.onnx", "../model.onnx", "a/../../model"] {
+            assert!(
+                parse_default_models(models).is_err(),
+                "{models} should be rejected"
+            );
+        }
+    }
+
+    #[test]
+    fn empty_default_models_use_default_file() {
+        assert_eq!(paths(" "), vec![("default".to_string(), "default.onnx".to_string())]);
+    }
 }

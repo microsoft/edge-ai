@@ -1,0 +1,92 @@
+# Each release serves one ensemble. Run one release per ensemble to scale out.
+
+image:
+  # Placeholder. Build the image from services/model-orchestrator and push it
+  # to a registry you own.
+  repository: your-registry.azurecr.io/model-orchestrator
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+namespace: azure-iot-operations
+
+serviceAccount:
+  # Use a distinct service account so broker authorization rules can scope
+  # this workload alone.
+  create: true
+  name: ""
+  # Annotations prefixed with aio-broker-auth/ become broker authorization
+  # attributes for clients that authenticate with this service account token.
+  # The chart adds aio-broker-auth/workload set to the release's full name
+  # unless it's set here.
+  annotations: {}
+
+orchestrator:
+  ensembleId: default
+  # Required. Each model needs a typed result adapter:
+  #   score: {kind: score, field: <path>, threshold: <number>}
+  #   label: {kind: label, field: <path>, anomaly_labels: [...], score_field: <path>}
+  # Paths are up to four dot-separated keys in the model outputs.
+  models: []
+  # Keep the predict adapter's backendTimeoutSeconds x backendAttempts below this.
+  timeoutSeconds: 10
+  maxPending: 100
+  # Outstanding predict requests across all pending requests. Keep this at or
+  # below the predict adapter's maxConcurrency, minus calls from other clients.
+  maxInflightModelCalls: 4
+  maxRequestBytes: 1048576
+  topicDomain: orchestrate
+  predictDomain: predict
+  # Client segment used on predict adapter topics. Defaults to the release's
+  # full name, so each release receives only its own model responses.
+  predictClient: ""
+  # Must match the predict adapter's requestKind and responseKind.
+  predictRequestKind: request
+  predictResponseKind: response
+  eventSource: model-orchestrator
+
+mqtt:
+  brokerHostname: aio-broker.azure-iot-operations
+  brokerTcpPort: "18883"
+  # Each pod connects as <clientIdPrefix>-<pod name>, which is unique per pod.
+  clientIdPrefix: model-orchestrator
+  tlsCaFile: /var/run/certs/ca.crt
+  satFile: /var/run/secrets/tokens/mq-sat
+
+volumes:
+  mqSat:
+    audience: aio-internal
+    expirationSeconds: 86400
+  trustBundle:
+    configMapName: azure-iot-operations-aio-ca-trust-bundle
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 128Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}

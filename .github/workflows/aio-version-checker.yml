@@ -76,9 +76,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Python 3.12
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -88,16 +90,15 @@ jobs:
 
       - name: Run AIO Version Checker
         id: version-check
+        env:
+          IAC_TYPE: ${{ inputs.iac-type || 'all' }}
+          BREAK_BUILD: ${{ inputs.break-build || false }}
         run: |
-          # Determine the IaC type to check
-          IAC_TYPE="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.iac-type || 'all' }}"
-          BREAK_BUILD="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.break-build || 'false' }}"
-
           echo "Running version checker with iac-type=$IAC_TYPE and break-build=$BREAK_BUILD"
 
           # Run the version checker and save results to a temporary file
           python ./scripts/aio-version-checker.py \
-            --iac-type $IAC_TYPE \
+            --iac-type "$IAC_TYPE" \
             --verbose > version_mismatches.json
 
           # Check if we found any mismatches

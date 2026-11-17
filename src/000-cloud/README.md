@@ -34,19 +34,19 @@ The 000-cloud components provide the foundational cloud infrastructure including
 
 ### Networking
 
-| Component                                      | Description                                                                     | Terraform | Bicep |
-|------------------------------------------------|---------------------------------------------------------------------------------|:---------:|:-----:|
-| [050-networking](./050-networking/README.md)   | Virtual networks with subnets, NSGs, optional NAT gateway, and Private Resolver |     ✅     |   ✅   |
-| [055-vpn-gateway](./055-vpn-gateway/README.md) | VPN Gateway with P2S configuration and certificate or Entra ID authentication   |     ✅     |   ✅   |
+| Component                                                | Description                                                                     | Terraform | Bicep |
+|----------------------------------------------------------|---------------------------------------------------------------------------------|:---------:|:-----:|
+| [050-networking](./050-networking/terraform/README.md)   | Virtual networks with subnets, NSGs, optional NAT gateway, and Private Resolver |     ✅     |   ✅   |
+| [055-vpn-gateway](./055-vpn-gateway/terraform/README.md) | VPN Gateway with P2S configuration and certificate or Entra ID authentication   |     ✅     |   ✅   |
 
 ### Compute & Container Infrastructure
 
 | Component                                                | Description                                                                  | Terraform | Bicep |
 |----------------------------------------------------------|------------------------------------------------------------------------------|:---------:|:-----:|
 | [051-vm-host](./051-vm-host/README.md)                   | Azure VMs with Entra ID RBAC-based SSH authentication                        |     ✅     |   ✅   |
-| [060-acr](./060-acr/README.md)                           | Azure Container Registry with Premium SKU and private endpoint support       |     ✅     |   ✅   |
-| [070-kubernetes](./070-kubernetes/README.md)             | Azure Kubernetes Service with optional Azure Arc and private cluster support |     ✅     |   ✅   |
-| [071-aks-host](./071-aks-host/README.md)                 | AKS resources with configurable node pools and Azure Monitor metrics         |     ✅     |   ✅   |
+| [060-acr](./060-acr/terraform/README.md)                 | Azure Container Registry with Premium SKU and private endpoint support       |     ✅     |   ✅   |
+| [070-kubernetes](./070-kubernetes/terraform/README.md)   | Azure Kubernetes Service with optional Azure Arc and private cluster support |     ✅     |   ✅   |
+| [071-aks-host](./071-aks-host/terraform/README.md)       | AKS resources with configurable node pools and Azure Monitor metrics         |     ✅     |   ✅   |
 | [072-azure-local-host](./072-azure-local-host/README.md) | Arc-enabled Kubernetes on Azure Stack HCI with provisioned cluster instances |     ✅     |   ❌   |
 | [073-vm-host](./073-vm-host/README.md)                   | Azure VMs with Entra ID RBAC-based SSH authentication (alternate deployment) |     ✅     |   ✅   |
 

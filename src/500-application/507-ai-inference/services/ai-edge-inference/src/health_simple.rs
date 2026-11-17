@@ -2,7 +2,7 @@ use std::sync::Arc;
 use warp::{Filter, Reply};
 use serde::Serialize;
 use tracing::{info, error};
-use ai_edge_inference_crate::{InferenceEngine, InferenceRequest};
+use ai_edge_inference_crate::{BackendStatus, InferenceEngine, InferenceRequest};
 use crate::mqtt::MqttPublisher;
 use anyhow::Result;
 use bytes::Bytes;
@@ -61,6 +61,7 @@ pub struct HealthService {
     inference_engine: Arc<InferenceEngine>,
     _mqtt_publisher: Arc<MqttPublisher>,
     port: u16,
+    enable_test_endpoints: bool,
     _start_time: std::time::Instant,
 }
 
@@ -125,11 +126,13 @@ impl HealthService {
         inference_engine: Arc<InferenceEngine>,
         mqtt_publisher: Arc<MqttPublisher>,
         port: u16,
+        enable_test_endpoints: bool,
     ) -> Result<Self> {
         Ok(Self {
             inference_engine,
             _mqtt_publisher: mqtt_publisher,
             port,
+            enable_test_endpoints,
             _start_time: std::time::Instant::now(),
         })
     }
@@ -284,9 +287,22 @@ impl HealthService {
                 }
             });
 
+        // Test endpoints respond 404 unless ENABLE_TEST_ENDPOINTS is true.
+        let enable_test_endpoints = self.enable_test_endpoints;
+        let test_endpoints_enabled = warp::any()
+            .and_then(move || async move {
+                if enable_test_endpoints {
+                    Ok(())
+                } else {
+                    Err(warp::reject::not_found())
+                }
+            })
+            .untuple_one();
+
         // Test endpoint - for testing inference with sample data
         let inference_engine5 = Arc::clone(&self.inference_engine);
-        let test_inference = warp::path("test")
+        let test_inference = test_endpoints_enabled
+            .and(warp::path("test"))
             .and(warp::path("inference"))
             .and(warp::post())
             .and(warp::body::content_length_limit(1024 * 1024 * 10)) // 10MB limit
@@ -300,7 +316,8 @@ impl HealthService {
 
         // File processing endpoint - processes images from /models/test-images/
         let inference_engine6 = Arc::clone(&self.inference_engine);
-        let process_files = warp::path("process-files")
+        let process_files = test_endpoints_enabled
+            .and(warp::path("process-files"))
             .and(warp::post())
             .and_then(move || {
                 let engine = Arc::clone(&inference_engine6);
@@ -350,14 +367,20 @@ impl HealthService {
     }
 }
 
+/// Returns true once the backend is initialized and at least one model loaded.
+/// Startup and readiness both use it, so a pod with no loaded model is never
+/// admitted and is restarted by the kubelet once the startup window elapses.
+fn is_ready(status: &BackendStatus) -> bool {
+    status.initialized && !status.loaded_models.is_empty()
+}
+
 /// Handle Kubernetes readiness probe (simplified)
 async fn handle_readiness_check_simple(
     inference_engine: Arc<InferenceEngine>,
     start_timestamp: u64,
 ) -> Result<impl Reply, warp::Rejection> {
-    // Check if inference engine is ready
     let backend_status = inference_engine.get_backend_status().await;
-    let engine_ready = backend_status.initialized;
+    let engine_ready = is_ready(&backend_status);
 
     // For now, assume MQTT is connected (we can't check it safely across threads)
     let mqtt_connected = true;
@@ -488,9 +511,8 @@ async fn handle_startup_check_simple(
     inference_engine: Arc<InferenceEngine>,
     start_timestamp: u64,
 ) -> Result<impl Reply, warp::Rejection> {
-    // For startup probe, check if basic initialization is complete
     let backend_status = inference_engine.get_backend_status().await;
-    let engine_ready = backend_status.initialized;
+    let engine_ready = is_ready(&backend_status);
 
     let status = if engine_ready {
         "started"
@@ -710,4 +732,64 @@ async fn process_image_file(
     let json_result = serde_json::to_value(result)?;
 
     Ok(json_result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ai_edge_inference_crate::{BackendType, DeviceType};
+
+    fn status(initialized: bool, loaded_models: &[&str]) -> BackendStatus {
+        BackendStatus {
+            backend_type: BackendType::OnnxRuntime,
+            device_type: DeviceType::Cpu,
+            initialized,
+            loaded_models: loaded_models.iter().map(|m| (*m).to_string()).collect(),
+            memory_usage_mb: 0.0,
+            last_inference_time_ms: None,
+            total_inferences: 0,
+            errors: Vec::new(),
+            session_settings: Default::default(),
+        }
+    }
+
+    #[test]
+    fn readiness_requires_a_loaded_model() {
+        assert!(!is_ready(&status(false, &[])));
+        assert!(!is_ready(&status(true, &[])));
+        assert!(is_ready(&status(true, &["default"])));
+    }
+
+    async fn startup_status(default_models: Option<&[(&str, &str)]>) -> warp::http::StatusCode {
+        let mut config = ai_edge_inference_crate::InferenceConfig::default();
+        config.models.models_directory = std::path::PathBuf::from(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../ai-edge-inference-crate/tests/fixtures"
+        ));
+        config.models.default_models = default_models.map(|models| {
+            models
+                .iter()
+                .map(|(name, path)| ((*name).to_string(), (*path).to_string()))
+                .collect()
+        });
+        let mut engine = InferenceEngine::new(config).await.unwrap();
+        engine.initialize().await.unwrap();
+
+        let reply = handle_startup_check_simple(Arc::new(engine), 0)
+            .await
+            .unwrap();
+        warp::Reply::into_response(reply).status()
+    }
+
+    #[tokio::test]
+    async fn startup_fails_until_a_model_loads() {
+        assert_eq!(
+            startup_status(None).await,
+            warp::http::StatusCode::SERVICE_UNAVAILABLE
+        );
+        assert_eq!(
+            startup_status(Some(&[("identity", "identity.onnx")])).await,
+            warp::http::StatusCode::OK
+        );
+    }
 }

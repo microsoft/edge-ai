@@ -160,8 +160,8 @@ kubectl exec -it deployment/mqtt-tools -n azure-iot-operations -c mqtt-tools -- 
 
 ## Related Components
 
-- **[Azure Resource Providers](../azure-resource-providers/README.md)**: Azure resource management
-- **[IoT Operations (110-iot-ops)](../100-edge/110-iot-ops/README.md)**: Azure IoT Operations deployment
+- **[Azure Resource Providers](../../azure-resource-providers/README.md)**: Azure resource management
+- **[IoT Operations (110-iot-ops)](../../100-edge/110-iot-ops/README.md)**: Azure IoT Operations deployment
 
 ## Support
 

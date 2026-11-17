@@ -23,7 +23,7 @@ param schemaRegistryNamespace string
   Resources
 */
 
-resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2024-09-01-preview' = {
+resource schemaRegistry 'Microsoft.DeviceRegistry/schemaRegistries@2026-04-01' = {
   name: schemaRegistryName
   location: common.location
   identity: {

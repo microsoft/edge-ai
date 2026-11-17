@@ -365,8 +365,14 @@ resource "azapi_resource" "namespaced_asset" {
         streams = [
           for stream in each.value.streams : merge(
             {
-              name         = stream.name
-              destinations = try(stream.destinations, [])
+              name = stream.name
+              // Unset destination settings are omitted rather than sent as null
+              destinations = [
+                for destination in try(stream.destinations, []) : {
+                  target        = destination.target
+                  configuration = { for key, value in destination.configuration : key => value if value != null }
+                }
+              ]
             },
             stream.stream_configuration != null ? { streamConfiguration = stream.stream_configuration } : {},
             stream.type_ref != null ? { typeRef = stream.type_ref } : {}

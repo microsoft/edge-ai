@@ -120,7 +120,6 @@ RUN chown -R appuser:appuser /usr/local/bin/ai-edge-mqtt-publisher /app && \
 
 ENV RUST_LOG=info
 ENV MODELS_DIRECTORY=/models
-ENV METRICS_PORT=8080
 ENV HEALTH_PORT=8081
 ENV LD_LIBRARY_PATH="/opt/onnxruntime/lib"
 ENV ORT_LIB_LOCATION="/opt/onnxruntime/lib"

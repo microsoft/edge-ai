@@ -1,0 +1,126 @@
+{{- $n := .Values.normalizer }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "snapshot-normalizer.fullname" . }}
+  namespace: {{ include "snapshot-normalizer.namespace" . }}
+  labels:
+    {{- include "snapshot-normalizer.labels" . | nindent 4 }}
+spec:
+  # In-memory deduplication and a non-shared subscription require one replica.
+  # The StatefulSet keeps the pod name, and so the MQTT client ID, stable at
+  # <fullname>-0 and never runs two copies, so the persistent session resumes.
+  replicas: 1
+  serviceName: {{ include "snapshot-normalizer.fullname" . }}
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "snapshot-normalizer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "snapshot-normalizer.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "snapshot-normalizer.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "snapshot-normalizer.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AIO_MQTT_CLIENT_ID
+              value: {{ printf "%s-$(POD_NAME)" (required "mqtt.clientIdPrefix is required" .Values.mqtt.clientIdPrefix) | quote }}
+            - name: AIO_BROKER_HOSTNAME
+              value: {{ .Values.mqtt.brokerHostname | quote }}
+            - name: AIO_BROKER_TCP_PORT
+              value: {{ .Values.mqtt.brokerTcpPort | quote }}
+            - name: AIO_MQTT_USE_TLS
+              value: "true"
+            - name: AIO_MQTT_SESSION_EXPIRY
+              value: {{ required "mqtt.sessionExpirySeconds is required" .Values.mqtt.sessionExpirySeconds | int64 | quote }}
+            - name: AIO_TLS_CA_FILE
+              value: {{ .Values.mqtt.tlsCaFile | quote }}
+            - name: AIO_SAT_FILE
+              value: {{ .Values.mqtt.satFile | quote }}
+            - name: CAMERA_ID
+              value: {{ required "normalizer.cameraId is required" $n.cameraId | quote }}
+            - name: DEVICE_NAME
+              value: {{ required "normalizer.deviceName is required" $n.deviceName | quote }}
+            - name: INPUT_TOPIC
+              value: {{ required "normalizer.inputTopic is required" $n.inputTopic | quote }}
+            {{- with $n.outputTopic }}
+            - name: OUTPUT_TOPIC
+              value: {{ . | quote }}
+            {{- end }}
+            - name: EVENT_SOURCE
+              value: {{ $n.eventSource | quote }}
+            {{- with $n.dataSchema }}
+            - name: DATA_SCHEMA
+              value: {{ . | quote }}
+            {{- end }}
+            - name: MAX_JPEG_BYTES
+              value: {{ $n.maxJpegBytes | int64 | quote }}
+            - name: MAX_ENVELOPE_BYTES
+              value: {{ $n.maxEnvelopeBytes | int64 | quote }}
+            - name: DEDUP_CAPACITY
+              value: {{ $n.dedupCapacity | int64 | quote }}
+            - name: DEDUP_WINDOW_SECONDS
+              value: {{ $n.dedupWindowSeconds | int64 | quote }}
+            - name: PUBLISH_ATTEMPTS
+              value: {{ $n.publishAttempts | int64 | quote }}
+            - name: COUNTERS_INTERVAL_SECONDS
+              value: {{ $n.countersIntervalSeconds | int64 | quote }}
+            - name: RUST_LOG
+              value: {{ $n.logLevel | quote }}
+          volumeMounts:
+            - name: mq-sat
+              mountPath: {{ dir .Values.mqtt.satFile }}
+              readOnly: true
+            - name: trust-bundle
+              mountPath: {{ dir .Values.mqtt.tlsCaFile }}
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: mq-sat
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: {{ base .Values.mqtt.satFile }}
+                  audience: {{ .Values.volumes.mqSat.audience | quote }}
+                  expirationSeconds: {{ .Values.volumes.mqSat.expirationSeconds | int64 }}
+        - name: trust-bundle
+          configMap:
+            name: {{ .Values.volumes.trustBundle.configMapName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

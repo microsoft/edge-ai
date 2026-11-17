@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
     info!("Starting AI Edge MQTT Publisher Service v{}", env!("CARGO_PKG_VERSION"));
 
     // Load configuration from environment
-    let config = ComponentConfig::from_env();
+    let config = ComponentConfig::from_env()?;
     info!("Configuration loaded successfully");
 
     // Validate configuration
@@ -97,9 +97,13 @@ async fn main() -> Result<()> {
             Arc::clone(&inference_engine),
             Arc::clone(&mqtt_publisher),
             config.monitoring.health_port,
+            config.monitoring.enable_test_endpoints,
         ).await?
     );
     info!("Health service initialized");
+    if config.monitoring.enable_test_endpoints {
+        warn!("ENABLE_TEST_ENDPOINTS is true: /test/inference and /process-files are exposed without authentication");
+    }
 
     // Start background services - run directly to avoid Send/Sync issues
     let health_service_clone = Arc::clone(&health_service);

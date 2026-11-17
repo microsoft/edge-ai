@@ -1,0 +1,39 @@
+---
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+metadata:
+  name: InvalidMissingEndpointColumn
+dataSources:
+  lakehouse:
+    name: TestLakehouse
+    tables:
+      - name: robot
+      - name: group
+      - name: robot_group
+entityTypes:
+  - name: Robot
+    key: Id
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robot
+    properties:
+      - name: Id
+        type: string
+  - name: Group
+    key: Id
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: group
+    properties:
+      - name: Id
+        type: string
+relationships:
+  - name: member
+    from: Robot
+    to: Group
+    binding:
+      table: robot_group
+      toColumn: ToId
+...

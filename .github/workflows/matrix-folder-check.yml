@@ -103,6 +103,21 @@ on:  # yamllint disable-line rule:truthy
         required: false
         default: false
         type: boolean
+      changeMode:
+        description: 'Change selection mode: branch, range, or full'
+        required: false
+        default: 'branch'
+        type: string
+      baseSha:
+        description: 'Immutable base commit for range mode'
+        required: false
+        default: ''
+        type: string
+      headSha:
+        description: 'Immutable head commit for range mode'
+        required: false
+        default: ''
+        type: string
     outputs:
       # Backward compatibility outputs with legacy names
       changesInRpEnablementShell:
@@ -186,7 +201,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.headSha || github.sha }}
           fetch-depth: 0  # Needed to get all history for comparing changes
+          persist-credentials: false
 
       - name: ${{ inputs.displayName }}
         id: detect
@@ -194,7 +211,12 @@ jobs:
         run: |
           # Build parameters for the PowerShell script (hashtable splat for named-parameter binding)
           $baseRef = if ($env:GITHUB_BASE_REF) { $env:GITHUB_BASE_REF } else { 'main' }
-          $scriptArgs = @{ BaseBranch = "origin/$baseRef" }
+          $scriptArgs = @{
+            BaseBranch = "origin/$baseRef"
+            ChangeMode = '${{ inputs.changeMode }}'
+            BaseSha    = '${{ inputs.baseSha }}'
+            HeadSha    = '${{ inputs.headSha }}'
+          }
 
           if ("${{ inputs.includeIaCFolders }}" -eq 'true') {
             $scriptArgs['IncludeAllIaC'] = $true

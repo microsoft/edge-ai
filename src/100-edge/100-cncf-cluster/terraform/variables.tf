@@ -67,6 +67,40 @@ variable "should_deploy_arc_agents" {
   default     = false
 }
 
+variable "should_deploy_over_ssh" {
+  type        = bool
+  description = "Should deliver the setup script over 'az ssh arc' instead of a CustomScript extension. Requires Azure CLI with the 'ssh' extension where Terraform runs."
+  default     = false
+
+  validation {
+    condition     = !var.should_deploy_over_ssh || var.should_deploy_arc_machines
+    error_message = "'should_deploy_over_ssh' requires 'should_deploy_arc_machines' to be true"
+  }
+
+  validation {
+    condition     = !var.should_deploy_over_ssh || (var.ssh_local_user != null && var.ssh_private_key_path != null)
+    error_message = "'ssh_local_user' and 'ssh_private_key_path' are required when 'should_deploy_over_ssh' is true"
+  }
+}
+
+variable "ssh_local_user" {
+  type        = string
+  description = "Local account on the Arc-connected machines used for SSH delivery; must have passwordless sudo."
+  default     = null
+}
+
+variable "ssh_private_key_path" {
+  type        = string
+  description = "Path on the machine running Terraform to the private key authorized for 'ssh_local_user'."
+  default     = null
+}
+
+variable "should_create_ssh_endpoint" {
+  type        = bool
+  description = "Whether SSH delivery creates the Hybrid Connectivity default endpoint and SSH service configuration. Needed for the Azure Local non-AKS flow where these do not already exist."
+  default     = false
+}
+
 variable "should_assign_roles" {
   description = "Whether to assign Key Vault roles to identity or service principal."
   type        = bool
@@ -92,7 +126,7 @@ variable "custom_locations_oid" {
   description = <<-EOF
   The object id of the Custom Locations Entra ID application for your tenant.
   If none is provided, the script will attempt to retrieve this requiring 'Application.Read.All' or 'Directory.Read.All' permissions.
-  
+
   ```sh
   az ad sp show --id bc313c14-388c-4e7d-a58e-70017303ee3b --query id -o tsv
   ```
@@ -192,4 +226,21 @@ variable "should_skip_installing_az_cli" {
   type        = bool
   description = "Should skip downloading and installing Azure CLI on the server. (Skipping assumes the server will already have the Azure CLI)"
   default     = false
+}
+
+variable "az_mode" {
+  type        = string
+  description = "How Azure CLI is provided on the host: 'auto' resolves to an existing host CLI, then a container runtime, then a package install; 'container' requires a container runtime; 'host' requires the CLI on the host."
+  default     = null
+
+  validation {
+    condition     = var.az_mode == null || contains(["auto", "container", "host"], coalesce(var.az_mode, "auto"))
+    error_message = "The 'az_mode' must be one of 'auto', 'container', or 'host'."
+  }
+}
+
+variable "az_cli_image" {
+  type        = string
+  description = "The Azure CLI container image used when 'az_mode' resolves to 'container'. (Digest-pinned references are recommended for production)"
+  default     = null
 }

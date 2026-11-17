@@ -23,6 +23,9 @@ This blueprint provides a deployment of a single-node, Arc-enabled Kubernetes cl
 
 Please follow general blueprint recommendations from blueprints [README.md](../README.md).
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture
 
 This blueprint deploys:

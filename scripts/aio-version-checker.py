@@ -113,6 +113,7 @@ TERRAFORM_COMPONENTS = [
     "cert_manager:certManager",
     "secret_sync_controller:secretStore",
     "azure-iot-operations:iotOperations",  # Maps to iotOperations in manifest
+    "connectors:connectors",
 ]
 
 # Component mappings for Bicep (bicep_name:remote_name)
@@ -120,7 +121,11 @@ BICEP_COMPONENTS = [
     "certManagerExtensionDefaults:certManager",
     "secretStoreExtensionDefaults:secretStore",
     "aioExtensionDefaults:iotOperations",  # Maps to iotOperations in manifest
+    "connectorsDefaults:connectors",
 ]
+
+# Manifest keys published by the instance manifest rather than the enablement manifest.
+INSTANCE_MANIFEST_KEYS = {"iotOperations", "connectors"}
 
 # Bicep variables whose declaration lives outside BICEP_VARS_FILE (110-iot-ops).
 # Maps the bicep variable name to the file that declares it.
@@ -214,8 +219,8 @@ def get_latest_manifest_urls(
     - Else if channel == 'preview', call releases and pick the latest prerelease.
     - Else call releases/latest to get tag_name and target_commitish.
     - If assets include the two JSON files, use their browser_download_url.
-    - Otherwise, fall back to raw.githubusercontent.com using target_commitish
-      (typically 'release/<tag>') and known paths under /release/.
+    - Otherwise, fall back to raw.githubusercontent.com using the release tag_name
+      (or target_commitish when no tag is available) and known paths under /release/.
     - If require_asset_files is True and assets are missing, raise.
     - If strict_latest is True and API call fails, raise.
 
@@ -309,11 +314,11 @@ def get_latest_manifest_urls(
             "Required manifest JSON files not found in release assets."
         )
 
-    # Fall back to branch path using target_commitish if present; otherwise, derive from tag
+    # Fall back to the immutable release tag; target_commitish is typically the mutable 'main' branch
     if not target_commitish and not tag_name:
         raise RuntimeError(
             "Cannot construct fallback URL: both target_commitish and tag_name are empty.")
-    ref = target_commitish or f"release/{tag_name}".lstrip("/")
+    ref = tag_name.lstrip("/") if tag_name else target_commitish.lstrip("/")
     # Build raw URLs to the files in the repository at the release branch/ref
     base_repo_raw = "https://raw.githubusercontent.com/Azure/azure-iot-operations"
     enablement_url = f"{base_repo_raw}/{ref}/release/azure-iot-operations-enablement.json"
@@ -431,6 +436,38 @@ def _unwrap_hcl(value: Any) -> Any:
     return value
 
 
+def _strip_hcl_quotes(value: Any) -> Any:
+    """
+    Remove the literal double quotes that python-hcl2 8.x keeps on names and strings.
+
+    python-hcl2 8.x returns quoted block labels (``'"operations_config"'``) and
+    quoted string literals (``'"1.4.73"'``). Name and version comparisons expect
+    the unquoted text, so this helper normalizes keys and string values
+    recursively and leaves other values unchanged.
+
+    Args:
+        value (Any): A value produced by ``hcl2.load``.
+
+    Returns:
+        Any: The value with surrounding double quotes removed from every string
+            key and string value.
+    """
+    if isinstance(value, str):
+        if len(value) >= 2 and value.startswith('"') and value.endswith('"'):
+            return value[1:-1]
+        return value
+    if isinstance(value, dict):
+        return {_strip_hcl_quotes(k): _strip_hcl_quotes(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_strip_hcl_quotes(item) for item in value]
+    return value
+
+
+def _load_hcl(file_handle: Any) -> Any:
+    """Parse HCL and normalize python-hcl2 quoting differences across releases."""
+    return _strip_hcl_quotes(hcl2.load(file_handle))
+
+
 def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
     """
     Extract component information from the Terraform variables file using HCL2 parser.
@@ -461,7 +498,7 @@ def extract_tf_variables(tf_file: str) -> list[dict[str, str]]:
 
     try:
         with open(tf_file) as f:
-            parsed = hcl2.load(f)
+            parsed = _load_hcl(f)
     except Exception as e:
         logger.error(f"Failed to parse Terraform file: {e}")
         sys.exit(1)
@@ -525,7 +562,7 @@ def extract_tf_instance_variables(tf_instance_file: str) -> list[dict[str, str]]
 
     try:
         with open(tf_instance_file) as f:
-            parsed = hcl2.load(f)
+            parsed = _load_hcl(f)
     except Exception as e:
         logger.error(f"Failed to parse Terraform instance file: {e}")
         sys.exit(1)
@@ -556,6 +593,29 @@ def extract_tf_instance_variables(tf_instance_file: str) -> list[dict[str, str]]
                                     "version": version,
                                     "train": train,
                                     "namespace": namespace,
+                                    "local_file": tf_instance_file,
+                                }
+                            )
+                            break
+
+        # Look for connectors_config, which pins the bundled connectors version.
+        # The manifest publishes no TRAINS entry for connectors, so train stays empty.
+        for var_item in variables:
+            if isinstance(var_item, dict) and "connectors_config" in var_item:
+                connectors_config = var_item["connectors_config"]
+
+                if isinstance(connectors_config, dict) and "default" in connectors_config:
+                    defaults = _unwrap_hcl(connectors_config["default"])
+
+                    if isinstance(defaults, dict):
+                        version = defaults.get("version", "")
+
+                        if version:
+                            variable_blocks.append(
+                                {
+                                    "name": "connectors",
+                                    "version": version,
+                                    "train": "",
                                     "local_file": tf_instance_file,
                                 }
                             )
@@ -600,7 +660,7 @@ def extract_tf_arc_extension_variables(
 
     try:
         with open(tf_arc_file) as f:
-            parsed = hcl2.load(f)
+            parsed = _load_hcl(f)
     except Exception as e:
         logger.error(f"Failed to parse Terraform arc-extensions file: {e}")
         sys.exit(1)
@@ -821,9 +881,9 @@ def extract_remote_versions(
     for component in TERRAFORM_COMPONENTS:
         local_name, remote_name = component.split(":")
 
-        # Check if this is the IoT Operations component
-        if remote_name == "iotOperations":
-            # Get IoT Operations version from instance manifest
+        # Check if this component is published by the instance manifest
+        if remote_name in INSTANCE_MANIFEST_KEYS:
+            # Get the version from the instance manifest
             version = (
                 instance.get("variables", {}).get(
                     "VERSIONS", {}).get(remote_name, "")
@@ -831,7 +891,7 @@ def extract_remote_versions(
             train = instance.get("variables", {}).get(
                 "TRAINS", {}).get(remote_name, "")
             logger.debug(
-                f"Found IoT Operations in instance manifest: version={version}, train={train}"
+                f"Found {remote_name} in instance manifest: version={version}, train={train}"
             )
         else:
             # Get other components from enablement manifest
@@ -978,7 +1038,8 @@ def main() -> int:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
                 f"Manifest resolution: source={meta.get('source')}, tag={meta.get('tag_name')}, "
-                f"ref={meta.get('target_commitish')}, enablement_url={enablement_url}, instance_url={instance_url}"
+                f"target_commitish={meta.get('target_commitish')}, "
+                f"enablement_url={enablement_url}, instance_url={instance_url}"
             )
         manifests = download_manifests(enablement_url, instance_url)
     except Exception as e:
@@ -988,8 +1049,9 @@ def main() -> int:
     # Create a dictionary to track which component comes from which URL
     # Attribute mismatches to the actual source URLs used
     manifest_urls = {"default": enablement_url}
-    # IoT Operations comes from the instance manifest
+    # IoT Operations and the bundled connectors come from the instance manifest
     manifest_urls["azure-iot-operations"] = instance_url
+    manifest_urls["connectors"] = instance_url
 
     # Step 2: Extract variables based on IaC type
     all_mismatches = []

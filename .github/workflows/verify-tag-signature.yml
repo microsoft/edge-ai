@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: chainguard-dev/actions/setup-gitsign@b2555de0cf9724fb9b49d050ff18bd1f49562ba7 # v1.6.29
+      - uses: chainguard-dev/actions/setup-gitsign@a25ce483d875a46f4c837e85e32e0fda602693f5 # v1.8.1
 
       - name: Verify gitsign tag signature
         run: |

@@ -1,0 +1,11 @@
+apiVersion: v2
+name: model-orchestrator
+description: Fans requests out to multiple models through the MQTT predict adapter and publishes one aggregate decision
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/microsoft/edge-ai
+sources:
+  - https://github.com/microsoft/edge-ai
+maintainers:
+  - name: Edge AI Team

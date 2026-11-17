@@ -90,6 +90,9 @@ param shouldEnableAkriOnvifConnector bool = false
 @description('Deploy Akri SSE Connector template to the IoT Operations instance.')
 param shouldEnableAkriSseConnector bool = false
 
+@description('Deploy the OPC UA Connector template to the IoT Operations instance. (Required to configure OPC UA assets)')
+param shouldEnableAkriOpcUaConnector bool = false
+
 @description('List of custom Akri connector templates with user-defined endpoint types and container images.')
 param customAkriConnectors types.AkriConnectorTemplate[] = []
 
@@ -168,7 +171,7 @@ param shouldAddDeployScriptsToKeyVault bool = false
   Local Variables
 */
 
-var shouldDeployAkriConnectors = shouldEnableAkriRestConnector || shouldEnableAkriMediaConnector || shouldEnableAkriOnvifConnector || shouldEnableAkriSseConnector || length(customAkriConnectors) > 0
+var shouldDeployAkriConnectors = shouldEnableAkriRestConnector || shouldEnableAkriMediaConnector || shouldEnableAkriOnvifConnector || shouldEnableAkriSseConnector || shouldEnableAkriOpcUaConnector || length(customAkriConnectors) > 0
 
 var akriConnectorTemplates = concat(
   shouldEnableAkriRestConnector
@@ -200,6 +203,15 @@ var akriConnectorTemplates = concat(
         {
           name: 'sse-connector'
           type: 'sse'
+        }
+      ]
+    : [],
+  shouldEnableAkriOpcUaConnector
+    ? [
+        {
+          // The module generates the supervisor-adoptable name for OPC UA templates.
+          name: 'opcua-connector'
+          type: 'opcua'
         }
       ]
     : [],

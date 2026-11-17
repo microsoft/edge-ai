@@ -50,6 +50,7 @@ output "akri_connector_templates" {
     var.should_enable_akri_media_connector,
     var.should_enable_akri_onvif_connector,
     var.should_enable_akri_sse_connector,
+    var.should_enable_akri_opcua_connector,
     length(var.custom_akri_connectors) > 0
   ]) ? module.akri_connectors[0].connector_templates : null
 }

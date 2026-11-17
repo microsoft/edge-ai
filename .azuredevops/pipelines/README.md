@@ -19,11 +19,11 @@ This directory contains Azure DevOps pipeline definitions for the edge-ai projec
 
 All pipelines use reusable templates from `../templates/` for:
 
-* **GitHub Authentication** - [github-auth.yml](../templates/github-auth.md)
-* **Branch Operations** - [github-branch-operations.yml](../templates/github-branch-operations.md)
-* **Pull Request Management** - [pr-creation.yml](../templates/pr-creation.md)
-* **Git Synchronization** - [git-sync-operations.yml](../templates/git-sync-operations.md)
-* **Release Validation** - [release-validation.yml](../templates/release-validation.md)
+* **GitHub Authentication** - [github-auth.yml](../docs/github-auth.md)
+* **Branch Operations** - [github-branch-operations.yml](../docs/github-branch-operations.md)
+* **Pull Request Management** - [pr-creation.yml](../docs/pr-creation.md)
+* **Git Synchronization** - [git-sync-operations.yml](../docs/git-sync-operations.md)
+* **Release Validation** - [release-validation.yml](../docs/release-validation.md)
 
 This template architecture ensures consistent authentication patterns, standardized error handling, and maintainable operations across all pipelines. See [Template Integration Guide](../docs/template-integration.md) for orchestration patterns.
 

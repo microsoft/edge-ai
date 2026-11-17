@@ -118,8 +118,12 @@ impl ModelRegistry {
     pub async fn load_default_models(&self) -> Result<(), InferenceError> {
         if let Some(default_models) = &self.config.models.default_models {
             for (model_name, model_path_str) in default_models {
-                let model_path = self.config.models.models_directory.join(model_path_str);
-                
+                let model_path = crate::config::resolve_model_path(
+                    &self.config.models.models_directory,
+                    model_path_str,
+                )
+                .map_err(InferenceError::configuration)?;
+
                 match self.load_model(model_name, &model_path).await {
                     Ok(_) => {
                         tracing::info!("Auto-loaded model: {}", model_name);

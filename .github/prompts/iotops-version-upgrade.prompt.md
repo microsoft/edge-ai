@@ -1,6 +1,5 @@
 ---
 description: 'Guides through the process of updating Azure IoT Operations components to the latest version - Brought to you by microsoft/edge-ai'
-model: 'GPT-5-Codex (Preview)'
 tools: ['execute/getTerminalOutput', 'execute/runTask', 'execute/getTaskOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'read/terminalSelection', 'read/terminalLastCommand', 'read/readFile', 'agent', 'edit/createDirectory', 'edit/createFile', 'edit/editFiles', 'search', 'web', 'azure-mcp/search', 'bicep-(experimental)/*', 'terraform/*', 'microsoft-docs/*', 'todo']
 ---
 

@@ -1,0 +1,187 @@
+/*
+ * Dataflow Graphs Configuration Example — Acoustic Anomaly Detection
+ *
+ * This file demonstrates the two operators packaged in
+ * src/500-application/521-acoustic-anomaly-operators, bridged over MQTT by the
+ * predict adapter in src/500-application/518-mqtt-predict-adapter:
+ *
+ *   Pipeline A (featurize): featurize-acoustic turns acoustic readings from the
+ *                           sensor simulator (517) into log-mel feature rows
+ *                           and publishes them as predict adapter requests.
+ *   Pipeline B (threshold): threshold-anomaly reads the adapter responses,
+ *                           compares the model score to a calibrated threshold,
+ *                           and publishes anomaly verdicts.
+ *
+ * Neither graph subscribes to a topic it publishes to. Deploy the predict
+ * adapter with acoustic-autoencoder in adapter.allowedModels, and grant the
+ * data flow and the adapter the broker permissions for these topics.
+ *
+ * Before applying this configuration, build and push both operators from
+ * src/500-application/521-acoustic-anomaly-operators:
+ *   ./scripts/build-wasm.sh
+ *   ./scripts/push-to-acr.sh <acr_name>
+ *
+ * Copy the contents to enrich your terraform.tfvars with these values.
+ * Ensure your terraform.tfvars also includes the required core variables, for example:
+ *
+ *   environment                          = "graphs"
+ *   resource_prefix                      = "acoustic"
+ *   location                             = "eastus2"
+ *   instance                             = "001"
+ *   should_include_acr_registry_endpoint = true
+ */
+
+// Configure two dataflow graphs. Each destination replaces the CloudEvents
+// type and source user properties for the message type it produces and keeps
+// the incoming id and traceparent, so the adapter echoes the reading id as
+// request_id and the trace continues across both graphs.
+dataflow_graphs = [
+  # Pipeline A: Featurize audio into predict adapter requests
+  {
+    name = "acoustic-featurize"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "audio-source"
+        sourceSettings = {
+          endpointRef = "default"
+          // Acoustic readings with sample_rate and samples fields
+          dataSources = ["telemetry/v1/sensor-simulator/asset/+/acoustic"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "featurize"
+        graphSettings = {
+          // Must match the registry endpoint name: acr-{var.resource_prefix}
+          registryEndpointRef = "acr-acoustic"
+          artifact            = "featurize-acoustic-graph:1.0.0"
+          // max_batch_size (optional): most feature rows per request (about 7 KB each).
+          // max_request_bytes (optional): keep at or below the adapter MAX_REQUEST_BYTES.
+          // expected_sample_rate (optional): reject readings at any other rate.
+          // context_fields (optional): input fields echoed back on the verdict.
+          configuration = [
+            {
+              key   = "max_batch_size"
+              value = "32"
+            },
+            {
+              key   = "max_request_bytes"
+              value = "1048576"
+            },
+            {
+              key   = "expected_sample_rate"
+              value = "16000"
+            },
+            {
+              key   = "context_fields"
+              value = "asset_id,sensor_id,timestamp"
+            }
+          ]
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "predict-request"
+        destinationSettings = {
+          endpointRef = "default"
+          // predict/v1/{client}/model/{model-id}/request
+          dataDestination = "predict/v1/acoustic-anomaly/model/acoustic-autoencoder/request"
+          headers = [
+            {
+              actionType = "AddOrReplace"
+              key        = "type"
+              value      = "edge-ai.predict.request"
+            },
+            {
+              actionType = "AddOrReplace"
+              key        = "source"
+              value      = "acoustic-featurize"
+            }
+          ]
+        }
+      }
+    ]
+    node_connections = [
+      {
+        from = { name = "audio-source" }
+        to   = { name = "featurize" }
+      },
+      {
+        from = { name = "featurize" }
+        to   = { name = "predict-request" }
+      }
+    ]
+  },
+
+  # Pipeline B: Turn predict adapter responses into anomaly verdicts
+  {
+    name = "acoustic-threshold"
+    nodes = [
+      {
+        nodeType = "Source"
+        name     = "predict-response"
+        sourceSettings = {
+          endpointRef = "default"
+          dataSources = ["predict/v1/acoustic-anomaly/model/acoustic-autoencoder/response"]
+        }
+      },
+      {
+        nodeType = "Graph"
+        name     = "threshold"
+        graphSettings = {
+          // Must match the registry endpoint name: acr-{var.resource_prefix}
+          registryEndpointRef = "acr-acoustic"
+          artifact            = "threshold-anomaly-graph:1.0.0"
+          // threshold (required): calibrate from scores of known-healthy recordings.
+          // score_field (optional): key of the score in the model outputs.
+          // aggregation (optional): "mean" (default) or "max" over per-window scores.
+          configuration = [
+            {
+              key   = "threshold"
+              value = "10.0" # Replace with the calibrated threshold
+            },
+            {
+              key   = "score_field"
+              value = "score"
+            },
+            {
+              key   = "aggregation"
+              value = "mean"
+            }
+          ]
+        }
+      },
+      {
+        nodeType = "Destination"
+        name     = "verdicts"
+        destinationSettings = {
+          endpointRef     = "default"
+          dataDestination = "anomaly/v1/acoustic-anomaly/model/acoustic-autoencoder/verdict"
+          headers = [
+            {
+              actionType = "AddOrReplace"
+              key        = "type"
+              value      = "edge-ai.acoustic-anomaly.verdict"
+            },
+            {
+              actionType = "AddOrReplace"
+              key        = "source"
+              value      = "acoustic-threshold"
+            }
+          ]
+        }
+      }
+    ]
+    node_connections = [
+      {
+        from = { name = "predict-response" }
+        to   = { name = "threshold" }
+      },
+      {
+        from = { name = "threshold" }
+        to   = { name = "verdicts" }
+      }
+    ]
+  }
+]

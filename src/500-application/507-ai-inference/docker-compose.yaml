@@ -19,7 +19,7 @@ services:
       AIO_BROKER_TCP_PORT: "1883"
 
       # Topic configuration
-      MQTT_INPUT_TOPICS: "edge-ai/+/+/camera/snapshots"
+      MQTT_INPUT_TOPICS: "edge-ai/+/+/camera/snapshots,edge-ai/v1/+/camera/+/snapshots"
       TOPIC_PREFIX: "edge-ai/business_unit/facility/gateway_id"
 
       # Model configuration
@@ -37,6 +37,23 @@ services:
     volumes:
       - "./resources/model_configs:/app/resources/model_configs:ro"
       - "./resources/models:/app/resources/models:ro"
+    networks:
+      - edge-ai-inference
+
+  # Snapshot normalizer: republishes binary JPEG snapshots as image_snapshot v1
+  # requests on edge-ai/v1/snapshot-normalizer/camera/{CAMERA_ID}/snapshots,
+  # which the inference service receives through edge-ai/v1/+/camera/+/snapshots
+  snapshot-normalizer:
+    build:
+      context: ./services
+      dockerfile: snapshot-normalizer/Dockerfile
+    image: ${REGISTRY:-local}/${APPLICATION:-ai-inference}/snapshot-normalizer:${BUILD_ID:-local}
+    # Defaults from the template; an optional .env beside it overrides them
+    env_file:
+      - path: ./services/snapshot-normalizer/.env.template
+      - path: ./services/snapshot-normalizer/.env
+        required: false
+    read_only: true
     networks:
       - edge-ai-inference
 

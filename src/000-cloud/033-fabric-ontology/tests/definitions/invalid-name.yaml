@@ -1,0 +1,21 @@
+---
+apiVersion: fabric.ontology/v1
+kind: OntologyDefinition
+metadata:
+  name: InvalidName
+dataSources:
+  lakehouse:
+    name: TestLakehouse
+    tables:
+      - name: robot-data
+entityTypes:
+  - name: Robot
+    key: Id
+    dataBinding:
+      type: static
+      source: lakehouse
+      table: robot-data
+    properties:
+      - name: Id
+        type: string
+...

@@ -180,6 +180,28 @@ type AssetEventGroup = {
 }
 
 @export()
+@description('Stream destination configuration for assets.')
+type AssetStreamDestination = {
+  @description('Target for the destination: Mqtt or Storage.')
+  target: string
+
+  @description('Configuration for the destination.')
+  configuration: {
+    @description('MQTT topic for an Mqtt destination.')
+    topic: string?
+
+    @description('Retain setting for an Mqtt destination: Never, etc.')
+    retain: string?
+
+    @description('Quality of Service for an Mqtt destination: Qos1, etc.')
+    qos: string?
+
+    @description('File system path for a Storage destination, such as a mounted volume path.')
+    path: string?
+  }
+}
+
+@export()
 @description('Stream configuration for assets.')
 type AssetStream = {
   @description('Name of the stream.')
@@ -192,7 +214,7 @@ type AssetStream = {
   typeRef: string?
 
   @description('Destinations for the stream set.')
-  destinations: DatasetDestination[]?
+  destinations: AssetStreamDestination[]?
 }
 
 @export()

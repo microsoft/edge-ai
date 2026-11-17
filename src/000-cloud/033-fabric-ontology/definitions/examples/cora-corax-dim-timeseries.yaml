@@ -1,3 +1,4 @@
+---
 apiVersion: fabric.ontology/v1
 kind: OntologyDefinition
 
@@ -28,11 +29,11 @@ dataSources:
       - name: "oven"
         format: "csv"
   eventhouse:
-    name: "RoboticsOntologyEH"      # placeholder - Eventstream-configured
-    database: "RoboticsOntologyKQL"  # placeholder - auto-created if unspecified
+    name: "RoboticsOntologyEH" # placeholder - Eventstream-configured
+    database: "RoboticsOntologyKQL" # placeholder - auto-created if unspecified
     tables:
       - name: "oven_telemetry"
-        format: "json"
+        format: "csv"
         schema:
           - name: "AssetId"
             type: "string"
@@ -57,8 +58,8 @@ entityTypes:
       - type: "timeseries"
         source: "eventhouse"
         table: "oven_telemetry"
-        timestampColumn: "SourceTimestamp"   # most-recent reading
-        correlationColumn: "AssetId"          # links telemetry rows to the Oven key
+        timestampColumn: "SourceTimestamp" # most-recent reading
+        correlationColumn: "AssetId" # links telemetry rows to the Oven key
     properties:
       - name: "Id"
         type: "string"

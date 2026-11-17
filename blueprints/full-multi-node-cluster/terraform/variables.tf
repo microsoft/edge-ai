@@ -82,6 +82,30 @@ variable "arc_machine_resource_group_name" {
   default     = null
 }
 
+variable "should_use_ssh_delivery" {
+  type        = bool
+  description = "Whether to deliver the cluster setup script over 'az ssh arc' instead of a CustomScript extension; requires Azure CLI with the 'ssh' extension where Terraform runs"
+  default     = false
+}
+
+variable "ssh_local_user" {
+  type        = string
+  description = "Local account on the Arc-enabled machines used for SSH delivery; must have passwordless sudo"
+  default     = null
+}
+
+variable "ssh_private_key_path" {
+  type        = string
+  description = "Path on the machine running Terraform to the private key authorized for ssh_local_user"
+  default     = null
+}
+
+variable "should_create_ssh_endpoint" {
+  type        = bool
+  description = "Whether SSH delivery creates the Hybrid Connectivity default endpoint and SSH service configuration; needed for the Azure Local non-AKS flow"
+  default     = false
+}
+
 variable "custom_locations_oid" {
   type        = string
   description = <<-EOT
@@ -124,6 +148,12 @@ variable "host_machine_count" {
   type        = number
   description = "Number of edge host virtual machines to create for the multi-node cluster"
   default     = 1
+}
+
+variable "vm_sku_size" {
+  type        = string
+  description = "Size of the VM"
+  default     = "Standard_D8s_v6"
 }
 
 variable "cluster_server_host_machine_username" {
@@ -291,6 +321,7 @@ variable "namespaced_assets" {
           topic  = optional(string)
           retain = optional(string)
           qos    = optional(string)
+          path   = optional(string)
         })
       })), [])
     })), [])
@@ -870,6 +901,12 @@ variable "storage_account_is_hns_enabled" {
   default     = true
 }
 
+variable "should_create_data_lake" {
+  type        = bool
+  description = "Whether to create the data lake Blob container and Data Lake Gen2 filesystem"
+  default     = true
+}
+
 /*
  * PostgreSQL Configuration
  */
@@ -1147,15 +1184,18 @@ variable "custom_akri_connectors" {
     type = string // "rest", "media", "onvif", "sse", "custom"
 
     // Custom Connector Fields (required when type = "custom")
-    custom_endpoint_type    = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
-    custom_image_name       = optional(string) // e.g., "my_acr.azurecr.io/custom-connector"
-    custom_endpoint_version = optional(string, "1.0")
+    custom_endpoint_type          = optional(string) // e.g., "Contoso.Modbus", "Acme.CustomProtocol"
+    custom_image_name             = optional(string) // e.g., "my_acr.azurecr.io/custom-connector"
+    custom_endpoint_version       = optional(string, "1.0")
+    custom_connector_metadata_ref = optional(string) // e.g., "my_acr.azurecr.io/custom-connector-metadata:1.0.0"
 
     // Runtime Configuration (defaults applied based on connector type)
-    registry          = optional(string) // Defaults: mcr.microsoft.com for built-in types
-    image_tag         = optional(string) // Defaults: 0.5.1 for built-in types, latest for custom
-    replicas          = optional(number, 1)
-    image_pull_policy = optional(string) // Default: IfNotPresent
+    registry              = optional(string)       // Defaults: mcr.microsoft.com for built-in types (anonymous/public pulls)
+    registry_endpoint_ref = optional(string)       // Name of a registry_endpoints entry; AIO known issues 7710/4570 mean Akri connectors don't reliably honor this, prefer image_pull_secrets
+    image_pull_secrets    = optional(list(string)) // Names of existing Kubernetes docker-registry Secrets for authenticated pulls; mutually exclusive with registry_endpoint_ref
+    image_tag             = optional(string)       // Defaults: 0.5.1 for built-in types, latest for custom
+    replicas              = optional(number, 1)
+    image_pull_policy     = optional(string) // Default: IfNotPresent
 
     // Diagnostics
     log_level = optional(string) // Default: info (lowercase: trace, debug, info, warning, error, critical)
@@ -1233,6 +1273,22 @@ variable "custom_akri_connectors" {
       coalesce(conn.replicas, 1) >= 1 && coalesce(conn.replicas, 1) <= 10
     ])
     error_message = "Connector replicas must be between 1 and 10."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      conn.registry == null || conn.registry_endpoint_ref == null
+    ])
+    error_message = "Set only one of registry or registry_endpoint_ref per connector."
+  }
+
+  validation {
+    condition = alltrue([
+      for conn in var.custom_akri_connectors :
+      conn.image_pull_secrets == null || conn.registry_endpoint_ref == null
+    ])
+    error_message = "image_pull_secrets only applies to the ContainerRegistry variant; set registry_endpoint_ref to null when using image_pull_secrets."
   }
 }
 

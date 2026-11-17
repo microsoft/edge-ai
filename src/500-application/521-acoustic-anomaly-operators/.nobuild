@@ -1,0 +1,3 @@
+# This marker file excludes this application from the automated Docker build pipeline.
+# WASM operators and graph artifacts are built and published separately using ORAS.
+# See README.md for manual build and deployment instructions.

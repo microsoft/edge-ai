@@ -87,19 +87,17 @@ resource "azurerm_private_dns_zone" "redis" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "redis" {
-  count                 = var.should_create_private_dns_zone ? 1 : 0
-  name                  = "vnet-pzl-redis-${var.name}"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.redis[0].name
-  virtual_network_id    = var.virtual_network_id
-  registration_enabled  = false
+  count                = var.should_create_private_dns_zone ? 1 : 0
+  name                 = "vnet-pzl-redis-${var.name}"
+  private_dns_zone_id  = azurerm_private_dns_zone.redis[0].id
+  virtual_network_id   = var.virtual_network_id
+  registration_enabled = false
 }
 
 resource "azurerm_private_dns_a_record" "redis" {
   count               = var.should_enable_private_endpoint ? 1 : 0
   name                = var.name
-  zone_name           = var.should_create_private_dns_zone ? azurerm_private_dns_zone.redis[0].name : "privatelink.redis.azure.net"
-  resource_group_name = var.resource_group_name
+  private_dns_zone_id = var.should_create_private_dns_zone ? azurerm_private_dns_zone.redis[0].id : var.private_dns_zone_id
   ttl                 = 300
   records             = [azurerm_private_endpoint.redis[0].private_service_connection[0].private_ip_address]
 }

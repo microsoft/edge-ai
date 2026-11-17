@@ -26,6 +26,9 @@ be used as the cluster.
 This script has been tested on the following operating systems:
 
 - Azure Virtual Machine with Ubuntu 22.04 LTS
+- Azure Local provisioned machine running Microsoft Azure Linux 3.0 (requires `AZ_MODE=auto` or `AZ_MODE=container`)
+
+The script does not require a host package manager on its default path. Azure CLI runs from a container image through the containerd runtime that k3s bundles, so distributions without an `apt` feed are supported.
 
 ## Key Features
 
@@ -38,12 +41,24 @@ This component now supports two methods for deploying scripts to VMs:
 
 The Key Vault Script Retrieval method offers the following advantages:
 
-- Scripts can be updated in Key Vault without redeploying infrastructure
+- Stored scripts can be updated through an explicit maintenance operation
 - Script content is securely stored and retrieved only when needed
 - Different scripts can be deployed based on OS type and node type
 - Sensitive information in scripts is more secure
 
 To enable Key Vault Script Retrieval, set the variable `should_use_script_from_secrets_for_deploy` to `true` in your Terraform configuration. This is enabled by default.
+
+New Terraform deployments and Bicep deployments store the scripts as gzip-compressed, base64-encoded secret values (content type `application/gzip;base64`) to stay within the Key Vault 25,600 character secret limit. Existing Terraform-managed secrets retain their deployed format. To retrieve a compressed script manually, decode and decompress the value:
+
+```bash
+az keyvault secret show --vault-name <key-vault-name> --name ubuntu-k3s-server-script --query value -o tsv | base64 -d | gunzip > ./cluster-server-setup.sh
+```
+
+Terraform compresses the scripts with `base64gzip()`. Bicep has no compression function, so it uploads the scripts through a `Microsoft.Resources/deploymentScripts` resource that runs Azure CLI with a dedicated user-assigned managed identity granted the Key Vault Secrets Officer role. The Bicep deployment requires:
+
+- Permission to create role assignments on the Key Vault
+- The `Microsoft.ContainerInstance` and `Microsoft.Storage` resource providers registered in the subscription
+- Key Vault data plane access from the deployment script container, which runs without virtual network integration and cannot reach a Key Vault with public network access disabled
 
 ## Terraform
 
@@ -51,6 +66,21 @@ Refer to [Terraform Components - Getting Started](../README.md#terraform-compone
 deployment instructions.
 
 Learn more about the required configuration by reading the [./terraform/README.md](./terraform/README.md)
+
+### Bootstrap Maintenance
+
+Terraform treats the Linux VM setup extension payload and the K3s script secrets as initial-bootstrap content:
+
+- The VM extension ignores changes to `protected_settings` after creation.
+- The server and node script secrets ignore changes to `value` and `content_type` after creation.
+- Other resource attributes remain managed. Removing resources or changing their identities can still destroy or replace them.
+
+Routine AIO upgrades do not upload changed bootstrap scripts or rerun VM setup because source files or template inputs changed. Bootstrap configuration changes, including in-cluster administrator bindings, require a separately reviewed maintenance operation. Refresh-only applies do not deploy those changes.
+
+Cluster IDs and names come from configuration. The Azure cluster lookup still waits for script deployment, and Arc RBAC assignments wait for that lookup, preserving first-deployment ordering.
+
+> [!WARNING]
+> Plan script-secret and loader changes together before explicitly rerunning or replacing a setup extension, rebuilding a VM, or adding nodes. Older deployments can retain plaintext secrets that the current compressed-script loader cannot read. Do not replace only the loader or only the secret format. These VM extension lifecycle rules do not apply to Arc-machine or SSH script delivery.
 
 ## Troubleshooting
 
@@ -100,16 +130,35 @@ sudo journalctl -u k3s
 sudo journalctl -u k3s-agent
 ```
 
+## Azure CLI resolution
+
+The `AZ_MODE` variable controls how the script obtains Azure CLI.
+
+| Mode        | Behavior                                                                                                       |
+|-------------|----------------------------------------------------------------------------------------------------------------|
+| `auto`      | Default. Uses an existing host `az`, otherwise a container runtime, otherwise installs through `apt` or `tdnf` |
+| `container` | Requires a container runtime. Fails rather than installing packages on the host                                |
+| `host`      | Requires Azure CLI on the host, installing it when a supported package manager is present                      |
+
+In container mode the script runs `mcr.microsoft.com/azure-cli` through `k3s ctr`. Set `AZ_CLI_IMAGE` to a digest-pinned reference for production, matching the guidance for `K3S_INSTALL_SCRIPT_SHA256` and `KUBECTL_SHA256`.
+
+On an Arc-connected machine the container mounts `/var/opt/azcmagent` and points `IMDS_ENDPOINT` and `IDENTITY_ENDPOINT` at the local Connected Machine agent, which is what allows `az login --identity` to succeed without a cloud IMDS endpoint.
+
+### Agent nodes and Key Vault
+
+Agent nodes retrieve the k3s join token before k3s is installed, so no container runtime exists at that point. Combining `AKV_NAME` and `AKV_K3S_TOKEN_SECRET` on an agent node requires `AZ_MODE=host`. Passing `K3S_TOKEN` directly avoids the limitation entirely and is what the Terraform module does by default.
+
 ## Script prerequisites
 
 - Service Principal or Managed Identify connected to the VM with the following permissions:
   - `Kubernetes Cluster - Azure Arc Onboarding`
+- For Arc-connected physical machines, the Connected Machine agent must be running with a system-assigned identity holding the same role
 
 ## Script overview
 
 The script performs the following steps:
 
-- Install K3s, Azure CLI, kubectl
+- Install K3s, then resolve Azure CLI and kubectl
 - Login to Azure CLI (Service Principal or Managed Identity)
 - Connect to Azure Arc and enable features: `custom-locations`, `oidc-issuer`, `workload-identity`, `cluster-connect` and optionally `auto-upgrade`
 - Optionally add the provided Entra ID user or group as a cluster admin and assign Azure Arc RBAC roles (`Azure Arc Kubernetes Viewer`, `Azure Arc Enabled Kubernetes Cluster User Role`) to enable `az connectedk8s proxy`

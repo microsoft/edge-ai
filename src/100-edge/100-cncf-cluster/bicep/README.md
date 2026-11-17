@@ -34,6 +34,8 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | shouldDeployScriptToVm           | Whether to deploy the scripts to the VM.                                                                                                                                                                                                      | `bool`                             | `true`                                                                                                                             | no       |
 | shouldSkipInstallingAzCli        | Should skip downloading and installing Azure CLI on the server.                                                                                                                                                                               | `bool`                             | `false`                                                                                                                            | no       |
 | shouldSkipAzCliLogin             | Should skip login process with Azure CLI on the server.                                                                                                                                                                                       | `bool`                             | `false`                                                                                                                            | no       |
+| azMode                           | How Azure CLI is provided on the host. Empty defers to the script default of auto.                                                                                                                                                            | `string`                           |                                                                                                                                    | no       |
+| azCliImage                       | The Azure CLI container image used when azMode resolves to container. Digest-pinned references are recommended for production.                                                                                                                | `string`                           |                                                                                                                                    | no       |
 | deployUserTokenSecretName        | The name for the deploy user token secret in Key Vault.                                                                                                                                                                                       | `string`                           | deploy-user-token                                                                                                                  | no       |
 | deployKeyVaultName               | The name of the Key Vault that will have scripts and secrets for deployment.                                                                                                                                                                  | `string`                           | n/a                                                                                                                                | yes      |
 | deployKeyVaultResourceGroupName  | The resource group name where the Key Vault is located. Defaults to the current resource group.                                                                                                                                               | `string`                           | [resourceGroup().name]                                                                                                             | no       |
@@ -47,6 +49,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | Name                    | Type                              | API Version |
 |:------------------------|:----------------------------------|:------------|
 | ubuntuK3s               | `Microsoft.Resources/deployments` | 2025-04-01  |
+| keyVaultScriptSecrets   | `Microsoft.Resources/deployments` | 2025-04-01  |
 | roleAssignment          | `Microsoft.Resources/deployments` | 2025-04-01  |
 | keyVaultRoleAssignments | `Microsoft.Resources/deployments` | 2025-04-01  |
 | deployScriptsToVm       | `Microsoft.Resources/deployments` | 2025-04-01  |
@@ -54,13 +57,14 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 
 ## Modules
 
-| Name                    | Description                                                                                                     |
-|:------------------------|:----------------------------------------------------------------------------------------------------------------|
-| ubuntuK3s               | Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them to Azure Arc.                   |
-| roleAssignment          | Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed identity or service principal. |
-| keyVaultRoleAssignments | Assigns appropriate roles to access Key Vault secrets.                                                          |
-| deployScriptsToVm       | Deploys a script to a virtual machine using the CustomScript extension.                                         |
-| deployScriptsToArc      | Deploys a script to an Azure Arc-enabled machine using the CustomScript machine extension.                      |
+| Name                    | Description                                                                                                                                                         |
+|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ubuntuK3s               | Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them to Azure Arc.                                                                       |
+| keyVaultScriptSecrets   | Uploads the cluster setup scripts to Key Vault as gzip-compressed, base64-encoded secrets using a deployment script to stay within the Key Vault secret size limit. |
+| roleAssignment          | Assigns the required Kubernetes Cluster - Azure Arc Onboarding role to a managed identity or service principal.                                                     |
+| keyVaultRoleAssignments | Assigns appropriate roles to access Key Vault secrets.                                                                                                              |
+| deployScriptsToVm       | Deploys a script to a virtual machine using the CustomScript extension.                                                                                             |
+| deployScriptsToArc      | Deploys a script to an Azure Arc-enabled machine using the CustomScript machine extension.                                                                          |
 
 ## Module Details
 
@@ -86,28 +90,50 @@ Configures K3s Kubernetes clusters on Ubuntu virtual machines and connects them 
 | deployAdminOid                   | The Object ID that will be given deployment admin permissions.                                                                                                                                                                                                                                                                                                                       | `string`                           | n/a     | no       |
 | serverToken                      | The token that will be given to the server for the cluster or used by agent nodes.                                                                                                                                                                                                                                                                                                   | `securestring`                     | n/a     | no       |
 | deployUserTokenSecretName        | The name for the deploy user token secret in Key Vault.                                                                                                                                                                                                                                                                                                                              | `string`                           | n/a     | yes      |
-| keyVaultName                     | The name of the Key Vault to save the scripts to.                                                                                                                                                                                                                                                                                                                                    | `string`                           | n/a     | yes      |
+| keyVaultName                     | The name of the Key Vault the scripts use for cluster secrets.                                                                                                                                                                                                                                                                                                                       | `string`                           | n/a     | yes      |
 | k3sTokenSecretName               | The name for the K3s token secret in Key Vault.                                                                                                                                                                                                                                                                                                                                      | `string`                           | n/a     | yes      |
-| nodeScriptSecretName             | The name for the node script secret in Key Vault.                                                                                                                                                                                                                                                                                                                                    | `string`                           | n/a     | yes      |
-| serverScriptSecretName           | The name for the server script secret in Key Vault.                                                                                                                                                                                                                                                                                                                                  | `string`                           | n/a     | yes      |
 | shouldSkipAzCliLogin             | Should skip login process with Azure CLI on the server.                                                                                                                                                                                                                                                                                                                              | `bool`                             | n/a     | yes      |
 | shouldSkipInstallingAzCli        | Should skip downloading and installing Azure CLI on the server.                                                                                                                                                                                                                                                                                                                      | `bool`                             | n/a     | yes      |
-
-#### Resources for ubuntuK3s
-
-| Name                         | Type                                | API Version |
-|:-----------------------------|:------------------------------------|:------------|
-| keyVault::serverScriptSecret | `Microsoft.KeyVault/vaults/secrets` | 2024-11-01  |
-| keyVault::nodeScriptSecret   | `Microsoft.KeyVault/vaults/secrets` | 2024-11-01  |
+| azMode                           | How Azure CLI is provided on the host. Empty defers to the script default of auto.                                                                                                                                                                                                                                                                                                   | `string`                           | n/a     | yes      |
+| azCliImage                       | The Azure CLI container image used when azMode resolves to container. Digest-pinned references are recommended for production.                                                                                                                                                                                                                                                       | `string`                           | n/a     | yes      |
 
 #### Outputs for ubuntuK3s
 
-| Name                          | Type           | Description                                                                                      |
-|:------------------------------|:---------------|:-------------------------------------------------------------------------------------------------|
-| clusterServerScript           | `securestring` | The script for setting up the host machine for the cluster server.                               |
-| clusterNodeScript             | `securestring` | The script for setting up the host machine for the cluster node.                                 |
-| clusterServerScriptSecretName | `string`       | The Key Vault Secret name for the script for setting up the host machine for the cluster server. |
-| clusterNodeScriptSecretName   | `string`       | The Key Vault Secret name for the script for setting up the host machine for the cluster node.   |
+| Name                | Type           | Description                                                        |
+|:--------------------|:---------------|:-------------------------------------------------------------------|
+| clusterServerScript | `securestring` | The script for setting up the host machine for the cluster server. |
+| clusterNodeScript   | `securestring` | The script for setting up the host machine for the cluster node.   |
+
+### keyVaultScriptSecrets
+
+Uploads the cluster setup scripts to Key Vault as gzip-compressed, base64-encoded secrets using a deployment script to stay within the Key Vault secret size limit.
+
+#### Parameters for keyVaultScriptSecrets
+
+| Name                   | Description                                                        | Type                               | Default | Required |
+|:-----------------------|:-------------------------------------------------------------------|:-----------------------------------|:--------|:---------|
+| common                 | The common component configuration.                                | `[_1.Common](#user-defined-types)` | n/a     | yes      |
+| keyVaultName           | The name of the Key Vault to save the scripts to.                  | `string`                           | n/a     | yes      |
+| nodeScriptSecretName   | The name for the node script secret in Key Vault.                  | `string`                           | n/a     | yes      |
+| serverScriptSecretName | The name for the server script secret in Key Vault.                | `string`                           | n/a     | yes      |
+| clusterNodeScript      | The script for setting up the host machine for the cluster node.   | `securestring`                     | n/a     | yes      |
+| clusterServerScript    | The script for setting up the host machine for the cluster server. | `securestring`                     | n/a     | yes      |
+
+#### Resources for keyVaultScriptSecrets
+
+| Name                       | Type                                               | API Version |
+|:---------------------------|:---------------------------------------------------|:------------|
+| scriptSecretsIdentity      | `Microsoft.ManagedIdentity/userAssignedIdentities` | 2024-11-30  |
+| keyVaultSecretsOfficerRole | `Microsoft.Authorization/roleAssignments`          | 2022-04-01  |
+| uploadScriptSecrets        | `Microsoft.Resources/deploymentScripts`            | 2023-08-01  |
+
+#### Outputs for keyVaultScriptSecrets
+
+| Name                          | Type     | Description                                                                                      |
+|:------------------------------|:---------|:-------------------------------------------------------------------------------------------------|
+| clusterServerScriptSecretName | `string` | The Key Vault Secret name for the script for setting up the host machine for the cluster server. |
+| clusterNodeScriptSecretName   | `string` | The Key Vault Secret name for the script for setting up the host machine for the cluster node.   |
+| deploymentScriptName          | `string` | The name of the deployment script resource that uploads the script secrets.                      |
 
 ### roleAssignment
 

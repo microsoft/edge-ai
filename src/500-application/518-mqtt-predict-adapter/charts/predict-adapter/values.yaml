@@ -1,0 +1,97 @@
+image:
+  # Placeholder. Build the image from services/predict-adapter and push it to a
+  # registry you own.
+  repository: your-registry.azurecr.io/predict-adapter
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+namespace: azure-iot-operations
+
+serviceAccount:
+  # Use a distinct service account so broker authorization rules and Foundry
+  # Local ModelDeployment authorizedSubjects can name this workload alone.
+  create: true
+  name: ""
+  # Annotations prefixed with aio-broker-auth/ become broker authorization
+  # attributes for clients that authenticate with this service account token.
+  annotations:
+    aio-broker-auth/workload: predict-adapter
+
+adapter:
+  # Required. Model IDs this adapter serves. Each must be a lowercase DNS label
+  # because it's substituted into modelEndpointTemplate.
+  allowedModels: []
+  # {model_id} is replaced with the requested model ID.
+  modelEndpointTemplate: "https://{model_id}.foundry-local-operator.svc.cluster.local:5000/v1/predict"
+  topicDomain: predict
+  requestKind: request
+  responseKind: response
+  eventSource: predict-adapter
+  # Per-attempt deadline. Keep backendTimeoutSeconds x backendAttempts below the
+  # requester's own timeout, such as the 519 orchestrator's timeoutSeconds.
+  backendTimeoutSeconds: 30
+  backendAttempts: 2
+  maxRequestBytes: 1048576
+  # Largest model endpoint response body; larger responses fail with OUTPUT_TOO_LARGE.
+  maxResponseBytes: 4194304
+  maxConcurrency: 4
+
+backend:
+  # Projected service account token for Foundry Local SAT authentication. Set
+  # enabled to false for endpoints that don't require authentication.
+  sat:
+    enabled: true
+    audience: foundry-local
+    expirationSeconds: 3600
+  # Optional ConfigMap holding the CA bundle that signs the model endpoint's TLS
+  # certificate. Leave empty to use the image's system trust store.
+  caConfigMap:
+    name: ""
+    key: ca.crt
+
+mqtt:
+  brokerHostname: aio-broker.azure-iot-operations
+  brokerTcpPort: "18883"
+  # Each pod connects as <clientIdPrefix>-<pod name>, which is unique per pod.
+  clientIdPrefix: predict-adapter
+  tlsCaFile: /var/run/certs/ca.crt
+  satFile: /var/run/secrets/tokens/mq-sat
+
+volumes:
+  mqSat:
+    audience: aio-internal
+    expirationSeconds: 86400
+  trustBundle:
+    configMapName: azure-iot-operations-aio-ca-trust-bundle
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 96Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}
+podLabels: {}

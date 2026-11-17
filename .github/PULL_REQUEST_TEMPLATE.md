@@ -29,7 +29,7 @@
 - [ ] Blueprint deployment test
 - [ ] Unit tests
 - [ ] Integration tests
-- [ ] Bug fix includes regression test (see [Test Policy](docs/contributing/testing-validation.md))
+- [ ] Bug fix includes regression test (see [Test Policy](https://github.com/microsoft/edge-ai/blob/main/docs/contributing/testing-validation.md))
 - [ ] Manual validation
 - [ ] Other:
 

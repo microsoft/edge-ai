@@ -111,6 +111,7 @@ impl Backend {
                 last_inference_time_ms: None,
                 total_inferences: 0,
                 errors: vec!["No backend features enabled".to_string()],
+                session_settings: Default::default(),
             },
         }
     }
@@ -129,6 +130,10 @@ impl Backend {
 }
 
 /// Inference backend trait that allows multiple ML frameworks
+#[allow(
+    clippy::double_must_use,
+    reason = "async_trait emits #[must_use] on methods returning Pin<Box<dyn Future>>"
+)]
 #[async_trait]
 pub trait InferenceBackend: Send + Sync {
     /// Initialize the backend with configuration
@@ -244,6 +249,9 @@ pub struct BackendStatus {
     pub last_inference_time_ms: Option<f64>,
     pub total_inferences: u64,
     pub errors: Vec<String>,
+    /// Effective runtime session settings reported by the backend, keyed by setting name
+    #[serde(default)]
+    pub session_settings: std::collections::BTreeMap<String, String>,
 }
 
 /// Backend-specific errors
@@ -357,6 +365,8 @@ impl BackendFactory {
     }
 
     /// Check which backends are available at compile time
+    // Entries depend on enabled features, so the list is built incrementally
+    #[allow(clippy::vec_init_then_push)]
     pub fn available_backends() -> Vec<BackendType> {
         #[allow(unused_mut)]
         let mut backends = Vec::new();

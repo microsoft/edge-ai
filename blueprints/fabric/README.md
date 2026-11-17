@@ -17,6 +17,9 @@ keywords:
 
 This blueprint deploys Microsoft Fabric components for data analytics scenarios.
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Overview
 
 This blueprint creates Microsoft Fabric resources including:

@@ -17,6 +17,9 @@ estimated_reading_time: 3
 
 This blueprint provisions the cloud services and deploys a Kubernetes cluster on Azure Local (formerly Azure Stack HCI) infrastructure, then installs Azure IoT Operations (AIO) on that cluster. It creates a new Kubernetes cluster using Azure Local's native cluster provisioning capabilities rather than using VMs or existing CNCF clusters. Review the [blueprints README](../README.md) for general deployment guidance before proceeding.
 
+> [!IMPORTANT]
+> Existing Terraform deployments require a state-aware upgrade to AzureRM v5. Follow the [AzureRM v5 migration guide](../../docs/getting-started/azurerm-v5-migration.md) before planning or applying changes.
+
 ## Architecture Overview
 
 The Terraform blueprint orchestrates the following components:

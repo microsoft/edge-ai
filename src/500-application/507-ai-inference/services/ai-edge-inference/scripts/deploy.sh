@@ -325,7 +325,6 @@ main() {
     echo ""
     log_info "Access the service endpoints:"
     echo "  Health: kubectl port-forward svc/\"$IMAGE_NAME\" 8081:8081 -n \"$NAMESPACE\""
-    echo "  Metrics: kubectl port-forward svc/\"$IMAGE_NAME\" 8080:8080 -n \"$NAMESPACE\""
   fi
 }
 

@@ -38,7 +38,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 tracing-opentelemetry = "0.33"
 
 # HTTP server for health checks
-warp = "0.3"
+warp = { version = "0.4.3", features = ["server"] }
 
 # Monitoring and metrics
 prometheus = { version = "0.14", features = ["process"] }

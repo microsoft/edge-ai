@@ -3,6 +3,10 @@ param(
     [switch]$CI,
     [switch]$ChangedOnly,
     [switch]$CodeCoverage,
+    [ValidateSet('branch', 'range', 'full')]
+    [string]$ChangeMode = 'branch',
+    [string]$BaseSha = '',
+    [string]$HeadSha = '',
     [string]$ConfigPath = (Join-Path $PSScriptRoot 'tests/pester.config.ps1'),
     [string]$OutputPath = './test-results',
     [string[]]$Path
@@ -13,14 +17,14 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'ci/Modules/CIHelpers.psm1') -Force
 
 $pesterModule = Get-Module -ListAvailable -Name Pester |
-    Where-Object { $_.Version -eq [version]'5.7.1' } |
+    Where-Object { $_.Version -eq [version]'5.9.1' } |
     Select-Object -First 1
 
 if (-not $pesterModule) {
-    Install-Module -Name Pester -RequiredVersion '5.7.1' -Force -Scope CurrentUser -SkipPublisherCheck
+    Install-PSResource -Name Pester -Version '5.9.1' -Repository PSGallery -Scope CurrentUser -TrustRepository
 }
 
-Import-Module Pester -RequiredVersion '5.7.1' -Force
+Import-Module Pester -RequiredVersion '5.9.1' -Force
 
 $configParams = @{}
 if ($CI) { $configParams['CI'] = $true }
@@ -30,8 +34,9 @@ $configParams['OutputPath'] = $OutputPath
 
 $config = & $ConfigPath @configParams
 
-if ($ChangedOnly) {
-    $changedTests = & (Join-Path $PSScriptRoot 'tests/Get-ChangedTestFiles.ps1')
+if ($ChangedOnly -and $ChangeMode -ne 'full') {
+    $changedTests = & (Join-Path $PSScriptRoot 'tests/Get-ChangedTestFiles.ps1') `
+        -ChangeMode $ChangeMode -BaseSha $BaseSha -HeadSha $HeadSha
     if ($changedTests.Count -eq 0) {
         Write-Host 'No changed test files found.'
         Write-CIStepSummary "## Pester Test Results`n`nNo changed test files to run."

@@ -724,6 +724,8 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | shouldDeployScriptToVm           | Whether to deploy the scripts to the VM.                                                                                                                                                                                                      | `bool`                             | `true`                                                                                                                             | no       |
 | shouldSkipInstallingAzCli        | Should skip downloading and installing Azure CLI on the server.                                                                                                                                                                               | `bool`                             | `false`                                                                                                                            | no       |
 | shouldSkipAzCliLogin             | Should skip login process with Azure CLI on the server.                                                                                                                                                                                       | `bool`                             | `false`                                                                                                                            | no       |
+| azMode                           | How Azure CLI is provided on the host. Empty defers to the script default of auto.                                                                                                                                                            | `string`                           |                                                                                                                                    | no       |
+| azCliImage                       | The Azure CLI container image used when azMode resolves to container. Digest-pinned references are recommended for production.                                                                                                                | `string`                           |                                                                                                                                    | no       |
 | deployUserTokenSecretName        | The name for the deploy user token secret in Key Vault.                                                                                                                                                                                       | `string`                           | deploy-user-token                                                                                                                  | no       |
 | deployKeyVaultName               | The name of the Key Vault that will have scripts and secrets for deployment.                                                                                                                                                                  | `string`                           | n/a                                                                                                                                | yes      |
 | deployKeyVaultResourceGroupName  | The resource group name where the Key Vault is located. Defaults to the current resource group.                                                                                                                                               | `string`                           | [resourceGroup().name]                                                                                                             | no       |
@@ -737,6 +739,7 @@ The scripts handle primary and secondary node(s) setup, cluster administration, 
 | Name                    | Type                              | API Version |
 |:------------------------|:----------------------------------|:------------|
 | ubuntuK3s               | `Microsoft.Resources/deployments` | 2025-04-01  |
+| keyVaultScriptSecrets   | `Microsoft.Resources/deployments` | 2025-04-01  |
 | roleAssignment          | `Microsoft.Resources/deployments` | 2025-04-01  |
 | keyVaultRoleAssignments | `Microsoft.Resources/deployments` | 2025-04-01  |
 | deployScriptsToVm       | `Microsoft.Resources/deployments` | 2025-04-01  |
@@ -813,6 +816,7 @@ Deploys Azure IoT Operations extensions, instances, and configurations on Azure 
 | shouldEnableAkriMediaConnector      | Deploy Akri Media Connector template to the IoT Operations instance.                                                                                         | `bool`                                           | `false`                                                                                                                       | no       |
 | shouldEnableAkriOnvifConnector      | Deploy Akri ONVIF Connector template to the IoT Operations instance.                                                                                         | `bool`                                           | `false`                                                                                                                       | no       |
 | shouldEnableAkriSseConnector        | Deploy Akri SSE Connector template to the IoT Operations instance.                                                                                           | `bool`                                           | `false`                                                                                                                       | no       |
+| shouldEnableAkriOpcUaConnector      | Deploy the OPC UA Connector template to the IoT Operations instance. (Required to configure OPC UA assets)                                                   | `bool`                                           | `false`                                                                                                                       | no       |
 | customAkriConnectors                | List of custom Akri connector templates with user-defined endpoint types and container images.                                                               | `array`                                          | []                                                                                                                            | no       |
 | registryEndpoints                   | List of additional container registry endpoints for pulling custom artifacts. MCR is always added automatically.                                             | `array`                                          | []                                                                                                                            | no       |
 | akriMqttSharedConfig                | Shared MQTT connection configuration for all Akri connectors.                                                                                                | `[_1.AkriMqttConfig](#user-defined-types)`       | {'host': 'aio-broker:18883', 'audience': 'aio-internal', 'caConfigmap': 'azure-iot-operations-aio-ca-trust-bundle'}           | no       |
@@ -1280,6 +1284,14 @@ Broker persistence configuration for disk-backed message storage.
 | subscriberQueue           | `object` | Controls which subscriber queues should be persisted to disk.    |
 | persistentVolumeClaimSpec | `object` | Persistent volume claim specification for storage.               |
 
+### `_3.ConnectorsConfig`
+
+The settings for the connectors bundled with the Azure IoT Operations release.
+
+| Property | Type     | Description                                                                                                 |
+|:---------|:---------|:------------------------------------------------------------------------------------------------------------|
+| version  | `string` | The version of the connectors bundle, used as the image and metadata tag for supervisor-managed connectors. |
+
 ### `_3.CustomerManagedByoIssuerConfig`
 
 The configuration for Customer Managed Bring Your Own Issuer for Azure IoT Operations certificates.
@@ -1581,6 +1593,15 @@ Stream configuration for assets.
 | streamConfiguration | `string` | Stream configuration as JSON string. |
 | typeRef             | `string` | Type reference for the stream.       |
 | destinations        | `array`  | Destinations for the stream set.     |
+
+### `_4.AssetStreamDestination`
+
+Stream destination configuration for assets.
+
+| Property      | Type     | Description                                  |
+|:--------------|:---------|:---------------------------------------------|
+| target        | `string` | Target for the destination: Mqtt or Storage. |
+| configuration | `object` | Configuration for the destination.           |
 
 ### `_4.DatasetDestination`
 

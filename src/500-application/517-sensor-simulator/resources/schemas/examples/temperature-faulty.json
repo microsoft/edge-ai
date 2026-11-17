@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "asset-01",
+  "sensor_id": "sensor-01",
+  "modality": "temperature",
+  "health_state": "faulty",
+  "timestamp": "2026-01-02T03:04:05.678Z",
+  "value": 72.16,
+  "unit": "degC"
+}

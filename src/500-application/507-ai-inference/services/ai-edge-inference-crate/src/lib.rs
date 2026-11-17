@@ -94,7 +94,7 @@ pub use types::{
 pub use error::InferenceError;
 pub use config::{
     InferenceConfig, ModelsConfig, PerformanceConfig, HardwareConfig,
-    MonitoringConfig, SiteContext, ModelDefinition, ModelParameters
+    MonitoringConfig, SiteContext, ModelDefinition, ModelParameters, resolve_model_path
 };
 pub use models::{ModelRegistry, ModelMetadata, LoadedModel};
 pub use engine::{InferenceEngine, InferenceMetrics};

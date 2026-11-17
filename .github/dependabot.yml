@@ -42,12 +42,15 @@ updates:
     open-pull-requests-limit: 5
 
   # npm
-    cooldown:
-      default-days: 7
   - package-ecosystem: "npm"
     directories:
       - "/"
       - "/docs/docusaurus"
+      - "/.github/scripts/markdown-link-check"
+      - "/src/500-application/513-tiered-notification-service"
+      - "/src/500-application/516-chat-with-your-factory/services/chat-with-your-factory"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "monday"
@@ -122,6 +125,10 @@ updates:
           - "major"
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "checkov"
+        versions:
+          - ">=3.2.532"
     open-pull-requests-limit: 5
 
   # Docker
