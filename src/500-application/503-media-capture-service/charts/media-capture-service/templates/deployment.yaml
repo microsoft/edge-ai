@@ -8,6 +8,14 @@ metadata:
     {{- include "media-capture-service.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- if .Values.mediaCapture.continuousRecording.enabled }}
+  {{- if gt (int .Values.replicaCount) 1 }}
+  {{- fail "continuous recording supports one replica per camera; deploy one release per camera" }}
+  {{- end }}
+  # One continuous recorder per camera: stop the old pod before starting the new one
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "media-capture-service.selectorLabels" . | nindent 6 }}
@@ -68,6 +76,10 @@ spec:
             # Media Storage
             - name: MEDIA_CLOUD_SYNC_DIR
               value: {{ .Values.mediaCapture.storage.cloudSyncDir | quote }}
+            {{- with .Values.mediaCapture.storage.stagingDir }}
+            - name: MEDIA_STAGING_DIR
+              value: {{ . | quote }}
+            {{- end }}
 
             # Video Configuration
             - name: RTSP_URL
@@ -84,6 +96,30 @@ spec:
               value: {{ .Values.mediaCapture.video.captureDurationSeconds | quote }}
             - name: VIDEO_FEED_DELAY_SECONDS
               value: {{ .Values.mediaCapture.video.feedDelaySeconds | quote }}
+
+            # Camera Identity
+            - name: CAMERA_ID
+              {{- if .Values.mediaCapture.continuousRecording.enabled }}
+              value: {{ required "mediaCapture.camera.id is required for continuous recording" .Values.mediaCapture.camera.id | quote }}
+              {{- else }}
+              value: {{ .Values.mediaCapture.camera.id | quote }}
+              {{- end }}
+            - name: CAMERA_LOCATION
+              value: {{ .Values.mediaCapture.camera.location | quote }}
+
+            # Continuous Recording
+            - name: CONTINUOUS_RECORDING_ENABLED
+              value: {{ .Values.mediaCapture.continuousRecording.enabled | quote }}
+            {{- if .Values.mediaCapture.continuousRecording.enabled }}
+            - name: CONTINUOUS_SEGMENT_DURATION_SECONDS
+              value: {{ .Values.mediaCapture.continuousRecording.segmentDurationSeconds | quote }}
+            - name: OUTPUT_FORMAT
+              value: {{ .Values.mediaCapture.continuousRecording.outputFormat | quote }}
+            - name: LOCAL_RETENTION_HOURS
+              value: {{ .Values.mediaCapture.continuousRecording.localRetentionHours | quote }}
+            - name: CLEANUP_INTERVAL_MINUTES
+              value: {{ .Values.mediaCapture.continuousRecording.cleanupIntervalMinutes | quote }}
+            {{- end }}
 
             # Logging
             - name: RUST_LOG
