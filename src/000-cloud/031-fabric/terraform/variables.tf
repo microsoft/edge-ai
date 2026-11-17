@@ -54,10 +54,6 @@ variable "fabric_capacity_admins" {
   EOT
   type        = list(string)
   default     = []
-  validation {
-    condition     = !var.should_create_fabric_capacity || length(var.fabric_capacity_admins) > 0
-    error_message = "At least one administrator must be specified for Fabric capacity when creating a capacity."
-  }
 }
 
 variable "fabric_capacity_sku" {

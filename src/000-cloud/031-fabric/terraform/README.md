@@ -25,6 +25,7 @@ Contains all the resources needed for Fabric based resources.
 | [terraform_data.defer_fabric_capacity_created](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)  | resource    |
 | [terraform_data.defer_fabric_capacity_existing](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource    |
 | [terraform_data.defer_fabric_workspace](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)         | resource    |
+| [terraform_data.validate_inputs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data)                | resource    |
 | [fabric_capacity.created](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/capacity)                   | data source |
 | [fabric_capacity.existing](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/capacity)                  | data source |
 | [fabric_workspace.existing](https://registry.terraform.io/providers/microsoft/fabric/1.10.0/docs/data-sources/workspace)                | data source |

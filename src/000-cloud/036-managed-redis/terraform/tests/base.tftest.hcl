@@ -127,11 +127,35 @@ run "create_private_endpoint_without_subnet" {
   }
 
   expect_failures = [
-    var.private_endpoint_subnet,
+    terraform_data.validate_inputs,
   ]
 }
 
-# Test 5: An invalid SKU name fails validation
+# Test 5: A plan targeting only the Redis module still enforces the private endpoint subnet rule
+run "create_private_endpoint_without_subnet_targeted" {
+  command = plan
+
+  plan_options {
+    target = [module.managed_redis]
+  }
+
+  variables {
+    resource_prefix = run.setup_tests.resource_prefix
+    environment     = "test"
+    instance        = "003"
+    location        = run.setup_tests.location
+    resource_group  = run.setup_tests.resource_group
+    virtual_network = run.setup_tests.virtual_network
+
+    should_enable_private_endpoint = true
+  }
+
+  expect_failures = [
+    terraform_data.validate_inputs,
+  ]
+}
+
+# Test 6: An invalid SKU name fails validation
 run "create_with_invalid_sku_name" {
   command = plan
 
@@ -151,7 +175,7 @@ run "create_with_invalid_sku_name" {
   ]
 }
 
-# Test 6: An invalid clustering policy fails validation
+# Test 7: An invalid clustering policy fails validation
 run "create_with_invalid_clustering_policy" {
   command = plan
 

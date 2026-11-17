@@ -16,11 +16,6 @@ variable "private_endpoint_subnet" {
     id = string
   })
   default = null
-
-  validation {
-    condition     = var.should_enable_private_endpoint ? var.private_endpoint_subnet != null : true
-    error_message = "private_endpoint_subnet is required when should_enable_private_endpoint is true."
-  }
 }
 
 variable "resource_group" {

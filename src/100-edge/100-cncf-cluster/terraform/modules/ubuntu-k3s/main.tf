@@ -92,6 +92,13 @@ resource "random_string" "cluster_server_token" {
   numeric = true
   upper   = true
   lower   = true
+
+  lifecycle {
+    precondition {
+      condition     = var.cluster_server_token == null
+      error_message = "'should_generate_cluster_server_token' must be false if 'cluster_server_token' has been provided."
+    }
+  }
 }
 
 resource "local_sensitive_file" "cluster_server_setup_script" {

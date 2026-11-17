@@ -163,6 +163,6 @@ run "create_capacity_without_admins" {
   }
 
   expect_failures = [
-    var.fabric_capacity_admins,
+    terraform_data.validate_inputs,
   ]
 }
