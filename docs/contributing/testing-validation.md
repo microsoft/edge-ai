@@ -225,7 +225,7 @@ echo "Running pre-commit validation..."
 
 # 1. Format and lint code
 echo "1. Running linters..."
-npm run lint-fix-devcontainer
+npm run lint-fix
 
 # 2. Security scanning
 echo "2. Running security scans..."
