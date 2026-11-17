@@ -1,4 +1,4 @@
-# trigger fuzz CI
+# Do not set `strip` on release: ClusterFuzzLite detects targets via the LLVMFuzzerTestOneInput symbol.
 [package]
 name = "receiver-fuzz"
 version = "0.0.0"
@@ -19,6 +19,3 @@ test = false
 doc = false
 
 [workspace]
-
-[profile.release]
-strip = true
