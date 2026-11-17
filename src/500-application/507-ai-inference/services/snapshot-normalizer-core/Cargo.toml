@@ -13,3 +13,6 @@ serde_json = "1.0"
 
 # Opt out of the parent workspace: independent library with its own Cargo.lock
 [workspace]
+
+[profile.release]
+strip = true

@@ -15,6 +15,14 @@
 #
 # Parameters:
 # - break-build: When true, advisories fail the workflow (default: true).
+# - changeMode: 'full' audits every crate and module; 'range' scopes auditing to
+#   the immutable baseSha..headSha range when changedFilesOnly is true (default: 'full').
+# - baseSha: Immutable base commit used in range mode (default: '').
+# - headSha: Immutable head commit used in range mode (default: '').
+# - changedFilesOnly: When true in range mode, skip toolchain installation when no
+#   Rust or Go files changed and audit only crates or modules changed in the range.
+#   Changes to shared audit configuration (`.github/audit.toml`, root `.cargo/`,
+#   or this workflow) audit everything (default: false).
 #
 # Usage Examples:
 # ```yaml
@@ -27,6 +35,16 @@
 #   uses: ./.github/workflows/dep-audit.yml
 #   with:
 #     break-build: false
+#
+# # Change-scoped auditing from a resolved immutable range:
+# dep-audit:
+#   needs: [resolve-validation-range]
+#   uses: ./.github/workflows/dep-audit.yml
+#   with:
+#     changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+#     baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+#     headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
+#     changedFilesOnly: true
 # ```
 ---
 name: Dependency Audit
@@ -39,6 +57,26 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: true
+      changeMode:
+        description: 'Change selection mode: range or full'
+        required: false
+        type: string
+        default: 'full'
+      baseSha:
+        description: 'Immutable base commit for range mode'
+        required: false
+        type: string
+        default: ''
+      headSha:
+        description: 'Immutable head commit for range mode'
+        required: false
+        type: string
+        default: ''
+      changedFilesOnly:
+        description: 'In range mode, audit only crates and modules changed in the range'
+        required: false
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -52,10 +90,61 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
         with:
+          ref: ${{ inputs.headSha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Verify resolved head commit
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.changeMode == 'range' && inputs.headSha || inputs.changeMode != 'range' && github.sha || '' }}
+        run: |
+          actual_head_sha="$(git rev-parse HEAD)"
+          if [[ ! "${EXPECTED_HEAD_SHA}" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ || "${actual_head_sha}" != "${EXPECTED_HEAD_SHA}" ]]; then
+            echo "::error::Checked-out commit ${actual_head_sha} does not match the resolved head commit."
+            exit 1
+          fi
+
+      - name: Check for Rust dependency changes
+        shell: bash
+        env:
+          CHANGE_MODE: ${{ inputs.changeMode }}
+          CHANGED_FILES_ONLY: ${{ inputs.changedFilesOnly }}
+          BASE_SHA: ${{ inputs.baseSha }}
+          HEAD_SHA: ${{ inputs.headSha }}
+        run: |
+          set -euo pipefail
+          if [[ "${CHANGE_MODE}" != "full" && "${CHANGE_MODE}" != "range" ]]; then
+            echo "::error::Unsupported change mode: ${CHANGE_MODE}"
+            exit 1
+          fi
+          if [[ "${CHANGED_FILES_ONLY}" != "true" || "${CHANGE_MODE}" == "full" ]]; then
+            echo "SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "AUDIT_SCOPE=all" >> "$GITHUB_ENV"
+            echo "Auditing every Rust crate."
+            exit 0
+          fi
+          sha_pattern='^([0-9a-f]{40}|[0-9a-f]{64})$'
+          if [[ ! "${BASE_SHA}" =~ ${sha_pattern} || ! "${HEAD_SHA}" =~ ${sha_pattern} ]]; then
+            echo "::error::Range mode requires immutable base and head commit IDs."
+            exit 1
+          fi
+          changed_files="$(git diff --name-only --diff-filter=ACMR "${BASE_SHA}..${HEAD_SHA}")"
+          if grep -qE '^(\.github/audit\.toml|\.github/workflows/dep-audit\.yml|\.cargo/.*)$' <<< "${changed_files}"; then
+            echo "SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "AUDIT_SCOPE=all" >> "$GITHUB_ENV"
+            echo "Shared audit configuration changed; auditing every Rust crate."
+          elif grep -qE '(\.rs|(^|/)Cargo\.(toml|lock)|(^|/)\.cargo/.*)$' <<< "${changed_files}"; then
+            echo "SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "AUDIT_SCOPE=range" >> "$GITHUB_ENV"
+            echo "Rust changes detected; auditing crates changed in ${BASE_SHA}..${HEAD_SHA}."
+          else
+            echo "SHOULD_RUN=false" >> "$GITHUB_ENV"
+            echo "No Rust changes in ${BASE_SHA}..${HEAD_SHA}; skipping cargo audit."
+          fi
+
       - name: Install Rust toolchain
+        if: env.SHOULD_RUN == 'true'
         shell: bash
         run: |
           RUSTUP_DIR=$(mktemp -d)
@@ -71,28 +160,48 @@ jobs:
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Install cargo-audit
+        if: env.SHOULD_RUN == 'true'
         shell: bash
         run: |
           export PATH="$HOME/.cargo/bin:$PATH"
           cargo install cargo-audit --locked --version 0.22.1
 
       - name: Run cargo audit on every Rust crate
+        if: env.SHOULD_RUN == 'true'
         shell: bash
         env:
           BREAK_BUILD: ${{ inputs.break-build }}
+          BASE_SHA: ${{ inputs.baseSha }}
+          HEAD_SHA: ${{ inputs.headSha }}
         run: |
           set -euo pipefail
           export PATH="$HOME/.cargo/bin:$PATH"
           AUDIT_CONFIG="${GITHUB_WORKSPACE}/.github/audit.toml"
           FAILED=0
+          AUDITED=0
           while IFS= read -r -d '' lockfile; do
             crate_dir=$(dirname "${lockfile}")
+            if [[ "${AUDIT_SCOPE}" == "range" ]]; then
+              # A "." pathspec matches every file, so the root crate tracks only its manifests.
+              if [[ "${crate_dir}" == "." ]]; then
+                crate_paths=(Cargo.toml Cargo.lock)
+              else
+                crate_paths=("${crate_dir}")
+              fi
+              crate_changes="$(git diff --name-only --diff-filter=ACMR "${BASE_SHA}..${HEAD_SHA}" -- "${crate_paths[@]}")"
+              if [[ -z "${crate_changes}" ]]; then
+                echo "Skipping ${crate_dir}: unchanged in range"
+                continue
+              fi
+            fi
+            AUDITED=$((AUDITED + 1))
             echo "::group::cargo audit: ${crate_dir}"
             mkdir -p "${crate_dir}/.cargo"
             cp "${AUDIT_CONFIG}" "${crate_dir}/.cargo/audit.toml"
             (cd "${crate_dir}" && cargo audit --deny warnings) || FAILED=1
             echo "::endgroup::"
           done < <(find . -name "Cargo.lock" -not -path "*/target/*" -not -path "*/node_modules/*" -print0)
+          echo "Audited ${AUDITED} Rust crate(s) (scope: ${AUDIT_SCOPE})."
           if [[ "${FAILED}" -ne 0 ]]; then
             if [[ "${BREAK_BUILD}" == "true" ]]; then
               echo "::error::cargo audit found advisories in one or more crates"
@@ -111,16 +220,68 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
         with:
+          ref: ${{ inputs.headSha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Verify resolved head commit
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.changeMode == 'range' && inputs.headSha || inputs.changeMode != 'range' && github.sha || '' }}
+        run: |
+          actual_head_sha="$(git rev-parse HEAD)"
+          if [[ ! "${EXPECTED_HEAD_SHA}" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ || "${actual_head_sha}" != "${EXPECTED_HEAD_SHA}" ]]; then
+            echo "::error::Checked-out commit ${actual_head_sha} does not match the resolved head commit."
+            exit 1
+          fi
+
+      - name: Check for Go dependency changes
+        shell: bash
+        env:
+          CHANGE_MODE: ${{ inputs.changeMode }}
+          CHANGED_FILES_ONLY: ${{ inputs.changedFilesOnly }}
+          BASE_SHA: ${{ inputs.baseSha }}
+          HEAD_SHA: ${{ inputs.headSha }}
+        run: |
+          set -euo pipefail
+          if [[ "${CHANGE_MODE}" != "full" && "${CHANGE_MODE}" != "range" ]]; then
+            echo "::error::Unsupported change mode: ${CHANGE_MODE}"
+            exit 1
+          fi
+          if [[ "${CHANGED_FILES_ONLY}" != "true" || "${CHANGE_MODE}" == "full" ]]; then
+            echo "SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "AUDIT_SCOPE=all" >> "$GITHUB_ENV"
+            echo "Auditing every Go module."
+            exit 0
+          fi
+          sha_pattern='^([0-9a-f]{40}|[0-9a-f]{64})$'
+          if [[ ! "${BASE_SHA}" =~ ${sha_pattern} || ! "${HEAD_SHA}" =~ ${sha_pattern} ]]; then
+            echo "::error::Range mode requires immutable base and head commit IDs."
+            exit 1
+          fi
+          changed_files="$(git diff --name-only --diff-filter=ACMR "${BASE_SHA}..${HEAD_SHA}")"
+          if grep -qxF '.github/workflows/dep-audit.yml' <<< "${changed_files}"; then
+            echo "SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "AUDIT_SCOPE=all" >> "$GITHUB_ENV"
+            echo "Shared audit configuration changed; auditing every Go module."
+          elif grep -qE '(\.go|(^|/)go\.(mod|sum))$' <<< "${changed_files}"; then
+            echo "SHOULD_RUN=true" >> "$GITHUB_ENV"
+            echo "AUDIT_SCOPE=range" >> "$GITHUB_ENV"
+            echo "Go changes detected; auditing modules changed in ${BASE_SHA}..${HEAD_SHA}."
+          else
+            echo "SHOULD_RUN=false" >> "$GITHUB_ENV"
+            echo "No Go changes in ${BASE_SHA}..${HEAD_SHA}; skipping govulncheck."
+          fi
+
       - name: Set up Go
+        if: env.SHOULD_RUN == 'true'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: 'stable'
           cache: false
 
       - name: Install govulncheck
+        if: env.SHOULD_RUN == 'true'
         shell: bash
         run: |
           # Bump tag when a new govulncheck release ships (Scorecard accepts semver tags for `go install`).
@@ -128,19 +289,38 @@ jobs:
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Run govulncheck on every Go module
+        if: env.SHOULD_RUN == 'true'
         shell: bash
         env:
           BREAK_BUILD: ${{ inputs.break-build }}
+          BASE_SHA: ${{ inputs.baseSha }}
+          HEAD_SHA: ${{ inputs.headSha }}
         run: |
           set -euo pipefail
           export PATH="$HOME/go/bin:$PATH"
           FAILED=0
+          AUDITED=0
           while IFS= read -r -d '' gomod; do
             mod_dir=$(dirname "${gomod}")
+            if [[ "${AUDIT_SCOPE}" == "range" ]]; then
+              # A "." pathspec matches every file, so a root module tracks only its manifests.
+              if [[ "${mod_dir}" == "." ]]; then
+                mod_paths=(go.mod go.sum)
+              else
+                mod_paths=("${mod_dir}")
+              fi
+              mod_changes="$(git diff --name-only --diff-filter=ACMR "${BASE_SHA}..${HEAD_SHA}" -- "${mod_paths[@]}")"
+              if [[ -z "${mod_changes}" ]]; then
+                echo "Skipping ${mod_dir}: unchanged in range"
+                continue
+              fi
+            fi
+            AUDITED=$((AUDITED + 1))
             echo "::group::govulncheck: ${mod_dir}"
             (cd "${mod_dir}" && govulncheck ./...) || FAILED=1
             echo "::endgroup::"
           done < <(find . -name "go.mod" -not -path "./node_modules/*" -print0)
+          echo "Audited ${AUDITED} Go module(s) (scope: ${AUDIT_SCOPE})."
           if [[ "${FAILED}" -ne 0 ]]; then
             if [[ "${BREAK_BUILD}" == "true" ]]; then
               echo "::error::govulncheck found vulnerabilities in one or more modules"

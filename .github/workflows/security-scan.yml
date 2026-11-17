@@ -9,6 +9,10 @@
 # - grype-soft-fail: When true, Grype vulnerability findings warn instead of fail while
 #   Gitleaks and Secretlint remain hard-fail. Use in PR validation where dependency-review-action
 #   provides delta-aware vulnerability checking. (default: false)
+# - changeMode: 'full' scans the full Git history with Gitleaks; 'range' scans only commits in
+#   the immutable baseSha..headSha range, including first-parent merge-commit patches (default: 'full')
+# - baseSha: Immutable base commit used in range mode (default: '')
+# - headSha: Immutable head commit used in range mode (default: '')
 #
 # Usage Examples:
 # ```yaml
@@ -27,6 +31,15 @@
 #   uses: ./.github/workflows/security-scan.yml
 #   with:
 #     grype-soft-fail: true
+#
+# # Range-scoped Gitleaks from a resolved immutable range:
+# security-scan:
+#   needs: [resolve-validation-range]
+#   uses: ./.github/workflows/security-scan.yml
+#   with:
+#     changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+#     baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+#     headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
 # ```
 ---
 name: Security Scan
@@ -44,6 +57,21 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: false
+      changeMode:
+        description: 'Gitleaks history selection mode: range or full'
+        required: false
+        type: string
+        default: 'full'
+      baseSha:
+        description: 'Immutable base commit for range mode'
+        required: false
+        type: string
+        default: ''
+      headSha:
+        description: 'Immutable head commit for range mode'
+        required: false
+        type: string
+        default: ''
 
 permissions: {}
 
@@ -58,8 +86,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.headSha || github.sha }}
           persist-credentials: false
           fetch-depth: 0
+
+      - name: Verify resolved head commit
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ inputs.changeMode == 'range' && inputs.headSha || inputs.changeMode != 'range' && github.sha || '' }}
+        run: |
+          actual_head_sha="$(git rev-parse HEAD)"
+          if [[ ! "${EXPECTED_HEAD_SHA}" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ || "${actual_head_sha}" != "${EXPECTED_HEAD_SHA}" ]]; then
+            echo "::error::Checked-out commit ${actual_head_sha} does not match the resolved head commit."
+            exit 1
+          fi
 
       - name: Install Gitleaks
         shell: bash
@@ -77,10 +117,29 @@ jobs:
 
       - name: Run Gitleaks
         shell: bash
+        env:
+          INPUT_CHANGE_MODE: ${{ inputs.changeMode }}
+          INPUT_BASE_SHA: ${{ inputs.baseSha }}
+          INPUT_HEAD_SHA: ${{ inputs.headSha }}
         run: |
           set -euo pipefail
           mkdir -p security-results
-          if ! gitleaks detect --config .gitleaks.toml --report-format sarif --report-path security-results/gitleaks-report.sarif --exit-code 1; then
+          GITLEAKS_ARGS=(detect --config .gitleaks.toml --report-format sarif --report-path security-results/gitleaks-report.sarif --exit-code 1)
+          if [[ "${INPUT_CHANGE_MODE}" == "range" ]]; then
+            sha_pattern='^([0-9a-f]{40}|[0-9a-f]{64})$'
+            if [[ ! "${INPUT_BASE_SHA}" =~ ${sha_pattern} || ! "${INPUT_HEAD_SHA}" =~ ${sha_pattern} ]]; then
+              echo "::error::Range mode requires immutable base and head commit IDs."
+              exit 1
+            fi
+            GITLEAKS_ARGS+=("--log-opts=--diff-merges=first-parent ${INPUT_BASE_SHA}..${INPUT_HEAD_SHA}")
+            echo "Scanning commits in ${INPUT_BASE_SHA}..${INPUT_HEAD_SHA}, including first-parent merge-commit patches."
+          elif [[ "${INPUT_CHANGE_MODE}" == "full" ]]; then
+            echo "Scanning full repository history."
+          else
+            echo "::error::Unsupported change mode: ${INPUT_CHANGE_MODE}"
+            exit 1
+          fi
+          if ! gitleaks "${GITLEAKS_ARGS[@]}"; then
             echo "GITLEAKS_FAILED=true" >> "$GITHUB_ENV"
             echo "::warning::Gitleaks detected potential secret(s). See SARIF report for details."
           fi
@@ -129,7 +188,7 @@ jobs:
 
       - name: Upload SARIF to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: security-results/
         continue-on-error: true

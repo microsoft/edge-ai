@@ -111,16 +111,16 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/autobuild@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: "/language:${{matrix.language}}"
 
@@ -198,15 +198,19 @@ jobs:
       contents: read
     uses: ./.github/workflows/powershell-lint.yml
 
-  # Security scanning
+  # Security scanning (Gitleaks scoped to the resolved validation range)
   security-scan:
     name: Security Scan
+    needs: [resolve-validation-range]
     permissions:
       contents: read
       security-events: write
     uses: ./.github/workflows/security-scan.yml
     with:
-      grype-soft-fail: false
+      grype-soft-fail: true
+      changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+      baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+      headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
 
   # Workflow permissions deny-all scan
   permissions-scan:
@@ -317,14 +321,20 @@ jobs:
       contents: read
     uses: ./.github/workflows/rust-tests-read-only.yml
 
-  # Dependency advisory audit (cargo-audit + govulncheck) for PRs
+  # Dependency advisory audit (cargo-audit + govulncheck) for PRs, scoped to
+  # crates and modules changed in the resolved validation range
   dep-audit:
     name: Dependency Audit
+    needs: [resolve-validation-range]
     permissions:
       contents: read
     uses: ./.github/workflows/dep-audit.yml
     with:
       break-build: true
+      changeMode: ${{ needs.resolve-validation-range.outputs.mode }}
+      baseSha: ${{ needs.resolve-validation-range.outputs.base-sha }}
+      headSha: ${{ needs.resolve-validation-range.outputs.head-sha }}
+      changedFilesOnly: true
 
   # ClusterFuzzLite fuzzing for changed Rust/Python/JS fuzz targets
   fuzz:

@@ -231,7 +231,7 @@ jobs:
 
       - name: Upload SARIF results to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: scorecard-results.sarif
 
@@ -259,11 +259,24 @@ jobs:
 
       - name: Run AIO version check
         id: aio-check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IAC_TYPE: ${{ inputs.iac-types || 'all' }}
         run: |
           python scripts/aio-version-checker.py \
-            --iac-type ${{ inputs.iac-types || 'all' }} \
-            --error-on-mismatch \
-            --verbose
+            --iac-type "$IAC_TYPE" \
+            --strict-latest \
+            --verbose > aio-version-mismatches.json
+
+          issues_count=$(jq length aio-version-mismatches.json)
+          echo "issues=$issues_count" >> "$GITHUB_OUTPUT"
+
+          if [[ "$issues_count" -gt 0 ]]; then
+            jq . aio-version-mismatches.json
+            echo "::warning::AIO version check found $issues_count component version mismatch(es) against the latest Azure IoT Operations release"
+          else
+            echo "✅ AIO component versions match the latest Azure IoT Operations release"
+          fi
 
   # Comprehensive dependency pinning analysis
   security-analysis:
@@ -381,7 +394,8 @@ jobs:
           if [[ "$stale_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
           if [[ "$scorecard_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
           if [[ "$pinning_failed" == "true" ]]; then critical_issues=$((critical_issues + 1)); fi
-          if [[ "$aio_issues" -gt "0" ]]; then critical_issues=$((critical_issues + 1)); fi
+          aio_check_result="${{ needs.aio-version-check.result }}"
+          if [[ "$aio_check_result" != "success" || -z "$aio_issues" || "$aio_issues" -gt "0" ]]; then critical_issues=$((critical_issues + 1)); fi
 
           echo "critical-issues=$critical_issues" >> $GITHUB_OUTPUT
 

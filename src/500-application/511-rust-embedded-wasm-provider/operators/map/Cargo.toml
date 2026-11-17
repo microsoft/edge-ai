@@ -23,3 +23,6 @@ perf = { level = "warn", priority = -1 }
 missing_safety_doc = "allow"
 
 [workspace]
+
+[profile.release]
+strip = true
