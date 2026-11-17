@@ -30,7 +30,7 @@ locals {
 }
 
 resource "azurerm_storage_account" "function_storage" {
-  name                            = "st${lower(var.resource_prefix)}${lower(var.environment)}fn${var.instance}"
+  name                            = "st${replace(lower(var.resource_prefix), "-", "")}${replace(lower(var.environment), "-", "")}fn${var.instance}"
   resource_group_name             = var.resource_group_name
   location                        = var.location
   account_tier                    = "Standard"
