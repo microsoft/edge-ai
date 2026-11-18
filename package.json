@@ -13,6 +13,7 @@
     "lint-fix": "npm run mdlint-fix && npm run format-json-fix",
     "tf-docs": "./scripts/update-all-terraform-docs.sh",
     "bicep-docs": "./scripts/update-all-bicep-docs.sh",
+    "bicep-lint": "pwsh -File ./scripts/build/Invoke-BicepLint.ps1 -Platform generic -FullValidation true",
     "tflint-fix-all": "./scripts/tf-walker-parallel.sh \"terraform fmt -recursive && tflint --disable-rule=terraform_required_providers --fix --recursive\" \"tflint-fix-fast-$(date +%Y%m%d-%H%M%S)\" false",
     "tflint-fix": "source ./scripts/az-sub-init.sh; f() { cd \"$1\"; terraform fmt -recursive; tflint --disable-rule=terraform_required_providers --fix --recursive; }; f",
     "tf-init-upgrade": "./scripts/tf-walker-parallel.sh \"terraform init -upgrade\" \"tf-init-upgrade-$(date +%Y%m%d-%H%M%S)\" true",

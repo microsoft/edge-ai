@@ -65,16 +65,22 @@ These scripts are defined in the `package.json` file in the project root and pro
 
 ## Linting
 
-Run ALL linters (when running in the Dev Container, use the special `-devcontainer` scripts versions to prevent Bicep linter from generating `.JSON` files in repo):
+Run ALL linters:
 
 ```sh
-npm run lint-devcontainer
+npm run lint
 ```
 
 To fix basic linting issues, run the following:
 
 ```sh
-npm run lint-fix-devcontainer
+npm run lint-fix
+```
+
+To lint Bicep files specifically, run:
+
+```sh
+npm run bicep-lint
 ```
 
 For detailed information about our CI/CD lint configuration and available linters, see the [Azure Pipelines documentation](../docs/build-cicd/azure-pipelines/README.md).

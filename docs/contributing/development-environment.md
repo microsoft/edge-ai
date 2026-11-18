@@ -96,8 +96,7 @@ npm install
 # Development and testing commands
 npm run lint                    # Run all linters
 npm run lint-fix               # Fix common linting issues
-npm run lint-devcontainer      # Run linters in Dev Container mode
-npm run lint-fix-devcontainer  # Fix linting issues in Dev Container mode
+npm run bicep-lint              # Run Bicep linting
 
 # Markdown-specific commands
 npm run mdlint                 # Run markdown linting
@@ -276,10 +275,10 @@ Before committing changes:
 
 ```bash
 # Run comprehensive linting
-npm run lint-devcontainer
+npm run lint
 
 # Fix automatically fixable issues
-npm run lint-fix-devcontainer
+npm run lint-fix
 
 # Run security scanning on changes
 npm run checkov-changes
