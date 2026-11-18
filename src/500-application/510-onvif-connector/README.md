@@ -811,6 +811,85 @@ Web dashboard that displays live RTSP camera feeds via MJPEG proxy and provides 
 - PTZ (pan/tilt/zoom) camera control via MQTT command publishing
 - MQTT event feed displaying motion and tampering alerts
 - Optional ONVIF auto-discovery for camera stream URIs
+- Explicit ONVIF inspection and decoded-frame verification for review-only asset proposals
+
+### Dashboard Asset Proposal Workflow
+
+1. Provide an approved target scope or explicitly allow local WS-Discovery multicast.
+   Discovery results are unauthenticated candidates, not verified cameras.
+2. For a candidate, enter ephemeral camera credentials and check its ONVIF endpoint.
+   **Add** retains the existing preview workflow; it does not generate an asset.
+3. Use **Inspect ONVIF**, explicitly choose an inspected media profile, and use
+   **Verify decoded frame**. Inspection supplies the camera's PTZ capability.
+   Endpoint and credential edits discard inspection and frame evidence; profile
+   and URI edits discard frame evidence. Results from outdated requests cannot
+   restore invalidated evidence.
+4. Select **Include camera in proposal**. Enter a publish topic and a positive,
+   finite snapshot rate. Neither has a production default. Enter existing
+   Kubernetes `secret-name/key` references for both username and password;
+   bare secret names are not accepted.
+5. Enter a **new** output directory beneath an existing parent directory writable
+   by the dashboard process, then select **Generate asset proposal**.
+
+The dashboard invokes the single [asset CLI](../../100-edge/111-assets/scripts/README.md)
+using its current Python interpreter and sanitized JSON on stdin. The CLI writes
+`camera-discovery-results.json` and `camera-onboarding.tfvars.example` into a
+mode-`0700` directory, with mode-`0600` files. It refuses to overwrite an existing
+directory. Review these confidential, local artifacts before deployment; generation
+does not provision assets, create secrets, or run Terraform.
+
+Credentials remain ephemeral for authenticated inspection and video decoding.
+Exported URIs omit user information, query strings, and fragments. Frame evidence
+is bound to the endpoint, selected profile, stream URI, and a random credential
+revision, never a credential hash. Tokenized stream query parameters are omitted
+from proposals; review whether the credential-free URI is usable by the deployed
+capture service.
+
+**A decoded frame proves point-in-time RTSP access only.** It does not prove
+continued availability, a deployed capture task, or successful MQTT ingestion.
+Dashboard MQTT events and PTZ commands remain separate from snapshot task delivery.
+
+### Dashboard Image Build
+
+Only the dashboard service uses the repository root as its Compose build context.
+The other services retain their existing contexts. From the repository root:
+
+```bash
+docker build \
+  -f src/500-application/510-onvif-connector/services/camera-dashboard/Dockerfile \
+  -t camera-dashboard:local .
+```
+
+The Dockerfile copies hashed requirements, dashboard Python modules, and only the
+shared asset CLI from `111-assets`. Its Dockerfile-specific ignore allowlist
+excludes environment files, private output, tests, and unrelated repository data.
+The image runs as a non-root user and fixes `CAMERA_ONBOARDING_CLI` to
+`/app/camera-tools/camera_onboarding.py`. Source-tree runs resolve the local CLI;
+arbitrary script paths are not supported. The container's local output is
+ephemeral unless a private writable directory is mounted explicitly.
+
+### Dashboard Onboarding Troubleshooting
+
+- **Inspection fails:** Check the endpoint, camera credentials, and ONVIF service
+  support. Errors distinguish unauthorized, unsupported, unreachable, and unknown
+  inspection failures without displaying camera responses.
+- **Verification fails:** Check the selected RTSP profile and decoder support.
+  FFmpeg receives open and read timeouts as open-only parameters; a failed open,
+  failed read, empty frame, or decoder exception is not successful evidence.
+- **Inputs changed during inspection or verification:** Inspect or verify the
+  current selection again. Existing environment cameras, manual previews, and
+  PTZ/event controls are not removed on preflight failure.
+- **CLI missing:** Use the full source tree or rebuild the dashboard image from
+  the repository root. Do not configure a user-supplied script.
+- **CLI rejection or filesystem error:** Supply complete topic, rate, secret/key
+  references, and a new directory beneath an accessible nonsymlink parent.
+  Read-only mounts and existing output directories are rejected.
+- **Cancelled generation:** The dashboard kills and waits for the child process.
+  Check for incomplete private output and choose another new directory when
+  retrying. Malformed results or unexpected output paths are rejected.
+- **Image dependency download fails:** Check access to the configured Python
+  package index and wheel host. Keep TLS verification and requirement hashes
+  enabled.
 
 ### Dashboard Quick Start
 

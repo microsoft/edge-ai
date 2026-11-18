@@ -80,8 +80,8 @@ services:
   camera-dashboard:
     image: ${REGISTRY:-local}/${APPLICATION:-onvif-connector}/camera-dashboard:${BUILD_ID:-latest}
     build:
-      context: ./services/camera-dashboard
-      dockerfile: Dockerfile
+      context: ../../..
+      dockerfile: src/500-application/510-onvif-connector/services/camera-dashboard/Dockerfile
     container_name: camera-dashboard
     ports:
       - "${DASHBOARD_PORT:-5001}:5001"

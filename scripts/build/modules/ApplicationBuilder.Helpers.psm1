@@ -1993,6 +1993,7 @@ Export-ModuleMember -Function @(
     'Get-ApplicationStructure',
     'Get-CommonBuildArgument',
     'Get-AdditionalDockerBuildArgument',
+    'Resolve-AppRelativePath',
     'Get-ServiceBuildTag',
     'Get-SafeProperty'
 )
