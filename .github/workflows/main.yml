@@ -150,6 +150,34 @@ jobs:
     with:
       require-deny-all: true
 
+  # Workflow security scans (main)
+  dangerous-workflow-scan-main:
+    name: Dangerous Workflow Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/dangerous-workflow-scan.yml
+    with:
+      soft-fail: true
+
+  workflow-runner-scan-main:
+    name: Workflow Runner Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/workflow-runner-scan.yml
+    with:
+      soft-fail: true
+
+  action-pin-provenance-scan-main:
+    name: Action Pin Provenance Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/action-pin-provenance-scan.yml
+    with:
+      soft-fail: true
+
   # YAML and container linting (main)
   yaml-lint-main:
     name: YAML Lint
