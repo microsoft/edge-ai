@@ -1,0 +1,13 @@
+---
+name: Dated fixture
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo build
