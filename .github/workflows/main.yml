@@ -118,7 +118,7 @@ jobs:
       security-events: write
     uses: ./.github/workflows/dangerous-workflow-scan.yml
     with:
-      soft-fail: true
+      soft-fail: false
 
   workflow-runner-scan-main:
     name: Workflow Runner Scan
@@ -127,7 +127,7 @@ jobs:
       security-events: write
     uses: ./.github/workflows/workflow-runner-scan.yml
     with:
-      soft-fail: true
+      soft-fail: false
 
   action-pin-provenance-scan-main:
     name: Action Pin Provenance Scan
@@ -136,7 +136,7 @@ jobs:
       security-events: write
     uses: ./.github/workflows/action-pin-provenance-scan.yml
     with:
-      soft-fail: true
+      soft-fail: false
 
   # YAML and container linting (main)
   yaml-lint-main:

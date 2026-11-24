@@ -9,6 +9,8 @@
 # - soft-fail: When true, unexcused findings warn instead of failing the job.
 #   A scanner or gate error always fails the job (default: false)
 #
+# Also runs daily on a schedule, enforcing.
+#
 # Usage:
 #   action-pin-provenance-scan:
 #     permissions:
@@ -28,6 +30,9 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: false
+  # Daily enforcing scan catches publisher retags or deletions between pull requests
+  schedule:
+    - cron: '30 7 * * *'
 
 permissions: {}
 
