@@ -8,6 +8,9 @@ set -euo pipefail
 REPO_ROOT="${SRC}/edge-ai"
 RUST_TOOLCHAIN="nightly-2026-04-01"
 
+# Overrides any crate manifest `strip` setting; ClusterFuzzLite detects targets via the LLVMFuzzerTestOneInput symbol.
+export CARGO_PROFILE_RELEASE_STRIP=false
+
 shopt -s nullglob globstar
 
 mapfile -t candidate_dirs < <(find "${REPO_ROOT}/src" -type d -name fuzz -not -path '*/target/*' | sort)

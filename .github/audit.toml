@@ -13,6 +13,7 @@ ignore = [
   "RUSTSEC-2026-0367", # zip: privileged extraction permissions; Candle requires <9; https://github.com/microsoft/edge-ai/issues/901
   "RUSTSEC-2026-0368", # zip: extraction symlinks escape destination; Candle requires <9; https://github.com/microsoft/edge-ai/issues/901
   "RUSTSEC-2026-0369", # zip: extraction chmod follows symlinks; Candle requires <9; https://github.com/microsoft/edge-ai/issues/901
+  "RUSTSEC-2026-0543", # chrono: unmaintained, no patched release; direct dep and pulled by azure_iot_operations_* SDK crates
 ]
 
 [yanked]
