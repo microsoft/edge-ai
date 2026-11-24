@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/style.css" />
+    <title>AIO Installer</title>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">AIO DEPLOYMENT</p>
+          <h1>AIO Installer</h1>
+        </div>
+        <div class="state-badge" id="state-badge">Not started</div>
+      </header>
+
+      <ol class="pipeline" id="pipeline" aria-label="Deployment progress"></ol>
+
+      <div class="workspace">
+        <section class="summary" aria-labelledby="summary-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">LIVE STATE</p>
+              <h2 id="summary-title">Deployment</h2>
+            </div>
+            <button class="icon-button" id="refresh" type="button" title="Refresh state" aria-label="Refresh state">&#8635;</button>
+          </div>
+          <dl class="facts" id="facts"></dl>
+          <p class="error" id="deployment-error" role="alert" hidden></p>
+          <p class="timestamp" id="timestamp"></p>
+        </section>
+
+        <form class="configuration" id="configuration">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">USER INPUT</p>
+              <h2>Configuration</h2>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <label>Blueprint<select id="blueprint" name="blueprint"></select></label>
+            <fieldset>
+              <legend>Framework</legend>
+              <div class="segmented">
+                <label><input type="radio" name="framework" value="terraform" />Terraform</label>
+                <label><input type="radio" name="framework" value="bicep" />Bicep</label>
+              </div>
+            </fieldset>
+            <label>Tenant<input id="tenant" name="tenant" autocomplete="off" placeholder="Tenant ID or domain" /></label>
+            <label>Subscription<input id="subscription" name="subscription" autocomplete="off" placeholder="Subscription ID or name" /></label>
+            <label>Environment<input id="environment" name="environment" maxlength="16" placeholder="dev" /></label>
+            <label>Resource prefix<input id="resource-prefix" name="resourcePrefix" maxlength="8" placeholder="edge01" /></label>
+            <label>Location<input id="location" name="location" maxlength="32" placeholder="eastus2" /></label>
+            <label>Instance<input id="instance" name="instance" maxlength="12" placeholder="001" /></label>
+          </div>
+
+          <fieldset class="overlays" id="overlays-fieldset">
+            <legend>Terraform parameter templates</legend>
+            <div id="overlays"></div>
+          </fieldset>
+
+          <label class="approval" id="approval-row" hidden>
+            <input type="checkbox" id="apply-approved" />
+            I reviewed the current plan or what-if and approve apply
+          </label>
+
+          <div class="actions">
+            <p id="form-status" role="status" aria-live="polite"></p>
+            <button class="primary" type="submit">Send choices to agent</button>
+          </div>
+        </form>
+      </div>
+
+      <section class="progress-panel" aria-labelledby="progress-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SANITIZED TERMINAL OUTPUT</p>
+            <h2 id="progress-title">CLI progress</h2>
+          </div>
+          <p id="progress-status" role="status" aria-live="polite">Waiting for command progress.</p>
+        </div>
+        <ol class="progress-log" id="progress-log" aria-label="Sanitized CLI progress"></ol>
+      </section>
+    </main>
+    <script type="module" src="/app.mjs"></script>
+  </body>
+</html>

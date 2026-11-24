@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "initialization": "module",
+  "canvases": [
+    {
+      "id": "edge-ai-aio-installer",
+      "displayName": "AIO Installer",
+      "description": "Configure an edge-ai blueprint deployment and monitor sanitized CLI progress for blueprint or generic local Azure CLI installation.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "type": "string",
+            "description": "Workspace-relative installer state JSON path under .copilot-tracking/aio-installer/."
+          }
+        }
+      },
+      "actions": [
+        {
+          "name": "refresh",
+          "description": "Reload installer state, blueprint inventory, and sanitized CLI progress."
+        },
+        {
+          "name": "get_state",
+          "description": "Return the sanitized installer state, blueprint inventory, and CLI progress."
+        },
+        {
+          "name": "get_feedback",
+          "description": "Return the latest unacknowledged choices submitted from the canvas."
+        },
+        {
+          "name": "acknowledge_feedback",
+          "description": "Mark one handled canvas feedback revision as acknowledged.",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["revision"],
+            "properties": {
+              "revision": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

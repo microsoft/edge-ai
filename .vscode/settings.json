@@ -73,6 +73,7 @@
   "github.copilot.chat.advanced.multiReplaceString.enabled": true,
   "github.copilot.chat.customInstructionsInSystemMessage": true,
   "chat.todoListTool.enabled": true,
+  "chat.canvases.enabled": true,
   "chat.agentFilesLocations": {
     ".github/agents": true,
     "/Users/vscode/repos/agents": true
