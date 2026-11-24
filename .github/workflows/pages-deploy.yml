@@ -39,7 +39,7 @@ jobs:
   build:
     name: Build Docusaurus Site
     needs: [test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write
@@ -98,7 +98,7 @@ jobs:
   attest-documentation:
     needs: [build]
     if: inputs.deploy_environment == 'production'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write
@@ -142,7 +142,7 @@ jobs:
     environment:
       name: ${{ inputs.deploy_environment }}
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build, attest-documentation]
     permissions:
       pages: write

@@ -51,7 +51,7 @@ jobs:
     name: Fuzz Rust
     needs: [detect-changes]
     if: needs.detect-changes.outputs.changesInFuzzRust == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzRustFolders).folderName[0] != null
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     permissions:
       contents: read
@@ -92,7 +92,7 @@ jobs:
     name: Fuzz Python
     needs: [detect-changes]
     if: needs.detect-changes.outputs.changesInFuzzPython == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzPythonFolders).folderName[0] != null
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     permissions:
       contents: read
@@ -133,7 +133,7 @@ jobs:
     name: Fuzz JavaScript
     needs: [detect-changes]
     if: needs.detect-changes.outputs.changesInFuzzJs == 'true' && fromJson(needs.detect-changes.outputs.changedFuzzJsFolders).folderName[0] != null
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     permissions:
       contents: read

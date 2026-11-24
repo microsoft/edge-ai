@@ -58,7 +58,7 @@ concurrency:
 jobs:
   variable-compliance:
     name: Check Bicep Parameter Consistency
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:

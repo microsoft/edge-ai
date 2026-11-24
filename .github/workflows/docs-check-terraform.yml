@@ -70,7 +70,7 @@ permissions: {}
 jobs:
   docs-check-terraform:
     name: Terraform Documentation Compliance Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -82,8 +82,10 @@ jobs:
           persist-credentials: false
 
       - name: Install terraform-docs
+        env:
+          TERRAFORM_DOCS_VERSION: ${{ inputs.terraformDocsVersion }}
         run: |
-          ./scripts/install-terraform-docs.sh -v "${{ inputs.terraformDocsVersion }}"
+          ./scripts/install-terraform-docs.sh -v "${TERRAFORM_DOCS_VERSION}"
         shell: bash
 
       - name: Check Terraform docs drift
