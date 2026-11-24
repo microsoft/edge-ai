@@ -1,0 +1,8 @@
+{
+  "modules": {
+    "powershell-yaml": {
+      "version": "0.4.12",
+      "purpose": "YAML parsing for the workflow security scanners"
+    }
+  }
+}
