@@ -1,0 +1,47 @@
+# Setup PowerShell Modules
+#
+# Installs and imports the PowerShell modules pinned in
+# scripts/security/ps-module-versions.json, restoring them from cache when
+# possible and retrying PowerShell Gallery failures. Requires a prior checkout.
+#
+# Usage:
+#   - uses: ./.github/actions/setup-ps-modules
+#     with:
+#       modules: powershell-yaml
+---
+name: Setup PowerShell Modules
+description: Installs pinned PowerShell modules from scripts/security/ps-module-versions.json with caching and retry
+
+inputs:
+  modules:
+    description: 'Comma-separated module names from the manifest; empty installs every manifest module'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve module selection
+      id: selection
+      shell: pwsh
+      env:
+        MODULES: ${{ inputs.modules }}
+      run: |
+        $names = @(($env:MODULES -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ } | Sort-Object -Unique)
+        $key = if ($names.Count -gt 0) { $names -join '-' } else { 'all' }
+        "key=$key" >> $env:GITHUB_OUTPUT
+
+    - name: Restore module cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.local/share/powershell/Modules
+        key: ps-modules-${{ runner.os }}-${{ hashFiles('scripts/security/ps-module-versions.json') }}-${{ steps.selection.outputs.key }}
+
+    - name: Install and import pinned modules
+      shell: pwsh
+      env:
+        MODULES: ${{ inputs.modules }}
+      run: |
+        $names = @(($env:MODULES -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        & (Join-Path $env:GITHUB_WORKSPACE 'scripts/security/Install-PSModules.ps1') -Name $names
+        exit $LASTEXITCODE

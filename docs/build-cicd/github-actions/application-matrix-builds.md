@@ -336,7 +336,7 @@ jobs:
   deploy-staging:
     needs: [detect-changes, build-and-test]
     if: ${{ github.ref == 'refs/heads/main' && needs.build-and-test.outputs.imagesBuilt > 0 }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Deploy to Staging
         run: |

@@ -1,0 +1,9 @@
+---
+name: Composite fixture
+description: Composite action fixture for provenance tests
+
+runs:
+  using: composite
+  steps:
+    - uses: octo/tool@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v1.2.3
+    - uses: octo/tool@cccccccccccccccccccccccccccccccccccccccc # v1.2.3

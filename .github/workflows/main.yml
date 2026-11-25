@@ -39,7 +39,7 @@ jobs:
   # CodeQL Analysis job for code security scanning
   codeql-analysis:
     name: CodeQL Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       actions: read
@@ -149,6 +149,34 @@ jobs:
     uses: ./.github/workflows/workflow-permissions-scan.yml
     with:
       require-deny-all: true
+
+  # Workflow security scans (main)
+  dangerous-workflow-scan-main:
+    name: Dangerous Workflow Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/dangerous-workflow-scan.yml
+    with:
+      soft-fail: true
+
+  workflow-runner-scan-main:
+    name: Workflow Runner Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/workflow-runner-scan.yml
+    with:
+      soft-fail: true
+
+  action-pin-provenance-scan-main:
+    name: Action Pin Provenance Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/action-pin-provenance-scan.yml
+    with:
+      soft-fail: true
 
   # YAML and container linting (main)
   yaml-lint-main:

@@ -143,7 +143,7 @@ jobs:
   # This job enables workflow_dispatch to work within GitHub's 10-input limit by accepting
   # configuration as JSON objects and outputting individual values for downstream jobs.
   parse-configuration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:
@@ -162,17 +162,21 @@ jobs:
       - name: Parse consolidated configuration inputs
         id: parse
         shell: bash
+        env:
+          BUILD_CONFIG_INPUT: ${{ inputs.buildConfig }}
+          SECURITY_CONFIG_INPUT: ${{ inputs.securityConfig }}
+          APPLICATION_MATRIX_INPUT: ${{ inputs.applicationMatrix }}
         run: |
           echo "Parsing consolidated configuration inputs..."
 
           # Extract properties from buildConfig and securityConfig JSON objects with shell-level defaults
-          BUILD_CONFIG='${{ inputs.buildConfig }}'
+          BUILD_CONFIG="${BUILD_CONFIG_INPUT}"
           if [ -z "$BUILD_CONFIG" ] || [ "$BUILD_CONFIG" = "null" ] || [ "$BUILD_CONFIG" = "{}" ]; then
             BUILD_CONFIG='{}'
           fi
 
           # Parse securityConfig JSON with defaults
-          SECURITY_CONFIG='${{ inputs.securityConfig }}'
+          SECURITY_CONFIG="${SECURITY_CONFIG_INPUT}"
           if [ -z "$SECURITY_CONFIG" ] || [ "$SECURITY_CONFIG" = "null" ] || [ "$SECURITY_CONFIG" = "{}" ]; then
             SECURITY_CONFIG='{}'
           fi
@@ -230,7 +234,7 @@ jobs:
           fi
 
           # Pass through matrix inputs unchanged
-          APPLICATION_MATRIX='${{ inputs.applicationMatrix }}'
+          APPLICATION_MATRIX="${APPLICATION_MATRIX_INPUT}"
           INCLUDE_APPLICATIONS='${{ inputs.includeApplications }}'
 
           # Set outputs
@@ -252,7 +256,7 @@ jobs:
   # Depends on parse-configuration to access parsed applicationMatrix output
   prepare-builds:
     needs: parse-configuration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:
@@ -310,7 +314,7 @@ jobs:
   # and matrix from prepare-builds job
   build-applications:
     needs: [parse-configuration, prepare-builds]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     strategy:
@@ -595,7 +599,7 @@ jobs:
   # Uses parsed security configuration (enableSecurityScan, securityThreshold) from parse-configuration job
   summarize-builds:
     needs: [parse-configuration, prepare-builds, build-applications]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     if: always()

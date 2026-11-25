@@ -55,7 +55,7 @@ permissions: {}
 jobs:
   permissions-check:
     name: Workflow Permissions Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       security-events: write
@@ -72,10 +72,13 @@ jobs:
       - name: Run workflow permissions validation
         id: permissions
         shell: pwsh
+        env:
+          PATH_INPUT: ${{ inputs.path }}
+          OUTPUT_FORMAT: ${{ inputs.output-format }}
         run: |
           New-Item -ItemType Directory -Force -Path logs | Out-Null
-          $pathInput  = if ('${{ inputs.path }}') { '${{ inputs.path }}' } else { '.github/workflows' }
-          $format     = if ('${{ inputs.output-format }}') { '${{ inputs.output-format }}' } else { 'sarif' }
+          $pathInput  = if ($env:PATH_INPUT) { $env:PATH_INPUT } else { '.github/workflows' }
+          $format     = if ($env:OUTPUT_FORMAT) { $env:OUTPUT_FORMAT } else { 'sarif' }
           $sarifPath  = 'logs/workflow-permissions-results.sarif'
           $jsonPath   = 'logs/workflow-permissions-results.json'
           $reportPath = "logs/workflow-permissions-results.$format"

@@ -47,7 +47,7 @@ jobs:
   # Security hardening setup for deployment validation
   security-hardening:
     name: Security Hardening Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -65,7 +65,7 @@ jobs:
   # SHA dependency staleness monitoring for supply chain security
   dependency-staleness:
     name: Dependency Staleness Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: security-hardening
     timeout-minutes: 15
     permissions:
@@ -84,8 +84,9 @@ jobs:
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_AGE_DAYS: ${{ inputs.max-age-days }}
         run: |
-          $MaxAge = [int]"${{ inputs.max-age-days }}"
+          $MaxAge = [int]$env:MAX_AGE_DAYS
           $BreakBuild = "${{ inputs.break-build }}" -eq "true"
 
           Write-Host "Running SHA staleness check with MaxAge=$MaxAge days, BreakBuild=$BreakBuild"
@@ -127,7 +128,7 @@ jobs:
   # OSSF Scorecard analysis for supply chain security assessment
   ossf-scorecard:
     name: OSSF Scorecard Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: security-hardening
     timeout-minutes: 20
     permissions:
@@ -163,7 +164,7 @@ jobs:
   # AIO version checking for deployment readiness
   aio-version-check:
     name: AIO Version Validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: security-hardening
     timeout-minutes: 15
     permissions:
@@ -181,16 +182,18 @@ jobs:
         run: pip install --require-hashes -r requirements.txt
 
       - name: Run AIO version check
+        env:
+          IAC_TYPES: ${{ inputs.iac-types || 'all' }}
         run: |
           python scripts/aio-version-checker.py \
-            --iac-type ${{ inputs.iac-types || 'all' }} \
+            --iac-type "${IAC_TYPES}" \
             --error-on-mismatch \
             --verbose
 
   # Comprehensive security validation summary
   security-validation-summary:
     name: Security Validation Summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [security-hardening, dependency-staleness, ossf-scorecard, aio-version-check]
     if: always()
     timeout-minutes: 10

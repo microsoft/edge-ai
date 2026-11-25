@@ -176,7 +176,7 @@ permissions: {}
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:
@@ -208,14 +208,18 @@ jobs:
       - name: ${{ inputs.displayName }}
         id: detect
         shell: pwsh
+        env:
+          CHANGE_MODE: ${{ inputs.changeMode }}
+          BASE_SHA: ${{ inputs.baseSha }}
+          HEAD_SHA: ${{ inputs.headSha }}
         run: |
           # Build parameters for the PowerShell script (hashtable splat for named-parameter binding)
           $baseRef = if ($env:GITHUB_BASE_REF) { $env:GITHUB_BASE_REF } else { 'main' }
           $scriptArgs = @{
             BaseBranch = "origin/$baseRef"
-            ChangeMode = '${{ inputs.changeMode }}'
-            BaseSha    = '${{ inputs.baseSha }}'
-            HeadSha    = '${{ inputs.headSha }}'
+            ChangeMode = $env:CHANGE_MODE
+            BaseSha    = $env:BASE_SHA
+            HeadSha    = $env:HEAD_SHA
           }
 
           if ("${{ inputs.includeIaCFolders }}" -eq 'true') {
@@ -287,7 +291,7 @@ jobs:
 
   # Map outputs from the detection job to maintain backward compatibility
   map-outputs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: detect-changes
     permissions: {}
     outputs:

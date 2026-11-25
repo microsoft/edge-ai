@@ -54,7 +54,7 @@ This template may depend on the following:
 - **Required GitHub Actions**: actions/checkout@v4, actions/upload-artifact@v4, EnricoMi/publish-unit-test-result-action@v2
 - **Required Scripts**: Requires the `Invoke-Pester.ps1` script in the scripts directory
 - **Required Testing Framework**: Pester framework for PowerShell
-- **Required Agent OS**: Linux (runs on ubuntu-latest)
+- **Required Agent OS**: Linux (runs on ubuntu-24.04)
 
 ## Usage
 

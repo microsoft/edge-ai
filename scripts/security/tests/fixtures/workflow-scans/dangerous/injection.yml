@@ -1,0 +1,60 @@
+---
+name: Injection fixture
+
+on:
+  workflow_call:
+    inputs:
+      name:
+        type: string
+      count:
+        type: number
+      enabled:
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [a, b]
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: String input
+        run: echo "${{ inputs.name }}"
+      - name: Number input on a later line
+        run: |
+          echo start
+          echo "${{ inputs.count }}"
+      - name: Boolean input
+        run: echo "${{ inputs.enabled && 'yes' || 'no' }}"
+      - name: Choice input through event inputs
+        run: echo "${{ github.event.inputs.mode }}"
+      - name: Untrusted event property
+        run: echo "${{ github.event.pull_request.title }}"
+      - name: Safe event property
+        run: echo "${{ github.event.pull_request.number }}"
+      - name: Values passed through env
+        env:
+          NAME: ${{ inputs.name }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: echo "$NAME $TITLE"
+      - name: Undeclared input
+        run: echo "${{ inputs.unknown }}"
+      - name: Whole inputs object
+        run: echo '${{ toJSON(inputs) }}'
+      - name: Script value
+        uses: ./.github/actions/script
+        with:
+          script: |
+            const name = "${{ inputs.name }}";
+      - name: Other block scalar
+        uses: ./.github/actions/comment
+        with:
+          body: |
+            run: ${{ inputs.name }}

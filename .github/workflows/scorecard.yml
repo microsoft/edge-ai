@@ -17,7 +17,7 @@ permissions: {}
 jobs:
   scorecard:
     name: Scorecard Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       id-token: write

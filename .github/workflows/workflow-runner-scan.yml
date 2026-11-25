@@ -1,0 +1,107 @@
+# Workflow Runner Scan
+#
+# Reusable workflow. Reports jobs that do not run on a dated GitHub-hosted Ubuntu label such as
+# ubuntu-24.04.
+# The scanner's SARIF is gated by scripts/security/Test-SarifThreshold.ps1 against
+# scripts/security/workflow-scan-exceptions.json and uploaded to code scanning.
+#
+# Inputs:
+# - soft-fail: When true, unexcused findings warn instead of failing the job.
+#   A scanner or gate error always fails the job (default: false)
+#
+# Usage:
+#   workflow-runner-scan:
+#     permissions:
+#       contents: read
+#       security-events: write
+#     uses: ./.github/workflows/workflow-runner-scan.yml
+#     with:
+#       soft-fail: false
+---
+name: Workflow Runner Scan
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      soft-fail:
+        description: 'Report unexcused findings as warnings instead of failing the job'
+        required: false
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  scan:
+    name: Workflow Runner Scan
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-ps-modules
+
+      - name: Scan and gate
+        id: scan
+        shell: pwsh
+        env:
+          SOFT_FAIL: ${{ inputs.soft-fail }}
+        run: |
+          $sarif = 'logs/workflow-runner.sarif'
+          ./scripts/security/Test-WorkflowRunner.ps1 -OutputPath $sarif
+          $scannerExit = $LASTEXITCODE
+          $gateExit = 2
+          if ($scannerExit -in 0, 1) {
+            $level = if ($env:SOFT_FAIL -eq 'true') { 'Warning' } else { 'Error' }
+            ./scripts/security/Test-SarifThreshold.ps1 -SarifPath $sarif -AnnotationLevel $level
+            $gateExit = $LASTEXITCODE
+          }
+          "scanner-exit=$scannerExit" >> $env:GITHUB_OUTPUT
+          "gate-exit=$gateExit" >> $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Upload SARIF to code scanning
+        if: ${{ always() && hashFiles('logs/workflow-runner.sarif') != '' && github.event_name != 'merge_group' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: logs/workflow-runner.sarif
+          category: workflow-runner
+        continue-on-error: true
+
+      - name: Upload results artifact
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: workflow-runner-results
+          path: logs/workflow-runner.sarif
+          if-no-files-found: ignore
+          retention-days: 30
+        continue-on-error: true
+
+      - name: Enforce gate result
+        if: always()
+        shell: pwsh
+        env:
+          SOFT_FAIL: ${{ inputs.soft-fail }}
+          SCANNER_EXIT: ${{ steps.scan.outputs.scanner-exit }}
+          GATE_EXIT: ${{ steps.scan.outputs.gate-exit }}
+        run: |
+          if ($env:SCANNER_EXIT -notin '0', '1' -or $env:GATE_EXIT -notin '0', '1') {
+            Write-Output "::error::Workflow Runner Scan did not complete (scanner exit '$env:SCANNER_EXIT', gate exit '$env:GATE_EXIT')."
+            exit 1
+          }
+          if ($env:GATE_EXIT -eq '1') {
+            if ($env:SOFT_FAIL -eq 'true') {
+              Write-Output "::warning::Workflow Runner Scan found unexcused results (soft-fail enabled)."
+              exit 0
+            }
+            Write-Output "::error::Workflow Runner Scan found unexcused results."
+            exit 1
+          }
+          Write-Output 'Workflow Runner Scan: no unexcused results.'
