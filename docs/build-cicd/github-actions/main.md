@@ -2,7 +2,7 @@
 title: Main Branch CI/CD Workflow
 description: GitHub Actions workflow for main branch continuous integration and deployment processes
 author: Edge AI Team
-ms.date: 2025-06-06
+ms.date: 2026-11-24
 ms.topic: concept
 estimated_reading_time: 7
 keywords:
@@ -29,12 +29,13 @@ The Main Branch CI/CD workflow is the primary continuous integration and deploym
 
 ## Features
 
-- Performs comprehensive security scanning with CodeQL analysis across multiple languages
+- Runs security scanning (`security-scan.yml`, workflow permissions, dangerous workflow, runner, and action pin provenance scans)
 - Runs individual lint jobs for static code analysis across multiple languages and file formats
 - Validates documentation standards for both Terraform and Bicep configurations
 - Deploys documentation to GitHub Pages when documentation changes are detected
-- Runs automated dependency scanning to identify security vulnerabilities
 - Orchestrates multiple specialized workflows in a coordinated sequence
+
+*(CodeQL static analysis runs in the dedicated `.github/workflows/codeql.yml` workflow across `javascript-typescript`, `python`, `csharp`, and `rust` on pushes to `main`, pull requests, and weekly schedules.)*
 
 ## Inputs
 
@@ -69,28 +70,20 @@ The workflow can also be triggered manually from the GitHub Actions tab:
 
 The workflow consists of multiple jobs that run in a specific sequence:
 
-1. **CodeQL Analysis**: Scans code for security vulnerabilities across JavaScript, Python, TypeScript, and C#
-2. **Dependency Scan**: Analyzes project dependencies for known security issues
-3. **Lint Jobs**: Performs comprehensive linting and static analysis
-4. **Terraform Documentation Check**: Validates Terraform documentation consistency
-5. **Bicep Documentation Check**: Validates Bicep documentation consistency
-6. **Deploy Pages**: Publishes documentation to GitHub Pages when changes are detected
+1. **Security Scans**: Runs Gitleaks, Grype, Secretlint (`security-scan.yml`), workflow permissions, dangerous workflow, runner label, and action pin provenance scans
+2. **Lint Jobs**: Performs comprehensive linting and static analysis
+3. **Terraform Documentation Check**: Validates Terraform documentation consistency
+4. **Bicep Documentation Check**: Validates Bicep documentation consistency
+5. **Deploy Pages**: Publishes documentation to GitHub Pages when changes are detected
 
 ## Workflow Steps
 
-### CodeQL Analysis
+### Security Scans
 
-1. Checks out the repository code
-2. Initializes CodeQL for the specified language
-3. Automatically builds the codebase
-4. Performs CodeQL analysis for security vulnerabilities
-5. Uploads results to GitHub Security tab
+1. Runs Gitleaks (full history on `main`, uploading SARIF under `category: gitleaks`), Grype (advisory), and Secretlint via `security-scan.yml`
+2. Runs workflow permissions and workflow security scans and uploads SARIF to the GitHub Security tab
 
-### Dependency Scan
-
-1. Checks out the repository code
-2. Performs dependency review for security vulnerabilities
-3. Reports findings as GitHub annotations
+*(CodeQL static analysis is orchestrated separately in `.github/workflows/codeql.yml` so pushes to `main`, pull requests, and scheduled runs share one configuration and language matrix.)*
 
 ### Lint Jobs
 
@@ -119,8 +112,8 @@ Calls the reusable `pages-deploy.yml` workflow with:
 
 ### Common Issues
 
-1. **Failed CodeQL Analysis**:
-   - **Solution**: Review security issues in the GitHub Security tab and fix identified vulnerabilities
+1. **Failed Security Scan**:
+   - **Solution**: Review findings in the workflow summary, uploaded SARIF artifacts, or the GitHub Security tab and resolve reported issues
 
 2. **Lint Job Failures**:
    - **Solution**: Check the individual lint job logs in the workflow run for specific issues to fix
@@ -151,9 +144,9 @@ To enhance this workflow:
 
 ## Security Considerations
 
-This workflow requires specific permissions to function correctly:
+This workflow declares a deny-all top-level `permissions: {}` baseline and grants minimum scopes per job, including:
 
-- `security-events: write`: Required for CodeQL analysis
+- `security-events: write`: Required for SARIF uploads from security scan jobs
 - `actions: read`: Required for workflow execution
 - `contents: read`: Required for repository access
 

@@ -2,7 +2,7 @@
 title: Security Scanning & Supply Chain Hardening
 description: Comprehensive security scanning, supply chain hardening, and vulnerability assessment for the Edge AI Accelerator CI/CD pipelines.
 author: Edge AI Team
-ms.date: 2026-11-23
+ms.date: 2026-11-24
 ms.topic: concept
 keywords:
   - security scanning
@@ -502,6 +502,11 @@ Security scanning is automatically integrated into application matrix builds:
 
 All workflows include comprehensive security monitoring:
 
+#### CodeQL and Gitleaks Code Scanning Integration
+
+- **CodeQL (`.github/workflows/codeql.yml`)**: Runs as one dedicated workflow on `push` to `main`, `pull_request` to `main`, weekly `schedule`, and `workflow_dispatch` across `javascript-typescript`, `python`, `csharp`, and `rust` using `build-mode: none`. Keeping CodeQL in one workflow ensures `main` and pull requests share a single analysis configuration and avoids duplicate extractor or missing `on.push` warnings.
+- **Gitleaks (`.github/workflows/security-scan.yml`)**: Uploads `security-results/gitleaks-report.sarif` under explicit `category: gitleaks` so pull-request scans diff cleanly against the `main` baseline, while skipping uploads on `merge_group` and fork pull requests.
+
 #### Main Workflow Security Steps
 
 ```yaml
@@ -675,6 +680,16 @@ Security templates integrated:
 - Rerun the job; the scanner already retries each repository 3 times
 - Confirm the action repository still exists and is public
 - Do not add an exception; the gate rejects exceptions for this rule
+
+#### Stale or Mismatched Code Scanning Configurations
+
+**Symptoms**: GitHub Code Scanning shows outdated configurations in **Security -> Code scanning -> Tool status**, or pull requests show `neutral: 1 configuration not found` (for example, when a workflow's SARIF category or filename changed)
+
+**Solutions**:
+
+- Ensure every reusable workflow that calls `github/codeql-action/upload-sarif` specifies a stable `category:` (such as `gitleaks`) and skips `merge_group` and fork pull requests
+- Keep CodeQL in `.github/workflows/codeql.yml` rather than duplicating jobs across PR-only and `main`-only workflows
+- After merging a workflow or category rename and confirming the new category has uploaded on `refs/heads/main`, remove the superseded configuration in **Security -> Code scanning -> Tool status -> `...` -> Delete analysis** (or via `DELETE /repos/{owner}/{repo}/code-scanning/analyses/{id}?confirm_delete=true`, following `confirm_delete_url` until `null`)
 
 #### Stale or Mismatched Exceptions
 
