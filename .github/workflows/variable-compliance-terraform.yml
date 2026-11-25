@@ -68,7 +68,7 @@ concurrency:
 jobs:
   variable-compliance:
     name: Check Terraform Variable Consistency
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:

@@ -63,7 +63,7 @@ jobs:
   # Job to run PowerShell script tests for the resource providers
   resource-provider-pwsh-test:
     name: PowerShell Resource Provider Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -78,8 +78,10 @@ jobs:
         id: pester
         shell: pwsh
         working-directory: ${{ inputs.working-directory }}
+        env:
+          TEST_RESULTS_OUTPUT: ${{ inputs.test-results-output }}
         run: |
-          ../../scripts/Invoke-Pester.ps1 -CI -Path '.' -OutputPath '${{ inputs.test-results-output }}'
+          ../../scripts/Invoke-Pester.ps1 -CI -Path '.' -OutputPath $env:TEST_RESULTS_OUTPUT
 
       # Publish the Pester test results
       - name: Publish Test Results
@@ -92,10 +94,13 @@ jobs:
       - name: Publish test summary to GitHub
         if: ${{ !cancelled() }}
         uses: actions/github-script@450193c5abd4cdb17ba9f3ffcfe8f635c4bb6c2a # v7.0.1
+        env:
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
+          TEST_RESULTS_OUTPUT: ${{ inputs.test-results-output }}
         with:
           script: |
             const fs = require('fs');
-            const resultsFile = '${{ inputs.working-directory }}/${{ inputs.test-results-output }}/test-results.xml';
+            const resultsFile = `${process.env.WORKING_DIRECTORY}/${process.env.TEST_RESULTS_OUTPUT}/test-results.xml`;
 
             if (!fs.existsSync(resultsFile)) {
               core.warning('Test results file not found: ' + resultsFile);

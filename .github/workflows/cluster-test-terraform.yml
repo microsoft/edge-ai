@@ -124,7 +124,7 @@ jobs:
   # Job to validate and test Terraform configurations
   terraform-test:
     name: Terraform Configuration Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -136,8 +136,9 @@ jobs:
       - name: Process working directories
         id: workingDirProcessor
         shell: bash
+        env:
+          FOLDER_PATH: ${{ inputs.working-directory }}
         run: |
-          FOLDER_PATH="${{ inputs.working-directory }}"
 
           # Extract folder name components for cleaner references
           FOLDER_BASENAME=$(basename "$FOLDER_PATH")
@@ -205,16 +206,22 @@ jobs:
       - name: Terraform Init - CI
         id: init-ci
         if: steps.workingDirProcessor.outputs.ciFolderExists == 'true'
+        env:
+          BACKEND_CONFIG_INPUT: ${{ inputs.backend-config }}
+          BACKEND_RESOURCE_GROUP: ${{ inputs.backend-resource-group }}
+          BACKEND_STORAGE_ACCOUNT: ${{ inputs.backend-storage-account }}
+          BACKEND_CONTAINER: ${{ inputs.backend-container }}
+          BACKEND_KEY: ${{ inputs.backend-key }}
         run: |
           BACKEND_ARGS=""
-          if [ "${{ inputs.backend-config }}" != "{}" ]; then
-            BACKEND_CONFIG=$(echo "${{ inputs.backend-config }}" | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
+          if [ "${BACKEND_CONFIG_INPUT}" != "{}" ]; then
+            BACKEND_CONFIG=$(echo "${BACKEND_CONFIG_INPUT}" | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
             BACKEND_ARGS="$BACKEND_CONFIG"
           else
-            BACKEND_ARGS="-backend-config=resource_group_name=${{ inputs.backend-resource-group }} \
-                          -backend-config=storage_account_name=${{ inputs.backend-storage-account }} \
-                          -backend-config=container_name=${{ inputs.backend-container }} \
-                          -backend-config=key=${{ inputs.backend-key }}"
+            BACKEND_ARGS="-backend-config=resource_group_name=${BACKEND_RESOURCE_GROUP} \
+                          -backend-config=storage_account_name=${BACKEND_STORAGE_ACCOUNT} \
+                          -backend-config=container_name=${BACKEND_CONTAINER} \
+                          -backend-config=key=${BACKEND_KEY}"
           fi
 
           terraform init $BACKEND_ARGS
@@ -224,16 +231,22 @@ jobs:
       # Initialize Terraform in main working directory
       - name: Terraform Init - Tests
         id: init
+        env:
+          BACKEND_CONFIG_INPUT: ${{ inputs.backend-config }}
+          BACKEND_RESOURCE_GROUP: ${{ inputs.backend-resource-group }}
+          BACKEND_STORAGE_ACCOUNT: ${{ inputs.backend-storage-account }}
+          BACKEND_CONTAINER: ${{ inputs.backend-container }}
+          BACKEND_KEY: ${{ inputs.backend-key }}
         run: |
           BACKEND_ARGS=""
-          if [ "${{ inputs.backend-config }}" != "{}" ]; then
-            BACKEND_CONFIG=$(echo "${{ inputs.backend-config }}" | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
+          if [ "${BACKEND_CONFIG_INPUT}" != "{}" ]; then
+            BACKEND_CONFIG=$(echo "${BACKEND_CONFIG_INPUT}" | jq -r 'to_entries | map("-backend-config=\"\(.key)=\(.value)\"") | join(" ")')
             BACKEND_ARGS="$BACKEND_CONFIG"
           else
-            BACKEND_ARGS="-backend-config=resource_group_name=${{ inputs.backend-resource-group }} \
-                          -backend-config=storage_account_name=${{ inputs.backend-storage-account }} \
-                          -backend-config=container_name=${{ inputs.backend-container }} \
-                          -backend-config=key=${{ inputs.backend-key }}"
+            BACKEND_ARGS="-backend-config=resource_group_name=${BACKEND_RESOURCE_GROUP} \
+                          -backend-config=storage_account_name=${BACKEND_STORAGE_ACCOUNT} \
+                          -backend-config=container_name=${BACKEND_CONTAINER} \
+                          -backend-config=key=${BACKEND_KEY}"
           fi
 
           terraform init $BACKEND_ARGS
@@ -323,10 +336,12 @@ jobs:
       # Run Terraform Plan with detailed output options
       - name: Terraform Plan
         id: plan
+        env:
+          TERRAFORM_VARS_FILE: ${{ inputs.terraform-vars-file }}
         run: |
           VARS_ARGS=""
-          if [ -n "${{ inputs.terraform-vars-file }}" ] && [ -f "${{ inputs.terraform-vars-file }}" ]; then
-            VARS_ARGS="-var-file=${{ inputs.terraform-vars-file }}"
+          if [ -n "${TERRAFORM_VARS_FILE}" ] && [ -f "${TERRAFORM_VARS_FILE}" ]; then
+            VARS_ARGS="-var-file=${TERRAFORM_VARS_FILE}"
           fi
 
           terraform plan $VARS_ARGS ${{ steps.parseVariables.outputs.options }}

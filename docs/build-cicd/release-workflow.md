@@ -846,11 +846,11 @@ jobs:
 ```yaml
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
   security:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 ```
 
 **Use Caching**:

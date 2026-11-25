@@ -1,0 +1,49 @@
+---
+name: Runner fixture
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  dated:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo dated
+
+  dated-arm:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - run: echo arm
+
+  floating:
+    name: Floating label
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo floating
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - run: echo windows
+
+  self-hosted:
+    runs-on: [self-hosted, linux]
+    steps:
+      - run: echo self-hosted
+
+  expression:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo expression
+
+  missing:
+    steps:
+      - run: echo missing
+
+  reusable:
+    uses: ./.github/workflows/other.yml

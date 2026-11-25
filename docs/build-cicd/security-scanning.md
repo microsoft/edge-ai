@@ -2,12 +2,13 @@
 title: Security Scanning & Supply Chain Hardening
 description: Comprehensive security scanning, supply chain hardening, and vulnerability assessment for the Edge AI Accelerator CI/CD pipelines.
 author: Edge AI Team
-ms.date: 2026-06-09
+ms.date: 2026-11-23
 ms.topic: concept
 keywords:
   - security scanning
   - supply chain security
   - sha pinning
+  - workflow security
   - checkov
   - terraform security
   - bicep security
@@ -245,6 +246,114 @@ Monitors pinned dependencies for security updates and generates build warnings f
 ./scripts/security/Update-ActionSHAPinning.ps1 -Path ".github/workflows" -UpdateStale
 ```
 
+### Workflow Security Scans
+
+Three scanners check GitHub Actions workflows on every pull request, merge group, and push to `main`. Each runs as a reusable workflow, writes SARIF, and passes its results through the SARIF threshold gate. Every run scans all of `.github/workflows`, and the provenance scan also reads composite actions under `.github/actions`.
+
+| Scan                      | Script                                          | Reusable workflow                                  | SARIF category          |
+|---------------------------|-------------------------------------------------|----------------------------------------------------|-------------------------|
+| **Expression injection**  | `scripts/security/Test-DangerousWorkflow.ps1`   | `.github/workflows/dangerous-workflow-scan.yml`    | `dangerous-workflow`    |
+| **Runner labels**         | `scripts/security/Test-WorkflowRunner.ps1`      | `.github/workflows/workflow-runner-scan.yml`       | `workflow-runner`       |
+| **Action pin provenance** | `scripts/security/Test-ActionPinProvenance.ps1` | `.github/workflows/action-pin-provenance-scan.yml` | `action-pin-provenance` |
+
+The scans currently run in report-only mode (`soft-fail: true`): unexcused results appear as warnings and in the Security tab, but do not fail pull requests. A scanner or gate error fails the job in either mode.
+
+#### Expression Injection Rules
+
+The scanner reports `${{ }}` expressions inside a step `run:` or `with.script:` value, because GitHub expands them into the script text before the shell runs it.
+
+| Rule                                               | Reported when the expression references                                                                                                                 |
+|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dangerous-workflow/input-interpolation`           | A `workflow_call` or `workflow_dispatch` input that is not declared `boolean`, an undeclared input, or the whole `inputs` object                        |
+| `dangerous-workflow/untrusted-event-interpolation` | An event value an external contributor controls, such as a pull request title or body, a comment body, a commit message or author, or `github.head_ref` |
+
+Fix a finding by passing the value through a step-level `env:` entry and reading the quoted variable:
+
+```yaml
+- name: Use a caller input
+  env:
+    TARGET_PATH: ${{ inputs.path }}
+  run: ./scripts/build.sh --path "${TARGET_PATH}"
+```
+
+In PowerShell steps read `$env:TARGET_PATH`, and in `actions/github-script` read `process.env.TARGET_PATH`.
+
+#### Runner Label Rules
+
+`workflow-runner/undated-label` reports any job whose `runs-on` is not a dated GitHub-hosted Ubuntu label such as `ubuntu-24.04` or `ubuntu-24.04-arm`. Floating labels such as `ubuntu-latest` move to a new OS release without a reviewed change. Jobs that call a reusable workflow are not checked; the reusable workflow's own jobs are. Dated labels fix the OS release only; GitHub still updates the image's tools weekly.
+
+#### Action Pin Provenance Rules
+
+Every remote `uses:` must be pinned to a 40-character commit SHA with a comment naming the exact `vX.Y.Z` release tag that points at that commit in the publisher's repository. Tags are read from the publisher's repository with `git ls-remote`, so a commit that exists only in a fork never passes.
+
+| Rule                              | Meaning and fix                                                                                                   |
+|-----------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| `action-pin/not-sha-pinned`       | The ref is a tag or branch. Pin the commit SHA.                                                                   |
+| `action-pin/upstream-unavailable` | The publisher's tags could not be read after 3 attempts. Rerun the job; this cannot be excepted.                  |
+| `action-pin/tag-object`           | The SHA is an annotated tag object. Pin the commit the message names.                                             |
+| `action-pin/untagged-commit`      | No publisher tag points at the commit. Pin a commit from a release.                                               |
+| `action-pin/comment-missing`      | Add the `# vX.Y.Z` comment the message suggests.                                                                  |
+| `action-pin/comment-not-release`  | The comment is a moving tag such as `v1` or `v1.2`. Use the exact release the message lists.                      |
+| `action-pin/comment-mismatch`     | The named tag points at another commit. Correct the comment; changing only the comment changes nothing that runs. |
+
+#### Running the Scans Locally
+
+The injection and runner scanners need the `powershell-yaml` module at the version pinned in `scripts/security/ps-module-versions.json`.
+
+```powershell
+# Install the pinned modules
+./scripts/security/Install-PSModules.ps1
+
+# Run each scanner; exit code 0 means no findings, 1 means findings, 2 means an error
+./scripts/security/Test-DangerousWorkflow.ps1 -OutputPath logs/dangerous-workflow.sarif
+./scripts/security/Test-WorkflowRunner.ps1 -OutputPath logs/workflow-runner.sarif
+./scripts/security/Test-ActionPinProvenance.ps1 -OutputPath logs/action-pin-provenance.sarif
+
+# Gate a SARIF file against the tracked exceptions
+./scripts/security/Test-SarifThreshold.ps1 -SarifPath logs/workflow-runner.sarif
+```
+
+#### SARIF Threshold Gate
+
+**Script**: `./scripts/security/Test-SarifThreshold.ps1`
+
+The gate allows zero unexcused results. It counts every SARIF result regardless of level and ignores inline SARIF suppressions.
+
+| Exit code | Meaning                                                                                    |
+|-----------|--------------------------------------------------------------------------------------------|
+| `0`       | Every result is excused and every exception for a scanned tool still matches               |
+| `1`       | Unexcused results, an exception whose count differs from the results, or a stale exception |
+| `2`       | Missing, unreadable, or empty SARIF, or a malformed exceptions file                        |
+
+`PR Validation Gate` requires all three scan jobs to succeed, so a skipped or failed scan blocks the merge.
+
+#### Requesting a Tracked Exception
+
+Fix findings whenever possible. Add an exception only when the finding cannot be fixed in the pull request, such as an action whose publisher has no `vX.Y.Z` release at the pinned commit. Exceptions live in `scripts/security/workflow-scan-exceptions.json`:
+
+```json
+{
+  "exceptions": [
+    {
+      "tool": "Test-ActionPinProvenance",
+      "rule": "action-pin/comment-not-release",
+      "path": ".github/workflows/fuzz-pr.yml",
+      "count": 6,
+      "reason": "google/clusterfuzzlite publishes only a moving v1 tag; no vX.Y.Z release exists at the pinned commit.",
+      "issue": "https://github.com/microsoft/edge-ai/issues/941"
+    }
+  ]
+}
+```
+
+- Every entry needs `tool` (the scanner name), `rule`, `path`, `count`, and `reason`. `issue` is optional, and no other fields are allowed.
+- An exception covers one rule in one file and must equal that file's result count, so a new finding in the same file still fails.
+- An exception that no longer matches any result fails the gate; remove it when its findings are fixed.
+- `action-pin/upstream-unavailable` cannot be excepted, because an unverified pin is not a passing pin.
+- SARIF is uploaded unfiltered, so excepted results stay visible as code scanning alerts. Maintainers may dismiss them in the Security tab with the exception's reason.
+
+The gate summary lists every excused result with its reason. Reviewers should treat any change to the exceptions file as a security decision.
+
 ### Automated Dependency Management
 
 #### Dependabot Configuration
@@ -398,7 +507,7 @@ All workflows include comprehensive security monitoring:
 ```yaml
 jobs:
   security-monitoring:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Security Monitoring
         uses: step-security/secure-repo@f0aa4c52c23e5cdcc8d5088bd60badb2a08c24c4 # v1.0.0
@@ -546,6 +655,37 @@ Security templates integrated:
 - Use result caching
 - Allocate more resources
 
+#### Workflow Security Scan Findings
+
+**Symptoms**: A workflow security scan job fails, or warns in report-only mode, with `dangerous-workflow/*`, `workflow-runner/*`, or `action-pin/*` results
+
+**Solutions**:
+
+- Read the annotation on the reported line; each message names the fix
+- Move interpolated inputs and event values into a step-level `env:` entry
+- Replace floating runner labels with `ubuntu-24.04`
+- Correct the version comment to the release tag the message lists
+
+#### Upstream Unavailable
+
+**Symptoms**: `action-pin/upstream-unavailable` results, or the scan log reports unavailable repositories
+
+**Solutions**:
+
+- Rerun the job; the scanner already retries each repository 3 times
+- Confirm the action repository still exists and is public
+- Do not add an exception; the gate rejects exceptions for this rule
+
+#### Stale or Mismatched Exceptions
+
+**Symptoms**: The gate reports `stale exception` or `exception count mismatch`
+
+**Solutions**:
+
+- Remove exceptions whose findings were fixed
+- Update `count` when results were added to or removed from the excepted file, after confirming each remaining result still qualifies
+- Run `./scripts/security/Test-SarifThreshold.ps1` locally against fresh SARIF before pushing
+
 ### Debugging Commands
 
 ```powershell
@@ -554,6 +694,10 @@ Security templates integrated:
 
 # Check SHA staleness with detailed output
 ./scripts/security/Test-SHAStaleness.ps1 -Path ".github/workflows" -OutputFormat "JSON"
+
+# Run a workflow security scanner and gate its SARIF
+./scripts/security/Test-WorkflowRunner.ps1 -OutputPath logs/workflow-runner.sarif
+./scripts/security/Test-SarifThreshold.ps1 -SarifPath logs/workflow-runner.sarif
 
 # Verbose Checkov output
 ./scripts/Run-Checkov.ps1 -Path "src/" -Verbose

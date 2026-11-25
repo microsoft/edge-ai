@@ -98,7 +98,7 @@ jobs:
   # Security hardening setup for comprehensive monitoring
   security-hardening:
     name: Security Hardening Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -116,7 +116,7 @@ jobs:
   # SHA dependency staleness monitoring for supply chain security
   dependency-staleness:
     name: Dependency Staleness Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: security-hardening
     timeout-minutes: 20
     permissions:
@@ -139,8 +139,9 @@ jobs:
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_AGE_DAYS: ${{ inputs.max-age-days }}
         run: |
-          $MaxAge = [int]"${{ inputs.max-age-days }}"
+          $MaxAge = [int]$env:MAX_AGE_DAYS
 
           Write-Host "Running SHA staleness check with MaxAge=$MaxAge days"
 
@@ -181,7 +182,7 @@ jobs:
   # OSSF Scorecard analysis for supply chain security assessment
   ossf-scorecard:
     name: OSSF Scorecard Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: security-hardening
     timeout-minutes: 25
     permissions:
@@ -198,7 +199,7 @@ jobs:
           persist-credentials: false
 
       - name: Run OSSF Scorecard
-        uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        uses: ossf/scorecard-action@23f22cd43608bae7a1f1fa2603d7314dee9538a5 # v2.6.0
         with:
           results_file: scorecard-results.sarif
           results_format: sarif
@@ -206,13 +207,15 @@ jobs:
 
       - name: Process scorecard results
         id: scorecard-check
+        env:
+          SCORECARD_THRESHOLD: ${{ inputs.scorecard-threshold }}
         run: |
           # Extract score from SARIF results
           score=$(jq -r '.runs[0].properties.score // "0"' scorecard-results.sarif)
           echo "score=$score" >> $GITHUB_OUTPUT
 
           # Check against threshold
-          threshold=${{ inputs.scorecard-threshold }}
+          threshold="${SCORECARD_THRESHOLD}"
           if (( $(echo "$score < $threshold" | bc -l) )); then
             echo "threshold-failed=true" >> $GITHUB_OUTPUT
             echo "Warning: OSSF Scorecard score ($score) below threshold ($threshold)"
@@ -231,14 +234,14 @@ jobs:
 
       - name: Upload SARIF results to GitHub Security
         if: always()
-        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           sarif_file: scorecard-results.sarif
 
   # AIO version checking for comprehensive validation
   aio-version-check:
     name: AIO Version Validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: security-hardening
     timeout-minutes: 20
     permissions:
@@ -281,7 +284,7 @@ jobs:
   # Comprehensive dependency pinning analysis
   security-analysis:
     name: Security Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [security-hardening, dependency-staleness, ossf-scorecard, aio-version-check]
     timeout-minutes: 25
     permissions:
@@ -315,6 +318,8 @@ jobs:
       - name: Run dependency pinning analysis
         id: pinning-analysis
         shell: pwsh
+        env:
+          PINNING_THRESHOLD: ${{ inputs.pinning-threshold }}
         run: |
           $pinningScript = Join-Path $env:GITHUB_WORKSPACE "scripts/security/Test-DependencyPinning.ps1"
 
@@ -332,7 +337,7 @@ jobs:
               "compliance=$compliance" >> $env:GITHUB_OUTPUT
 
               # Check against threshold
-              $threshold = [decimal]"${{ inputs.pinning-threshold }}"
+              $threshold = [decimal]$env:PINNING_THRESHOLD
               if ($compliance -lt $threshold) {
                   Write-Warning "Pinning compliance ($compliance%) below threshold ($threshold%)"
                   "threshold-failed=true" >> $env:GITHUB_OUTPUT
@@ -356,7 +361,7 @@ jobs:
   # Comprehensive security validation summary
   security-summary:
     name: Comprehensive Security Summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [dependency-staleness, ossf-scorecard, aio-version-check, security-analysis]
     if: always()
     timeout-minutes: 10
