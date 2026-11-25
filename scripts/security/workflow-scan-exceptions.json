@@ -1,0 +1,44 @@
+{
+  "exceptions": [
+    {
+      "tool": "Test-ActionPinProvenance",
+      "rule": "action-pin/comment-not-release",
+      "path": ".github/workflows/fuzz-pr.yml",
+      "count": 6,
+      "reason": "google/clusterfuzzlite publishes only a moving v1 tag; no vX.Y.Z release exists at the pinned commit.",
+      "issue": "https://github.com/microsoft/edge-ai/issues/941"
+    },
+    {
+      "tool": "Test-ActionPinProvenance",
+      "rule": "action-pin/comment-not-release",
+      "path": ".github/workflows/fuzz-pr-read-only.yml",
+      "count": 6,
+      "reason": "google/clusterfuzzlite publishes only a moving v1 tag; no vX.Y.Z release exists at the pinned commit.",
+      "issue": "https://github.com/microsoft/edge-ai/issues/941"
+    },
+    {
+      "tool": "Test-ActionPinProvenance",
+      "rule": "action-pin/comment-not-release",
+      "path": ".github/workflows/cluster-test-terraform.yml",
+      "count": 1,
+      "reason": "azure/get-keyvault-secrets is archived and tags the pinned commit only as v1 and v1.2; no vX.Y.Z release exists. Replace the action to remove this exception.",
+      "issue": "https://github.com/microsoft/edge-ai/issues/941"
+    },
+    {
+      "tool": "Test-ActionPinProvenance",
+      "rule": "action-pin/untagged-commit",
+      "path": ".github/workflows/docs-automation-commenter.yml",
+      "count": 1,
+      "reason": "actions/github-script is pinned to an unreleased commit on the publisher's main branch (merge of PR 695); no tag points at it. Repin to an exact release to remove this exception.",
+      "issue": "https://github.com/microsoft/edge-ai/issues/941"
+    },
+    {
+      "tool": "Test-ActionPinProvenance",
+      "rule": "action-pin/untagged-commit",
+      "path": ".github/workflows/resource-provider-pwsh-tests.yml",
+      "count": 1,
+      "reason": "actions/github-script is pinned to an unreleased commit on the publisher's main branch (merge of PR 695); no tag points at it. Repin to an exact release to remove this exception.",
+      "issue": "https://github.com/microsoft/edge-ai/issues/941"
+    }
+  ]
+}

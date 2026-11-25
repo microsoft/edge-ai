@@ -48,7 +48,7 @@ permissions: {}
 jobs:
   bicep-lint:
     name: Bicep Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:

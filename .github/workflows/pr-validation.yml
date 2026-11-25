@@ -53,7 +53,7 @@ concurrency:
 jobs:
   resolve-validation-range:
     name: Resolve Validation Range
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     outputs:
@@ -91,7 +91,7 @@ jobs:
   # CodeQL Analysis job for PR code security scanning
   codeql-analysis:
     name: CodeQL Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       actions: read
@@ -111,16 +111,16 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/autobuild@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           category: "/language:${{matrix.language}}"
 
@@ -128,7 +128,7 @@ jobs:
   dependency-scan:
     name: Dependency Scan
     if: github.event_name != 'merge_group'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pull-requests: write
@@ -139,7 +139,7 @@ jobs:
           persist-credentials: false
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
         with:
           config-file: ./.github/dependency-review-config.yml
 
@@ -221,6 +221,34 @@ jobs:
     uses: ./.github/workflows/workflow-permissions-scan.yml
     with:
       require-deny-all: true
+
+  # Workflow security scans; pr-validation-gate requires each to succeed
+  dangerous-workflow-scan:
+    name: Dangerous Workflow Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/dangerous-workflow-scan.yml
+    with:
+      soft-fail: true
+
+  workflow-runner-scan:
+    name: Workflow Runner Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/workflow-runner-scan.yml
+    with:
+      soft-fail: true
+
+  action-pin-provenance-scan:
+    name: Action Pin Provenance Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/action-pin-provenance-scan.yml
+    with:
+      soft-fail: true
 
   # YAML and container linting
   yaml-lint:
@@ -449,17 +477,20 @@ jobs:
   pester-tests:
     name: Pester Tests
     needs: [resolve-validation-range]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       checks: write
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.resolve-validation-range.outputs.head-sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Setup PowerShell modules
+        uses: ./.github/actions/setup-ps-modules
 
       - name: Run Pester Tests
         id: pester
@@ -470,6 +501,18 @@ jobs:
           HEAD_SHA: ${{ needs.resolve-validation-range.outputs.head-sha }}
         run: |
           ./scripts/Invoke-Pester.ps1 -CI -ChangedOnly -ChangeMode $env:CHANGE_MODE -BaseSha $env:BASE_SHA -HeadSha $env:HEAD_SHA
+
+      # Always run so scanner, gate, fixture, and manifest changes are tested even when no test file changed
+      - name: Run workflow security scanner tests
+        if: always()
+        shell: pwsh
+        run: >-
+          ./scripts/Invoke-Pester.ps1 -CI -OutputPath ./test-results/workflow-scans -Path
+          ./scripts/security/tests/Install-PSModules.Tests.ps1,
+          ./scripts/security/tests/Test-SarifThreshold.Tests.ps1,
+          ./scripts/security/tests/Test-WorkflowRunner.Tests.ps1,
+          ./scripts/security/tests/Test-DangerousWorkflow.Tests.ps1,
+          ./scripts/security/tests/Test-ActionPinProvenance.Tests.ps1
 
       - name: Upload Test Results
         if: always()
@@ -482,7 +525,7 @@ jobs:
   # Fabric ontology credential-free contract and lifecycle qualification
   fabric-ontology-qualification:
     name: Fabric Ontology Qualification
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -528,7 +571,7 @@ jobs:
   # Aggregator gate - single required check for branch protection
   pr-validation-gate:
     name: PR Validation Gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: always()
     needs:
       - resolve-validation-range
@@ -542,6 +585,9 @@ jobs:
       - powershell-lint
       - security-scan
       - permissions-scan
+      - dangerous-workflow-scan
+      - workflow-runner-scan
+      - action-pin-provenance-scan
       - yaml-lint
       - docs-automation
       - docusaurus-tests
@@ -573,3 +619,18 @@ jobs:
             exit 1
           fi
           echo "All required PR validation checks passed."
+
+      - name: Verify workflow security scans succeeded
+        shell: bash
+        env:
+          DANGEROUS_WORKFLOW_RESULT: ${{ needs.dangerous-workflow-scan.result }}
+          WORKFLOW_RUNNER_RESULT: ${{ needs.workflow-runner-scan.result }}
+          ACTION_PIN_PROVENANCE_RESULT: ${{ needs.action-pin-provenance-scan.result }}
+        run: |
+          for result in "${DANGEROUS_WORKFLOW_RESULT}" "${WORKFLOW_RUNNER_RESULT}" "${ACTION_PIN_PROVENANCE_RESULT}"; do
+            if [[ "${result}" != "success" ]]; then
+              echo "::error::A workflow security scan did not succeed (result: ${result})."
+              exit 1
+            fi
+          done
+          echo "All workflow security scans succeeded."

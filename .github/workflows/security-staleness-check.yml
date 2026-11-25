@@ -53,7 +53,7 @@ permissions: {}
 jobs:
   security-staleness-check:
     name: 'SHA Staleness Monitoring'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -99,15 +99,17 @@ jobs:
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days }}
+          OUTPUT_FORMAT: ${{ github.event.inputs.output_format }}
         run: |
-          $MaxAge = if ("${{ github.event.inputs.max_age_days }}") {
-            [int]"${{ github.event.inputs.max_age_days }}"
+          $MaxAge = if ($env:MAX_AGE_DAYS) {
+            [int]$env:MAX_AGE_DAYS
           } else {
             30
           }
 
-          $OutputFormat = if ("${{ github.event.inputs.output_format }}") {
-            "${{ github.event.inputs.output_format }}"
+          $OutputFormat = if ($env:OUTPUT_FORMAT) {
+            $env:OUTPUT_FORMAT
           } else {
             "github"
           }

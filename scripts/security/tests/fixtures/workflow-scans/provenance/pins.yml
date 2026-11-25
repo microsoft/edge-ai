@@ -1,0 +1,39 @@
+---
+name: Provenance fixture
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  steps-job:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Exact release tag
+        uses: octo/tool@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v1.2.3
+      - name: Release tag without v
+        uses: octo/tool@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # 1.2.3
+      - name: Moving alias that matches
+        uses: octo/tool@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v1
+      - name: Mismatched release tag
+        uses: octo/tool@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v9.9.9
+      - name: Missing comment
+        uses: octo/tool@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      - name: Annotated tag object
+        uses: octo/tool@bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb # v2.0.0
+      - name: Untagged commit
+        uses: octo/tool@dddddddddddddddddddddddddddddddddddddddd # v1.2.3
+      - name: Unpinned ref
+        uses: octo/tool@v1
+      - name: Subpath action
+        uses: octo/tool/sub/path@cccccccccccccccccccccccccccccccccccccccc # v2.0.0
+      - name: Local action
+        uses: ./.github/actions/local
+      - name: Docker image
+        uses: docker://alpine:3
+      - name: Unreadable upstream
+        uses: other/down@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v1.2.3
+
+  reusable-job:
+    uses: octo/tool/.github/workflows/build.yml@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa # v1.2.3

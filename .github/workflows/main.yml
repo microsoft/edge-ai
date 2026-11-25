@@ -39,7 +39,7 @@ jobs:
   # CodeQL Analysis job for code security scanning
   codeql-analysis:
     name: CodeQL Analysis
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       security-events: write
       actions: read
@@ -58,7 +58,7 @@ jobs:
           fetch-depth: 0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -69,10 +69,10 @@ jobs:
           # queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/autobuild@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           category: "/language:${{matrix.language}}"
 
@@ -149,6 +149,34 @@ jobs:
     uses: ./.github/workflows/workflow-permissions-scan.yml
     with:
       require-deny-all: true
+
+  # Workflow security scans (main)
+  dangerous-workflow-scan-main:
+    name: Dangerous Workflow Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/dangerous-workflow-scan.yml
+    with:
+      soft-fail: true
+
+  workflow-runner-scan-main:
+    name: Workflow Runner Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/workflow-runner-scan.yml
+    with:
+      soft-fail: true
+
+  action-pin-provenance-scan-main:
+    name: Action Pin Provenance Scan
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/action-pin-provenance-scan.yml
+    with:
+      soft-fail: true
 
   # YAML and container linting (main)
   yaml-lint-main:

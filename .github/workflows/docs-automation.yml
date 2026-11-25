@@ -79,7 +79,7 @@ env:
 jobs:
   validate-frontmatter:
     name: 🔍 Validate Frontmatter
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -136,7 +136,7 @@ jobs:
 
   validate-links:
     name: 🔗 Validate Documentation Links
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
@@ -193,7 +193,7 @@ jobs:
 
   report-documentation-health:
     name: 📊 Documentation Health Report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - validate-frontmatter
       - validate-links

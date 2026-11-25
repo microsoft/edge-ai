@@ -27,7 +27,7 @@ permissions: {}
 jobs:
   validate:
     name: Validate Rust crate registration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     defaults:
