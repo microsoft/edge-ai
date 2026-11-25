@@ -2,7 +2,7 @@
 title: Testing and Validation
 description: Comprehensive guide to testing infrastructure components and validating changes, covering testing strategies, validation procedures, and quality assurance practices
 author: Edge AI Team
-ms.date: 2026-06-19
+ms.date: 2026-11-25
 ms.topic: how-to
 estimated_reading_time: 7
 keywords:
@@ -225,7 +225,7 @@ echo "Running pre-commit validation..."
 
 # 1. Format and lint code
 echo "1. Running linters..."
-npm run lint-fix-devcontainer
+npm run lint-fix
 
 # 2. Security scanning
 echo "2. Running security scans..."

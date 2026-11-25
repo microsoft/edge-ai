@@ -2,7 +2,7 @@
 title: Feature Developer Guide - Getting Started
 description: Comprehensive guide for contributors developing new features and components in the AI on Edge Flagship Accelerator, covering development environment, processes, and coding standards
 author: Edge AI Team
-ms.date: 2025-06-15
+ms.date: 2026-11-25
 ms.topic: how-to
 estimated_reading_time: 10
 keywords:
@@ -146,8 +146,7 @@ The project uses `package.json` for standardized development tasks:
 npm install                    # Install dependencies
 npm run lint                   # Run all linters
 npm run lint-fix               # Fix common linting issues
-npm run lint-devcontainer      # Run linters (Dev Container optimized)
-npm run lint-fix-devcontainer  # Fix linters (Dev Container optimized)
+npm run bicep-lint              # Run Bicep linting
 
 # Markdown and documentation
 npm run mdlint                 # Run markdown linting
@@ -424,7 +423,7 @@ az bicep lint --file main.bicep
 
 # Run repository-wide linting
 cd ../../..
-npm run lint-devcontainer
+npm run lint
 ```
 
 #### Creating Test Scripts
@@ -551,7 +550,7 @@ Before creating a PR, ensure quality:
 
 ```bash
 # Run all linting and validation
-npm run lint-devcontainer
+npm run lint
 
 # Run component-specific tests
 ./tests/components/{next-number}-{component-name}/test.sh
