@@ -27,13 +27,13 @@ The script confines blueprint inputs to the repository, writes installer state, 
 
 ### Security Posture Overview
 
-| Dimension          | Value                                                                 |
-|--------------------|-----------------------------------------------------------------------|
+| Dimension          | Value                                                                                                      |
+|--------------------|------------------------------------------------------------------------------------------------------------|
 | Runtime surface    | Agent-guided Azure CLI and kubectl; Bash, Terraform, Bicep, terraform-docs, jq, and loopback canvas server |
-| Trust buckets      | Two: local workspace and toolchain; Azure control plane and providers |
-| Credentials        | Ambient Azure CLI and Terraform provider credentials                  |
-| Network egress     | Azure management endpoints and Terraform provider or module endpoints |
-| Open residual gaps | Four (highest severity: InfoDisc-High)                                |
+| Trust buckets      | Two: local workspace and toolchain; Azure control plane and providers                                      |
+| Credentials        | Ambient Azure CLI and Terraform provider credentials                                                       |
+| Network egress     | Azure management endpoints and Terraform provider or module endpoints                                      |
+| Open residual gaps | Four (highest severity: InfoDisc-High)                                                                     |
 
 ## Contents
 
@@ -119,32 +119,32 @@ flowchart TD
 
 ### Boundary Descriptions
 
-| Boundary                     | Assets Protected                                  | Controls Enforced                                                      |
-|------------------------------|---------------------------------------------------|------------------------------------------------------------------------|
-| Operator workstation         | Parameters, plan, state, credentials, repository | Repository path confinement, private permissions, fingerprints, quoting, staged user confirmation |
-| Loopback canvas              | Sanitized state and command progress             | Random cookie, origin and host checks, CSP, bounded reads, second redaction pass, text-only rendering |
-| Azure and provider services  | Subscription resources and cluster deployment    | Explicit subscription, preview before apply, confirmation, verification |
+| Boundary                    | Assets Protected                                 | Controls Enforced                                                                                     |
+|-----------------------------|--------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| Operator workstation        | Parameters, plan, state, credentials, repository | Repository path confinement, private permissions, fingerprints, quoting, staged user confirmation     |
+| Loopback canvas             | Sanitized state and command progress             | Random cookie, origin and host checks, CSP, bounded reads, second redaction pass, text-only rendering |
+| Azure and provider services | Subscription resources and cluster deployment    | Explicit subscription, preview before apply, confirmation, verification                               |
 
 ## Assets
 
-| Id | Asset                               | Lifetime               | Notes                                                      |
-|----|-------------------------------------|------------------------|------------------------------------------------------------|
-| A1 | Azure identity and subscription     | External session       | Managed by Azure CLI and Terraform, not stored in state    |
-| A2 | Blueprint and parameter inputs      | Repository lifetime    | Can influence cloud mutations                              |
-| A3 | Terraform plan and state            | Temporary or persistent| May contain sensitive deployment values                    |
-| A4 | Installer state                     | Deployment session     | Stores non-secret paths, runtime choice, fingerprints, and stage metadata |
-| A5 | Sanitized progress log              | Deployment session     | Stores bounded redacted command lifecycle and output events |
-| A6 | Azure and Arc cluster resources     | Deployment lifetime    | Externally visible and potentially costly                  |
+| Id | Asset                           | Lifetime                | Notes                                                                     |
+|----|---------------------------------|-------------------------|---------------------------------------------------------------------------|
+| A1 | Azure identity and subscription | External session        | Managed by Azure CLI and Terraform, not stored in state                   |
+| A2 | Blueprint and parameter inputs  | Repository lifetime     | Can influence cloud mutations                                             |
+| A3 | Terraform plan and state        | Temporary or persistent | May contain sensitive deployment values                                   |
+| A4 | Installer state                 | Deployment session      | Stores non-secret paths, runtime choice, fingerprints, and stage metadata |
+| A5 | Sanitized progress log          | Deployment session      | Stores bounded redacted command lifecycle and output events               |
+| A6 | Azure and Arc cluster resources | Deployment lifetime     | Externally visible and potentially costly                                 |
 
 ## Adversaries
 
-| Id    | Adversary                             | In-scope mitigations                                               |
-|-------|---------------------------------------|--------------------------------------------------------------------|
-| ADV-a | Malicious or compromised workspace    | Path confinement, file-name validation, input review, fingerprints |
-| ADV-b | Local user without deployment authority | Private state and plan permissions                               |
-| ADV-c | Compromised PATH-resolved executable  | Operator-managed tool installation and command visibility          |
-| ADV-d | Malicious or unexpected remote output | Native command failures, staged execution, explicit verification    |
-| ADV-e | Local process probing the canvas       | Loopback binding, random cookie, host and origin checks, CSP         |
+| Id    | Adversary                               | In-scope mitigations                                               |
+|-------|-----------------------------------------|--------------------------------------------------------------------|
+| ADV-a | Malicious or compromised workspace      | Path confinement, file-name validation, input review, fingerprints |
+| ADV-b | Local user without deployment authority | Private state and plan permissions                                 |
+| ADV-c | Compromised PATH-resolved executable    | Operator-managed tool installation and command visibility          |
+| ADV-d | Malicious or unexpected remote output   | Native command failures, staged execution, explicit verification   |
+| ADV-e | Local process probing the canvas        | Loopback binding, random cookie, host and origin checks, CSP       |
 
 ## Bucket B1: Local Workspace and Toolchain
 
@@ -186,13 +186,13 @@ flowchart TD
 
 ### Risk Rating
 
-| Threat                                  | Likelihood | Impact | Residual Risk | Status              |
-|-----------------------------------------|------------|--------|---------------|---------------------|
-| Workspace input tampering               | Medium     | High   | Medium        | Partially Mitigated |
-| Sensitive Terraform state disclosure   | Medium     | High   | High          | Partially Mitigated |
-| Sensitive command output disclosure     | Low        | High   | Medium        | Partially Mitigated |
-| Compromised PATH-resolved executable    | Low        | High   | Medium        | Accepted            |
-| Long-running command exhaustion         | Medium     | Medium | Medium        | Accepted            |
+| Threat                               | Likelihood | Impact | Residual Risk | Status              |
+|--------------------------------------|------------|--------|---------------|---------------------|
+| Workspace input tampering            | Medium     | High   | Medium        | Partially Mitigated |
+| Sensitive Terraform state disclosure | Medium     | High   | High          | Partially Mitigated |
+| Sensitive command output disclosure  | Low        | High   | Medium        | Partially Mitigated |
+| Compromised PATH-resolved executable | Low        | High   | Medium        | Accepted            |
+| Long-running command exhaustion      | Medium     | Medium | Medium        | Accepted            |
 
 ## Bucket B2: Azure and Provider Execution
 
@@ -235,23 +235,23 @@ flowchart TD
 
 ### Risk Rating
 
-| Threat                                | Likelihood | Impact | Residual Risk | Status              |
-|---------------------------------------|------------|--------|---------------|---------------------|
+| Threat                               | Likelihood | Impact | Residual Risk | Status              |
+|--------------------------------------|------------|--------|---------------|---------------------|
 | Wrong subscription or cluster target | Low        | High   | Low           | Mitigated           |
-| Remote change after Bicep what-if     | Medium     | High   | Medium        | Partially Mitigated |
-| Excessive Azure identity permissions  | Medium     | High   | Medium        | Accepted            |
-| Remote service or provider failure    | Medium     | Medium | Medium        | Partially Mitigated |
+| Remote change after Bicep what-if    | Medium     | High   | Medium        | Partially Mitigated |
+| Excessive Azure identity permissions | Medium     | High   | Medium        | Accepted            |
+| Remote service or provider failure   | Medium     | Medium | Medium        | Partially Mitigated |
 
 ## Enterprise Readiness Gaps
 
 The following limitations help operators decide whether additional controls are required. Severity ratings are project assessments and are not CVSS scores.
 
-| Id        | Gap                                                                                 | Severity        | Status                                      |
-|-----------|-------------------------------------------------------------------------------------|-----------------|---------------------------------------------|
-| G-INF-1   | Blueprint-managed Terraform state can contain sensitive values without enforced remote encryption or access policy. | InfoDisc-High | Configure a secured remote backend for team or production use |
-| G-INF-2   | Pattern-based progress redaction cannot guarantee removal of every sensitive value from arbitrary tool output. | InfoDisc-Med | Keep secrets out of wrapped commands and disable canvas progress when output sensitivity cannot be bounded |
-| G-SUP-1   | PATH-resolved infrastructure tools and downloaded providers are not pinned or verified by this script. | SupplyChain-Med | Use the repository dev container or an organization-managed toolchain |
-| G-DOS-1   | Long-running external commands have no installer-enforced timeout or retry policy.  | DoS-Med         | Monitor native progress and resume only after diagnosing the exact failure |
+| Id      | Gap                                                                                                                 | Severity        | Status                                                                                                     |
+|---------|---------------------------------------------------------------------------------------------------------------------|-----------------|------------------------------------------------------------------------------------------------------------|
+| G-INF-1 | Blueprint-managed Terraform state can contain sensitive values without enforced remote encryption or access policy. | InfoDisc-High   | Configure a secured remote backend for team or production use                                              |
+| G-INF-2 | Pattern-based progress redaction cannot guarantee removal of every sensitive value from arbitrary tool output.      | InfoDisc-Med    | Keep secrets out of wrapped commands and disable canvas progress when output sensitivity cannot be bounded |
+| G-SUP-1 | PATH-resolved infrastructure tools and downloaded providers are not pinned or verified by this script.              | SupplyChain-Med | Use the repository dev container or an organization-managed toolchain                                      |
+| G-DOS-1 | Long-running external commands have no installer-enforced timeout or retry policy.                                  | DoS-Med         | Monitor native progress and resume only after diagnosing the exact failure                                 |
 
 ## References
 

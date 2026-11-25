@@ -1146,10 +1146,11 @@ command_run() {
     err "${stage} requires --confirm ${expected_confirmation}"
   fi
   if [[ "${stage}" == "created" ]]; then
-    ((${#command[@]} >= 4)) \
-      && [[ "${command[0]}" == "az" && "${command[1]}" == "iot" &&
-        "${command[2]}" == "ops" && "${command[3]}" == "create" ]] \
-      || err "created stage requires an az iot ops create command"
+    if ((${#command[@]} < 4)) \
+      || [[ "${command[0]}" != "az" || "${command[1]}" != "iot" ||
+        "${command[2]}" != "ops" || "${command[3]}" != "create" ]]; then
+      err "created stage requires an az iot ops create command"
+    fi
     runtime="$(state_value '.runtime')"
     case "${runtime}" in
       preview)
