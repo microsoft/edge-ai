@@ -2,7 +2,7 @@
 title: Feature Developer Guide - Getting Started
 description: Comprehensive guide for contributors developing new features and components in the AI on Edge Flagship Accelerator, covering development environment, processes, and coding standards
 author: Edge AI Team
-ms.date: 2025-06-15
+ms.date: 2026-11-25
 ms.topic: how-to
 estimated_reading_time: 10
 keywords:

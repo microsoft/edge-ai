@@ -2,7 +2,7 @@
 title: Testing and Validation
 description: Comprehensive guide to testing infrastructure components and validating changes, covering testing strategies, validation procedures, and quality assurance practices
 author: Edge AI Team
-ms.date: 2026-06-19
+ms.date: 2026-11-25
 ms.topic: how-to
 estimated_reading_time: 7
 keywords:
