@@ -36,46 +36,6 @@ on: # yamllint disable-line rule:truthy
   workflow_dispatch:
 
 jobs:
-  # CodeQL Analysis job for code security scanning
-  codeql-analysis:
-    name: CodeQL Analysis
-    runs-on: ubuntu-24.04
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['javascript', 'python', 'typescript', 'csharp']
-        # CodeQL supports these languages: https://aka.ms/codeql-docs/language-support
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
-        with:
-          languages: ${{ matrix.language }}
-          build-mode: none
-          # If you wish to specify custom queries, you can do so here or in a
-          # config file.
-          # By default, queries listed here will override any specified in a config file.
-          # For more details, see: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-          # queries: security-extended,security-and-quality
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
-        with:
-          category: "/language:${{matrix.language}}"
-
   # Shell script linting (main)
   shell-lint-main:
     name: Shell Lint

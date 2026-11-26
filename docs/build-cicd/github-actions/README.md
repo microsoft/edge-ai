@@ -2,7 +2,7 @@
 title: GitHub Actions Configuration
 description: Configuration guide for GitHub Actions workflows and CI/CD setup for the Edge AI Accelerator repository
 author: Edge AI Team
-ms.date: 2025-06-06
+ms.date: 2026-11-24
 ms.topic: hub-page
 estimated_reading_time: 7
 keywords:
@@ -98,12 +98,13 @@ This repository implements a modular approach to workflow definitions. Instead o
 
 #### Core CI/CD Orchestration Workflows
 
-The repository includes two primary workflows that orchestrate the overall CI/CD process:
+The repository includes three core workflows that orchestrate CI/CD and static analysis:
 
-| Workflow            | Trigger                             | Purpose                                                 |
-|---------------------|-------------------------------------|---------------------------------------------------------|
-| `main.yml`          | Push to main branch, manual trigger | Complete validation and deployment to environments      |
-| `pr-validation.yml` | Pull requests to main branch        | Validates changes before merging to ensure code quality |
+| Workflow            | Trigger                                                      | Purpose                                                 |
+|---------------------|--------------------------------------------------------------|---------------------------------------------------------|
+| `codeql.yml`        | Push to main, pull requests to main, weekly schedule, manual | Unified CodeQL static analysis across four languages    |
+| `main.yml`          | Push to main branch, manual trigger                          | Complete validation and deployment to environments      |
+| `pr-validation.yml` | Pull requests to main branch                                 | Validates changes before merging to ensure code quality |
 
 These core workflows typically call the template workflows above in a specific sequence, providing a comprehensive validation and deployment process.
 
@@ -129,12 +130,13 @@ The following reusable template workflows are available in the `.github/workflow
 
 #### Core CI/CD Workflows
 
-The repository includes two primary workflows that orchestrate the overall CI/CD process:
+The repository includes three core workflows that orchestrate CI/CD and static analysis:
 
-| Workflow            | Trigger                             | Purpose                                                 | Documentation                                |
-|---------------------|-------------------------------------|---------------------------------------------------------|----------------------------------------------|
-| `main.yml`          | Push to main branch, manual trigger | Complete validation and deployment to environments      | [Workflow Documentation](./main.md)          |
-| `pr-validation.yml` | Pull requests to main branch        | Validates changes before merging to ensure code quality | [Workflow Documentation](./pr-validation.md) |
+| Workflow            | Trigger                                                      | Purpose                                                 | Documentation                                |
+|---------------------|--------------------------------------------------------------|---------------------------------------------------------|----------------------------------------------|
+| `codeql.yml`        | Push to main, pull requests to main, weekly schedule, manual | Unified CodeQL static analysis across four languages    | [Security Scanning](../security-scanning.md) |
+| `main.yml`          | Push to main branch, manual trigger                          | Complete validation and deployment to environments      | [Workflow Documentation](./main.md)          |
+| `pr-validation.yml` | Pull requests to main branch                                 | Validates changes before merging to ensure code quality | [Workflow Documentation](./pr-validation.md) |
 
 #### Documentation Template
 
