@@ -87,6 +87,11 @@ run "storage_private_endpoint_with_created_observability" {
   }
 
   assert {
+    condition     = module.cloud_observability[0].blob_private_dns_zone != null
+    error_message = "cloud_observability should create the blob private DNS zone that cloud_data reuses"
+  }
+
+  assert {
     condition     = module.cloud_data[0].storage_account_private_dns_zones.blob == null
     error_message = "cloud_data should reuse the cloud_observability blob private DNS zone instead of creating its own"
   }
