@@ -28,6 +28,9 @@ resource "terraform_data" "defer" {
 
 locals {
   default_outbound_access_enabled = var.should_enable_managed_outbound_access == false
+
+  // The observability blob private DNS zone only exists when this module creates cloud_observability.
+  should_use_observability_blob_dns_zone = var.should_enable_private_endpoints && var.should_create_observability
 }
 
 /*
@@ -210,8 +213,8 @@ module "cloud_data" {
   virtual_network_id                  = try(module.cloud_networking[0].virtual_network.id, data.azurerm_virtual_network.existing[0].id, null)
   should_enable_public_network_access = var.should_enable_public_network_access
 
-  should_create_blob_dns_zone = !var.should_enable_private_endpoints
-  blob_dns_zone               = var.should_enable_private_endpoints ? module.cloud_observability[0].blob_private_dns_zone : null
+  should_create_blob_dns_zone = !local.should_use_observability_blob_dns_zone
+  blob_dns_zone               = local.should_use_observability_blob_dns_zone ? module.cloud_observability[0].blob_private_dns_zone : null
 }
 
 module "cloud_postgresql" {
