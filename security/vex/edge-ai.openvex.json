@@ -1,0 +1,315 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/microsoft/edge-ai/security/vex/2026-11-27-v1",
+  "author": "Microsoft Edge AI Maintainers",
+  "timestamp": "2026-11-27T22:00:00Z",
+  "last_updated": "2026-11-27T22:00:00Z",
+  "version": 1,
+  "tooling": "Drafted by an AI assistant using Copilot SDK in VS Code. Maintainer review and merge are required. This document has not been signed or attested.",
+  "statements": [
+    {
+      "vulnerability": {
+        "name": "GO-2026-5932",
+        "@id": "https://osv.dev/GO-2026-5932"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:golang/golang.org/x/crypto@v0.59.0",
+              "identifiers": {
+                "purl": "pkg:golang/golang.org/x/crypto@v0.59.0"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "fixed",
+      "impact_statement": "All Go modules in the repository resolve golang.org/x/crypto v0.59.0, which removes the deprecated openpgp package. No module imported openpgp before the upgrade.",
+      "status_notes": "Modules: blueprints/full-multi-node-cluster/tests, blueprints/minimum-single-node-cluster/tests, blueprints/only-cloud-single-node-cluster/tests, src/900-tools-utilities/904-test-utilities (go.mod and go.sum).",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "GHSA-mrhx-c7xc-m3w5",
+        "@id": "https://osv.dev/GHSA-mrhx-c7xc-m3w5",
+        "aliases": ["CVE-2023-54404"]
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:npm/zod@4.6.6",
+              "identifiers": {
+                "purl": "pkg:npm/zod@4.6.6"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "fixed",
+      "impact_statement": "The Copilot Studio chat application resolves zod 4.6.6, the fixed release, through @microsoft/agents-activity 1.10.2.",
+      "status_notes": "Lockfile: src/500-application/516-chat-with-your-factory/services/chat-with-your-factory/package-lock.json. The former .grype.yaml compatibility exception was removed.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "GHSA-3g3m-2fjr-6pw4",
+        "@id": "https://osv.dev/GHSA-3g3m-2fjr-6pw4",
+        "aliases": ["CVE-2026-118773"]
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:npm/glob@14.0.6",
+              "identifiers": {
+                "purl": "pkg:npm/glob@14.0.6"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "fixed",
+      "impact_statement": "The documentation site resolves a single glob 14.0.6 through an npm override; the root workspace already resolved glob 14.0.3. Both are at or above the fixed release 14.0.2.",
+      "status_notes": "Lockfiles: docs/docusaurus/package-lock.json (overrides entry glob ^14.0.3 in docs/docusaurus/package.json) and package-lock.json.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "RUSTSEC-2024-0449",
+        "@id": "https://osv.dev/RUSTSEC-2024-0449"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:cargo/unsafe-libyaml@0.2.11",
+              "identifiers": {
+                "purl": "pkg:cargo/unsafe-libyaml@0.2.11"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "fixed",
+      "impact_statement": "unsafe-libyaml is no longer present. The ai-edge-inference crates replaced the deprecated serde_yaml with the safe-Rust serde-saphyr parser, which removes unsafe-libyaml from every lockfile.",
+      "status_notes": "Crates: src/500-application/507-ai-inference/services/ai-edge-inference-crate (and tests/no-features-test) and ai-edge-inference. The former .github/audit.toml ignore entry was removed.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "RUSTSEC-2026-0543",
+        "@id": "https://osv.dev/RUSTSEC-2026-0543"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:cargo/chrono@0.4.44",
+              "identifiers": {
+                "purl": "pkg:cargo/chrono@0.4.44"
+              }
+            },
+            {
+              "@id": "pkg:cargo/chrono@0.4.45",
+              "identifiers": {
+                "purl": "pkg:cargo/chrono@0.4.45"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present",
+      "impact_statement": "chrono is present. RUSTSEC-2026-0543 is an informational unmaintained notice that identifies no vulnerable function or code path, so no vulnerable code exists to reach. chrono is required as chrono ^0.4 by azure_iot_operations_mqtt and azure_iot_operations_protocol in the Azure IoT Operations services, and is a direct dependency of ai-edge-inference-crate and the datetime WASM operator.",
+      "status_notes": "Lockfiles: src/500-application/501-rust-telemetry/services/{receiver,sender}, 502-rust-http-connector/services/{broker,subscriber}, 503-media-capture-service/services/media-capture-service, 504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter, 507-ai-inference/services/{ai-edge-inference,snapshot-normalizer}, 507-ai-inference/services/ai-edge-inference-crate (and tests/no-features-test), 515-wasm-expressions/operators/datetime. Suppressed in each directory's osv-scanner.toml and in .github/audit.toml. Revisit when the AIO SDK drops chrono or the direct users migrate to jiff or time.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "RUSTSEC-2024-0384",
+        "@id": "https://osv.dev/RUSTSEC-2024-0384"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:cargo/instant@0.1.13",
+              "identifiers": {
+                "purl": "pkg:cargo/instant@0.1.13"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present",
+      "impact_statement": "instant is present. RUSTSEC-2024-0384 is an informational unmaintained notice that identifies no vulnerable function or code path. instant is transitive via notify-types <- notify ^7 <- notify-debouncer-full 0.4 <- azure_iot_operations_mqtt; the latest SDK release (1.3.0) still requires notify ^7.",
+      "status_notes": "Lockfiles: src/500-application/501-rust-telemetry/services/{receiver,sender}, 502-rust-http-connector/services/{broker,subscriber}, 503-media-capture-service/services/media-capture-service, 504-mqtt-otel-trace-exporter/services/mqtt-otel-trace-exporter, 507-ai-inference/services/{ai-edge-inference,snapshot-normalizer}. Suppressed in each directory's osv-scanner.toml and in .github/audit.toml. Revisit when the AIO MQTT SDK moves to notify 8 or later.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "RUSTSEC-2024-0436",
+        "@id": "https://osv.dev/RUSTSEC-2024-0436"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:cargo/paste@1.0.15",
+              "identifiers": {
+                "purl": "pkg:cargo/paste@1.0.15"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present",
+      "impact_statement": "paste is present. RUSTSEC-2024-0436 is an informational unmaintained notice that identifies no vulnerable function or code path. paste is a compile-time procedural macro pulled transitively by gemm and pulp (candle-core 0.11.1) and tokenizers 0.23, both at their latest releases.",
+      "status_notes": "Lockfiles: src/500-application/507-ai-inference/services/ai-edge-inference and ai-edge-inference-crate. Suppressed in each directory's osv-scanner.toml and in .github/audit.toml. Revisit when candle and tokenizers drop paste.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "PYSEC-2026-3807",
+        "@id": "https://osv.dev/PYSEC-2026-3807",
+        "aliases": ["CVE-2026-55244", "GHSA-89v8-rhwq-hf77"]
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:pypi/asteval@1.0.6",
+              "identifiers": {
+                "purl": "pkg:pypi/asteval@1.0.6"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_cannot_be_controlled_by_adversary",
+      "impact_statement": "asteval 1.0.6 is installed only as a dependency of checkov, which pins asteval==1.0.6 in every release through 3.4.11. checkov evaluates Terraform expressions from repository content. In GitHub Actions it runs only in security-staleness-check.yml on schedule and workflow_dispatch against merged main with a read-only token; the Azure DevOps checkov template is not referenced by any pipeline; the devcontainer installs it for local scans of the developer's own checkout. No path evaluates expressions supplied by an untrusted party, so the sandbox escape cannot be triggered by an adversary.",
+      "status_notes": "Lockfiles: requirements.txt and .github/requirements/checkov.txt (pip-compile). Suppressed in the root osv-scanner.toml. Revisit when checkov allows asteval>=1.0.9.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "GHSA-9w56-46f6-3qhx",
+        "@id": "https://osv.dev/GHSA-9w56-46f6-3qhx",
+        "aliases": ["CVE-2026-102734"]
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:pypi/asteval@1.0.6",
+              "identifiers": {
+                "purl": "pkg:pypi/asteval@1.0.6"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_cannot_be_controlled_by_adversary",
+      "impact_statement": "Same exposure as PYSEC-2026-3807: asteval 1.0.6 is reachable only through checkov evaluating repository-controlled Terraform on scheduled or manually dispatched runs against merged main, or local developer scans. No untrusted party can supply the expressions needed to reach numpy ctypes.",
+      "status_notes": "Lockfiles: requirements.txt and .github/requirements/checkov.txt. Suppressed in the root osv-scanner.toml. Revisit when checkov allows asteval>=1.0.9.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "PYSEC-2026-3447",
+        "@id": "https://osv.dev/PYSEC-2026-3447",
+        "aliases": ["BIT-setuptools-2026-59890", "CVE-2026-59890", "GHSA-h35f-9h28-mq5c"]
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:pypi/setuptools@79.0.1",
+              "identifiers": {
+                "purl": "pkg:pypi/setuptools@79.0.1"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "The flaw affects building source distributions on macOS APFS or HFS+ file systems, where NFD file names can bypass MANIFEST.in exclusions. setuptools 79.0.1 is used only inside Linux ROS2 container builder stages to build colcon workspaces; no source distributions are built and macOS file systems are not involved.",
+      "status_notes": "Lockfiles: src/500-application/506-ros2-connector/services/requirements.base.txt, services/ros2-connector/requirements.colcon.txt, services/ros2-simulator/requirements.colcon.txt. colcon-core 0.21.3 (latest) requires setuptools<80. Suppressed in each directory's osv-scanner.toml and in .grype.yaml. Revisit when colcon-core allows setuptools>=84.1.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "name": "GHSA-xmj3-9gf7-h52w",
+        "@id": "https://osv.dev/GHSA-xmj3-9gf7-h52w"
+      },
+      "products": [
+        {
+          "@id": "pkg:github/microsoft/edge-ai",
+          "identifiers": {
+            "purl": "pkg:github/microsoft/edge-ai"
+          },
+          "subcomponents": [
+            {
+              "@id": "pkg:pypi/setuptools@79.0.1",
+              "identifiers": {
+                "purl": "pkg:pypi/setuptools@79.0.1"
+              }
+            }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "The flaw is a Windows-only path escape in setuptools' legacy wheel-as-egg installation. setuptools 79.0.1 runs only in Linux ROS2 container builds, so the Windows code path is never executed.",
+      "status_notes": "Lockfiles: src/500-application/506-ros2-connector/services/requirements.base.txt, services/ros2-connector/requirements.colcon.txt, services/ros2-simulator/requirements.colcon.txt. colcon-core 0.21.3 (latest) requires setuptools<80. Suppressed in each directory's osv-scanner.toml. Revisit when colcon-core allows setuptools>=84.1.",
+      "timestamp": "2026-11-27T22:00:00Z"
+    }
+  ]
+}
