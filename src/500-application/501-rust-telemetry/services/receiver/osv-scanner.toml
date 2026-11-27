@@ -1,0 +1,15 @@
+# OSV-Scanner configuration for the lockfile in this directory.
+#
+# OSV-Scanner, including OpenSSF Scorecard's Vulnerabilities check, applies an
+# osv-scanner.toml only to lockfiles in the same directory. Each entry is an
+# advisory that cannot be removed without an upstream release; the matching
+# OpenVEX statement lives in security/vex/edge-ai.openvex.json. Re-evaluate
+# whenever direct dependencies are bumped.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0543"
+reason = "chrono: unmaintained (informational notice, no vulnerable function). Required as chrono ^0.4 by azure_iot_operations_mqtt and azure_iot_operations_protocol (latest 1.3.0 / 1.2.0). Revisit when an AIO SDK release drops chrono."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0384"
+reason = "instant: unmaintained (informational notice, no vulnerable function). Transitive via notify-types <- notify ^7 <- notify-debouncer-full 0.4 <- azure_iot_operations_mqtt (latest 1.3.0 still requires notify ^7). Revisit when the AIO MQTT SDK moves to notify 8+."

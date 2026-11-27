@@ -1,0 +1,15 @@
+# OSV-Scanner configuration for the lockfile in this directory.
+#
+# OSV-Scanner, including OpenSSF Scorecard's Vulnerabilities check, applies an
+# osv-scanner.toml only to lockfiles in the same directory. Each entry is an
+# advisory that cannot be removed without an upstream release; the matching
+# OpenVEX statement lives in security/vex/edge-ai.openvex.json. Re-evaluate
+# whenever direct dependencies are bumped.
+
+[[IgnoredVulns]]
+id = "PYSEC-2026-3447"
+reason = "setuptools: MANIFEST.in exclusion bypass when building sdists on macOS APFS/HFS+; fixed in 83.0.0. colcon-core 0.21.3 (latest) requires setuptools<80; ROS2 images build on Linux and do not build sdists. Revisit when colcon-core allows setuptools>=84.1."
+
+[[IgnoredVulns]]
+id = "GHSA-xmj3-9gf7-h52w"
+reason = "setuptools: Windows-only path escape in legacy wheel installation; fixed in 84.1.0. colcon-core 0.21.3 (latest) requires setuptools<80; ROS2 images are Linux. Revisit when colcon-core allows setuptools>=84.1."

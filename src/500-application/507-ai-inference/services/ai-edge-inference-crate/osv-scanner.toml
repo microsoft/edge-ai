@@ -1,0 +1,15 @@
+# OSV-Scanner configuration for the lockfile in this directory.
+#
+# OSV-Scanner, including OpenSSF Scorecard's Vulnerabilities check, applies an
+# osv-scanner.toml only to lockfiles in the same directory. Each entry is an
+# advisory that cannot be removed without an upstream release; the matching
+# OpenVEX statement lives in security/vex/edge-ai.openvex.json. Re-evaluate
+# whenever direct dependencies are bumped.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2026-0543"
+reason = "chrono: unmaintained (informational notice, no vulnerable function). Direct dependency of ai-edge-inference-crate for timestamp handling. Revisit when it migrates to jiff or time."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0436"
+reason = "paste: unmaintained (informational notice, no vulnerable function). Transitive via gemm/pulp <- candle-core 0.11.1 and tokenizers 0.23 (both latest). Revisit when candle and tokenizers drop paste."
