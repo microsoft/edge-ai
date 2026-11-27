@@ -256,7 +256,7 @@ Three scanners check GitHub Actions workflows on every pull request, merge group
 | **Runner labels**         | `scripts/security/Test-WorkflowRunner.ps1`      | `.github/workflows/workflow-runner-scan.yml`       | `workflow-runner`       |
 | **Action pin provenance** | `scripts/security/Test-ActionPinProvenance.ps1` | `.github/workflows/action-pin-provenance-scan.yml` | `action-pin-provenance` |
 
-The scans currently run in report-only mode (`soft-fail: true`): unexcused results appear as warnings and in the Security tab, but do not fail pull requests. A scanner or gate error fails the job in either mode.
+The scans enforce: an unexcused result fails the scan job, and `PR Validation Gate` blocks the merge. The provenance scan also runs daily on a schedule, so a publisher that moves or deletes a release tag is caught between pull requests. Each reusable workflow accepts `soft-fail: true` to report results as warnings instead; a scanner or gate error fails the job either way.
 
 #### Expression Injection Rules
 
@@ -662,7 +662,7 @@ Security templates integrated:
 
 #### Workflow Security Scan Findings
 
-**Symptoms**: A workflow security scan job fails, or warns in report-only mode, with `dangerous-workflow/*`, `workflow-runner/*`, or `action-pin/*` results
+**Symptoms**: A workflow security scan job fails, or warns when `soft-fail` is enabled, with `dangerous-workflow/*`, `workflow-runner/*`, or `action-pin/*` results
 
 **Solutions**:
 
