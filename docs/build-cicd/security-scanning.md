@@ -2,7 +2,7 @@
 title: Security Scanning & Supply Chain Hardening
 description: Comprehensive security scanning, supply chain hardening, and vulnerability assessment for the Edge AI Accelerator CI/CD pipelines.
 author: Edge AI Team
-ms.date: 2026-11-24
+ms.date: 2026-11-27
 ms.topic: concept
 keywords:
   - security scanning
@@ -16,7 +16,9 @@ keywords:
   - slsa
   - stepSecurity
   - ossf scorecard
-estimated_reading_time: 8
+  - osv-scanner
+  - openvex
+estimated_reading_time: 9
 ---
 
 The Edge AI Accelerator implements comprehensive security scanning and supply chain hardening to ensure infrastructure security, identify vulnerabilities, maintain compliance, and protect against supply chain attacks.
@@ -389,6 +391,39 @@ Automated supply chain security analysis using OpenSSF Scorecard for comprehensi
     results_format: sarif
 ```
 
+### OSV Suppressions and OpenVEX
+
+Scorecard's Vulnerabilities check runs OSV-Scanner recursively over every lockfile in the repository. When an advisory has no upstream fix, the repository records the decision in two places:
+
+| File                                                | Consumer                                          | Purpose                                                                                        |
+|-----------------------------------------------------|---------------------------------------------------|------------------------------------------------------------------------------------------------|
+| **`osv-scanner.toml`** beside the affected lockfile | OpenSSF Scorecard, local `osv-scanner` runs       | `[[IgnoredVulns]]` entries with a reason naming the dependency path and the unblocking release |
+| **`security/vex/edge-ai.openvex.json`**             | VEX-aware scanners (`grype --vex`, `trivy --vex`) | OpenVEX v0.2.0 statement per advisory with status, justification, and impact statement         |
+
+OSV-Scanner applies an `osv-scanner.toml` only to lockfiles in the same directory; a file at the repository root does not cover `src/500-application/**/Cargo.lock`. Add the entry to each directory whose lockfile contains the advisory, and list only advisories present in that directory.
+
+Cargo-audit and Grype keep their own allowlists in `.github/audit.toml` and `.grype.yaml`. Keep all four in step when accepting or removing an advisory.
+
+The **VEX Detection** workflow (`.github/workflows/vex-detect.yml`) runs weekly and on manual dispatch. It scans with an empty configuration so local `osv-scanner.toml` files cannot hide findings, then compares each advisory and its aliases with the VEX document. Advisories without a `not_affected` or `fixed` statement are listed in a single `VEX detection: untriaged vulnerabilities found` issue, which closes automatically once every finding is triaged.
+
+To accept an advisory that cannot be upgraded away:
+
+1. Add an `[[IgnoredVulns]]` entry to `osv-scanner.toml` in each affected lockfile directory.
+2. Add a statement to `security/vex/edge-ai.openvex.json` with `not_affected`, a justification, and an impact statement, then bump `version` and `last_updated`.
+3. Mirror the decision in `.github/audit.toml` (Rust) or `.grype.yaml` (container images) when those scanners report it.
+
+```bash
+# Confirm no unaccepted advisories remain, as Scorecard sees them
+osv-scanner scan source --recursive .
+
+# Confirm every advisory has a terminal VEX statement, as VEX Detection sees them
+: > /tmp/osv-empty.toml
+osv-scanner scan source --recursive --config=/tmp/osv-empty.toml --format json --output /tmp/osv.json .
+
+# Validate the OpenVEX document
+vexctl merge security/vex/edge-ai.openvex.json > /dev/null
+```
+
 ## Traditional Security Scanning
 
 ### Grype - Container Image Vulnerability Scanning
@@ -700,6 +735,16 @@ Security templates integrated:
 - Remove exceptions whose findings were fixed
 - Update `count` when results were added to or removed from the excepted file, after confirming each remaining result still qualifies
 - Run `./scripts/security/Test-SarifThreshold.ps1` locally against fresh SARIF before pushing
+
+#### Scorecard Reports an Accepted Advisory
+
+**Symptoms**: OpenSSF Scorecard's Vulnerabilities check lists an advisory that is already accepted, or the VEX Detection issue lists an advisory that has an `osv-scanner.toml` entry
+
+**Solutions**:
+
+- Place the `osv-scanner.toml` entry in the same directory as the lockfile that contains the advisory; configs do not apply to subdirectories
+- Run `osv-scanner scan source --recursive .` and confirm the advisory no longer appears
+- Add a `not_affected` or `fixed` statement for the advisory to `security/vex/edge-ai.openvex.json`; VEX Detection matches the advisory ID and its aliases
 
 ### Debugging Commands
 
