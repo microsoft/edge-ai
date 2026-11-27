@@ -14,7 +14,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum ModelConfigError {
     #[error("YAML parsing error: {0}")]
-    YamlError(#[from] serde_yaml::Error),
+    YamlError(#[from] serde_saphyr::Error),
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
     #[error("Invalid configuration: {0}")]
@@ -37,7 +37,7 @@ pub struct ModelConfiguration {
     /// Optional postprocessing configuration
     pub postprocessing: Option<PostprocessingConfiguration>,
     /// Optional model-specific parameters
-    pub parameters: Option<HashMap<String, serde_yaml::Value>>,
+    pub parameters: Option<HashMap<String, serde_json::Value>>,
 }
 
 /// Model metadata and identification
@@ -151,7 +151,7 @@ pub struct PreprocessingStep {
     /// Step type (e.g., "crop", "flip", "blur")
     pub step_type: String,
     /// Step parameters
-    pub parameters: HashMap<String, serde_yaml::Value>,
+    pub parameters: HashMap<String, serde_json::Value>,
 }
 
 /// Postprocessing configuration
@@ -160,7 +160,7 @@ pub struct PostprocessingConfiguration {
     /// Postprocessing type
     pub postprocess_type: String,
     /// Type-specific parameters
-    pub parameters: Option<HashMap<String, serde_yaml::Value>>,
+    pub parameters: Option<HashMap<String, serde_json::Value>>,
     /// Output format ("detection", "classification", "segmentation")
     pub output_format: String,
 }
@@ -186,7 +186,7 @@ impl ModelConfigManager {
     pub async fn load_config(&mut self, config_path: &str) -> Result<String, ModelConfigError> {
         let full_path = self.base_dir.join(config_path);
         let yaml_content = tokio::fs::read_to_string(&full_path).await?;
-        let config: ModelConfiguration = serde_yaml::from_str(&yaml_content)?;
+        let config: ModelConfiguration = serde_saphyr::from_str(&yaml_content)?;
 
         // Validate the configuration
         self.validate_config(&config)?;

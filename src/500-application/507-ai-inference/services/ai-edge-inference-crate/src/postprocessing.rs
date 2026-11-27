@@ -178,11 +178,6 @@ impl UniversalPostprocessor {
                 let config = CustomConfig {
                     parameters: postprocessing_config
                         .and_then(|p| p.parameters.clone())
-                        .map(|params| {
-                            // Convert from serde_yaml::Value to serde_json::Value
-                            let json_str = serde_yaml::to_string(&params).unwrap_or_default();
-                            serde_json::from_str(&json_str).unwrap_or_default()
-                        })
                         .unwrap_or_default(),
                 };
                 PostprocessorType::Custom(config)
@@ -197,11 +192,6 @@ impl UniversalPostprocessor {
             }).collect(),
             parameters: postprocessing_config
                 .and_then(|p| p.parameters.clone())
-                .map(|params| {
-                    // Convert from serde_yaml::Value to serde_json::Value
-                    let json_str = serde_yaml::to_string(&params).unwrap_or_default();
-                    serde_json::from_str(&json_str).unwrap_or_default()
-                })
                 .unwrap_or_default(),
         };
 
