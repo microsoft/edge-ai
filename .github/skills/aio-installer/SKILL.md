@@ -12,6 +12,12 @@ user-invocable: true
 
 Produce a verified Azure IoT Operations installation through either an edge-ai repository blueprint or the generic local Azure CLI procedure. Keep deployment-path selection, Azure and Kubernetes context, parameter or dependency choices, mutation review, and consent explicit.
 
+## Interaction
+
+Ask one question at a time and provide only the next useful step. Use the host question tool when available, with freeform input enabled. Use a Markdown checklist when collecting or confirming more than one parameter or overlay.
+
+Do not ask again for facts already supplied. Keep setup explanations brief and offer environment setup guidance before deployment when prerequisites are missing.
+
 ## Deployment Path Selection
 
 Before running `catalog`, opening the canvas, or executing an Azure command, ask the user to choose one path:
@@ -125,11 +131,15 @@ Use its actions as follows:
 * `get_feedback`: read the latest unacknowledged canvas choices
 * `acknowledge_feedback`: mark a feedback revision handled only after applying its choices
 
+Before opening the canvas, list its capabilities when the host exposes that action and resolve the `edge-ai-aio-installer` provider. Use one stable instance for the installation.
+
 For the blueprint path, the canvas can collect blueprint, framework, tenant, subscription, common non-secret parameters, Terraform overlays, and explicit apply approval. For both paths, it displays bounded sanitized output and command lifecycle events published by the script.
 
 For generic CLI deployments, the canvas also displays the persisted stable or preview runtime choice. It never writes deployment state or executes commands. The agent remains responsible for validating feedback and invoking the script gates.
 
 The blueprint progression is `selected`, `authenticated`, `parameters-prepared`, `validated`, `planned`, `applied`, and `verified`. The generic progression is `selected`, `authenticated`, `prerequisites`, `dependencies`, `initialized`, `created`, and `verified`. A failed command records `failed` while preserving `last_successful_stage` so the canvas shows where recovery resumes.
+
+If the provider is unavailable, state that `chat.canvases.enabled`, a new Copilot-harness session, or an extension reload may be required. Continue the guided workflow in chat without claiming the canvas was shown.
 
 ## Safety
 
@@ -144,8 +154,10 @@ The blueprint progression is `selected`, `authenticated`, `parameters-prepared`,
 * Require explicit confirmation before generic dependency creation, cluster initialization, and instance creation.
 * Require the literal apply confirmation token after the user reviews the plan.
 * Refuse apply when parameter or Bicep template fingerprints differ from the reviewed inputs.
+* Require explicit confirmation before destroy, resource deletion, state deletion, import, force-unlock, or infrastructure cleanup.
 * Do not delete resources, state, locks, or parameter files during recovery.
 * Do not use `-auto-approve`; the saved Terraform plan and explicit script token are the apply boundary.
+* Offer to remove sensitive local inputs only after successful deployment verification.
 
 ## Success Criteria
 
@@ -158,7 +170,9 @@ The blueprint progression is `selected`, `authenticated`, `parameters-prepared`,
 
 ## Stop Rules
 
-Stop before cloud mutation when deployment-path selection, authentication, cluster context, required parameters or dependency IDs, validation, plan or command review, explicit confirmation, or fingerprint consistency is missing. On blueprint failure, preserve state and return the exact failed stage plus the smallest recovery action. On generic CLI failure, stop the command sequence and diagnose the exact failed command before proposing recovery.
+Stop before cloud mutation when deployment-path selection, authentication, cluster context, required parameters or dependency IDs, validation, plan or command review, explicit confirmation, or fingerprint consistency is missing. Stop the blueprint path when a plan contains an unexplained destructive change.
+
+On blueprint failure, preserve state and return the exact failed stage plus the smallest recovery action. On generic CLI failure, stop the command sequence and diagnose the exact failed command before proposing recovery.
 
 ## Response Contract
 
