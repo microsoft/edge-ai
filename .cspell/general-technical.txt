@@ -973,6 +973,7 @@ openshift
 opensource
 openssh
 opentelemetry
+openvex
 openvino
 openvpn
 operationalization
@@ -1548,6 +1549,7 @@ unranked
 unregister
 unsnooze
 unstub
+untriaged
 untrusted
 upbound
 upds
@@ -1582,6 +1584,7 @@ vcpus
 velero
 veracode
 Verdana
+vexctl
 vfxt
 vhds
 vhdx
@@ -1615,6 +1618,7 @@ vsan
 vscode
 vsphere
 vsts
+Vulns
 vums
 vwan
 vxlan

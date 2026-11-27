@@ -48,7 +48,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Configuration
 config = "0.14"
 lazy_static = "1.4"
-serde_yaml = "0.9"
+serde-saphyr = { version = "2.2", default-features = false, features = ["deserialize"] }
 
 # Optional pure Rust ML fallback
 candle-core = { version = "0.11.1", optional = true }

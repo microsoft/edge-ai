@@ -346,7 +346,7 @@ impl UniversalImagePreprocessor {
             "contrast_enhancement" => {
                 if let Some(factor_value) = step.parameters.get("factor") {
                     let factor = match factor_value {
-                        serde_yaml::Value::Number(n) => n.as_f64()
+                        serde_json::Value::Number(n) => n.as_f64()
                             .ok_or_else(|| PreprocessingError::InvalidConfig("Factor must be a number".to_string()))?
                             as f32,
                         _ => return Err(PreprocessingError::InvalidConfig("Factor must be a number".to_string())),
@@ -370,7 +370,7 @@ impl UniversalImagePreprocessor {
                 // Simple blur for denoising
                 if let Some(strength_value) = step.parameters.get("strength") {
                     let strength = match strength_value {
-                        serde_yaml::Value::Number(n) => n.as_f64()
+                        serde_json::Value::Number(n) => n.as_f64()
                             .ok_or_else(|| PreprocessingError::InvalidConfig("Strength must be a number".to_string()))?
                             as f32,
                         _ => return Err(PreprocessingError::InvalidConfig("Strength must be a number".to_string())),
@@ -385,9 +385,9 @@ impl UniversalImagePreprocessor {
 
             "center_crop" => {
                 if let Some(size_value) = step.parameters.get("size") {
-                    // Handle serde_yaml::Value conversion to array
+                    // Size is a two-element array of [width, height]
                     let size_array = match size_value {
-                        serde_yaml::Value::Sequence(seq) => seq,
+                        serde_json::Value::Array(seq) => seq,
                         _ => return Err(PreprocessingError::InvalidConfig("Size must be an array".to_string())),
                     };
 
@@ -396,14 +396,14 @@ impl UniversalImagePreprocessor {
                     }
 
                     let crop_w = match &size_array[0] {
-                        serde_yaml::Value::Number(n) => n.as_u64()
+                        serde_json::Value::Number(n) => n.as_u64()
                             .ok_or_else(|| PreprocessingError::InvalidConfig("Width must be a positive number".to_string()))?
                             as u32,
                         _ => return Err(PreprocessingError::InvalidConfig("Width must be a number".to_string())),
                     };
 
                     let crop_h = match &size_array[1] {
-                        serde_yaml::Value::Number(n) => n.as_u64()
+                        serde_json::Value::Number(n) => n.as_u64()
                             .ok_or_else(|| PreprocessingError::InvalidConfig("Height must be a positive number".to_string()))?
                             as u32,
                         _ => return Err(PreprocessingError::InvalidConfig("Height must be a number".to_string())),
